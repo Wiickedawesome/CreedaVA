@@ -10,6 +10,8 @@ const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Use relative paths so the app works on subpaths (e.g., GitHub Pages /CreedaVA/)
+  base: './',
   plugins: [
     react(),
     tailwindcss(),

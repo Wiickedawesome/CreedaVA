@@ -8,10 +8,48 @@ import { Separator } from '@/components/ui/separator'
 import { EnvelopeSimple, Calendar, MapPin, Phone, LinkedinLogo } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
+import { useEffect, useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 
+type Submission = {
+  id: string
+  name: string
+  email: string
+  company?: string
+  phone?: string
+  service?: string
+  message: string
+  timestamp: number
+}
+
+// LocalStorage fallback when embedded (no Spark backend)
+function useLocalPersistedState<T>(key: string, initial: T) {
+  const [value, setValue] = useState<T>(() => {
+    try {
+      const raw = localStorage.getItem(key)
+      return raw ? (JSON.parse(raw) as T) : initial
+    } catch {
+      return initial
+    }
+  })
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value))
+    } catch {}
+  }, [key, value])
+  return [value, setValue] as const
+}
+
+function useKVOrLocal<T>(key: string, initial: T) {
+  const embedded = (typeof window !== 'undefined') && (window as any).__CREEDAVA_EMBEDDED__ === true
+  // In embedded mode, avoid Spark runtime calls and use localStorage instead
+  // Otherwise, use Spark's persistent KV
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return embedded ? useLocalPersistedState<T>(key, initial) : useKV<T>(key, initial)
+}
+
 export function Contact() {
-  const [submissions, setSubmissions] = useKV<Array<{
+  const [submissions, setSubmissions] = useKVOrLocal<Array<{
     id: string
     name: string
     email: string
@@ -27,7 +65,7 @@ export function Contact() {
     const formData = new FormData(e.currentTarget)
     const data = Object.fromEntries(formData)
     
-    const submission = {
+    const submission: Submission = {
       id: `contact-${Date.now()}`,
       name: data.name as string,
       email: data.email as string,

@@ -9,6 +9,7 @@ import { Contact } from '@/pages/Contact'
 import { Admin } from '@/pages/Admin'
 
 function App() {
+  const embedded = (typeof window !== 'undefined') && (window as any).__CREEDAVA_EMBEDDED__ === true
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
@@ -20,7 +21,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/admin" element={<Admin />} />
+            {!embedded && <Route path="/admin" element={<Admin />} />}
           </Routes>
         </main>
         <Footer />
