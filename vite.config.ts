@@ -23,8 +23,8 @@ function getSparkPlugins(): PluginOption[] {
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Use relative paths so the app works on subpaths (e.g., GitHub Pages /CreedaVA/)
-  base: './',
+  // Use repository name for GitHub Pages deployment
+  base: '/CreedaVA/',
   plugins: [
     react(),
     tailwindcss(),
