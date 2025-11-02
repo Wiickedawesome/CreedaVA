@@ -1,63 +1,65 @@
 # Planning Guide
 
-A professional, conversion-focused website that showcases CreedAVA's virtual assistant services, builds trust with potential clients, and clearly communicates service offerings and value propositions.
+A professional, conversion-focused website that showcases CreedaVA (Creeda Virtual Assistants) services, builds trust with potential clients, and clearly communicates service offerings and value propositions through a multi-page architecture.
 
 **Experience Qualities**:
 1. **Professional** - The site should convey expertise, reliability, and corporate credibility that enterprise clients expect
 2. **Trustworthy** - Design elements that build confidence through testimonials, credentials, and clear communication
 3. **Approachable** - While professional, the interface should feel warm and human, reflecting the personal service nature of virtual assistants
 
-**Complexity Level**: Content Showcase (information-focused)
-The site primarily presents information about services, team, and value propositions with clear calls-to-action for engagement. It's not a complex application but rather an elegant presentation layer designed to convert visitors into leads.
+**Complexity Level**: Light Application (multiple features with basic state)
+The site uses React Router for multi-page navigation, providing separate pages for Home, Services, About, Pricing, and Contact. Each page presents focused information with clear calls-to-action for engagement, creating a traditional website experience with modern single-page app performance.
 
 ## Essential Features
 
-### Hero Section with Primary CTA
-- **Functionality**: Eye-catching headline, subheadline, and prominent call-to-action button
-- **Purpose**: Immediately communicate value proposition and drive conversions
-- **Trigger**: Page load
-- **Progression**: Visitor arrives → Reads compelling headline → Understands core value → Clicks primary CTA → Contact form/scheduling
-- **Success criteria**: Clear value proposition within 3 seconds, CTA button stands out visually
+### Multi-Page Navigation System
+- **Functionality**: React Router-based navigation with separate pages for Home, Services, About, Pricing, and Contact
+- **Purpose**: Provide clear content organization and improved SEO potential with distinct pages
+- **Trigger**: User clicks navigation links or buttons
+- **Progression**: User selects page → Route changes → New page content loads → Navbar updates active state
+- **Success criteria**: Smooth transitions, clear active page indication, proper back/forward browser button support
 
-### Services Overview
-- **Functionality**: Display core service categories with icons and brief descriptions
-- **Purpose**: Help visitors quickly identify relevant services and understand breadth of offerings
-- **Trigger**: Scrolling to services section
-- **Progression**: View service categories → Click to expand details → Read specific offerings → Navigate to contact
-- **Success criteria**: All major service categories visible, clear categorization, easy scanning
+### Home Page with Hero & Overview
+- **Functionality**: Eye-catching hero section, stats, service overview, testimonials, and CTA
+- **Purpose**: Immediately communicate value proposition and showcase credibility
+- **Trigger**: Landing on site or clicking Home link
+- **Progression**: View hero → See stats → Browse services → Read testimonials → Click CTA to Contact
+- **Success criteria**: Clear value proposition within 3 seconds, compelling stats, smooth scroll animations
 
-### Social Proof Section
-- **Functionality**: Display client testimonials, logos, and success metrics
-- **Purpose**: Build credibility and trust through third-party validation
-- **Trigger**: Scrolling to testimonials section
-- **Progression**: View testimonial cards → Read client feedback → See company logos → Increased confidence → Contact CTA
-- **Success criteria**: Testimonials feel authentic, metrics are impressive, logos are recognizable
+### Services Detail Page
+- **Functionality**: Comprehensive list of all 9+ service categories with detailed feature lists
+- **Purpose**: Help visitors understand the full breadth and depth of offerings
+- **Trigger**: Navigating to Services page
+- **Progression**: View service categories → Read feature lists → Select relevant services → Navigate to Contact
+- **Success criteria**: All services clearly categorized, easy to scan, detailed feature lists visible
 
-### About/Team Section
-- **Functionality**: Introduce the company story and team members
-- **Purpose**: Humanize the brand and establish expertise
-- **Trigger**: Scrolling to about section or clicking about link
-- **Progression**: Read company story → View team profiles → Understand expertise → Feel connection → Contact
-- **Success criteria**: Professional team photos, clear credentials, compelling story
+### About Page
+- **Functionality**: Company mission, values, differentiators, and team information
+- **Purpose**: Build trust and establish expertise through company story
+- **Trigger**: Navigating to About page
+- **Progression**: Read mission → View values → See differentiators → Feel connection → Contact CTA
+- **Success criteria**: Compelling story, clear values, authentic presentation
 
-### Contact/Get Started Section
-- **Functionality**: Multiple ways to initiate contact (form, email, phone, scheduling)
-- **Purpose**: Remove friction from the conversion process
-- **Trigger**: Clicking any CTA throughout the site
-- **Progression**: Click CTA → View contact options → Choose preferred method → Submit inquiry/schedule call
-- **Success criteria**: Form is simple (3-5 fields max), multiple contact options available, clear next steps
+### Pricing Page
+- **Functionality**: Three pricing tiers, how-it-works section, and FAQ
+- **Purpose**: Qualify leads and set clear expectations with transparent pricing
+- **Trigger**: Navigating to Pricing page
+- **Progression**: Compare plans → Review process → Read FAQs → Select tier → Contact
+- **Success criteria**: Clear tier differentiation, transparent pricing structure, answered common questions
 
-### Pricing/Plans Section
-- **Functionality**: Display service tiers or pricing structure
-- **Purpose**: Qualify leads and set clear expectations
-- **Trigger**: Scrolling to pricing section
-- **Progression**: View plan options → Compare features → Select appropriate tier → Contact for that tier
-- **Success criteria**: Clear differentiation between tiers, transparent pricing or "starting at" indicators
+### Contact Page
+- **Functionality**: Multi-field contact form, contact methods, and what-happens-next info
+- **Purpose**: Remove friction from conversion with multiple contact options
+- **Trigger**: Navigating to Contact page or clicking CTAs
+- **Progression**: View form → Fill required fields → Submit → See confirmation
+- **Success criteria**: Simple form (5 fields), multiple contact methods, clear next steps
 
 ## Edge Case Handling
 
-- **Mobile Navigation**: Hamburger menu with smooth slide-in drawer for mobile devices
-- **Long Content**: Sticky header with smooth scroll to sections, back-to-top button appears after scrolling
+- **Page Navigation**: Browser back/forward buttons work correctly, page scrolls to top on route changes
+- **Mobile Navigation**: Hamburger menu with smooth slide-in drawer, closes on route change
+- **Active Page Indication**: Current page highlighted in navigation with accent color
+- **404 Handling**: All undefined routes redirect to home page
 - **Form Validation**: Real-time validation with helpful error messages, prevent submission of incomplete forms
 - **Missing Images**: Graceful fallbacks with branded placeholders or gradient backgrounds
 - **Slow Loading**: Skeleton screens for content sections, optimistic UI updates
