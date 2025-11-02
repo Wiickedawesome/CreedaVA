@@ -72,9 +72,9 @@ export function Home() {
   ]
 
   const stats = [
-    { value: '500+', label: 'Clients Served' },
+    { value: '5+', label: 'Years Experience' },
     { value: '98%', label: 'Client Satisfaction' },
-    { value: '50k+', label: 'Hours Completed' },
+    { value: '<24h', label: 'Response Time' },
     { value: '24/7', label: 'Support Available' },
   ]
 
@@ -90,7 +90,7 @@ export function Home() {
             className="text-center"
           >
             <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
-              Trusted by 500+ Businesses Worldwide
+              Your Trusted Virtual Assistant Partner
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
               Scale Your Business with
@@ -201,7 +201,7 @@ export function Home() {
           >
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">What Our Clients Say</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join hundreds of satisfied clients who have transformed their business with CreedaVA
+              See what our satisfied clients have to say about working with CreedaVA
             </p>
           </motion.div>
 

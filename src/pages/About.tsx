@@ -48,8 +48,8 @@ export function About() {
 
   const stats = [
     { value: '2018', label: 'Founded' },
-    { value: '500+', label: 'Active Clients' },
-    { value: '150+', label: 'Virtual Assistants' },
+    { value: '5+', label: 'Years of Service' },
+    { value: '10k+', label: 'Tasks Completed' },
     { value: '98%', label: 'Client Retention' },
   ]
 
