@@ -1,7 +1,9 @@
 import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from "react-error-boundary";
 import { Toaster } from 'sonner'
-import "@github/spark/spark"
+
+// Use fallback shim since Spark runtime may not be available
+import "./lib/spark-shims/spark"
 
 import App from './App.tsx'
 import { ErrorFallback } from './ErrorFallback.tsx'

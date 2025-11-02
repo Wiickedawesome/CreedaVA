@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { useKV } from '@github/spark/hooks'
+// Use shim hooks as fallback when Spark is not available
+import { useKV } from '@/lib/spark-shims/hooks'
 import { Database, EnvelopeSimple, Phone, Briefcase, Trash, User } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
