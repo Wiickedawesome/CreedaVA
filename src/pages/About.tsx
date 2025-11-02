@@ -39,6 +39,7 @@ export function About() {
 
   const differentiators = [
     'Rigorously vetted and trained virtual assistants',
+    'Bilingual support available',
     'Dedicated account management and support',
     'Flexible, scalable solutions that grow with you',
     'Transparent communication and regular reporting',

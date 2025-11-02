@@ -98,8 +98,8 @@ export function Home() {
               <span className="text-accent">Elite Virtual Assistants</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Professional remote support tailored to your needs. From executive assistance to specialized tasks,
-              we help ambitious teams achieve more.
+              Professional remote support tailored to your needs. Bilingual assistants available. 
+              From executive assistance to specialized tasks, we help ambitious teams achieve more.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button

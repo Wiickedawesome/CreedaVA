@@ -159,7 +159,7 @@ export function Services() {
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
               From administrative tasks to specialized support, our virtual assistants are trained to handle
-              your unique business needs with professionalism and expertise.
+              your unique business needs with professionalism and expertise. Bilingual support available.
             </p>
           </motion.div>
         </div>

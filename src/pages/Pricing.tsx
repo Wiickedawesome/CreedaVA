@@ -23,17 +23,35 @@ export function Pricing() {
       popular: false,
     },
     {
-      name: 'Professional',
-      hours: '80 hours/month',
-      price: 'Starting at $2,200',
-      description: 'Ideal for growing businesses that need consistent, comprehensive support',
+      name: 'Business',
+      hours: '160 hours/month',
+      price: '$1,499/month',
+      description: 'Full-time dedicated support for businesses that need consistent assistance',
       features: [
-        'Dedicated senior VA',
-        'Priority support',
+        'Dedicated full-time VA',
+        'Bilingual support available',
+        'Priority response',
         'Advanced task management',
-        'Weekly sync meetings',
+        'Weekly progress reports',
         'Process documentation',
         'Team collaboration tools',
+      ],
+      popular: false,
+    },
+    {
+      name: 'Professional',
+      hours: '160 hours/month',
+      price: '$1,799/month',
+      description: 'Premium full-time support with senior VAs and specialized expertise',
+      features: [
+        'Dedicated senior VA',
+        'Bilingual support available',
+        'Priority support 24/7',
+        'Weekly sync meetings',
+        'Advanced reporting & analytics',
+        'Process optimization',
+        'Specialized skills & training',
+        'Account manager',
       ],
       popular: true,
     },
@@ -44,12 +62,13 @@ export function Pricing() {
       description: 'Tailored solutions for organizations with complex needs',
       features: [
         'Multiple VAs & specialists',
-        '24/7 support available',
-        'Account manager',
-        'Custom workflows',
-        'Dedicated team lead',
+        'Bilingual & multilingual support',
+        '24/7 priority support',
+        'Dedicated account manager',
+        'Custom workflows & integrations',
+        'Team lead coordination',
         'SLA guarantees',
-        'Integration support',
+        'Onboarding & training support',
       ],
       popular: false,
     },
@@ -121,8 +140,8 @@ export function Pricing() {
       </section>
 
       <section className="py-24 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-3 gap-8">
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {plans.map((plan, index) => (
               <motion.div
                 key={plan.name}
