@@ -23,8 +23,9 @@ function getSparkPlugins(): PluginOption[] {
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Use repository name for GitHub Pages deployment
-  base: '/CreedaVA/',
+  // Use repository name for GitHub Pages, root for Azure/custom domain
+  // Set VITE_BASE_PATH=/ for Azure deployment or use default for GitHub Pages
+  base: process.env.VITE_BASE_PATH || '/CreedaVA/',
   plugins: [
     react(),
     tailwindcss(),
