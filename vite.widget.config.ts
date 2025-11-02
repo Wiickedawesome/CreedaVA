@@ -8,7 +8,7 @@ const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(projectRoot, 'src/embed.ts'),
+      entry: resolve(projectRoot, 'src/embed.tsx'),
       name: 'CreedaVAWidget',
       formats: ['iife'],
       fileName: () => `creedava-widget.iife.js`,
