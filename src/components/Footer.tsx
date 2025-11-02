@@ -50,11 +50,20 @@ export function Footer() {
             <h4 className="font-semibold mb-4">Contact</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/80">
               <li>
+                <a href="tel:+18447022202" className="hover:text-white transition-colors">
+                  +1 844-702-2202
+                </a>
+              </li>
+              <li>
                 <a href="mailto:hello@creedava.com" className="hover:text-white transition-colors">
                   hello@creedava.com
                 </a>
               </li>
-              <li>Available 24/7</li>
+              <li>
+                <a href="https://www.linkedin.com/company/creedava/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                  LinkedIn
+                </a>
+              </li>
             </ul>
           </div>
         </div>

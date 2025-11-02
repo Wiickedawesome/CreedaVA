@@ -5,21 +5,52 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { EnvelopeSimple, Calendar, MapPin, Phone } from '@phosphor-icons/react'
+import { EnvelopeSimple, Calendar, MapPin, Phone, LinkedinLogo } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
+import { useKV } from '@github/spark/hooks'
 
 export function Contact() {
+  const [submissions, setSubmissions] = useKV<Array<{
+    id: string
+    name: string
+    email: string
+    company?: string
+    phone?: string
+    service?: string
+    message: string
+    timestamp: number
+  }>>('contact-submissions', [])
+
   const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const data = Object.fromEntries(formData)
-    console.log('Contact form submitted:', data)
+    
+    const submission = {
+      id: `contact-${Date.now()}`,
+      name: data.name as string,
+      email: data.email as string,
+      company: data.company as string,
+      phone: data.phone as string,
+      service: data.service as string,
+      message: data.message as string,
+      timestamp: Date.now(),
+    }
+    
+    setSubmissions((current) => [submission, ...(current || [])])
+    
     toast.success('Thank you! We\'ll be in touch within 24 hours.')
     e.currentTarget.reset()
   }
 
   const contactMethods = [
+    {
+      icon: <Phone className="text-accent" size={24} />,
+      title: 'Call Us',
+      detail: '+1 844-702-2202',
+      link: 'tel:+18447022202',
+    },
     {
       icon: <EnvelopeSimple className="text-accent" size={24} />,
       title: 'Email Us',
@@ -27,16 +58,10 @@ export function Contact() {
       link: 'mailto:hello@creedava.com',
     },
     {
-      icon: <Phone className="text-accent" size={24} />,
-      title: 'Call Us',
-      detail: '+1 (555) 123-4567',
-      link: 'tel:+15551234567',
-    },
-    {
-      icon: <Calendar className="text-accent" size={24} />,
-      title: 'Business Hours',
-      detail: 'Mon-Fri 9am-6pm EST',
-      link: null,
+      icon: <LinkedinLogo className="text-accent" size={24} />,
+      title: 'Connect on LinkedIn',
+      detail: 'creedava',
+      link: 'https://www.linkedin.com/company/creedava/',
     },
     {
       icon: <MapPin className="text-accent" size={24} />,
@@ -105,6 +130,8 @@ export function Contact() {
                       {method.link ? (
                         <a
                           href={method.link}
+                          target={method.link.startsWith('http') ? '_blank' : undefined}
+                          rel={method.link.startsWith('http') ? 'noopener noreferrer' : undefined}
                           className="text-accent hover:underline"
                         >
                           {method.detail}
@@ -215,10 +242,13 @@ export function Contact() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white">
-                <a href="mailto:hello@creedava.com">Email Us Directly</a>
+                <a href="tel:+18447022202">
+                  <Phone className="mr-2" size={20} />
+                  Call +1 844-702-2202
+                </a>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <a href="tel:+15551234567">Call Now</a>
+                <a href="mailto:hello@creedava.com">Email Us Directly</a>
               </Button>
             </div>
           </motion.div>
