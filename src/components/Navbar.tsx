@@ -65,13 +65,13 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent>
-              <nav className="flex flex-col gap-6 mt-8">
+              <nav className="flex flex-col gap-6 mt-8 px-6">
                 {navLinks.map((link) => (
                   <Link
                     key={link.path}
                     to={link.path}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`text-left text-lg font-medium transition-colors py-2 ${
+                    className={`text-center text-lg font-medium transition-colors py-2 ${
                       isActive(link.path)
                         ? 'text-accent'
                         : 'text-foreground hover:text-accent'
