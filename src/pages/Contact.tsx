@@ -9,7 +9,8 @@ import { EnvelopeSimple, Calendar, MapPin, Phone, LinkedinLogo } from '@phosphor
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+// Use shim hooks as fallback when Spark is not available
+import { useKV } from '@/lib/spark-shims/hooks'
 
 type Submission = {
   id: string
