@@ -4,9 +4,11 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
-        "kill": "fuser -k 5000/tcp",
-        "build": "tsc -b --noCheck && vite build",
+          "dev": "vite",
+          "kill": "fuser -k 5000/tcp",
+          "build": "npm run build:app && npm run build:widget",
+          "build:app": "tsc -b --noCheck && vite build",
+          "build:widget": "vite build --config vite.widget.config.ts",
         "lint": "eslint .",
         "optimize": "vite optimize",
         "preview": "vite preview"
