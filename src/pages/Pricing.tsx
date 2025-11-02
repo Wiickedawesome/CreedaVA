@@ -10,20 +10,6 @@ export function Pricing() {
   const plans = [
     {
       name: 'Starter',
-      hours: '20 hours/month',
-      price: 'Starting at $600',
-      description: 'Perfect for individuals and small teams getting started with virtual assistance',
-      features: [
-        'Dedicated virtual assistant',
-        'Email & chat support',
-        'Basic task management',
-        'Monthly reporting',
-        'Flexible scheduling',
-      ],
-      popular: false,
-    },
-    {
-      name: 'Business',
       hours: '160 hours/month',
       price: '$1,499/month',
       description: 'Full-time dedicated support for businesses that need consistent assistance',
@@ -141,7 +127,7 @@ export function Pricing() {
 
       <section className="py-24 px-4">
         <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
               <motion.div
                 key={plan.name}
