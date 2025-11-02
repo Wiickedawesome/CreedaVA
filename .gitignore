@@ -24,9 +24,11 @@ dist-ssr
 *.sln
 *.sw?
 
+
 .env
 **/agent-eval-report*
-packages
+# Do not ignore the monorepo packages; ensure they are included in version control
+# packages
 pids
 .file-manifest
 .devcontainer/
