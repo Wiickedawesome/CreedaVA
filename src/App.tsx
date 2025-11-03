@@ -10,8 +10,11 @@ import { Admin } from '@/pages/Admin'
 
 function App() {
   const embedded = (typeof window !== 'undefined') && (window as any).__CREEDAVA_EMBEDDED__ === true
+  // Use basename for GitHub Pages deployment with /CreedaVA/ path
+  const basename = import.meta.env.BASE_URL
+  
   return (
-    <Router>
+    <Router basename={basename}>
       <div className="flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-grow">
