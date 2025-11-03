@@ -48,10 +48,29 @@ export function About() {
   ]
 
   const stats = [
-    { value: '2018', label: 'Founded' },
-    { value: '5+', label: 'Years of Service' },
-    { value: '10k+', label: 'Tasks Completed' },
-    { value: '98%', label: 'Client Retention' },
+    { value: '2023', label: 'Founded' },
+    { value: '100%', label: 'English-Speaking' },
+    { value: 'Belize', label: 'Based' },
+    { value: '98%', label: 'Client Satisfaction' },
+  ]
+
+  const belizeAdvantages = [
+    {
+      title: 'Bilingual Excellence',
+      description: 'Only English-speaking country in Central America. Our team is fluent in both English and Spanish, serving diverse global markets.',
+    },
+    {
+      title: 'Cultural Adaptability',
+      description: 'At the crossroads of cultures, Belizeans bring unique versatility, adaptability, and cross-cultural communication skills.',
+    },
+    {
+      title: 'Time Zone Advantage',
+      description: 'Central Standard Time (CST) aligns perfectly with North American business hours for real-time collaboration.',
+    },
+    {
+      title: 'Professional Workforce',
+      description: 'Rising education standards combined with limited local opportunities create a pool of highly motivated, skilled professionals.',
+    },
   ]
 
   return (
@@ -105,17 +124,40 @@ export function About() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="space-y-8"
+            className="space-y-12"
           >
-            <div className="flex items-start gap-4">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">Our Story</h2>
+              <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+                <p>
+                  Founded in 2023, <span className="text-accent font-semibold">CreedaVA</span> is a Belize-based virtual assistant 
+                  agency with a mission to bridge opportunity and talent. In a nation where education continues to rise but employment 
+                  remains scarce, CreedaVA stands as a digital bridge — connecting Belize's highly skilled, English-speaking professionals 
+                  with global businesses in need of dedicated, reliable, and growth-minded virtual assistants.
+                </p>
+                <p>
+                  Belize, the only English-speaking country in Central America, is uniquely positioned at the crossroads of cultures, 
+                  making Belizeans fluent in English and Spanish, and rich in adaptability, communication, and professionalism. CreedaVA 
+                  harnesses that cultural versatility to deliver world-class virtual support across industries, from administration and 
+                  marketing to customer success and executive assistance.
+                </p>
+                <p>
+                  At its core, <span className="text-accent font-semibold">CreedaVA is more than a service; it's a movement</span> to 
+                  empower Belize's workforce, foster remote career growth, and create sustainable pathways for global collaboration. 
+                  By hiring through CreedaVA, companies don't just get exceptional talent — they invest in a vision of progress, purpose, 
+                  and partnership.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 pt-8">
               <Target className="text-accent flex-shrink-0 mt-1" size={32} />
               <div>
                 <h2 className="text-2xl font-bold text-foreground mb-4">Our Mission</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  To empower businesses of all sizes by providing exceptional virtual assistant services that
-                  enable leaders to focus on strategic growth while we handle the essential day-to-day operations.
-                  We believe every business deserves access to world-class support, and we're committed to
-                  delivering that through our talented team of virtual assistants.
+                  To bridge opportunity and talent by connecting Belize's highly skilled workforce with global businesses, 
+                  creating sustainable remote career pathways while delivering exceptional virtual assistant services that 
+                  empower companies to achieve more.
                 </p>
               </div>
             </div>
@@ -134,6 +176,48 @@ export function About() {
               </div>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      <section className="py-24 px-4 bg-primary/5">
+        <div className="container mx-auto max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
+              The Belize Advantage
+            </Badge>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">Why Belize?</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Discover what makes Belizean virtual assistants uniquely positioned to serve global businesses
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {belizeAdvantages.map((advantage, index) => (
+              <motion.div
+                key={advantage.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="h-full hover:shadow-xl hover:border-accent/50 transition-all duration-300 border-border/50">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-accent">{advantage.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {advantage.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
