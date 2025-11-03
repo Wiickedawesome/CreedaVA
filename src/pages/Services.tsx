@@ -18,6 +18,7 @@ import {
   PresentationChart,
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
+import { AnimatedBackground } from '@/components/AnimatedBackground'
 
 export function Services() {
   const serviceCategories = [
@@ -143,7 +144,7 @@ export function Services() {
   return (
     <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-background -z-10" />
+        <AnimatedBackground />
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

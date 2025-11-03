@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { EnvelopeSimple, Calendar, MapPin, Phone, LinkedinLogo } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
+import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { useEffect, useState } from 'react'
 // Use shim hooks as fallback when Spark is not available
 import { useKV } from '@/lib/spark-shims/hooks'
@@ -113,7 +114,7 @@ export function Contact() {
   return (
     <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-background -z-10" />
+        <AnimatedBackground />
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -253,10 +254,34 @@ export function Contact() {
                         placeholder="What tasks would you like assistance with? What are your main challenges?"
                       />
                     </div>
-                    <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-white" size="lg">
-                      <EnvelopeSimple className="mr-2" size={20} />
-                      Send Message
-                    </Button>
+                    <div className="space-y-4">
+                      <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-white" size="lg">
+                        <EnvelopeSimple className="mr-2" size={20} />
+                        Send Message
+                      </Button>
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-border/50" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-background px-2 text-muted-foreground">Or</span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          if (typeof window !== 'undefined' && (window as any).Calendly) {
+                            (window as any).Calendly.initPopupWidget({url: 'https://calendly.com/john-creedava?primary_color=f97316'});
+                          }
+                        }}
+                        variant="outline"
+                        className="w-full hover:bg-accent/10 hover:border-accent transition-all duration-300"
+                        size="lg"
+                      >
+                        <Calendar className="mr-2" size={20} />
+                        Book a Call Directly
+                      </Button>
+                    </div>
                   </form>
                 </CardContent>
               </Card>
@@ -265,43 +290,7 @@ export function Contact() {
         </div>
       </section>
 
-      <section className="py-24 px-4 bg-primary/5">
-        <div className="container mx-auto max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
-              <Calendar className="mr-2" size={16} />
-              Schedule Your Consultation
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Book a Free 30-Minute Call
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Pick a time that works best for you. No commitment required.
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="bg-background rounded-2xl shadow-xl border border-border/50 overflow-hidden"
-          >
-            <div 
-              className="calendly-inline-widget" 
-              data-url="https://calendly.com/john-creedava?hide_gdpr_banner=1&primary_color=f97316"
-              style={{ minWidth: '320px', height: '700px' }}
-            />
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="py-16 px-4">
+      <section className="py-24 px-4 bg-muted/30">
         <div className="container mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

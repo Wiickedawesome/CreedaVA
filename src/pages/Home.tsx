@@ -22,6 +22,8 @@ import {
   Calendar,
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
+import { AnimatedGradient } from '@/components/AnimatedGradient'
+import { AnimatedBackground } from '@/components/AnimatedBackground'
 
 export function Home() {
   const services = [
@@ -88,12 +90,7 @@ export function Home() {
   return (
     <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/20 to-background -z-10" />
-        <div className="absolute inset-0 -z-10" style={{
-          backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(249, 115, 22, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(26, 54, 93, 0.15) 0%, transparent 50%)',
-        }} />
-        <div className="absolute top-20 right-10 w-72 h-72 bg-accent/10 rounded-full blur-3xl -z-10" />
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl -z-10" />
+        <AnimatedBackground />
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -239,19 +236,16 @@ export function Home() {
                 step: '01',
                 title: 'Free Consultation',
                 description: 'Schedule a discovery call to discuss your needs, goals, and the type of support that would benefit your business most.',
-                icon: '📞',
               },
               {
                 step: '02',
                 title: 'Perfect Match',
                 description: 'We carefully match you with a virtual assistant whose skills, experience, and personality align with your requirements.',
-                icon: '🤝',
               },
               {
                 step: '03',
                 title: 'Start Growing',
                 description: 'Your VA hits the ground running. We provide onboarding support and ongoing management to ensure success.',
-                icon: '🚀',
               },
             ].map((item, index) => (
               <motion.div
@@ -268,8 +262,7 @@ export function Home() {
                 </div>
                 <Card className="relative z-10 h-full bg-background/80 backdrop-blur-sm hover:shadow-2xl hover:border-accent/50 transition-all duration-300 border-border/50">
                   <CardHeader>
-                    <div className="text-5xl mb-4">{item.icon}</div>
-                    <CardTitle className="text-xl group-hover:text-accent transition-colors">{item.title}</CardTitle>
+                    <CardTitle className="text-xl hover:text-accent transition-colors">{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground leading-relaxed">
