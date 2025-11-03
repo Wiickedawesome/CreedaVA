@@ -35,8 +35,9 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            CreedaVA
+          <Link to="/" className="text-2xl font-bold">
+            <span className="text-primary">Creeda</span>
+            <span className="text-accent">VA</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">

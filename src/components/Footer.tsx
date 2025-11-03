@@ -7,7 +7,10 @@ export function Footer() {
       <div className="container mx-auto max-w-6xl">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="text-2xl font-bold mb-4">CreedaVA</h3>
+            <h3 className="text-2xl font-bold mb-4">
+              <span className="text-primary-foreground">Creeda</span>
+              <span className="text-accent">VA</span>
+            </h3>
             <p className="text-primary-foreground/80 text-sm">
               Creeda Virtual Assistants - Professional remote support for ambitious businesses worldwide.
             </p>
