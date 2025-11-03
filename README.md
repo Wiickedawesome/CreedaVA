@@ -54,13 +54,13 @@ We publish a standalone widget bundle you can include on any page. It renders th
 Build the widget bundle:
 ```bash
 npm run build
-# Output will include dist/creedava-widget.iife.js and dist/spark-template.css
+# Output will include dist/creedava-widget.iife.js and dist/creedava-website.css
 ```
 
 Embed snippet (replace the src URLs with where you host the files — a CDN, your WordPress media CDN, or site assets):
 
 ```html
-<link rel="stylesheet" href="https://cdn.example.com/spark-template.css">
+<link rel="stylesheet" href="https://cdn.example.com/creedava-website.css">
 <div id="creedava-app"></div>
 <script src="https://cdn.example.com/creedava-widget.iife.js"></script>
 <script>
