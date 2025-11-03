@@ -1,0 +1,14 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="32" cy="32" r="32" fill="#1a365d"/>
+  
+  <!-- Stylized "C" and "V" letters -->
+  <!-- C letter in white/light color -->
+  <path d="M 20 32 Q 20 20, 32 20 L 32 26 Q 26 26, 26 32 Q 26 38, 32 38 L 32 44 Q 20 44, 20 32 Z" fill="#ffffff"/>
+  
+  <!-- V letter in orange accent -->
+  <path d="M 36 20 L 41 38 L 46 20 L 51 20 L 43.5 44 L 38.5 44 L 31 20 Z" fill="#f97316"/>
+  
+  <!-- Small dot accent -->
+  <circle cx="32" cy="50" r="2" fill="#f97316"/>
+</svg>

@@ -105,7 +105,7 @@ export function Home() {
               <Button
                 asChild
                 size="lg"
-                className="bg-accent hover:bg-accent/90 text-white px-8 group"
+                className="bg-accent hover:bg-accent/90 text-white px-8 group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
                 <Link to="/contact">
                   Start Your Free Consultation
@@ -116,7 +116,7 @@ export function Home() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="px-8"
+                className="px-8 hover:bg-accent/10 hover:border-accent transition-all duration-300"
               >
                 <Link to="/services">Explore Services</Link>
               </Button>
@@ -167,11 +167,12 @@ export function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
               >
-                <Card className="h-full hover:shadow-lg transition-shadow border-border/50">
+                <Card className="h-full hover:shadow-xl hover:border-accent/50 transition-all duration-300 border-border/50 cursor-pointer group">
                   <CardHeader>
-                    <div className="mb-4">{service.icon}</div>
-                    <CardTitle className="text-xl">{service.title}</CardTitle>
+                    <div className="mb-4 transition-transform group-hover:scale-110 duration-300">{service.icon}</div>
+                    <CardTitle className="text-xl group-hover:text-accent transition-colors">{service.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <CardDescription className="text-base leading-relaxed">
