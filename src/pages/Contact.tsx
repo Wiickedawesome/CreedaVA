@@ -265,7 +265,43 @@ export function Contact() {
         </div>
       </section>
 
-      <section className="py-24 px-4 bg-muted/30">
+      <section className="py-24 px-4 bg-primary/5">
+        <div className="container mx-auto max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
+              <Calendar className="mr-2" size={16} />
+              Schedule Your Consultation
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Book a Free 30-Minute Call
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Pick a time that works best for you. No commitment required.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="bg-background rounded-2xl shadow-xl border border-border/50 overflow-hidden"
+          >
+            <div 
+              className="calendly-inline-widget" 
+              data-url="https://calendly.com/john-creedava?hide_gdpr_banner=1&primary_color=f97316"
+              style={{ minWidth: '320px', height: '700px' }}
+            />
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="py-16 px-4">
         <div className="container mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -273,21 +309,21 @@ export function Contact() {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Prefer to Chat Live?
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Our team is available during business hours to answer your questions and help you get started.
-            </p>
+            <h3 className="text-2xl font-bold text-foreground mb-6">
+              Prefer Another Method?
+            </h3>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white">
+              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white shadow-lg hover:shadow-xl transition-all duration-300">
                 <a href="tel:+18447022202">
                   <Phone className="mr-2" size={20} />
                   Call +1 844-702-2202
                 </a>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <a href="mailto:hello@creedava.com">Email Us Directly</a>
+              <Button asChild size="lg" variant="outline" className="hover:bg-accent/10 hover:border-accent transition-all duration-300">
+                <a href="mailto:hello@creedava.com">
+                  <EnvelopeSimple className="mr-2" size={20} />
+                  Email Us Directly
+                </a>
               </Button>
             </div>
           </motion.div>

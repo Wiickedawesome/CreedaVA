@@ -19,6 +19,7 @@ import {
   Article,
   UserCircle,
   Quotes,
+  Calendar,
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 
@@ -87,7 +88,12 @@ export function Home() {
   return (
     <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-background -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/20 to-background -z-10" />
+        <div className="absolute inset-0 -z-10" style={{
+          backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(249, 115, 22, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(26, 54, 93, 0.15) 0%, transparent 50%)',
+        }} />
+        <div className="absolute top-20 right-10 w-72 h-72 bg-accent/10 rounded-full blur-3xl -z-10" />
+        <div className="absolute bottom-10 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl -z-10" />
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -131,7 +137,8 @@ export function Home() {
         </div>
       </section>
 
-      <section className="py-16 px-4 bg-muted/30">
+      <section className="py-16 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-primary/5 to-accent/5 -z-10" />
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -141,10 +148,13 @@ export function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center"
+                whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
+                className="text-center p-6 rounded-2xl bg-background/50 backdrop-blur-sm border border-accent/20 shadow-lg hover:shadow-xl hover:border-accent/40 transition-all duration-300"
               >
-                <div className="text-3xl md:text-4xl font-bold text-accent mb-2">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-accent to-orange-500 bg-clip-text text-transparent mb-2">
+                  {stat.value}
+                </div>
+                <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
               </motion.div>
             ))}
           </div>
@@ -198,15 +208,20 @@ export function Home() {
         </div>
       </section>
 
-      <section className="py-24 px-4 bg-primary/5">
-        <div className="container mx-auto max-w-6xl">
+      <section className="py-24 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-background -z-10" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full">
+          <div className="absolute top-0 right-1/4 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+        </div>
+        <div className="container mx-auto max-w-6xl relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
+            <Badge className="mb-6 bg-gradient-to-r from-accent/20 to-orange-500/20 text-accent border-accent/30 shadow-lg" variant="outline">
               Simple Process
             </Badge>
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">How It Works</h2>
@@ -215,22 +230,28 @@ export function Home() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            {/* Connection lines */}
+            <div className="hidden md:block absolute top-1/3 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+            
             {[
               {
                 step: '01',
                 title: 'Free Consultation',
                 description: 'Schedule a discovery call to discuss your needs, goals, and the type of support that would benefit your business most.',
+                icon: '📞',
               },
               {
                 step: '02',
                 title: 'Perfect Match',
                 description: 'We carefully match you with a virtual assistant whose skills, experience, and personality align with your requirements.',
+                icon: '🤝',
               },
               {
                 step: '03',
                 title: 'Start Growing',
                 description: 'Your VA hits the ground running. We provide onboarding support and ongoing management to ensure success.',
+                icon: '🚀',
               },
             ].map((item, index) => (
               <motion.div
@@ -239,12 +260,16 @@ export function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.2 }}
+                whileHover={{ y: -8, transition: { duration: 0.2 } }}
                 className="relative"
               >
-                <div className="text-7xl font-bold text-accent/10 absolute -top-4 -left-2">{item.step}</div>
-                <Card className="relative z-10 h-full hover:shadow-lg transition-shadow border-border/50">
+                <div className="text-8xl font-bold bg-gradient-to-br from-accent/20 to-accent/5 bg-clip-text text-transparent absolute -top-6 -left-4 select-none">
+                  {item.step}
+                </div>
+                <Card className="relative z-10 h-full bg-background/80 backdrop-blur-sm hover:shadow-2xl hover:border-accent/50 transition-all duration-300 border-border/50">
                   <CardHeader>
-                    <CardTitle className="text-xl">{item.title}</CardTitle>
+                    <div className="text-5xl mb-4">{item.icon}</div>
+                    <CardTitle className="text-xl group-hover:text-accent transition-colors">{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground leading-relaxed">
@@ -257,7 +282,7 @@ export function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white px-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <Button asChild size="lg" className="bg-gradient-to-r from-accent to-orange-500 hover:from-accent/90 hover:to-orange-500/90 text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
               <Link to="/contact">Get Started Today</Link>
             </Button>
           </div>
@@ -407,7 +432,11 @@ export function Home() {
         </div>
       </section>
 
-      <section className="py-24 px-4">
+      <section className="py-24 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/10 to-primary/5 -z-10" />
+        <div className="absolute inset-0 -z-10" style={{
+          backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(249, 115, 22, 0.1) 0%, transparent 50%)',
+        }} />
         <div className="container mx-auto max-w-4xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -420,9 +449,26 @@ export function Home() {
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Let's discuss how our virtual assistants can help you focus on what matters most.
             </p>
-            <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white px-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <Link to="/contact">Schedule Free Consultation</Link>
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                asChild 
+                size="lg" 
+                className="bg-gradient-to-r from-accent to-orange-500 hover:from-accent/90 hover:to-orange-500/90 text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+              >
+                <Link to="/contact">Schedule Free Consultation</Link>
+              </Button>
+              <Button 
+                asChild 
+                size="lg" 
+                variant="outline"
+                className="border-2 border-accent/30 hover:bg-accent/10 hover:border-accent transition-all duration-300"
+              >
+                <a href="https://calendly.com/john-creedava" target="_blank" rel="noopener noreferrer">
+                  <Calendar className="mr-2" size={20} />
+                  Book a Call Now
+                </a>
+              </Button>
+            </div>
           </motion.div>
         </div>
       </section>
