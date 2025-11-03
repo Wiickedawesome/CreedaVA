@@ -1,8 +1,11 @@
 {
-    "name": "spark-template",
+    "name": "creedava-website",
     "private": true,
-    "version": "0.0.0",
+    "version": "1.0.0",
     "type": "module",
+    "description": "Professional virtual assistant services website for CreedaVA",
+    "author": "CreedaVA",
+    "license": "MIT",
     "scripts": {
           "dev": "vite",
           "kill": "fuser -k 5000/tcp",
