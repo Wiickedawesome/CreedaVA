@@ -22,8 +22,9 @@ import {
   Calendar,
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
-import { AnimatedGradient } from '@/components/AnimatedGradient'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
+import CreedaHeroToucan from '@/components/CreedaHeroToucan'
+import CreedaMascot from '@/components/CreedaMascot'
 
 export function Home() {
   const services = [
@@ -92,45 +93,66 @@ export function Home() {
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <AnimatedBackground />
         <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
-              Your Trusted Virtual Assistant Partner
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
-              Scale Your Business with
-              <br />
-              <span className="text-accent">Elite Virtual Assistants</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Professional remote support tailored to your needs. Bilingual assistants available. 
-              From executive assistance to specialized tasks, we help ambitious teams achieve more.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button
-                asChild
-                size="lg"
-                className="bg-accent hover:bg-accent/90 text-white px-8 group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          <div className="grid items-center gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center lg:text-left"
+            >
+              <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
+                Your Trusted Virtual Assistant Partner
+              </Badge>
+              <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
+                Scale Your Business with
+                <br />
+                <span className="text-accent">Elite Virtual Assistants</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl lg:max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                Professional remote support tailored to your needs. Bilingual assistants available.
+                From executive assistance to specialized tasks, we help ambitious teams achieve more.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center lg:items-start">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-accent hover:bg-accent/90 text-white px-8 group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <Link to="/contact">
+                    Start Your Free Consultation
+                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="px-8 hover:bg-accent/10 hover:border-accent transition-all duration-300"
+                >
+                  <Link to="/services">Explore Services</Link>
+                </Button>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="relative flex justify-center"
+            >
+              <CreedaHeroToucan className="w-full max-w-[420px]" />
+              <motion.div
+                className="absolute -top-10 right-6 hidden lg:block"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
               >
-                <Link to="/contact">
-                  Start Your Free Consultation
-                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="px-8 hover:bg-accent/10 hover:border-accent transition-all duration-300"
-              >
-                <Link to="/services">Explore Services</Link>
-              </Button>
-            </div>
-          </motion.div>
+                <div className="rounded-3xl border border-accent/30 bg-background/80 px-6 py-3 shadow-lg backdrop-blur">
+                  <span className="text-sm font-semibold text-accent">"Hi, I’m Creeda!"</span>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -160,17 +182,28 @@ export function Home() {
 
       <section className="py-24 px-4">
         <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">Our Services</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Comprehensive virtual assistant services designed to free up your time and accelerate growth
-            </p>
-          </motion.div>
+          <div className="grid lg:grid-cols-[1fr_auto] gap-12 items-center mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center lg:text-left"
+            >
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">Our Services</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto lg:mx-0">
+                Comprehensive virtual assistant services designed to free up your time and accelerate growth
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="hidden lg:block"
+            >
+              <CreedaMascot pose="side" size="md" />
+            </motion.div>
+          </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service, index) => (
@@ -282,8 +315,16 @@ export function Home() {
         </div>
       </section>
 
-      <section className="py-24 px-4 bg-muted/30">
-        <div className="container mx-auto max-w-6xl">
+      <section className="py-24 px-4 bg-muted/30 relative overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, x: -100 }}
+          whileInView={{ opacity: 0.3, x: 0 }}
+          viewport={{ once: true }}
+          className="absolute left-8 top-24 hidden xl:block"
+        >
+          <CreedaMascot pose="flying-left" size="md" animate={false} className="opacity-20" />
+        </motion.div>
+        <div className="container mx-auto max-w-6xl relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -430,39 +471,52 @@ export function Home() {
         <div className="absolute inset-0 -z-10" style={{
           backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(249, 115, 22, 0.1) 0%, transparent 50%)',
         }} />
-        <div className="container mx-auto max-w-4xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-              Ready to Scale Your Business?
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Let's discuss how our virtual assistants can help you focus on what matters most.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
-                asChild 
-                size="lg" 
-                className="bg-gradient-to-r from-accent to-orange-500 hover:from-accent/90 hover:to-orange-500/90 text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-              >
-                <Link to="/contact">Schedule Free Consultation</Link>
-              </Button>
-              <Button 
-                asChild 
-                size="lg" 
-                variant="outline"
-                className="border-2 border-accent/30 hover:bg-accent/10 hover:border-accent transition-all duration-300"
-              >
-                <a href="https://calendly.com/john-creedava" target="_blank" rel="noopener noreferrer">
-                  <Calendar className="mr-2" size={20} />
-                  Book a Call Now
-                </a>
-              </Button>
-            </div>
-          </motion.div>
+        <div className="container mx-auto max-w-5xl">
+          <div className="grid lg:grid-cols-[1fr_auto] items-center gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center lg:text-left"
+            >
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+                Ready to Scale Your Business?
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
+                Let's discuss how our virtual assistants can help you focus on what matters most.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+                <Button 
+                  asChild 
+                  size="lg" 
+                  className="bg-gradient-to-r from-accent to-orange-500 hover:from-accent/90 hover:to-orange-500/90 text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                >
+                  <Link to="/contact">Schedule Free Consultation</Link>
+                </Button>
+                <Button 
+                  asChild 
+                  size="lg" 
+                  variant="outline"
+                  className="border-2 border-accent/30 hover:bg-accent/10 hover:border-accent transition-all duration-300"
+                >
+                  <a href="https://calendly.com/john-creedava" target="_blank" rel="noopener noreferrer">
+                    <Calendar className="mr-2" size={20} />
+                    Book a Call Now
+                  </a>
+                </Button>
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="hidden lg:block"
+            >
+              <CreedaMascot pose="working" size="lg" />
+            </motion.div>
+          </div>
         </div>
       </section>
     </div>

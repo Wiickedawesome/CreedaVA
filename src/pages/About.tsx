@@ -13,6 +13,7 @@ import {
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
+import CreedaMascot from '@/components/CreedaMascot'
 
 export function About() {
   const values = [
@@ -79,23 +80,33 @@ export function About() {
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <AnimatedBackground />
         <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
-              Our Story
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
-              About <span className="text-accent">CreedaVA</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              We're more than a virtual assistant service—we're your strategic partner in growth,
-              dedicated to helping ambitious businesses achieve more.
-            </p>
-          </motion.div>
+          <div className="grid lg:grid-cols-[1fr_auto] gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center lg:text-left"
+            >
+              <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
+                Our Story
+              </Badge>
+              <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
+                About <span className="text-accent">CreedaVA</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                We're more than a virtual assistant service—we're your strategic partner in growth,
+                dedicated to helping ambitious businesses achieve more.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="hidden lg:block"
+            >
+              <CreedaMascot pose="front-up" size="lg" />
+            </motion.div>
+          </div>
         </div>
       </section>
 

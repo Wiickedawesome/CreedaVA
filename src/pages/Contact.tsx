@@ -9,6 +9,7 @@ import { EnvelopeSimple, Calendar, MapPin, Phone, LinkedinLogo } from '@phosphor
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
+import { CreedaMascot } from '@/components/CreedaMascot'
 import { useEffect, useState } from 'react'
 // Use shim hooks as fallback when Spark is not available
 import { useKV } from '@/lib/spark-shims/hooks'
@@ -78,7 +79,31 @@ export function Contact() {
       timestamp: Date.now(),
     }
     
+    // Store in local/KV storage
     setSubmissions((current) => [submission, ...(current || [])])
+    
+    // Send email notification
+    const emailBody = `New contact form submission:
+
+Name: ${submission.name}
+Email: ${submission.email}
+${submission.company ? `Company: ${submission.company}` : ''}
+${submission.phone ? `Phone: ${submission.phone}` : ''}
+${submission.service ? `Interested in: ${submission.service}` : ''}
+
+Message:
+${submission.message}
+
+---
+Submitted: ${new Date(submission.timestamp).toLocaleString()}`
+
+    const mailtoLink = `mailto:hello@creedava.com?subject=${encodeURIComponent(`New Contact: ${submission.name}`)}&body=${encodeURIComponent(emailBody)}`
+    
+    // Open mailto link in background (won't interrupt user)
+    const mailtoWindow = window.open(mailtoLink, '_blank')
+    if (mailtoWindow) {
+      setTimeout(() => mailtoWindow.close(), 1000)
+    }
     
     toast.success('Thank you! We\'ll be in touch within 24 hours.')
     e.currentTarget.reset()
@@ -116,23 +141,33 @@ export function Contact() {
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <AnimatedBackground />
         <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
-              Let's Connect
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
-              Get in <span className="text-accent">Touch</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Ready to transform your business with expert virtual assistance? Fill out the form below
-              and we'll schedule your free consultation.
-            </p>
-          </motion.div>
+          <div className="grid lg:grid-cols-[1fr_auto] gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center lg:text-left"
+            >
+              <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
+                Let's Connect
+              </Badge>
+              <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
+                Get in <span className="text-accent">Touch</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                Ready to transform your business with expert virtual assistance? Fill out the form below
+                and we'll schedule your free consultation.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="hidden lg:block"
+            >
+              <CreedaMascot pose="side" size="lg" />
+            </motion.div>
+          </div>
         </div>
       </section>
 

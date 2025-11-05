@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { List } from '@phosphor-icons/react'
+import creedaImage from '@/assets/images/creeda-logo.png'
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -35,9 +36,12 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold">
-            <span className="text-primary">Creeda</span>
-            <span className="text-accent">VA</span>
+          <Link to="/" className="flex items-center gap-3">
+            <img src={creedaImage} alt="Creeda" className="h-12 w-12 object-contain" />
+            <span className="text-2xl font-bold leading-tight">
+              <span className="text-primary">Creeda</span>
+              <span className="text-accent">VA</span>
+            </span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
