@@ -55,8 +55,8 @@ export function Home() {
     },
     {
       icon: <ChartLineUp className="text-accent" size={32} />,
-      title: 'Project Coordination',
-      description: 'Task tracking, team coordination, deadline management, and project documentation.',
+      title: 'Insurance Support',
+      description: 'Policy administration, claims assistance, client communications, and documentation management.',
     },
   ]
 
@@ -405,7 +405,7 @@ export function Home() {
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground leading-relaxed">
                   Our virtual assistants provide a wide range of services including executive support, administrative tasks, 
-                  customer service, e-commerce support, content and social media management, and project coordination. We tailor 
+                  customer service, e-commerce support, content and social media management, and insurance support. We tailor 
                   our services to match your specific business needs.
                 </AccordionContent>
               </AccordionItem>

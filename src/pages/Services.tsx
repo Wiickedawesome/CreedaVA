@@ -90,15 +90,15 @@ export function Services() {
     },
     {
       icon: <ChartLineUp className="text-accent" size={40} />,
-      title: 'Project Coordination',
-      description: 'Keep your projects on track and organized',
+      title: 'Insurance Support',
+      description: 'Professional assistance for insurance operations',
       features: [
-        'Task tracking and management',
-        'Team coordination',
-        'Deadline monitoring',
-        'Meeting scheduling and notes',
-        'Project documentation',
-        'Status reporting',
+        'Policy documentation and filing',
+        'Claims processing assistance',
+        'Client communication management',
+        'Quote preparation and follow-up',
+        'Renewal tracking and reminders',
+        'Database management and updates',
       ],
     },
     {

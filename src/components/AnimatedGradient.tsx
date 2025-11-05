@@ -7,19 +7,19 @@ interface AnimatedGradientProps {
 export function AnimatedGradient({ variant = 'section' }: AnimatedGradientProps) {
   const variants = {
     hero: {
-      gradient1: 'from-primary/20 via-accent/30 to-orange-500/20',
-      gradient2: 'from-accent/30 via-orange-500/20 to-primary/20',
-      gradient3: 'from-orange-500/20 via-primary/20 to-accent/30',
+      gradient1: 'from-primary/20 via-accent/30 to-emerald-500/20',
+      gradient2: 'from-accent/30 via-emerald-500/20 to-primary/20',
+      gradient3: 'from-emerald-500/20 via-primary/20 to-accent/30',
     },
     section: {
-      gradient1: 'from-primary/10 via-accent/15 to-orange-500/10',
-      gradient2: 'from-accent/15 via-orange-500/10 to-primary/10',
-      gradient3: 'from-orange-500/10 via-primary/10 to-accent/15',
+      gradient1: 'from-primary/10 via-accent/15 to-emerald-500/10',
+      gradient2: 'from-accent/15 via-emerald-500/10 to-primary/10',
+      gradient3: 'from-emerald-500/10 via-primary/10 to-accent/15',
     },
     subtle: {
-      gradient1: 'from-primary/5 via-accent/8 to-orange-500/5',
-      gradient2: 'from-accent/8 via-orange-500/5 to-primary/5',
-      gradient3: 'from-orange-500/5 via-primary/5 to-accent/8',
+      gradient1: 'from-primary/5 via-accent/8 to-emerald-500/5',
+      gradient2: 'from-accent/8 via-emerald-500/5 to-primary/5',
+      gradient3: 'from-emerald-500/5 via-primary/5 to-accent/8',
     },
   }
 
@@ -96,7 +96,7 @@ export function AnimatedGradient({ variant = 'section' }: AnimatedGradientProps)
       />
       
       <motion.div
-        className="absolute w-72 h-72 bg-orange-500/15 rounded-full blur-3xl"
+        className="absolute w-72 h-72 bg-emerald-500/15 rounded-full blur-3xl"
         animate={{
           x: ['-10%', '110%', '-10%'],
           y: ['50%', '-10%', '50%'],
