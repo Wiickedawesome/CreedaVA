@@ -39,8 +39,8 @@ export function Navbar() {
           <Link to="/" className="flex items-center gap-3">
             <CreedaLogo variant="compact" size={48} animate={false} />
             <span className="text-2xl font-bold leading-tight">
-              <span style={{color: 'var(--navy-600)'}}>Creeda</span>
-              <span style={{color: 'var(--green-600)'}}>VA</span>
+              <span className="text-[#2c3e50]">Creeda</span>
+              <span className="text-[#14a085]">VA</span>
             </span>
           </Link>
 
@@ -58,7 +58,7 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Button asChild style={{backgroundColor: 'var(--navy-600)'}} className="text-white hover:opacity-90">
+            <Button asChild className="bg-[#2c3e50] hover:bg-[#1a252f] text-white">
               <Link to="/contact">Get Started</Link>
             </Button>
           </nav>

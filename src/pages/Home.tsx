@@ -115,8 +115,7 @@ export function Home() {
                 <Button
                   asChild
                   size="lg"
-                  className="text-white px-8 group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  style={{backgroundColor: 'var(--navy-600)', borderColor: 'var(--navy-600)'}}
+                  className="text-white px-8 group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-[#2c3e50] hover:bg-[#1a252f] border-[#2c3e50]"
                 >
                   <Link to="/contact">
                     Start Your Free Consultation
@@ -127,8 +126,7 @@ export function Home() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="px-8 transition-all duration-300 border-2 hover:text-white hover:bg-green-600"
-                  style={{borderColor: 'var(--green-600)', color: 'var(--green-600)'}}
+                  className="px-8 transition-all duration-300 border-2 border-[#14a085] text-[#14a085] hover:text-white hover:bg-[#14a085]"
                 >
                   <Link to="/services">Explore Services</Link>
                 </Button>
@@ -171,10 +169,10 @@ export function Home() {
                 whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
                 className="text-center p-6 rounded-2xl bg-background/50 backdrop-blur-sm border border-accent/20 shadow-lg hover:shadow-xl hover:border-accent/40 transition-all duration-300"
               >
-                <div className="text-3xl md:text-4xl font-bold mb-2" style={{background: 'linear-gradient(to right, var(--green-600), var(--navy-600))', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}>
+                <div className="text-3xl md:text-4xl font-bold mb-2 text-[#2c3e50]">
                   {stat.value}
                 </div>
-                <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
+                <div className="text-sm text-[#14a085] font-medium">{stat.label}</div>
               </motion.div>
             ))}
           </div>
