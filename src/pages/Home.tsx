@@ -140,16 +140,6 @@ export function Home() {
               className="relative flex justify-center"
             >
               <CreedaLogo variant="main" size={420} animate={true} className="w-full max-w-[420px]" />
-              <motion.div
-                className="absolute -top-10 right-6 hidden lg:block"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-              >
-                <div className="rounded-3xl border border-accent/30 bg-background/80 px-6 py-3 shadow-lg backdrop-blur">
-                  <span className="text-sm font-semibold text-accent">"Hi, I’m Creeda!"</span>
-                </div>
-              </motion.div>
             </motion.div>
           </div>
         </div>
@@ -307,7 +297,7 @@ export function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <Button asChild size="lg" className="text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105" style={{background: 'linear-gradient(to right, var(--green-600), var(--navy-600))'}}>
+            <Button asChild size="lg" className="bg-[#2c3e50] hover:bg-[#1a252f] text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
               <Link to="/contact">Get Started Today</Link>
             </Button>
           </div>

@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { List } from '@phosphor-icons/react'
-import { CreedaLogo } from '@/components/CreedaLogo'
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -36,8 +35,7 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <CreedaLogo variant="compact" size={48} animate={false} />
+          <Link to="/" className="flex items-center">
             <span className="text-2xl font-bold leading-tight">
               <span className="text-[#2c3e50]">Creeda</span>
               <span className="text-[#14a085]">VA</span>
@@ -85,7 +83,7 @@ export function Navbar() {
                     {link.label}
                   </Link>
                 ))}
-                <Button asChild className="bg-accent hover:bg-accent/90 mt-4">
+                <Button asChild className="bg-[#2c3e50] hover:bg-[#1a252f] text-white mt-4">
                   <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
                     Get Started
                   </Link>
