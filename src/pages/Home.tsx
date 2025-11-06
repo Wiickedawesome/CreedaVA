@@ -24,7 +24,6 @@ import {
 import { motion } from 'framer-motion'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
-import CreedaMascot from '@/components/CreedaMascot'
 
 export function Home() {
   const services = [
@@ -201,7 +200,7 @@ export function Home() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="hidden lg:block"
             >
-              <CreedaMascot pose="side" size="md" />
+              <CreedaLogo variant="agent" size={128} animate={true} />
             </motion.div>
           </div>
 
@@ -322,7 +321,7 @@ export function Home() {
           viewport={{ once: true }}
           className="absolute left-8 top-24 hidden xl:block"
         >
-          <CreedaMascot pose="flying-left" size="md" animate={false} className="opacity-20" />
+          <CreedaLogo variant="compact" size={100} animate={false} className="opacity-20" />
         </motion.div>
         <div className="container mx-auto max-w-6xl relative z-10">
           <motion.div
@@ -516,7 +515,7 @@ export function Home() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="hidden lg:block"
             >
-              <CreedaMascot pose="working" size="lg" />
+              <CreedaLogo variant="service" size={200} animate={true} />
             </motion.div>
           </div>
         </div>
