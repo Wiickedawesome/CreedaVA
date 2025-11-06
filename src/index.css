@@ -52,8 +52,9 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.25 0.05 250);
   
-  --primary: oklch(0.25 0.05 250);
-  --primary-foreground: oklch(1 0 0);
+  /* Set primary to a deep green */
+  --primary: oklch(0.62 0.18 150);
+  --primary-foreground: oklch(0.985 0 0);
   
   --secondary: oklch(0.45 0.02 250);
   --secondary-foreground: oklch(1 0 0);
@@ -61,15 +62,16 @@
   --muted: oklch(0.96 0.005 250);
   --muted-foreground: oklch(0.50 0.02 250);
   
-  --accent: oklch(64.6% 0.222 41.116);
-  --accent-foreground: oklch(1 0 0);
+  /* Accent as brighter emerald */
+  --accent: oklch(0.72 0.19 150);
+  --accent-foreground: oklch(0.985 0 0);
   
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
   
   --border: oklch(0.90 0.005 250);
   --input: oklch(0.90 0.005 250);
-  --ring: oklch(0.68 0.18 25);
+  --ring: oklch(0.68 0.18 150);
   
   --radius: 0.75rem;
 }

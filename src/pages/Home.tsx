@@ -157,7 +157,7 @@ export function Home() {
       </section>
 
       <section className="py-16 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-primary/5 to-accent/5 -z-10" />
+  <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-emerald-500/5 to-accent/5 -z-10" />
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -239,10 +239,10 @@ export function Home() {
       </section>
 
       <section className="py-24 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-background -z-10" />
+  <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-emerald-500/5 to-background -z-10" />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full">
           <div className="absolute top-0 right-1/4 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
         </div>
         <div className="container mx-auto max-w-6xl relative z-10">
           <motion.div
@@ -467,7 +467,7 @@ export function Home() {
       </section>
 
       <section className="py-24 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/10 to-primary/5 -z-10" />
+  <div className="absolute inset-0 bg-gradient-to-r from-accent/5 via-emerald-500/10 to-accent/5 -z-10" />
         <div className="absolute inset-0 -z-10" style={{
           backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(249, 115, 22, 0.1) 0%, transparent 50%)',
         }} />

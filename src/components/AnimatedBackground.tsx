@@ -5,7 +5,7 @@ export function AnimatedBackground() {
     <div className="absolute inset-0 -z-10 overflow-hidden">
       {/* Animated gradient layers with pulsing effect */}
       <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-primary/15 via-accent/25 to-emerald-500/15"
+        className="absolute inset-0 bg-gradient-to-br from-accent/20 via-emerald-500/20 to-teal-500/15"
         animate={{
           opacity: [0.4, 0.7, 0.4],
           scale: [1, 1.05, 1],
@@ -18,7 +18,7 @@ export function AnimatedBackground() {
       />
       
       <motion.div
-        className="absolute inset-0 bg-gradient-to-tl from-accent/25 via-emerald-500/15 to-primary/15"
+        className="absolute inset-0 bg-gradient-to-tl from-accent/25 via-emerald-500/15 to-teal-500/15"
         animate={{
           opacity: [0.7, 0.4, 0.7],
           scale: [1.05, 1, 1.05],
@@ -32,7 +32,7 @@ export function AnimatedBackground() {
       />
       
       <motion.div
-        className="absolute inset-0 bg-gradient-to-tr from-emerald-500/15 via-primary/15 to-accent/25"
+        className="absolute inset-0 bg-gradient-to-tr from-emerald-500/15 via-accent/20 to-teal-500/15"
         animate={{
           opacity: [0.4, 0.7, 0.4],
           scale: [1, 1.05, 1],
@@ -61,7 +61,7 @@ export function AnimatedBackground() {
       />
       
       <motion.div
-        className="absolute w-[600px] h-[600px] bg-primary/25 rounded-full filter blur-3xl"
+        className="absolute w-[600px] h-[600px] bg-emerald-500/25 rounded-full filter blur-3xl"
         animate={{
           x: ['120%', '-20%', '120%'],
           y: ['80%', '-20%', '80%'],

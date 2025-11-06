@@ -191,7 +191,7 @@ export function About() {
         </div>
       </section>
 
-      <section className="py-24 px-4 bg-primary/5">
+  <section className="py-24 px-4 bg-accent/5">
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
