@@ -170,7 +170,7 @@ export function Home() {
                 whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
                 className="text-center p-6 rounded-2xl bg-background/50 backdrop-blur-sm border border-accent/20 shadow-lg hover:shadow-xl hover:border-accent/40 transition-all duration-300"
               >
-                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-accent to-orange-500 bg-clip-text text-transparent mb-2">
+                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-accent to-emerald-500 bg-clip-text text-transparent mb-2">
                   {stat.value}
                 </div>
                 <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
@@ -251,7 +251,7 @@ export function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <Badge className="mb-6 bg-gradient-to-r from-accent/20 to-orange-500/20 text-accent border-accent/30 shadow-lg" variant="outline">
+            <Badge className="mb-6 bg-gradient-to-r from-accent/20 to-emerald-500/20 text-accent border-accent/30 shadow-lg" variant="outline">
               Simple Process
             </Badge>
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">How It Works</h2>
@@ -308,7 +308,7 @@ export function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <Button asChild size="lg" className="bg-gradient-to-r from-accent to-orange-500 hover:from-accent/90 hover:to-orange-500/90 text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+            <Button asChild size="lg" className="bg-gradient-to-r from-accent to-emerald-500 hover:from-accent/90 hover:to-emerald-500/90 text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
               <Link to="/contact">Get Started Today</Link>
             </Button>
           </div>
@@ -489,7 +489,7 @@ export function Home() {
                 <Button 
                   asChild 
                   size="lg" 
-                  className="bg-gradient-to-r from-accent to-orange-500 hover:from-accent/90 hover:to-orange-500/90 text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                  className="bg-gradient-to-r from-accent to-emerald-500 hover:from-accent/90 hover:to-emerald-500/90 text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                 >
                   <Link to="/contact">Schedule Free Consultation</Link>
                 </Button>
