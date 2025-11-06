@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { CheckCircle, Phone, UsersThree, ChartLineUp } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
-import { CreedaMascot } from '@/components/CreedaMascot'
+import { CreedaLogo } from '@/components/CreedaLogo'
 
 export function Pricing() {
   const plans = [
@@ -131,7 +131,7 @@ export function Pricing() {
               transition={{ duration: 0.7, delay: 0.3 }}
               className="hidden lg:block"
             >
-              <CreedaMascot pose="office-chair" size="xl" />
+              <CreedaLogo variant="service" size={250} animate={true} />
             </motion.div>
           </div>
         </div>

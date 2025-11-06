@@ -13,7 +13,7 @@ import {
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
-import CreedaMascot from '@/components/CreedaMascot'
+import { CreedaLogo } from '@/components/CreedaLogo'
 
 export function About() {
   const values = [
@@ -104,7 +104,7 @@ export function About() {
               transition={{ duration: 0.7, delay: 0.3 }}
               className="hidden lg:block"
             >
-              <CreedaMascot pose="front-up" size="lg" />
+              <CreedaLogo variant="agent" size={200} animate={true} />
             </motion.div>
           </div>
         </div>

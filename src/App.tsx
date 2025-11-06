@@ -5,8 +5,7 @@ import { Home } from '@/pages/Home'
 import { Services } from '@/pages/Services'
 import { About } from '@/pages/About'
 import { Pricing } from '@/pages/Pricing'
-import { Contact } from '@/pages/Contact'
-import { Admin } from '@/pages/Admin'
+import Contact from '@/pages/Contact'
 
 function App() {
   const embedded = (typeof window !== 'undefined') && (window as any).__CREEDAVA_EMBEDDED__ === true
@@ -24,7 +23,6 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/contact" element={<Contact />} />
-            {!embedded && <Route path="/admin" element={<Admin />} />}
           </Routes>
         </main>
         <Footer />
