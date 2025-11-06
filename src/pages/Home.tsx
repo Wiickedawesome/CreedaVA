@@ -115,7 +115,8 @@ export function Home() {
                 <Button
                   asChild
                   size="lg"
-                  className="bg-accent hover:bg-accent/90 text-white px-8 group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  className="text-white px-8 group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  style={{backgroundColor: 'var(--navy-600)', borderColor: 'var(--navy-600)'}}
                 >
                   <Link to="/contact">
                     Start Your Free Consultation
@@ -126,7 +127,8 @@ export function Home() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="px-8 hover:bg-accent/10 hover:border-accent transition-all duration-300"
+                  className="px-8 transition-all duration-300 border-2 hover:text-white hover:bg-green-600"
+                  style={{borderColor: 'var(--green-600)', color: 'var(--green-600)'}}
                 >
                   <Link to="/services">Explore Services</Link>
                 </Button>

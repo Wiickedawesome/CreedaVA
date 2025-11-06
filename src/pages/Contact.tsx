@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Envelope, MapPin, Calendar, Phone } from '@phosphor-icons/react';
+import { Envelope, MapPin, Calendar, Phone, EnvelopeSimple } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -58,87 +58,267 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen" style={{background: 'linear-gradient(135deg, var(--navy-50) 0%, var(--green-50) 100%)'}}>
-      <section className="py-24 px-4">
+    <div className="min-h-screen bg-background">
+      <section className="relative py-32 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-navy-50 via-white to-green-50 -z-10" />
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center"
+            className="text-center mb-16"
           >
-            <h1 className="text-4xl md:text-6xl font-bold mb-6" style={{color: 'var(--navy-800)'}}>
-              Let's <span style={{color: 'var(--green-600)'}}>Connect</span>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
+              Let's <span className="text-primary">Connect</span>
             </h1>
-            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed" style={{color: 'var(--navy-600)'}}>
+            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed text-muted-foreground">
               Have questions about our services? Want to discuss your specific needs? 
               Our team is ready to help you achieve your goals.
             </p>
           </motion.div>
+
+          <div className="grid lg:grid-cols-3 gap-12">
+            {/* Contact Form */}
+            <div className="lg:col-span-2">
+              <Card className="border-border shadow-lg">
+                <CardContent className="p-8">
+                  <h2 className="text-2xl font-bold mb-6 text-foreground">Send us a message</h2>
+                  
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="name" className="text-foreground">Full Name *</Label>
+                        <Input
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          required
+                          className="mt-2"
+                          placeholder="John Smith"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="email" className="text-foreground">Email *</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          required
+                          className="mt-2"
+                          placeholder="john@company.com"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label htmlFor="phone" className="text-foreground">Phone</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          className="mt-2"
+                          placeholder="+1 (555) 000-0000"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="company" className="text-foreground">Company</Label>
+                        <Input
+                          id="company"
+                          name="company"
+                          value={formData.company}
+                          onChange={handleInputChange}
+                          className="mt-2"
+                          placeholder="Your company name"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="service" className="text-foreground">What services are you interested in?</Label>
+                      <select
+                        id="service"
+                        name="service"
+                        value={formData.service}
+                        onChange={handleInputChange}
+                        className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background focus:border-primary focus:ring-primary"
+                      >
+                        <option value="">Select a service</option>
+                        <option value="executive-assistance">Executive Assistance</option>
+                        <option value="administrative-tasks">Administrative Tasks</option>
+                        <option value="customer-service">Customer Service</option>
+                        <option value="ecommerce-support">E-commerce Support</option>
+                        <option value="content-management">Content & Social Media</option>
+                        <option value="insurance-support">Insurance Support</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="message" className="text-foreground">Message *</Label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        required
+                        rows={6}
+                        className="mt-2"
+                        placeholder="Tell us about your project or requirements..."
+                      />
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
+                      size="lg"
+                    >
+                      Send Message
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Contact Information */}
+            <div className="space-y-8">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <h3 className="text-xl font-semibold text-foreground mb-6">Get in Touch</h3>
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <EnvelopeSimple size={24} className="text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-foreground">Email</h4>
+                      <a href="mailto:contact@creedava.com" className="text-primary hover:text-primary/80 transition-colors">
+                        contact@creedava.com
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Phone size={24} className="text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-foreground">Phone</h4>
+                      <a href="tel:+15551234567" className="text-primary hover:text-primary/80 transition-colors">
+                        +1 (555) 123-4567
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <MapPin size={24} className="text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-foreground">Location</h4>
+                      <p className="text-muted-foreground">Remote Services Worldwide</p>
+                      <p className="text-sm text-muted-foreground mt-1">Operating from CST (UTC-6)</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <h3 className="text-xl font-semibold text-foreground mb-6">Business Hours</h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Monday - Friday</span>
+                    <span className="text-foreground">8:00 AM - 6:00 PM CST</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Saturday</span>
+                    <span className="text-foreground">9:00 AM - 2:00 PM CST</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Sunday</span>
+                    <span className="text-foreground">Closed</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              <Button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined' && (window as any).Calendly) {
+                    (window as any).Calendly.initPopupWidget({url: 'https://calendly.com/john-creedava'});
+                  }
+                }}
+                variant="outline"
+                className="w-full hover:bg-primary/10 hover:border-primary transition-all duration-300"
+                size="lg"
+              >
+                <Calendar className="mr-2" size={20} />
+                Book a Call Directly
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="py-16 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <Card className="shadow-lg" style={{borderColor: 'var(--green-200)'}}>
-            <CardContent className="p-8">
-              <h2 className="text-2xl font-bold mb-6" style={{color: 'var(--navy-800)'}}>Send us a message</h2>
-              
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-2"
-                      placeholder="John Smith"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="mt-2"
-                      placeholder="john@company.com"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="message">Message *</Label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    required
-                    rows={6}
-                    className="mt-2"
-                    placeholder="Tell us about your project..."
-                  />
-                </div>
-
-                <Button 
-                  type="submit" 
-                  className="w-full text-white" 
-                  style={{backgroundColor: 'var(--navy-600)'}}
-                  size="lg"
+      {/* Process Section */}
+      <section className="py-24 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-4xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl font-bold text-foreground mb-12">
+              How We <span className="text-primary">Work Together</span>
+            </h2>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  step: '1',
+                  title: 'Initial Consultation',
+                  description: "We'll review your inquiry within 24 hours and schedule a consultation to understand your needs."
+                },
+                {
+                  step: '2', 
+                  title: 'Custom Proposal',
+                  description: 'Based on our discussion, we create a tailored service plan that fits your requirements and budget.'
+                },
+                {
+                  step: '3',
+                  title: 'Get Started',
+                  description: 'Once approved, we begin working together to streamline your operations and achieve your goals.'
+                }
+              ].map((item) => (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: parseInt(item.step) * 0.2 }}
+                  className="text-center"
                 >
-                  Send Message
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-primary">{item.step}</span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-3">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
     </div>
