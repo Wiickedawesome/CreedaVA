@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import creedaHero from "@/assets/images/creeda-flying-headset-on.png";
+import creedaLogo from "@/assets/images/creedava-logo.png";
 
 type CreedaHeroToucanProps = {
   className?: string;
@@ -18,11 +18,11 @@ export const CreedaHeroToucan = memo(({ className }: CreedaHeroToucanProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
     >
-      <div className="absolute inset-0 blur-3xl bg-gradient-to-br from-sky-500/25 via-emerald-400/10 to-purple-500/20" aria-hidden />
+      <div className="absolute inset-0 blur-3xl" style={{background: 'linear-gradient(135deg, var(--navy-600)/0.2, var(--green-600)/0.1, var(--navy-600)/0.15)'}} aria-hidden />
       
       <motion.img
-        src={creedaHero}
-        alt="Creeda the toucan flying with headset"
+        src={creedaLogo}
+        alt="CreedaVA Professional Logo"
         className="relative w-full h-auto drop-shadow-2xl"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={
@@ -30,12 +30,10 @@ export const CreedaHeroToucan = memo(({ className }: CreedaHeroToucanProps) => {
             ? {
                 scale: [0.95, 1, 0.95],
                 opacity: 1,
-                y: [0, -15, 0],
-                rotate: [0, 2, -2, 0],
+                y: [0, -8, 0],
                 transition: {
-                  scale: { duration: 5, repeat: Infinity, ease: "easeInOut" },
-                  y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
-                  rotate: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                  scale: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                  y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
                   opacity: { duration: 0.6 }
                 }
               }

@@ -3,11 +3,11 @@ import { motion, useReducedMotion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
-// Import your 4 new logo images (update paths when images are added)
-import logoMain from "@/assets/images/creedava-logo-main.png"
-import logoAgent from "@/assets/images/creedava-agent-profile.png" 
-import logoService from "@/assets/images/creedava-service-desk.png"
-import logoCompact from "@/assets/images/creedava-logo-compact.png"
+// Import your actual logo images
+import logoMain from "@/assets/images/creedava-logo.png"
+import logoAgent1 from "@/assets/images/creedava-agent-1.png" 
+import logoAgent2 from "@/assets/images/creedava-agent-2.png"
+import logoAgent3 from "@/assets/images/creedava-agent-3.png"
 
 type CreedaLogoProps = {
   className?: string
@@ -18,9 +18,9 @@ type CreedaLogoProps = {
 
 const logoVariants = {
   main: logoMain,
-  agent: logoAgent,
-  service: logoService,
-  compact: logoCompact
+  agent: logoAgent1,
+  service: logoAgent2,
+  compact: logoAgent3
 }
 
 export const CreedaLogo = memo(({ 
@@ -32,8 +32,8 @@ export const CreedaLogo = memo(({
   const prefersReducedMotion = useReducedMotion()
   const shouldAnimate = animate && !prefersReducedMotion
 
-  // Fallback to existing logo if new ones aren't available yet
-  const logoSrc = logoVariants[variant] || "/src/assets/images/creeda-logo.png"
+  // Use the variant logo or fallback to main logo
+  const logoSrc = logoVariants[variant] || logoMain
 
   return (
     <motion.img

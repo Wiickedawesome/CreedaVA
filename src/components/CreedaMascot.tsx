@@ -1,18 +1,10 @@
 import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import creedaMain from "@/assets/images/creeda-front.png";
-import creedaWorking from "@/assets/images/creeda-working.png";
-import creedaFlyingLeft from "@/assets/images/creeda-flying-side.png";
-import creedaFlyingRight from "@/assets/images/creeda-flying-headset-on.png";
-import creedaFlyingFront from "@/assets/images/creeda-flying.png";
-import creedaFlyingNoHeadset from "@/assets/images/creeda-flying-no-headset.png";
-import creedaFrontSide from "@/assets/images/creeda-front-side-view.png";
-import creedaSideHeadset from "@/assets/images/creeda-side-headphone-view.png";
-import creedaLookBackwards from "@/assets/images/creeda-looking-backwards.png";
-import creedaUpSide from "@/assets/images/creeda-behind.png";
-import creedaOfficeChair from "@/assets/images/creeda-on-office- chair.png";
-import creedaFrontUp from "@/assets/images/creeda-front-up-view.png";
+import creedaLogo from "@/assets/images/creedava-logo.png";
+import creedaAgent1 from "@/assets/images/creedava-agent-1.png";
+import creedaAgent2 from "@/assets/images/creedava-agent-2.png";
+import creedaAgent3 from "@/assets/images/creedava-agent-3.png";
 
 type CreedaMascotProps = {
   className?: string;
@@ -22,18 +14,18 @@ type CreedaMascotProps = {
 };
 
 const poseImages = {
-  main: creedaMain,
-  working: creedaWorking,
-  "flying-left": creedaFlyingLeft,
-  "flying-right": creedaFlyingRight,
-  "flying-front": creedaFlyingFront,
-  "flying-free": creedaFlyingNoHeadset,
-  "front-side": creedaFrontSide,
-  side: creedaSideHeadset,
-  "looking-back": creedaLookBackwards,
-  upside: creedaUpSide,
-  "office-chair": creedaOfficeChair,
-  "front-up": creedaFrontUp,
+  main: creedaLogo,
+  working: creedaAgent2,
+  "flying-left": creedaAgent1,
+  "flying-right": creedaAgent1,
+  "flying-front": creedaLogo,
+  "flying-free": creedaLogo,
+  "front-side": creedaAgent3,
+  side: creedaAgent2,
+  "looking-back": creedaAgent1,
+  upside: creedaAgent3,
+  "office-chair": creedaAgent2,
+  "front-up": creedaAgent3,
 };
 
 const sizeClasses = {
@@ -58,7 +50,7 @@ export const CreedaMascot = memo(
       >
         <motion.img
           src={poseImages[pose]}
-          alt={`Creeda the toucan - ${pose}`}
+          alt={`CreedaVA - ${pose}`}
           className="w-full h-full object-contain drop-shadow-xl"
           animate={
             shouldAnimate
