@@ -34,7 +34,7 @@ export function Footer() {
 
           {/* Services Section */}
           <div>
-            <h4 className="font-bold text-lg mb-4 text-accent">Services</h4>
+            <h4 className="font-bold text-lg mb-4 text-primary-foreground">Services</h4>
             <ul className="space-y-3 text-sm">
               <li className="text-primary-foreground/70 hover:text-accent transition-colors cursor-pointer">Executive Support</li>
               <li className="text-primary-foreground/70 hover:text-accent transition-colors cursor-pointer">Administrative Tasks</li>
@@ -46,7 +46,7 @@ export function Footer() {
 
           {/* Company Section */}
           <div>
-            <h4 className="font-bold text-lg mb-4 text-accent">Company</h4>
+            <h4 className="font-bold text-lg mb-4 text-primary-foreground">Company</h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <Link to="/services" className="text-primary-foreground/70 hover:text-accent transition-colors block">
@@ -73,7 +73,7 @@ export function Footer() {
 
           {/* Contact Section */}
           <div>
-            <h4 className="font-bold text-lg mb-4 text-accent">Get in Touch</h4>
+            <h4 className="font-bold text-lg mb-4 text-primary-foreground">Get in Touch</h4>
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3 group">
                 <div className="bg-accent/20 p-2 rounded-lg group-hover:bg-accent transition-colors">

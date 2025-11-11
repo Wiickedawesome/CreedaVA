@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { CreateMLCEngine, MLCEngine } from '@mlc-ai/web-llm'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -8,53 +7,59 @@ import { ChatCircle, X, PaperPlaneRight, Robot } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface Message {
-  role: 'user' | 'assistant' | 'system'
+  role: 'user' | 'assistant'
   content: string
 }
 
-const SYSTEM_PROMPT = `You are a helpful virtual assistant for CreedaVA (Creeda Virtual Assistants), a professional virtual assistant service company. 
+const KNOWLEDGE_BASE: { [key: string]: string } = {
+  // Greetings
+  'hi|hello|hey|greetings': "Hello! I'm CreedaVA's assistant. I can help you with information about our services, pricing, or contact details. What would you like to know?",
+  
+  // Services
+  'services|what do you do|what services|help with': "CreedaVA offers:\n• Executive Support\n• Administrative Tasks\n• Customer Service\n• Real Estate Support\n• Technology Support\n• E-commerce Support\n• Bookkeeping Support\n\nWhich service interests you?",
+  
+  // Pricing
+  'pricing|price|cost|how much': "Our pricing:\n• Starter: $1,499/month (160 hrs)\n• Professional: $1,899/month (160 hrs) ⭐ Most Popular\n• Enterprise: Custom pricing\n\nAll plans include dedicated VAs and bilingual support!",
+  
+  // Contact
+  'contact|email|phone|call|reach': "You can reach us:\n📞 Phone: +1 844-702-2202\n📧 Email: hello@creedava.com\n🌎 Based in Belize, serving worldwide\n\nWould you like to schedule a consultation?",
+  
+  // Real Estate
+  'real estate|realtor|property': "Our Real Estate Support includes:\n• Commission reconciliation\n• Lead qualification\n• Transaction pipeline management\n• Sales outreach\n• Book of business servicing",
+  
+  // Technology
+  'technology|tech|it|developer|website': "Our Technology Support includes:\n• Tier 1/2 tech support\n• Scrum product development\n• IT project management\n• Website development\n• Database management\n• Product testing",
+  
+  // Bilingual
+  'bilingual|spanish|language': "Yes! Our VAs are fluent in both English and Spanish. Belize is the only English-speaking country in Central America, giving our team unique multilingual capabilities.",
+  
+  // Start/Book
+  'get started|book|schedule|appointment|consultation': "Great! You can schedule a free consultation:\n1. Visit our Contact page\n2. Call us at +1 844-702-2202\n3. Email hello@creedava.com\n\nWe typically respond within 24 hours!",
+}
 
-Key Information about CreedaVA:
-
-SERVICES:
-- Executive Support: Calendar management, travel coordination, meeting scheduling, inbox organization
-- Administrative Tasks: Data entry, document preparation, file management
-- Customer Service: Email/chat support, customer inquiries, order processing
-- E-commerce Support: Product listing, inventory management, order fulfillment
-- Content & Social Media: Content scheduling, social media management, blog posting
-- Insurance Support: Policy administration, claims assistance, client communications
-- Real Estate Support: Commission reconciliation, lead qualification, transaction pipeline management, sales outreach, servicing book of business
-- Technology Support: Tier 1/2 tech support, Scrum product development, IT project management, website development, database management, product testing
-- Bookkeeping Support: Invoice preparation, expense categorization, payment follow-ups
-
-PRICING:
-- Starter Plan: $1,499/month for 160 hours/month (full-time dedicated VA)
-- Professional Plan: $1,899/month for 160 hours/month (senior VA with specialized expertise) - MOST POPULAR
-- Enterprise Plan: Custom pricing for custom hours (multiple VAs, 24/7 support)
-
-CONTACT:
-- Phone: +1 844-702-2202
-- Email: hello@creedava.com
-- Location: Based in Belize, operating in CST (UTC-6)
-- Bilingual support available (English/Spanish)
-
-COMPANY INFO:
-- Founded: 2023
-- 98% client satisfaction rate
-- Response time: <24 hours
-- 24/7 support available
-- Based in Belize (only English-speaking country in Central America)
-
-Be friendly, helpful, and professional. If asked about scheduling, direct users to contact them or visit their website. Keep responses concise and helpful.`
+const findResponse = (input: string): string => {
+  const lowerInput = input.toLowerCase()
+  
+  for (const [keywords, response] of Object.entries(KNOWLEDGE_BASE)) {
+    const patterns = keywords.split('|')
+    if (patterns.some(pattern => lowerInput.includes(pattern))) {
+      return response
+    }
+  }
+  
+  return "I'm here to help! You can ask me about:\n• Our services\n• Pricing plans\n• Contact information\n• Real estate support\n• Technology support\n\nOr feel free to reach us directly at hello@creedava.com or +1 844-702-2202"
+}
 
 export function ChatBot() {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: 'assistant',
+      content: "Hi! I'm CreedaVA's assistant. How can I help you learn about our virtual assistant services today?",
+    },
+  ])
   const [input, setInput] = useState('')
-  const [engine, setEngine] = useState<MLCEngine | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [isInitializing, setIsInitializing] = useState(false)
-  const [initProgress, setInitProgress] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -63,83 +68,24 @@ export function ChatBot() {
     }
   }, [messages])
 
-  const initializeEngine = async () => {
-    if (engine) return
-
-    setIsInitializing(true)
-    setInitProgress('Loading AI model...')
-
-    try {
-      const mlcEngine = await CreateMLCEngine('Llama-3.1-8B-Instruct-q4f32_1-MLC', {
-        initProgressCallback: (progress) => {
-          setInitProgress(progress.text)
-        },
-      })
-
-      setEngine(mlcEngine)
-      setIsInitializing(false)
-      setInitProgress('')
-
-      // Send welcome message
-      setMessages([
-        {
-          role: 'assistant',
-          content: "Hi! I'm CreedaVA's AI assistant. How can I help you learn about our virtual assistant services today?",
-        },
-      ])
-    } catch (error) {
-      console.error('Failed to initialize engine:', error)
-      setIsInitializing(false)
-      setInitProgress('Failed to load AI. Please refresh and try again.')
-    }
-  }
-
-  const handleOpen = () => {
-    setIsOpen(true)
-    if (!engine && !isInitializing) {
-      initializeEngine()
-    }
-  }
-
   const sendMessage = async () => {
-    if (!input.trim() || !engine || isLoading) return
+    if (!input.trim() || isLoading) return
 
     const userMessage: Message = { role: 'user', content: input.trim() }
     setMessages((prev) => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
 
-    try {
-      const conversationHistory = [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...messages.map((msg) => ({ role: msg.role, content: msg.content })),
-        { role: 'user', content: userMessage.content },
-      ]
-
-      const reply = await engine.chat.completions.create({
-        messages: conversationHistory as any,
-        temperature: 0.7,
-        max_tokens: 500,
-      })
-
+    // Simulate thinking delay for better UX
+    setTimeout(() => {
+      const response = findResponse(userMessage.content)
       const assistantMessage: Message = {
         role: 'assistant',
-        content: reply.choices[0].message.content || 'Sorry, I had trouble generating a response.',
+        content: response,
       }
-
       setMessages((prev) => [...prev, assistantMessage])
-    } catch (error) {
-      console.error('Error sending message:', error)
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: 'Sorry, I encountered an error. Please try again.',
-        },
-      ])
-    } finally {
       setIsLoading(false)
-    }
+    }, 500)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -161,7 +107,7 @@ export function ChatBot() {
             className="fixed bottom-6 right-6 z-50"
           >
             <Button
-              onClick={handleOpen}
+              onClick={() => setIsOpen(true)}
               size="lg"
               className="h-16 w-16 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground shadow-2xl hover:shadow-accent/50 transition-all duration-300 hover:scale-110"
             >
@@ -188,9 +134,7 @@ export function ChatBot() {
                   </div>
                   <div>
                     <CardTitle className="text-lg">CreedaVA Assistant</CardTitle>
-                    <p className="text-xs text-primary-foreground/80">
-                      {isInitializing ? 'Initializing...' : 'Online'}
-                    </p>
+                    <p className="text-xs text-primary-foreground/80">Online</p>
                   </div>
                 </div>
                 <Button
@@ -205,55 +149,43 @@ export function ChatBot() {
               <CardContent className="p-0">
                 {/* Messages Area */}
                 <ScrollArea className="h-[400px] p-4" ref={scrollRef}>
-                  {isInitializing ? (
-                    <div className="flex flex-col items-center justify-center h-full gap-4">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-                      <p className="text-sm text-muted-foreground text-center px-4">
-                        {initProgress}
-                      </p>
-                      <p className="text-xs text-muted-foreground text-center px-4">
-                        First load may take a minute...
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {messages.map((message, index) => (
+                  <div className="space-y-4">
+                    {messages.map((message, index) => (
+                      <div
+                        key={index}
+                        className={`flex ${
+                          message.role === 'user' ? 'justify-end' : 'justify-start'
+                        }`}
+                      >
                         <div
-                          key={index}
-                          className={`flex ${
-                            message.role === 'user' ? 'justify-end' : 'justify-start'
+                          className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                            message.role === 'user'
+                              ? 'bg-accent text-accent-foreground'
+                              : 'bg-muted text-foreground'
                           }`}
                         >
-                          <div
-                            className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                              message.role === 'user'
-                                ? 'bg-accent text-accent-foreground'
-                                : 'bg-muted text-foreground'
-                            }`}
-                          >
-                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {isLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-muted text-foreground rounded-lg px-4 py-2">
+                          <div className="flex gap-1">
+                            <div className="w-2 h-2 bg-accent rounded-full animate-bounce"></div>
+                            <div
+                              className="w-2 h-2 bg-accent rounded-full animate-bounce"
+                              style={{ animationDelay: '0.2s' }}
+                            ></div>
+                            <div
+                              className="w-2 h-2 bg-accent rounded-full animate-bounce"
+                              style={{ animationDelay: '0.4s' }}
+                            ></div>
                           </div>
                         </div>
-                      ))}
-                      {isLoading && (
-                        <div className="flex justify-start">
-                          <div className="bg-muted text-foreground rounded-lg px-4 py-2">
-                            <div className="flex gap-1">
-                              <div className="w-2 h-2 bg-accent rounded-full animate-bounce"></div>
-                              <div
-                                className="w-2 h-2 bg-accent rounded-full animate-bounce"
-                                style={{ animationDelay: '0.2s' }}
-                              ></div>
-                              <div
-                                className="w-2 h-2 bg-accent rounded-full animate-bounce"
-                                style={{ animationDelay: '0.4s' }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    )}
+                  </div>
                 </ScrollArea>
 
                 {/* Input Area */}
@@ -264,12 +196,12 @@ export function ChatBot() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Ask about our services..."
-                      disabled={isInitializing || isLoading}
+                      disabled={isLoading}
                       className="flex-1"
                     />
                     <Button
                       onClick={sendMessage}
-                      disabled={!input.trim() || isInitializing || isLoading}
+                      disabled={!input.trim() || isLoading}
                       size="icon"
                       className="bg-accent hover:bg-accent/90 text-accent-foreground"
                     >
@@ -277,7 +209,7 @@ export function ChatBot() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2 text-center">
-                    Powered by Llama AI • Running in your browser
+                    Quick AI responses • For detailed help, contact us!
                   </p>
                 </div>
               </CardContent>
