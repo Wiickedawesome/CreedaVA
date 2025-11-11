@@ -15,7 +15,7 @@ export function Footer() {
           <div className="lg:col-span-1">
             <h3 className="text-3xl font-bold mb-4">
               <span className="text-primary-foreground">Creeda</span>
-              <span style={{ color: 'oklch(0.70 0.15 350)' }}>VA</span>
+              <span className="text-accent">VA</span>
             </h3>
             <p className="text-primary-foreground/70 text-sm leading-relaxed mb-6">
               Professional remote support for ambitious businesses worldwide. Your success is our mission.

@@ -38,7 +38,7 @@ export function Navbar() {
           <Link to="/" className="flex items-center">
             <span className="text-2xl font-bold leading-tight">
               <span className="text-primary">Creeda</span>
-              <span style={{ color: 'oklch(0.70 0.15 350)' }}>VA</span>
+              <span className="text-accent">VA</span>
             </span>
           </Link>
 
@@ -56,7 +56,7 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Button asChild className="bg-accent hover:bg-accent/90 text-white">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
               <Link to="/contact">Get Started</Link>
             </Button>
           </nav>
@@ -83,7 +83,7 @@ export function Navbar() {
                     {link.label}
                   </Link>
                 ))}
-                <Button asChild className="bg-accent hover:bg-accent/90 text-white mt-4">
+                <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
                   <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
                     Get Started
                   </Link>

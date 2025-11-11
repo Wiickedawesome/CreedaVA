@@ -176,7 +176,7 @@ export default function Contact() {
 
                     <Button 
                       type="submit" 
-                      className="w-full bg-accent hover:bg-accent/90 text-white" 
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
                       size="lg"
                     >
                       Send Message

@@ -174,7 +174,7 @@ export function Pricing() {
                     </ul>
                     <Button
                       asChild
-                      className="w-full mt-6 bg-accent hover:bg-accent/90 text-white"
+                      className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       <Link to="/contact">Get Started</Link>
                     </Button>
@@ -277,7 +277,7 @@ export function Pricing() {
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Schedule your free consultation today and discover how CreedaVA can transform your business.
             </p>
-            <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white px-8">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8">
               <Link to="/contact">Schedule Free Consultation</Link>
             </Button>
           </motion.div>
