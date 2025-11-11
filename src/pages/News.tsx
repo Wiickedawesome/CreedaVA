@@ -30,14 +30,14 @@ export function News() {
     setPosts(samplePosts)
     setLoading(false)
     
-    // Load LinkedIn embed script for widgets
+    // Load LinkedIn badge script
     const script = document.createElement('script')
-    script.src = 'https://platform.linkedin.com/in.js'
+    script.src = 'https://platform.linkedin.com/badges/js/profile.js'
     script.async = true
+    script.defer = true
     script.type = 'text/javascript'
-    script.innerHTML = 'lang: en_US'
     
-    if (!document.querySelector('script[src="https://platform.linkedin.com/in.js"]')) {
+    if (!document.querySelector('script[src="https://platform.linkedin.com/badges/js/profile.js"]')) {
       document.body.appendChild(script)
     }
 
@@ -170,13 +170,25 @@ export function News() {
               <CardContent className="p-8">
                 <div className="flex flex-col items-center">
                   {/* LinkedIn Company Profile Plugin */}
-                  <div className="w-full max-w-4xl">
-                    <script 
-                      type="IN/CompanyProfile" 
-                      data-id="creedava" 
-                      data-format="inline" 
-                      data-related="false"
-                    ></script>
+                  <div className="w-full max-w-4xl linkedin-embed">
+                    <div 
+                      className="badge-base LI-profile-badge" 
+                      data-locale="en_US" 
+                      data-size="large" 
+                      data-theme="light" 
+                      data-type="HORIZONTAL" 
+                      data-vanity="creedava" 
+                      data-version="v1"
+                    >
+                      <a 
+                        className="badge-base__link LI-simple-link" 
+                        href="https://www.linkedin.com/company/creedava?trk=profile-badge"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        CreedaVA
+                      </a>
+                    </div>
                   </div>
                   
                   {/* Fallback/CTA */}
