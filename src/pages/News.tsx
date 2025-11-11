@@ -47,6 +47,11 @@ export function News() {
   }, [])
 
   // Sample/fallback posts - Update these manually or via backend API
+  // To add your LinkedIn posts:
+  // 1. Publish a post on LinkedIn
+  // 2. Click the three dots (...) on your post
+  // 3. Select "Copy link to post"
+  // 4. Paste the URL in linkedinUrl below
   const samplePosts: NewsPost[] = [
     {
       id: '1',
@@ -54,7 +59,7 @@ export function News() {
       excerpt: 'We\'re excited to announce our new Technology Support services, including Tier 1/2 tech support, website development, and IT project management.',
       date: 'November 10, 2025',
       category: 'announcement',
-      linkedinUrl: 'https://www.linkedin.com/company/creedava/',
+      linkedinUrl: 'https://www.linkedin.com/company/creedava/', // Replace with actual post URL
     },
     {
       id: '2',
@@ -62,7 +67,7 @@ export function News() {
       excerpt: 'Introducing specialized Real Estate Support services to help realtors manage leads, transactions, and client relationships more efficiently.',
       date: 'November 8, 2025',
       category: 'announcement',
-      linkedinUrl: 'https://www.linkedin.com/company/creedava/',
+      linkedinUrl: 'https://www.linkedin.com/company/creedava/', // Replace with actual post URL
     },
     {
       id: '3',
@@ -70,7 +75,7 @@ export function News() {
       excerpt: 'Discover the unique advantages of working with Belize-based VAs: bilingual excellence, cultural adaptability, and perfect timezone alignment.',
       date: 'November 5, 2025',
       category: 'insight',
-      linkedinUrl: 'https://www.linkedin.com/company/creedava/',
+      linkedinUrl: 'https://www.linkedin.com/company/creedava/', // Replace with actual post URL
     },
     {
       id: '4',
@@ -78,6 +83,7 @@ export function News() {
       excerpt: 'Learn how one of our clients saved over 50% of their time by partnering with CreedaVA for executive and administrative support.',
       date: 'November 1, 2025',
       category: 'success-story',
+      linkedinUrl: 'https://www.linkedin.com/company/creedava/', // Replace with actual post URL
       linkedinUrl: 'https://www.linkedin.com/company/creedava/',
     },
   ]
