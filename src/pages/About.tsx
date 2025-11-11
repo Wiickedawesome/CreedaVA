@@ -91,7 +91,7 @@ export function About() {
                 Our Story
               </Badge>
               <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
-                About <span className="text-accent">CreedaVA</span>
+                About <span style={{ color: 'oklch(0.70 0.15 350)' }}>CreedaVA</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                 We're more than a virtual assistant service—we're your strategic partner in growth,
@@ -142,7 +142,7 @@ export function About() {
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">Our Story</h2>
               <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
                 <p>
-                  Founded in 2023, <span className="text-accent font-semibold">CreedaVA</span> is a Belize-based virtual assistant 
+                  Founded in 2023, <span style={{ color: 'oklch(0.70 0.15 350)' }} className="font-semibold">CreedaVA</span> is a Belize-based virtual assistant 
                   agency with a mission to bridge opportunity and talent. In a nation where education continues to rise but employment 
                   remains scarce, CreedaVA stands as a digital bridge — connecting Belize's highly skilled, English-speaking professionals 
                   with global businesses in need of dedicated, reliable, and growth-minded virtual assistants.
@@ -154,7 +154,7 @@ export function About() {
                   marketing to customer success and executive assistance.
                 </p>
                 <p>
-                  At its core, <span className="text-accent font-semibold">CreedaVA is more than a service; it's a movement</span> to 
+                  At its core, <span style={{ color: 'oklch(0.70 0.15 350)' }} className="font-semibold">CreedaVA is more than a service; it's a movement</span> to 
                   empower Belize's workforce, foster remote career growth, and create sustainable pathways for global collaboration. 
                   By hiring through CreedaVA, companies don't just get exceptional talent — they invest in a vision of progress, purpose, 
                   and partnership.
@@ -319,7 +319,7 @@ export function About() {
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Let's discuss how CreedaVA can become your trusted partner in growth.
             </p>
-            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8">
+            <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white px-8">
               <Link to="/contact">Get Started Today</Link>
             </Button>
           </motion.div>

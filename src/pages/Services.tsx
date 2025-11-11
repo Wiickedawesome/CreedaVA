@@ -229,7 +229,7 @@ export function Services() {
               tailored to your specific business needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white">
                 <Link to="/contact">Discuss Your Needs</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
