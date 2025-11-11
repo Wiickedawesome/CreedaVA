@@ -13,7 +13,7 @@ export function Pricing() {
     {
       name: 'Starter',
       hours: '160 hours/month',
-      price: '$1,499/month',
+      price: '$1,699/month',
       description: 'Full-time dedicated support for businesses that need consistent assistance',
       features: [
         'Dedicated full-time VA',
