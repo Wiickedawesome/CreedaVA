@@ -29,6 +29,10 @@ interface BookingData {
   name: string;
   email: string;
   phone: string;
+  company: string;
+  service: string;
+  hasProvider: string;
+  currentProvider: string;
   date: string;
   time: string;
   timezone: string;
@@ -49,6 +53,10 @@ export default function Contact() {
     name: '',
     email: '',
     phone: '',
+    company: '',
+    service: '',
+    hasProvider: '',
+    currentProvider: '',
     date: '',
     time: '',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -98,33 +106,57 @@ export default function Contact() {
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create calendar event data
-    const eventData = {
-      summary: `Consultation Call - ${bookingData.name}`,
-      description: `Phone: ${bookingData.phone}\nEmail: ${bookingData.email}\nNotes: ${bookingData.notes}`,
-      start: {
-        dateTime: `${bookingData.date}T${bookingData.time}:00`,
-        timeZone: bookingData.timezone,
-      },
-      end: {
-        dateTime: `${bookingData.date}T${bookingData.time}:00`,
-        timeZone: bookingData.timezone,
-      },
-      attendees: [
-        { email: bookingData.email },
-        { email: 'hello@creedava.com' }
-      ],
+    // Parse the selected date and time
+    const [year, month, day] = bookingData.date.split('-');
+    const [hour, minute] = bookingData.time.split(':');
+    
+    // Create start time
+    const startDateTime = new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(day),
+      parseInt(hour),
+      parseInt(minute)
+    );
+    
+    // Create end time (30 minutes later)
+    const endDateTime = new Date(startDateTime.getTime() + 30 * 60000);
+    
+    // Format for Google Calendar URL
+    const formatGoogleDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     };
+    
+    // Build description with all details
+    const description = `
+Consultation Call Details:
+------------------------
+Name: ${bookingData.name}
+Email: ${bookingData.email}
+Phone: ${bookingData.phone}
+Company: ${bookingData.company}
+Service Interested: ${bookingData.service}
+Has Current Provider: ${bookingData.hasProvider}
+${bookingData.currentProvider ? `Current Provider: ${bookingData.currentProvider}` : ''}
+
+Additional Notes:
+${bookingData.notes || 'None'}
+    `.trim();
+
+    // Create Google Calendar event URL
+    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Consultation Call - ' + bookingData.name)}&dates=${formatGoogleDate(startDateTime)}/${formatGoogleDate(endDateTime)}&details=${encodeURIComponent(description)}&location=Phone Call&add=${encodeURIComponent('hello@creedava.com')}&add=${encodeURIComponent(bookingData.email)}`;
 
     // Store booking data
     localStorage.setItem('bookingSubmission', JSON.stringify({
       ...bookingData,
-      eventData,
       timestamp: new Date().toISOString()
     }));
 
+    // Open Google Calendar in new tab
+    window.open(calendarUrl, '_blank');
+
     // Send email notification to hello@creedava.com
-    const mailtoLink = `mailto:hello@creedava.com?subject=New Consultation Booking - ${bookingData.name}&body=Name: ${bookingData.name}%0D%0AEmail: ${bookingData.email}%0D%0APhone: ${bookingData.phone}%0D%0ADate: ${bookingData.date}%0D%0ATime: ${bookingData.time} ${bookingData.timezone}%0D%0ANotes: ${bookingData.notes}`;
+    const mailtoLink = `mailto:hello@creedava.com?subject=New Consultation Booking - ${bookingData.name}&body=Name: ${bookingData.name}%0D%0AEmail: ${bookingData.email}%0D%0APhone: ${bookingData.phone}%0D%0ACompany: ${bookingData.company}%0D%0AService: ${bookingData.service}%0D%0AHas Provider: ${bookingData.hasProvider}%0D%0ACurrent Provider: ${bookingData.currentProvider}%0D%0ADate: ${bookingData.date}%0D%0ATime: ${bookingData.time} ${bookingData.timezone}%0D%0ANotes: ${bookingData.notes}`;
     
     window.location.href = mailtoLink;
 
@@ -133,6 +165,10 @@ export default function Contact() {
       name: '',
       email: '',
       phone: '',
+      company: '',
+      service: '',
+      hasProvider: '',
+      currentProvider: '',
       date: '',
       time: '',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -142,12 +178,12 @@ export default function Contact() {
     setIsBookingOpen(false);
     
     setTimeout(() => {
-      alert('Booking request sent! We will confirm your appointment via email shortly.');
+      alert('Booking request sent! The calendar event has been created. Please check your email for confirmation.');
     }, 500);
   };
 
   // Generate available time slots (8 AM - 6 PM CST in 30-min intervals)
-  const timeSlots = [];
+  const timeSlots: { value: string; label: string }[] = [];
   for (let hour = 8; hour < 18; hour++) {
     for (let min of [0, 30]) {
       const time = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
@@ -375,60 +411,128 @@ export default function Contact() {
                   <DialogHeader>
                     <DialogTitle className="text-2xl">Schedule a Consultation</DialogTitle>
                     <DialogDescription>
-                      Book a call with our team. We'll send you a confirmation email to hello@creedava.com
+                      Book a call with our team. We'll add it to our calendar and send you confirmation.
                     </DialogDescription>
                   </DialogHeader>
                   
                   <form onSubmit={handleBookingSubmit} className="space-y-4 mt-4">
-                    <div>
-                      <Label htmlFor="booking-name">Full Name *</Label>
-                      <div className="relative mt-2">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="booking-name">Full Name *</Label>
+                        <div className="relative mt-2">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                          <Input
+                            id="booking-name"
+                            name="name"
+                            value={bookingData.name}
+                            onChange={handleBookingChange}
+                            required
+                            className="pl-10"
+                            placeholder="John Smith"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="booking-company">Company Name *</Label>
                         <Input
-                          id="booking-name"
-                          name="name"
-                          value={bookingData.name}
+                          id="booking-company"
+                          name="company"
+                          value={bookingData.company}
                           onChange={handleBookingChange}
                           required
-                          className="pl-10"
-                          placeholder="John Smith"
+                          className="mt-2"
+                          placeholder="Your Company"
                         />
                       </div>
                     </div>
 
-                    <div>
-                      <Label htmlFor="booking-email">Email *</Label>
-                      <div className="relative mt-2">
-                        <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                        <Input
-                          id="booking-email"
-                          name="email"
-                          type="email"
-                          value={bookingData.email}
-                          onChange={handleBookingChange}
-                          required
-                          className="pl-10"
-                          placeholder="john@company.com"
-                        />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="booking-email">Email *</Label>
+                        <div className="relative mt-2">
+                          <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                          <Input
+                            id="booking-email"
+                            name="email"
+                            type="email"
+                            value={bookingData.email}
+                            onChange={handleBookingChange}
+                            required
+                            className="pl-10"
+                            placeholder="john@company.com"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="booking-phone">Phone *</Label>
+                        <div className="relative mt-2">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                          <Input
+                            id="booking-phone"
+                            name="phone"
+                            type="tel"
+                            value={bookingData.phone}
+                            onChange={handleBookingChange}
+                            required
+                            className="pl-10"
+                            placeholder="+1 (555) 000-0000"
+                          />
+                        </div>
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="booking-phone">Phone *</Label>
-                      <div className="relative mt-2">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                      <Label htmlFor="booking-service">Service Interested In *</Label>
+                      <select
+                        id="booking-service"
+                        name="service"
+                        value={bookingData.service}
+                        onChange={handleBookingChange}
+                        required
+                        className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background focus:border-primary focus:ring-primary"
+                      >
+                        <option value="">Select a service</option>
+                        <option value="Executive Assistance">Executive Assistance</option>
+                        <option value="Administrative Tasks">Administrative Tasks</option>
+                        <option value="Customer Service">Customer Service</option>
+                        <option value="Real Estate Support">Real Estate Support</option>
+                        <option value="Technology Support">Technology Support</option>
+                        <option value="Multiple Services">Multiple Services</option>
+                        <option value="Not Sure Yet">Not Sure Yet</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="booking-hasProvider">Do you currently have a VA provider? *</Label>
+                      <select
+                        id="booking-hasProvider"
+                        name="hasProvider"
+                        value={bookingData.hasProvider}
+                        onChange={handleBookingChange}
+                        required
+                        className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background focus:border-primary focus:ring-primary"
+                      >
+                        <option value="">Select an option</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+
+                    {bookingData.hasProvider === 'Yes' && (
+                      <div>
+                        <Label htmlFor="booking-currentProvider">Current Provider Name</Label>
                         <Input
-                          id="booking-phone"
-                          name="phone"
-                          type="tel"
-                          value={bookingData.phone}
+                          id="booking-currentProvider"
+                          name="currentProvider"
+                          value={bookingData.currentProvider}
                           onChange={handleBookingChange}
-                          required
-                          className="pl-10"
-                          placeholder="+1 (555) 000-0000"
+                          className="mt-2"
+                          placeholder="Provider name"
                         />
                       </div>
-                    </div>
+                    )}
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
