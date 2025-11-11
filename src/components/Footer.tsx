@@ -28,22 +28,22 @@ export function Footer() {
             <h4 className="font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/80">
               <li>
-                <Link to="/services" className="hover:text-white transition-colors">
+                <Link to="/services" className="hover:text-accent transition-colors">
                   Services
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-white transition-colors">
+                <Link to="/about" className="hover:text-accent transition-colors">
                   About
                 </Link>
               </li>
               <li>
-                <Link to="/pricing" className="hover:text-white transition-colors">
+                <Link to="/pricing" className="hover:text-accent transition-colors">
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-white transition-colors">
+                <Link to="/contact" className="hover:text-accent transition-colors">
                   Contact
                 </Link>
               </li>
@@ -53,17 +53,17 @@ export function Footer() {
             <h4 className="font-semibold mb-4">Contact</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/80">
               <li>
-                <a href="tel:+18447022202" className="hover:text-white transition-colors">
+                <a href="tel:+18447022202" className="hover:text-accent transition-colors">
                   +1 844-702-2202
                 </a>
               </li>
               <li>
-                <a href="mailto:hello@creedava.com" className="hover:text-white transition-colors">
+                <a href="mailto:hello@creedava.com" className="hover:text-accent transition-colors">
                   hello@creedava.com
                 </a>
               </li>
               <li>
-                <a href="https://www.linkedin.com/company/creedava/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                <a href="https://www.linkedin.com/company/creedava/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">
                   LinkedIn
                 </a>
               </li>

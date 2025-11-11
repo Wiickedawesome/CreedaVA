@@ -478,9 +478,7 @@ export function Home() {
                 <Button 
                   asChild 
                   size="lg" 
-                  className="text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-                  style={{background: 'linear-gradient(to right, var(--green-600), var(--navy-600))'}}
-                
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                 >
                   <Link to="/contact">Schedule Free Consultation</Link>
                 </Button>
@@ -488,7 +486,7 @@ export function Home() {
                   asChild 
                   size="lg" 
                   variant="outline"
-                  className="border-2 border-accent/30 hover:bg-accent/10 hover:border-accent transition-all duration-300"
+                  className="border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground transition-all duration-300"
                 >
                   <a href="https://calendly.com/john-creedava" target="_blank" rel="noopener noreferrer">
                     <Calendar className="mr-2" size={20} />
