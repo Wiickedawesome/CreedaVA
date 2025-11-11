@@ -64,6 +64,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link to="/news" className="text-primary-foreground/70 hover:text-accent transition-colors block">
+                  News & Updates
+                </Link>
+              </li>
+              <li>
                 <Link to="/contact" className="text-primary-foreground/70 hover:text-accent transition-colors block">
                   Contact Us
                 </Link>

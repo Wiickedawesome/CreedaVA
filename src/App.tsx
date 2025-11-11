@@ -6,6 +6,7 @@ import { Home } from '@/pages/Home'
 import { Services } from '@/pages/Services'
 import { About } from '@/pages/About'
 import { Pricing } from '@/pages/Pricing'
+import { News } from '@/pages/News'
 import Contact from '@/pages/Contact'
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/about" element={<About />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/news" element={<News />} />
             <Route path="/contact" element={<Contact />} />
           </Routes>
         </main>

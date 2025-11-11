@@ -22,6 +22,7 @@ export function Navbar() {
     { label: 'Services', path: '/services' },
     { label: 'About', path: '/about' },
     { label: 'Pricing', path: '/pricing' },
+    { label: 'News', path: '/news' },
     { label: 'Contact', path: '/contact' },
   ]
 
