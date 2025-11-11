@@ -227,12 +227,11 @@ export function Home() {
         </div>
       </section>
 
-      <section className="py-24 px-4 relative overflow-hidden">
-  <div className="absolute inset-0 -z-10" style={{background: 'linear-gradient(135deg, var(--green-600)/0.1, var(--navy-600)/0.05, var(--background))'}} />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full">
-          <div className="absolute top-0 right-1/4 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 w-80 h-80 rounded-full blur-3xl" style={{backgroundColor: 'var(--navy-600)/0.1'}} />
-        </div>
+      <section className="py-24 px-4 relative overflow-hidden bg-gradient-to-b from-background via-muted/20 to-background">
+        {/* Subtle modern background pattern */}
+        <div className="absolute inset-0 -z-10 opacity-30" style={{
+          backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(20, 160, 133, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(44, 62, 80, 0.03) 0%, transparent 50%)'
+        }} />
         <div className="container mx-auto max-w-6xl relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -240,7 +239,7 @@ export function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <Badge className="mb-6 shadow-lg" style={{background: 'linear-gradient(to right, var(--green-600)/0.2, var(--navy-600)/0.2)', color: 'var(--green-600)', borderColor: 'var(--green-600)/0.3'}} variant="outline">
+            <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
               Simple Process
             </Badge>
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">How It Works</h2>
@@ -386,13 +385,14 @@ export function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
+            className="max-w-4xl mx-auto"
           >
             <Accordion type="single" collapsible className="space-y-4">
               <AccordionItem value="item-1" className="bg-background border rounded-lg px-6">
-                <AccordionTrigger className="text-left hover:text-accent transition-colors">
+                <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
                   What services do CreedaVA virtual assistants provide?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
                   Our virtual assistants provide a wide range of services including executive support, administrative tasks, 
                   customer service, e-commerce support, content and social media management, and insurance support. We tailor 
                   our services to match your specific business needs.
@@ -400,10 +400,10 @@ export function Home() {
               </AccordionItem>
 
               <AccordionItem value="item-2" className="bg-background border rounded-lg px-6">
-                <AccordionTrigger className="text-left hover:text-accent transition-colors">
+                <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
                   Why choose Belizean virtual assistants?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
                   Belize is the only English-speaking country in Central America, offering the perfect combination of native English 
                   proficiency, Spanish fluency, and cultural adaptability. Our team operates in Central Standard Time (CST), making 
                   real-time collaboration with North American businesses seamless. You get world-class talent at competitive rates.
@@ -411,40 +411,40 @@ export function Home() {
               </AccordionItem>
 
               <AccordionItem value="item-3" className="bg-background border rounded-lg px-6">
-                <AccordionTrigger className="text-left hover:text-accent transition-colors">
+                <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
                   How quickly can I get started?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
                   After your initial consultation, we typically match you with a virtual assistant within 3-5 business days. 
                   We then facilitate an onboarding session to ensure a smooth transition and optimal workflow from day one.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-4" className="bg-background border rounded-lg px-6">
-                <AccordionTrigger className="text-left hover:text-accent transition-colors">
+                <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
                   What if I'm not satisfied with my virtual assistant?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
                   Client satisfaction is our top priority. If you're not completely satisfied, we'll work with you to address concerns 
                   or match you with a different assistant at no additional cost. We stand behind our 98% client satisfaction rate.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-5" className="bg-background border rounded-lg px-6">
-                <AccordionTrigger className="text-left hover:text-accent transition-colors">
+                <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
                   Are your virtual assistants bilingual?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
                   Yes! Most of our virtual assistants are fluent in both English and Spanish, allowing them to serve diverse markets 
                   and handle multilingual customer support, content creation, and business operations.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-6" className="bg-background border rounded-lg px-6">
-                <AccordionTrigger className="text-left hover:text-accent transition-colors">
+                <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
                   How do you ensure data security and confidentiality?
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
                   We take security seriously. All our virtual assistants sign comprehensive NDAs, and we implement industry-standard 
                   security protocols including secure file sharing, encrypted communications, and regular security training. Your 
                   business information remains completely confidential.

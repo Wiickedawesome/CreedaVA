@@ -201,8 +201,8 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-foreground">Email</h4>
-                      <a href="mailto:contact@creedava.com" className="text-primary hover:text-primary/80 transition-colors">
-                        contact@creedava.com
+                      <a href="mailto:hello@creedava.com" className="text-primary hover:text-primary/80 transition-colors">
+                        hello@creedava.com
                       </a>
                     </div>
                   </div>
