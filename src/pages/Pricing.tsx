@@ -29,7 +29,7 @@ export function Pricing() {
     {
       name: 'Professional',
       hours: '160 hours/month',
-      price: '$1,799/month',
+      price: '$1,899/month',
       description: 'Premium full-time support with senior VAs and specialized expertise',
       features: [
         'Dedicated senior VA',
@@ -174,7 +174,7 @@ export function Pricing() {
                     </ul>
                     <Button
                       asChild
-                      className="w-full mt-6 bg-[#2c3e50] hover:bg-[#1a252f] text-white"
+                      className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       <Link to="/contact">Get Started</Link>
                     </Button>
@@ -277,7 +277,7 @@ export function Pricing() {
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Schedule your free consultation today and discover how CreedaVA can transform your business.
             </p>
-            <Button asChild size="lg" className="bg-[#2c3e50] hover:bg-[#1a252f] text-white px-8">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8">
               <Link to="/contact">Schedule Free Consultation</Link>
             </Button>
           </motion.div>

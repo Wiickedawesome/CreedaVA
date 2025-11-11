@@ -319,7 +319,7 @@ export function About() {
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Let's discuss how CreedaVA can become your trusted partner in growth.
             </p>
-            <Button asChild size="lg" className="bg-[#2c3e50] hover:bg-[#1a252f] text-white px-8">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8">
               <Link to="/contact">Get Started Today</Link>
             </Button>
           </motion.div>

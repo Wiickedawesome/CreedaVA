@@ -115,7 +115,7 @@ export function Home() {
                 <Button
                   asChild
                   size="lg"
-                  className="text-white px-8 group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-[#2c3e50] hover:bg-[#1a252f] border-[#2c3e50]"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <Link to="/contact">
                     Start Your Free Consultation
@@ -126,7 +126,7 @@ export function Home() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="px-8 transition-all duration-300 border-2 border-[#14a085] text-[#14a085] hover:text-white hover:bg-[#14a085]"
+                  className="px-8 transition-all duration-300 border-2 border-accent text-accent hover:text-accent-foreground hover:bg-accent"
                 >
                   <Link to="/services">Explore Services</Link>
                 </Button>
@@ -159,10 +159,10 @@ export function Home() {
                 whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
                 className="text-center p-6 rounded-2xl bg-background/50 backdrop-blur-sm border border-accent/20 shadow-lg hover:shadow-xl hover:border-accent/40 transition-all duration-300"
               >
-                <div className="text-3xl md:text-4xl font-bold mb-2 text-[#2c3e50]">
+                <div className="text-3xl md:text-4xl font-bold mb-2 text-primary">
                   {stat.value}
                 </div>
-                <div className="text-sm text-[#14a085] font-medium">{stat.label}</div>
+                <div className="text-sm text-accent font-medium">{stat.label}</div>
               </motion.div>
             ))}
           </div>
@@ -297,7 +297,7 @@ export function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <Button asChild size="lg" className="bg-[#2c3e50] hover:bg-[#1a252f] text-white px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
               <Link to="/contact">Get Started Today</Link>
             </Button>
           </div>

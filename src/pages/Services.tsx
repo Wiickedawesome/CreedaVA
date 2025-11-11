@@ -116,28 +116,28 @@ export function Services() {
     },
     {
       icon: <PresentationChart className="text-accent" size={40} />,
-      title: 'Marketing Support',
-      description: 'Administrative support for your marketing initiatives',
+      title: 'Real Estate Support',
+      description: 'Comprehensive administrative support for real estate professionals',
       features: [
-        'Campaign coordination',
-        'Email newsletter management',
-        'Lead data management',
-        'Marketing material organization',
-        'Event coordination',
-        'Vendor communication',
+        'Commission reconciliation and tracking',
+        'Qualify and manage leads',
+        'Transaction pipeline management',
+        'Sales outreach and follow-up coordination',
+        'Servicing and maintaining book of business',
+        'Client database management and updates',
       ],
     },
     {
       icon: <Phone className="text-accent" size={40} />,
-      title: 'Phone Support',
-      description: 'Professional phone answering and call management',
+      title: 'Technology Support',
+      description: 'Comprehensive technical support and IT solutions for your business',
       features: [
-        'Call answering and screening',
-        'Appointment scheduling',
-        'Message taking and forwarding',
-        'Customer inquiry handling',
-        'Follow-up call coordination',
-        'Professional phone presence',
+        'Tier 1 and Tier 2 technical support',
+        'Scrum and agile product development',
+        'IT project management and coordination',
+        'Website development and maintenance',
+        'Database management and optimization',
+        'Product testing and quality assurance',
       ],
     },
   ]
@@ -229,7 +229,7 @@ export function Services() {
               tailored to your specific business needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-[#2c3e50] hover:bg-[#1a252f] text-white">
+              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 <Link to="/contact">Discuss Your Needs</Link>
               </Button>
               <Button asChild size="lg" variant="outline">

@@ -37,8 +37,8 @@ export function Navbar() {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center">
             <span className="text-2xl font-bold leading-tight">
-              <span className="text-[#2c3e50]">Creeda</span>
-              <span className="text-[#14a085]">VA</span>
+              <span className="text-primary">Creeda</span>
+              <span className="text-accent">VA</span>
             </span>
           </Link>
 
@@ -56,7 +56,7 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Button asChild className="bg-[#2c3e50] hover:bg-[#1a252f] text-white">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
               <Link to="/contact">Get Started</Link>
             </Button>
           </nav>
@@ -83,7 +83,7 @@ export function Navbar() {
                     {link.label}
                   </Link>
                 ))}
-                <Button asChild className="bg-[#2c3e50] hover:bg-[#1a252f] text-white mt-4">
+                <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
                   <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
                     Get Started
                   </Link>
