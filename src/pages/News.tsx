@@ -19,19 +19,23 @@ interface NewsPost {
 
 export function News() {
   const [posts, setPosts] = useState<NewsPost[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Load LinkedIn posts on component mount
+  // Load LinkedIn posts
   useEffect(() => {
-    // For now, use static posts
-    // TODO: Replace with actual LinkedIn API integration or RSS feed
+    // For now, display sample posts
+    // LinkedIn API requires backend authentication with OAuth
+    // See implementation guide below
     setPosts(samplePosts)
+    setLoading(false)
     
-    // Load LinkedIn Platform SDK for embedded content
+    // Load LinkedIn embed script for widgets
     const script = document.createElement('script')
     script.src = 'https://platform.linkedin.com/in.js'
     script.async = true
     script.type = 'text/javascript'
+    script.innerHTML = 'lang: en_US'
     
     if (!document.querySelector('script[src="https://platform.linkedin.com/in.js"]')) {
       document.body.appendChild(script)
@@ -42,7 +46,7 @@ export function News() {
     }
   }, [])
 
-  // Sample news posts - Replace with LinkedIn API data
+  // Sample/fallback posts - Update these manually or via backend API
   const samplePosts: NewsPost[] = [
     {
       id: '1',
@@ -161,90 +165,54 @@ export function News() {
               </p>
             </div>
 
+            {/* LinkedIn Embedded Profile Feed */}
             <Card className="border-border/50 overflow-hidden">
-              <CardContent className="p-0">
-                {/* LinkedIn Embedded Feed */}
-                <div className="bg-gradient-to-br from-muted/30 to-background p-8">
-                  <div className="flex flex-col items-center justify-center gap-6 min-h-[400px]">
-                    <LinkedinLogo size={80} weight="fill" className="text-[#0A66C2]" />
-                    <div className="text-center max-w-md">
-                      <h3 className="text-2xl font-bold text-foreground mb-3">
-                        View Our LinkedIn Posts
-                      </h3>
-                      <p className="text-muted-foreground mb-6">
-                        Connect with us on LinkedIn to see our latest posts, articles, and company updates in real-time.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button
-                          asChild
-                          size="lg"
-                          className="bg-[#0A66C2] hover:bg-[#004182] text-white"
-                        >
-                          <a
-                            href="https://www.linkedin.com/company/creedava/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2"
-                          >
-                            <LinkedinLogo size={24} weight="fill" />
-                            View LinkedIn Page
-                            <ArrowSquareOut size={20} />
-                          </a>
-                        </Button>
-                        <Button
-                          asChild
-                          variant="outline"
-                          size="lg"
-                        >
-                          <a
-                            href="https://www.linkedin.com/company/creedava/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2"
-                          >
-                            Follow Us
-                          </a>
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      <p>💡 LinkedIn posts will appear here once you publish content on your company page</p>
-                    </div>
+              <CardContent className="p-8">
+                <div className="flex flex-col items-center">
+                  {/* LinkedIn Company Profile Plugin */}
+                  <div className="w-full max-w-4xl">
+                    <script 
+                      type="IN/CompanyProfile" 
+                      data-id="creedava" 
+                      data-format="inline" 
+                      data-related="false"
+                    ></script>
                   </div>
-                </div>
-
-                {/* Instructions for adding LinkedIn widget */}
-                <div className="bg-muted/20 border-t border-border/50 p-6">
-                  <details className="cursor-pointer">
-                    <summary className="font-semibold text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      How to display LinkedIn posts automatically
-                    </summary>
-                    <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-                      <p>To display your LinkedIn company posts automatically, you have these options:</p>
-                      <ol className="list-decimal list-inside space-y-2 ml-4">
-                        <li>
-                          <strong>LinkedIn Plugin (Recommended):</strong> Use LinkedIn's official embed plugin by adding their script to display posts
-                        </li>
-                        <li>
-                          <strong>Third-party Integration:</strong> Use services like RSS.app or Zapier to convert your LinkedIn feed to RSS
-                        </li>
-                        <li>
-                          <strong>Manual Updates:</strong> Update the news posts array in this component with your latest content
-                        </li>
-                      </ol>
-                      <p className="mt-4 text-xs">
-                        Note: LinkedIn's API has restrictions. For automatic updates, consider using a backend service to fetch and cache posts.
-                      </p>
-                    </div>
-                  </details>
+                  
+                  {/* Fallback/CTA */}
+                  <div className="mt-8 text-center">
+                    <Button
+                      asChild
+                      size="lg"
+                      className="bg-[#0A66C2] hover:bg-[#004182] text-white"
+                    >
+                      <a
+                        href="https://www.linkedin.com/company/creedava/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2"
+                      >
+                        <LinkedinLogo size={24} weight="fill" />
+                        View Full LinkedIn Page
+                        <ArrowSquareOut size={20} />
+                      </a>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Highlighted Posts Grid */}
+          {/* Featured Posts Grid */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-8">Featured Updates</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-8">
+              {loading ? 'Loading Posts...' : 'Featured Updates'}
+            </h2>
+            {error && (
+              <div className="mb-4 p-4 bg-muted/50 border border-border/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">{error}</p>
+              </div>
+            )}
           </div>
           
           <div className="grid md:grid-cols-2 gap-8">
