@@ -175,29 +175,20 @@ export function News() {
             <Card className="border-border/50 overflow-hidden">
               <CardContent className="p-8">
                 <div className="flex flex-col items-center">
-                  {/* LinkedIn Company Profile Plugin */}
-                  <div className="w-full max-w-4xl linkedin-embed">
-                    <div 
-                      className="badge-base LI-profile-badge" 
-                      data-locale="en_US" 
-                      data-size="large" 
-                      data-theme="light" 
-                      data-type="HORIZONTAL" 
-                      data-vanity="creedava" 
-                      data-version="v1"
-                    >
-                      <a 
-                        className="badge-base__link LI-simple-link" 
-                        href="https://www.linkedin.com/company/creedava?trk=profile-badge"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        CreedaVA
-                      </a>
-                    </div>
+                  {/* LinkedIn Posts Feed */}
+                  <div className="w-full">
+                    <iframe 
+                      src="https://www.linkedin.com/embed/feed/update/urn:li:share:7262900636084043776"
+                      height="600" 
+                      width="100%" 
+                      frameBorder="0" 
+                      allowFullScreen={true}
+                      title="Embedded post"
+                      className="rounded-lg"
+                    ></iframe>
                   </div>
                   
-                  {/* Fallback/CTA */}
+                  {/* CTA */}
                   <div className="mt-8 text-center">
                     <Button
                       asChild
@@ -218,6 +209,7 @@ export function News() {
                   </div>
                 </div>
               </CardContent>
+```
             </Card>
           </motion.div>
 
