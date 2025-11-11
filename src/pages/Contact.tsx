@@ -1,12 +1,20 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Envelope, MapPin, Calendar, Phone, EnvelopeSimple } from '@phosphor-icons/react';
+import { Envelope, MapPin, Calendar, Phone, EnvelopeSimple, Clock, User } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { CreedaLogo } from '@/components/CreedaLogo';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface FormData {
   name: string;
@@ -15,6 +23,16 @@ interface FormData {
   company: string;
   service: string;
   message: string;
+}
+
+interface BookingData {
+  name: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+  timezone: string;
+  notes: string;
 }
 
 export default function Contact() {
@@ -27,9 +45,29 @@ export default function Contact() {
     message: ''
   });
 
+  const [bookingData, setBookingData] = useState<BookingData>({
+    name: '',
+    email: '',
+    phone: '',
+    date: '',
+    time: '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    notes: ''
+  });
+
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleBookingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setBookingData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -56,6 +94,74 @@ export default function Contact() {
     
     alert('Thank you! Your message has been received.');
   };
+
+  const handleBookingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Create calendar event data
+    const eventData = {
+      summary: `Consultation Call - ${bookingData.name}`,
+      description: `Phone: ${bookingData.phone}\nEmail: ${bookingData.email}\nNotes: ${bookingData.notes}`,
+      start: {
+        dateTime: `${bookingData.date}T${bookingData.time}:00`,
+        timeZone: bookingData.timezone,
+      },
+      end: {
+        dateTime: `${bookingData.date}T${bookingData.time}:00`,
+        timeZone: bookingData.timezone,
+      },
+      attendees: [
+        { email: bookingData.email },
+        { email: 'hello@creedava.com' }
+      ],
+    };
+
+    // Store booking data
+    localStorage.setItem('bookingSubmission', JSON.stringify({
+      ...bookingData,
+      eventData,
+      timestamp: new Date().toISOString()
+    }));
+
+    // Send email notification to hello@creedava.com
+    const mailtoLink = `mailto:hello@creedava.com?subject=New Consultation Booking - ${bookingData.name}&body=Name: ${bookingData.name}%0D%0AEmail: ${bookingData.email}%0D%0APhone: ${bookingData.phone}%0D%0ADate: ${bookingData.date}%0D%0ATime: ${bookingData.time} ${bookingData.timezone}%0D%0ANotes: ${bookingData.notes}`;
+    
+    window.location.href = mailtoLink;
+
+    // Reset form
+    setBookingData({
+      name: '',
+      email: '',
+      phone: '',
+      date: '',
+      time: '',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      notes: ''
+    });
+
+    setIsBookingOpen(false);
+    
+    setTimeout(() => {
+      alert('Booking request sent! We will confirm your appointment via email shortly.');
+    }, 500);
+  };
+
+  // Generate available time slots (8 AM - 6 PM CST in 30-min intervals)
+  const timeSlots = [];
+  for (let hour = 8; hour < 18; hour++) {
+    for (let min of [0, 30]) {
+      const time = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+      const displayTime = new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+      timeSlots.push({ value: time, label: displayTime });
+    }
+  }
+
+  // Get minimum date (today)
+  const today = new Date().toISOString().split('T')[0];
 
   return (
     <div className="min-h-screen bg-background">
@@ -253,20 +359,163 @@ export default function Contact() {
                 </div>
               </motion.div>
 
-              <Button
-                type="button"
-                onClick={() => {
-                  if (typeof window !== 'undefined' && (window as any).Calendly) {
-                    (window as any).Calendly.initPopupWidget({url: 'https://calendly.com/john-creedava'});
-                  }
-                }}
-                variant="outline"
-                className="w-full hover:bg-primary/10 hover:border-primary transition-all duration-300"
-                size="lg"
-              >
-                <Calendar className="mr-2" size={20} />
-                Book a Call Directly
-              </Button>
+              <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full hover:bg-primary/10 hover:border-primary transition-all duration-300"
+                    size="lg"
+                  >
+                    <Calendar className="mr-2" size={20} />
+                    Book a Call Directly
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">Schedule a Consultation</DialogTitle>
+                    <DialogDescription>
+                      Book a call with our team. We'll send you a confirmation email to hello@creedava.com
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <form onSubmit={handleBookingSubmit} className="space-y-4 mt-4">
+                    <div>
+                      <Label htmlFor="booking-name">Full Name *</Label>
+                      <div className="relative mt-2">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                        <Input
+                          id="booking-name"
+                          name="name"
+                          value={bookingData.name}
+                          onChange={handleBookingChange}
+                          required
+                          className="pl-10"
+                          placeholder="John Smith"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="booking-email">Email *</Label>
+                      <div className="relative mt-2">
+                        <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                        <Input
+                          id="booking-email"
+                          name="email"
+                          type="email"
+                          value={bookingData.email}
+                          onChange={handleBookingChange}
+                          required
+                          className="pl-10"
+                          placeholder="john@company.com"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="booking-phone">Phone *</Label>
+                      <div className="relative mt-2">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                        <Input
+                          id="booking-phone"
+                          name="phone"
+                          type="tel"
+                          value={bookingData.phone}
+                          onChange={handleBookingChange}
+                          required
+                          className="pl-10"
+                          placeholder="+1 (555) 000-0000"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="booking-date">Preferred Date *</Label>
+                        <div className="relative mt-2">
+                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                          <Input
+                            id="booking-date"
+                            name="date"
+                            type="date"
+                            min={today}
+                            value={bookingData.date}
+                            onChange={handleBookingChange}
+                            required
+                            className="pl-10"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="booking-time">Preferred Time *</Label>
+                        <div className="relative mt-2">
+                          <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" size={18} />
+                          <select
+                            id="booking-time"
+                            name="time"
+                            value={bookingData.time}
+                            onChange={handleBookingChange}
+                            required
+                            className="w-full pl-10 pr-3 py-2 border border-input rounded-md bg-background focus:border-primary focus:ring-primary"
+                          >
+                            <option value="">Select time</option>
+                            {timeSlots.map(slot => (
+                              <option key={slot.value} value={slot.value}>
+                                {slot.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="booking-timezone">Timezone</Label>
+                      <Input
+                        id="booking-timezone"
+                        name="timezone"
+                        value={bookingData.timezone}
+                        onChange={handleBookingChange}
+                        className="mt-2"
+                        placeholder="America/Chicago"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Detected: {Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="booking-notes">Additional Notes</Label>
+                      <Textarea
+                        id="booking-notes"
+                        name="notes"
+                        value={bookingData.notes}
+                        onChange={handleBookingChange}
+                        rows={3}
+                        className="mt-2"
+                        placeholder="Anything specific you'd like to discuss?"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsBookingOpen(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                      >
+                        Schedule Call
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
