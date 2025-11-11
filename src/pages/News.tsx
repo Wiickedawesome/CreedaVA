@@ -84,7 +84,6 @@ export function News() {
       date: 'November 1, 2025',
       category: 'success-story',
       linkedinUrl: 'https://www.linkedin.com/company/creedava/', // Replace with actual post URL
-      linkedinUrl: 'https://www.linkedin.com/company/creedava/',
     },
   ]
 
