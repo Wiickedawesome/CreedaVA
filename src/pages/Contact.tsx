@@ -153,9 +153,8 @@ export default function Contact() {
                         <option value="executive-assistance">Executive Assistance</option>
                         <option value="administrative-tasks">Administrative Tasks</option>
                         <option value="customer-service">Customer Service</option>
-                        <option value="ecommerce-support">E-commerce Support</option>
-                        <option value="content-management">Content & Social Media</option>
-                        <option value="insurance-support">Insurance Support</option>
+                        <option value="real-estate-support">Real Estate Support</option>
+                        <option value="technology-support">Technology Support</option>
                         <option value="other">Other</option>
                       </select>
                     </div>
@@ -213,8 +212,8 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-foreground">Phone</h4>
-                      <a href="tel:+15551234567" className="text-primary hover:text-primary/80 transition-colors">
-                        +1 (555) 123-4567
+                      <a href="tel:+18447022202" className="text-primary hover:text-primary/80 transition-colors">
+                        +1 (844) 702-2202
                       </a>
                     </div>
                   </div>
