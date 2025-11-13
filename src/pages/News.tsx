@@ -22,38 +22,13 @@ export function News() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Load LinkedIn posts and badge
+  // Load LinkedIn posts
   useEffect(() => {
     // For now, display sample posts
     // LinkedIn API requires backend authentication with OAuth
     // See implementation guide below
     setPosts(samplePosts)
     setLoading(false)
-    
-    // Load LinkedIn badge script
-    const loadLinkedInScript = () => {
-      const script = document.createElement('script')
-      script.src = 'https://platform.linkedin.com/badges/js/profile.js'
-      script.async = true
-      script.defer = true
-      script.type = 'text/javascript'
-      
-      // Add error handling
-      script.onerror = () => {
-        console.warn('LinkedIn badge script failed to load')
-      }
-      
-      if (!document.querySelector('script[src="https://platform.linkedin.com/badges/js/profile.js"]')) {
-        document.head.appendChild(script)
-      }
-    }
-
-    // Load script after a short delay to ensure DOM is ready
-    const timer = setTimeout(loadLinkedInScript, 500)
-
-    return () => {
-      clearTimeout(timer)
-    }
   }, [])
 
   // Sample/fallback posts - Update these manually or via backend API
@@ -184,24 +159,38 @@ export function News() {
             <Card className="border-border/50 overflow-hidden">
               <CardContent className="p-8">
                 <div className="flex flex-col items-center">
-                  {/* LinkedIn Company Page Badge */}
-                  <div className="w-full max-w-md mx-auto">
-                    <div 
-                      className="badge-base LI-profile-badge" 
-                      data-locale="en_US" 
-                      data-size="large" 
-                      data-theme="light" 
-                      data-type="VERTICAL" 
-                      data-vanity="creedava" 
-                      data-version="v1"
-                    >
-                      <a 
-                        className="badge-base__link LI-simple-link" 
-                        href="https://www.linkedin.com/company/creedava?trk=profile-badge"
+                  {/* LinkedIn Company Page Embed */}
+                  <div className="w-full">
+                    {/* Custom LinkedIn Company Display */}
+                    <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 max-w-md mx-auto">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+                          <span className="text-white font-bold text-xl">C</span>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-gray-900 text-lg">Creeda</h3>
+                          <p className="text-gray-600 text-sm">Outsourcing and Offshoring Consulting</p>
+                        </div>
+                      </div>
+                      
+                      <p className="text-gray-700 text-sm mb-4 leading-relaxed">
+                        CreedaVA | Empowering Leaders with Elite Virtual Assistant Support
+                      </p>
+                      
+                      <div className="space-y-2 text-xs text-gray-600 mb-4">
+                        <div><strong>Industry:</strong> Outsourcing and Offshoring Consulting</div>
+                        <div><strong>Company size:</strong> 11-50 employees</div>
+                        <div><strong>Founded:</strong> 2023</div>
+                        <div><strong>Website:</strong> <a href="https://www.creedava.com" className="text-blue-600 hover:underline">www.creedava.com</a></div>
+                      </div>
+                      
+                      <a
+                        href="https://www.linkedin.com/company/creedava/"
                         target="_blank"
                         rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors"
                       >
-                        CreedaVA
+                        Follow on LinkedIn
                       </a>
                     </div>
                   </div>
