@@ -1,11 +1,28 @@
 {
     "name": "creedava-website",
-    "private": true,
+    "private": false,
     "version": "1.0.0",
     "type": "module",
-    "description": "Professional virtual assistant services website for CreedaVA",
-    "author": "CreedaVA",
-    "license": "MIT",
+    "description": "Professional virtual assistant services website for CreedaVA - Built with React, TypeScript, and Tailwind CSS",
+    "author": "CreedaVA <info@creedava.com>",
+    "license": "UNLICENSED",
+    "homepage": "https://www.creedava.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Wiickedawesome/CreedaVA.git"
+    },
+    "bugs": {
+        "url": "https://github.com/Wiickedawesome/CreedaVA/issues"
+    },
+    "keywords": [
+        "virtual-assistant",
+        "creedava",
+        "website",
+        "react",
+        "typescript",
+        "vite",
+        "tailwindcss"
+    ],
     "scripts": {
         "dev": "vite",
         "kill": "fuser -k 5000/tcp",
@@ -94,10 +111,5 @@
         "typescript": "~5.7.2",
         "typescript-eslint": "^8.46.2",
         "vite": "^7.1.12"
-    },
-    "workspaces": {
-        "packages": [
-            "packages/*"
-        ]
     }
 }

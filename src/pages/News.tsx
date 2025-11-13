@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar, LinkedinLogo, ArrowRight, Newspaper, ArrowSquareOut } from '@phosphor-icons/react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
+import { LinkedInWidget } from '@/components/LinkedInWidget'
 
 interface NewsPost {
   id: string
@@ -158,62 +159,28 @@ export function News() {
             {/* LinkedIn Company Page Widget */}
             <Card className="border-border/50 overflow-hidden">
               <CardContent className="p-8">
-                <div className="flex flex-col items-center">
-                  {/* LinkedIn Company Page Embed */}
-                  <div className="w-full">
-                    {/* Custom LinkedIn Company Display */}
-                    <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 max-w-md mx-auto">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                          <span className="text-white font-bold text-xl">C</span>
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-gray-900 text-lg">Creeda</h3>
-                          <p className="text-gray-600 text-sm">Outsourcing and Offshoring Consulting</p>
-                        </div>
-                      </div>
-                      
-                      <p className="text-gray-700 text-sm mb-4 leading-relaxed">
-                        CreedaVA | Empowering Leaders with Elite Virtual Assistant Support
-                      </p>
-                      
-                      <div className="space-y-2 text-xs text-gray-600 mb-4">
-                        <div><strong>Industry:</strong> Outsourcing and Offshoring Consulting</div>
-                        <div><strong>Company size:</strong> 11-50 employees</div>
-                        <div><strong>Founded:</strong> 2023</div>
-                        <div><strong>Website:</strong> <a href="https://www.creedava.com" className="text-blue-600 hover:underline">www.creedava.com</a></div>
-                      </div>
-                      
-                      <a
-                        href="https://www.linkedin.com/company/creedava/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors"
-                      >
-                        Follow on LinkedIn
-                      </a>
-                    </div>
-                  </div>
+                <div className="w-full">
+                  <LinkedInWidget embedId="25621666" className="max-w-4xl mx-auto" />
+                </div>
                   
-                  {/* CTA */}
-                  <div className="mt-8 text-center">
-                    <Button
-                      asChild
-                      size="lg"
-                      className="bg-[#0A66C2] hover:bg-[#004182] text-white"
+                {/* CTA */}
+                <div className="mt-8 text-center">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-[#0A66C2] hover:bg-[#004182] text-white"
+                  >
+                    <a
+                      href="https://www.linkedin.com/company/creedava/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2"
                     >
-                      <a
-                        href="https://www.linkedin.com/company/creedava/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2"
-                      >
-                        <LinkedinLogo size={24} weight="fill" />
-                        View Full LinkedIn Page
-                        <ArrowSquareOut size={20} />
-                      </a>
-                    </Button>
-                  </div>
+                      <LinkedinLogo size={24} weight="fill" />
+                      View Full LinkedIn Page
+                      <ArrowSquareOut size={20} />
+                    </a>
+                  </Button>
                 </div>
               </CardContent>
 ```

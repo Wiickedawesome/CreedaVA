@@ -1,28 +1,99 @@
-# CreedaVA Website
+# CreedaVA - Elite Virtual Assistant Services
 
-Modern marketing website for Creeda Virtual Assistants built with React, Vite, and Tailwind. Includes a clean component library, multi-page routing, and optional Spark-powered features used during development.
+> **Empowering Leaders with Elite Virtual Assistant Support**
 
-## Tech stack
+Professional marketing website for CreedaVA, showcasing our premium virtual assistant services from Belize.
+
+🌐 **Live Site:** [www.creedava.com](https://www.creedava.com)
+
+## 🚀 About CreedaVA
+
+CreedaVA provides elite virtual assistant services with bilingual excellence, cultural adaptability, and perfect timezone alignment for North American businesses.
+
+**Our Services:**
+- 💼 Executive & Administrative Support
+- 📞 Customer Service Excellence  
+- 💻 Technology Support
+- 🏘️ Real Estate Support
+- 🎨 Marketing & Creative Services
+- 📊 Financial & Data Management
+
+## 🛠️ Tech Stack
 - React 19 + Vite 6
 - TypeScript 5
 - Tailwind CSS 4
-- Radix UI + custom components
+- Radix UI Components
+- Framer Motion Animations
+- Phosphor Icons
 
-## Getting started
+## 🚀 Getting Started
 
-Prereqs: Node 18+ and pnpm or npm.
+### Prerequisites
+- Node.js 18+ 
+- npm or pnpm
 
-Local development:
+### Local Development
 ```bash
 npm install
 npm run dev
 ```
 
-Production build:
+### Production Build
 ```bash
 npm run build
 npm run preview
 ```
+
+## 📦 Deployment
+
+This static site is deployed on **Azure Static Web Apps** and can also be deployed to:
+- Vercel
+- Netlify
+- Cloudflare Pages
+- GitHub Pages
+
+## 🏗️ Project Structure
+
+```
+src/
+├── pages/          # Main pages (Home, Services, About, Contact, etc.)
+├── components/     # Reusable UI components
+│   ├── ui/         # shadcn/ui components
+│   └── ...         # Custom components (Navbar, Footer, ChatBot, etc.)
+├── hooks/          # Custom React hooks
+├── lib/            # Utility functions
+└── styles/         # Global styles and themes
+```
+
+## ✨ Features
+
+- ⚡ Lightning-fast performance with Vite
+- 🎨 Modern, responsive design with Tailwind CSS
+- 🌓 Clean theme system
+- 📱 Mobile-first approach
+- ♿ Accessible components (Radix UI)
+- 🎭 Smooth animations with Framer Motion
+- 💬 Interactive AI chatbot integration
+- 🔗 LinkedIn widget integration
+
+## 📄 License
+
+Copyright © 2025 CreedaVA. All Rights Reserved.
+
+This repository is publicly visible for showcase purposes. The code and content are proprietary and may not be copied, modified, or distributed without express written permission from CreedaVA.
+
+For licensing inquiries: info@creedava.com
+
+## 📞 Contact
+
+**CreedaVA**  
+🌐 Website: [www.creedava.com](https://www.creedava.com)  
+📧 Email: info@creedava.com  
+💼 LinkedIn: [linkedin.com/company/creedava](https://www.linkedin.com/company/creedava/)
+
+---
+
+*Built with ❤️ by the CreedaVA team*
 
 ## Deploying
 This is a static SPA and can be deployed on Netlify, Vercel, Cloudflare Pages, GitHub Pages, or any static host.
