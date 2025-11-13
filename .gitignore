@@ -39,6 +39,7 @@ spark.meta.json
 theme.json
 README_NEW.md
 README_CLEAN.md
+packages/spark-tools/
 
 # Build artifacts
 *.tsbuildinfo
