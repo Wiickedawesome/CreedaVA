@@ -22,7 +22,7 @@ export function News() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Load LinkedIn posts
+  // Load LinkedIn posts and badge
   useEffect(() => {
     // For now, display sample posts
     // LinkedIn API requires backend authentication with OAuth
@@ -31,18 +31,28 @@ export function News() {
     setLoading(false)
     
     // Load LinkedIn badge script
-    const script = document.createElement('script')
-    script.src = 'https://platform.linkedin.com/badges/js/profile.js'
-    script.async = true
-    script.defer = true
-    script.type = 'text/javascript'
-    
-    if (!document.querySelector('script[src="https://platform.linkedin.com/badges/js/profile.js"]')) {
-      document.body.appendChild(script)
+    const loadLinkedInScript = () => {
+      const script = document.createElement('script')
+      script.src = 'https://platform.linkedin.com/badges/js/profile.js'
+      script.async = true
+      script.defer = true
+      script.type = 'text/javascript'
+      
+      // Add error handling
+      script.onerror = () => {
+        console.warn('LinkedIn badge script failed to load')
+      }
+      
+      if (!document.querySelector('script[src="https://platform.linkedin.com/badges/js/profile.js"]')) {
+        document.head.appendChild(script)
+      }
     }
 
+    // Load script after a short delay to ensure DOM is ready
+    const timer = setTimeout(loadLinkedInScript, 500)
+
     return () => {
-      // Cleanup if needed
+      clearTimeout(timer)
     }
   }, [])
 
@@ -170,21 +180,30 @@ export function News() {
               </p>
             </div>
 
-            {/* LinkedIn Embedded Profile Feed */}
+            {/* LinkedIn Company Page Widget */}
             <Card className="border-border/50 overflow-hidden">
               <CardContent className="p-8">
                 <div className="flex flex-col items-center">
-                  {/* LinkedIn Posts Feed */}
-                  <div className="w-full">
-                    <iframe 
-                      src="https://www.linkedin.com/embed/feed/update/urn:li:share:7262900636084043776"
-                      height="600" 
-                      width="100%" 
-                      frameBorder="0" 
-                      allowFullScreen={true}
-                      title="Embedded post"
-                      className="rounded-lg"
-                    ></iframe>
+                  {/* LinkedIn Company Page Badge */}
+                  <div className="w-full max-w-md mx-auto">
+                    <div 
+                      className="badge-base LI-profile-badge" 
+                      data-locale="en_US" 
+                      data-size="large" 
+                      data-theme="light" 
+                      data-type="VERTICAL" 
+                      data-vanity="creedava" 
+                      data-version="v1"
+                    >
+                      <a 
+                        className="badge-base__link LI-simple-link" 
+                        href="https://www.linkedin.com/company/creedava?trk=profile-badge"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        CreedaVA
+                      </a>
+                    </div>
                   </div>
                   
                   {/* CTA */}
