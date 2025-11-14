@@ -26,6 +26,25 @@ export function LinkedInWidget({ embedId, className = '' }: LinkedInWidgetProps)
         }
       }
     }
+
+    // Add CSS to hide the three dots menu
+    const style = document.createElement('style')
+    style.textContent = `
+      .sk-ww-linkedin-page-post .sk-widget-header-menu,
+      .sk-ww-linkedin-page-post .sk-widget-menu-button,
+      .sk-ww-linkedin-page-post [class*="menu"],
+      .sk-ww-linkedin-page-post [class*="kebab"],
+      .sk-ww-linkedin-page-post button[aria-label*="menu" i] {
+        display: none !important;
+      }
+    `
+    document.head.appendChild(style)
+
+    return () => {
+      if (style.parentNode) {
+        style.parentNode.removeChild(style)
+      }
+    }
   }, [])
 
   return (

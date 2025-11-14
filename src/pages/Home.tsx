@@ -22,7 +22,7 @@ import {
   Calendar,
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
-import { AnimatedBackground } from '@/components/AnimatedBackground'
+import { LazyAnimatedBackground } from '@/components/LazyAnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
 
 export function Home() {
@@ -90,7 +90,7 @@ export function Home() {
   return (
     <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
-        <AnimatedBackground />
+        <LazyAnimatedBackground />
         <div className="container mx-auto max-w-6xl">
           <div className="grid items-center gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <motion.div

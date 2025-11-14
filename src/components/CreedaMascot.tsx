@@ -1,10 +1,10 @@
 import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import creedaLogo from "@/assets/images/creedava-logo.png";
-import creedaAgent1 from "@/assets/images/creedava-agent-1.png";
-import creedaAgent2 from "@/assets/images/creedava-agent-2.png";
-import creedaAgent3 from "@/assets/images/creedava-agent-3.png";
+import creedaLogo from "@/assets/images/creedava-logo.webp";
+import creedaAgent1 from "@/assets/images/creedava-agent-1.webp";
+import creedaAgent2 from "@/assets/images/creedava-agent-2.webp";
+import creedaAgent3 from "@/assets/images/creedava-agent-3.webp";
 
 type CreedaMascotProps = {
   className?: string;

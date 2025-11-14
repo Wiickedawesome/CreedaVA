@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils"
 
 // Import your actual logo images
 import logoMain from "@/assets/images/creedava-logo.png"
-import logoAgent1 from "@/assets/images/creedava-agent-1.png" 
-import logoAgent2 from "@/assets/images/creedava-agent-2.png"
-import logoAgent3 from "@/assets/images/creedava-agent-3.png"
+import logoAgent1 from "@/assets/images/creedava-agent-1.webp" 
+import logoAgent2 from "@/assets/images/creedava-agent-2.webp"
+import logoAgent3 from "@/assets/images/creedava-agent-3.webp"
 
 type CreedaLogoProps = {
   className?: string

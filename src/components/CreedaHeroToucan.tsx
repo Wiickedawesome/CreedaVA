@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import creedaLogo from "@/assets/images/creedava-logo.png";
+import creedaLogo from "@/assets/images/creedava-logo.webp";
 
 type CreedaHeroToucanProps = {
   className?: string;
