@@ -7,7 +7,13 @@
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "SAMEORIGIN",
-    "Referrer-Policy": "strict-origin-when-cross-origin"
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Cache-Control": "public, max-age=0, must-revalidate"
+  },
+  "mimeTypes": {
+    ".webp": "image/webp",
+    ".js": "text/javascript; charset=utf-8",
+    ".css": "text/css; charset=utf-8"
   },
   "routes": [
     {

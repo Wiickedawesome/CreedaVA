@@ -44,7 +44,12 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true, // Remove console.logs in production
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'], // Remove specific console calls
+        passes: 2 // Multiple passes for better compression
+      },
+      mangle: {
+        safari10: true // Fix Safari 10 bugs
       }
     },
     // Code splitting optimization
@@ -60,14 +65,49 @@ export default defineConfig({
             '@radix-ui/react-tabs',
             '@radix-ui/react-slot'
           ]
-        }
+        },
+        // Optimize asset file names for better caching
+        assetFileNames: (assetInfo) => {
+          if (!assetInfo.name) return 'assets/[name]-[hash][extname]'
+          const info = assetInfo.name.split('.')
+          const ext = info[info.length - 1]
+          if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico|webp)$/i.test(assetInfo.name)) {
+            return `assets/images/[name]-[hash][extname]`
+          } else if (/\.css$/i.test(assetInfo.name)) {
+            return `assets/css/[name]-[hash][extname]`
+          }
+          return `assets/[name]-[hash][extname]`
+        },
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
       }
     },
     // Chunk size warnings
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 1000,
+    // Enable CSS code splitting
+    cssCodeSplit: true,
+    // Source maps for production debugging (can be disabled for smaller builds)
+    sourcemap: false,
+    // Reduce number of chunks
+    modulePreload: {
+      polyfill: true
+    }
   },
   // Performance optimizations
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom']
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom',
+      'framer-motion',
+      '@radix-ui/react-slot'
+    ],
+    exclude: ['sharp'] // Don't optimize dev dependency
+  },
+  // Server configuration for development
+  server: {
+    hmr: {
+      overlay: false // Disable error overlay for better performance
+    }
   }
 });

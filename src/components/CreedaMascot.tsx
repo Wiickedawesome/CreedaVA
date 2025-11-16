@@ -52,6 +52,8 @@ export const CreedaMascot = memo(
           src={poseImages[pose]}
           alt={`CreedaVA - ${pose}`}
           className="w-full h-full object-contain drop-shadow-xl"
+          loading="lazy"
+          decoding="async"
           animate={
             shouldAnimate
               ? {

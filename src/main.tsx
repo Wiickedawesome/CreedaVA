@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import { ErrorBoundary } from "react-error-boundary";
 import { Toaster } from 'sonner'
+import './sw-register'
 
 // Use fallback shim since Spark runtime may not be available
 

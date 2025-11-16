@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 // Import your actual logo images
-import logoMain from "@/assets/images/creedava-logo.png"
+import logoMain from "@/assets/images/creedava-logo.webp"
 import logoAgent1 from "@/assets/images/creedava-agent-1.webp" 
 import logoAgent2 from "@/assets/images/creedava-agent-2.webp"
 import logoAgent3 from "@/assets/images/creedava-agent-3.webp"
@@ -42,6 +42,8 @@ export const CreedaLogo = memo(({
       className={cn("block object-contain", className)}
       width={size}
       height={size}
+      loading="lazy"
+      decoding="async"
       initial={{ opacity: 0, scale: 0.9 }}
       animate={shouldAnimate ? { 
         opacity: 1, 

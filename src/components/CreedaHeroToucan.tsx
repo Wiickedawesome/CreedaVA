@@ -24,6 +24,8 @@ export const CreedaHeroToucan = memo(({ className }: CreedaHeroToucanProps) => {
         src={creedaLogo}
         alt="CreedaVA Professional Logo"
         className="relative w-full h-auto drop-shadow-2xl"
+        loading="eager"
+        decoding="async"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={
           animate

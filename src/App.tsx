@@ -4,6 +4,7 @@ import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { ChatBot } from '@/components/ChatBot'
 import { Home } from '@/pages/Home'
+import PerformanceMonitor from '@/components/PerformanceMonitor'
 
 // Lazy load route components for better performance
 const Services = lazy(() => import('@/pages/Services').then(module => ({ default: module.Services })))
@@ -26,6 +27,7 @@ function App() {
   
   return (
     <Router basename={basename}>
+      <PerformanceMonitor />
       <div className="flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-grow">
