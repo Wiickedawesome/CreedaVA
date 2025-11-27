@@ -60,11 +60,11 @@ export function Reports() {
 
   const stats = { total: reports.length, scheduled: reports.filter(r => r.status === 'scheduled').length, completed: reports.filter(r => r.status === 'completed').length, lastGenerated: reports.length > 0 ? reports[0].created_at : null };
 
-  if (loading) return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
 
   return (
-    <div className="p-8 space-y-6">
-      <div><h1 className="text-3xl font-bold">Marketing Reports</h1><p className="text-muted-foreground mt-2">Generate and schedule custom reports</p></div>
+    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
+      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Marketing Reports</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Generate and schedule custom reports</p></div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700"><p className="text-sm font-medium text-slate-700 dark:text-slate-300">Total Reports</p><p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{stats.total}</p></div>

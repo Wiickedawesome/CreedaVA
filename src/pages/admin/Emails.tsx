@@ -15,7 +15,7 @@ import { format } from 'date-fns';
 type Email = Database['public']['Tables']['emails']['Row'];
 type EmailInsert = Database['public']['Tables']['emails']['Insert'];
 
-const statusColors = { draft: 'bg-gray-500', scheduled: 'bg-blue-500', sent: 'bg-green-500', delivered: 'bg-purple-500', opened: 'bg-yellow-500', clicked: 'bg-orange-500', replied: 'bg-teal-500', bounced: 'bg-red-500', failed: 'bg-red-700' };
+const statusColors = { draft: 'bg-gray-500', scheduled: 'bg-blue-500', sent: 'bg-green-500', delivered: 'bg-purple-500', opened: 'bg-yellow-500', clicked: 'bg-emerald-500', replied: 'bg-teal-500', bounced: 'bg-red-500', failed: 'bg-red-700' };
 
 export function Emails() {
   const { user } = useAuth();
@@ -56,11 +56,11 @@ export function Emails() {
   const filteredEmails = emails.filter(e => e.subject.toLowerCase().includes(searchTerm.toLowerCase()) || e.to_email.toLowerCase().includes(searchTerm.toLowerCase()));
   const stats = { total: emails.length, sent: emails.filter(e => e.status === 'sent' || e.status === 'delivered').length, opened: emails.filter(e => e.status === 'opened' || e.status === 'clicked').length };
 
-  if (loading) return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
 
   return (
-    <div className="p-8 space-y-6">
-      <div><h1 className="text-3xl font-bold">Emails</h1><p className="text-muted-foreground mt-2">Track and manage email communications</p></div>
+    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
+      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Email Campaigns</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Manage email outreach</p></div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800"><p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Total Emails</p><p className="text-3xl font-bold text-indigo-900 dark:text-indigo-100">{stats.total}</p></div>
         <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 p-4 rounded-lg border border-green-200 dark:border-green-800"><p className="text-sm font-medium text-green-700 dark:text-green-300">Sent</p><p className="text-3xl font-bold text-green-900 dark:text-green-100">{stats.sent}</p></div>

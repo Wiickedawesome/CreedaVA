@@ -56,7 +56,7 @@ export function AdminDashboard() {
     { title: 'Total Leads', value: stats.leads, icon: UserPlus, color: 'text-blue-600' },
     { title: 'Total Contacts', value: stats.contacts, icon: Users, color: 'text-green-600' },
     { title: 'Active Tasks', value: stats.tasks, icon: CheckSquare, color: 'text-purple-600' },
-    { title: 'Projects', value: stats.projects, icon: FolderKanban, color: 'text-orange-600' },
+    { title: 'Projects', value: stats.projects, icon: FolderKanban, color: 'text-emerald-600' },
     { title: 'Emails Sent', value: stats.emails, icon: Mail, color: 'text-pink-600' },
     { title: 'Recent Activity', value: stats.recentActivity, icon: TrendingUp, color: 'text-teal-600' },
   ]
@@ -77,10 +77,10 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-8 bg-slate-50 dark:bg-slate-900 min-h-screen">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard</h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">
           Welcome to your CRM and SEO management platform
         </p>
       </div>

@@ -62,6 +62,7 @@ const seniorityLevels = {
 export function Contacts() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -86,15 +87,21 @@ export function Contacts() {
 
   const fetchContacts = async () => {
     try {
+      setError(null);
       const { data, error } = await supabase
         .from('contacts')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error(error.message);
+      }
       setContacts(data || []);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch contacts';
       console.error('Error fetching contacts:', error);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -110,13 +117,19 @@ export function Contacts() {
           .update(formData)
           .eq('id', editingContact.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw new Error(error.message);
+        }
       } else {
         const { error } = await supabase
           .from('contacts')
           .insert([formData as ContactInsert]);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw new Error(error.message);
+        }
       }
 
       setIsDialogOpen(false);
@@ -124,6 +137,8 @@ export function Contacts() {
       resetForm();
       fetchContacts();
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save contact';
+      alert(`Error: ${errorMessage}`);
       console.error('Error saving contact:', error);
     }
   };
@@ -148,7 +163,7 @@ export function Contacts() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this contact?')) return;
+    if (!confirm('Are you sure you want to delete this contact? This action cannot be undone.')) return;
 
     try {
       const { error } = await supabase
@@ -156,9 +171,14 @@ export function Contacts() {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete error:', error);
+        throw new Error(error.message);
+      }
       fetchContacts();
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete contact';
+      alert(`Error: ${errorMessage}`);
       console.error('Error deleting contact:', error);
     }
   };
@@ -188,20 +208,46 @@ export function Contacts() {
   );
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">Loading contacts...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-900">
+        <div className="text-center max-w-md p-8 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-red-200 dark:border-red-800">
+          <div className="text-red-600 dark:text-red-400 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Failed to Load Contacts</h3>
+          <p className="text-slate-600 dark:text-slate-400 mb-4">{error}</p>
+          <Button onClick={fetchContacts} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Contacts Management</h1>
-          <p className="text-muted-foreground mt-1">Manage your professional network and relationships</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Contacts Management</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-1 font-medium">Manage your professional network and relationships</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => {
+            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md" onClick={() => {
               setEditingContact(null);
               resetForm();
             }}>
@@ -359,7 +405,7 @@ export function Contacts() {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
                   {editingContact ? 'Update Contact' : 'Create Contact'}
                 </Button>
               </DialogFooter>
@@ -371,61 +417,61 @@ export function Contacts() {
       {/* Search */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
           <Input
             placeholder="Search contacts..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="pl-9 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
           />
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
           {filteredContacts.length} contact{filteredContacts.length !== 1 ? 's' : ''}
         </div>
       </div>
 
       {/* Contacts Table */}
-      <div className="border rounded-lg">
+      <div className="border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Position</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Seniority</TableHead>
-              <TableHead>Relationship</TableHead>
-              <TableHead>Contact Method</TableHead>
-              <TableHead>Meetings</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="bg-slate-100 dark:bg-slate-700/50 border-b border-slate-300 dark:border-slate-600">
+              <TableHead className="text-slate-900 dark:text-white font-semibold">Name</TableHead>
+              <TableHead className="text-slate-900 dark:text-white font-semibold">Company</TableHead>
+              <TableHead className="text-slate-900 dark:text-white font-semibold">Position</TableHead>
+              <TableHead className="text-slate-900 dark:text-white font-semibold">Email</TableHead>
+              <TableHead className="text-slate-900 dark:text-white font-semibold">Phone</TableHead>
+              <TableHead className="text-slate-900 dark:text-white font-semibold">Seniority</TableHead>
+              <TableHead className="text-slate-900 dark:text-white font-semibold">Relationship</TableHead>
+              <TableHead className="text-slate-900 dark:text-white font-semibold">Contact Method</TableHead>
+              <TableHead className="text-slate-900 dark:text-white font-semibold">Meetings</TableHead>
+              <TableHead className="text-right text-slate-900 dark:text-white font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredContacts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={10} className="text-center py-8 text-slate-600 dark:text-slate-400 font-medium">
                   No contacts found. Add your first contact to get started.
                 </TableCell>
               </TableRow>
             ) : (
               filteredContacts.map((contact) => (
-                <TableRow key={contact.id}>
-                  <TableCell className="font-medium">
+                <TableRow key={contact.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                  <TableCell className="font-medium text-slate-900 dark:text-white">
                     {contact.first_name} {contact.last_name}
                   </TableCell>
-                  <TableCell>{contact.company || '-'}</TableCell>
-                  <TableCell>{contact.position || '-'}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-slate-800 dark:text-slate-200">{contact.company || '-'}</TableCell>
+                  <TableCell className="text-slate-800 dark:text-slate-200">{contact.position || '-'}</TableCell>
+                  <TableCell className="text-slate-800 dark:text-slate-200">
                     <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <Mail className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                       {contact.email}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-slate-800 dark:text-slate-200">
                     {contact.phone || contact.mobile ? (
                       <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
+                        <Phone className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         {contact.phone || contact.mobile}
                       </div>
                     ) : '-'}
@@ -449,12 +495,12 @@ export function Contacts() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-slate-800 dark:text-slate-200">
                     {contact.preferred_contact_method ? (
                       <div className="flex items-center gap-2">
-                        {contact.preferred_contact_method === 'linkedin' && <Linkedin className="w-4 h-4" />}
-                        {contact.preferred_contact_method === 'email' && <Mail className="w-4 h-4" />}
-                        {contact.preferred_contact_method === 'phone' && <Phone className="w-4 h-4" />}
+                        {contact.preferred_contact_method === 'linkedin' && <Linkedin className="w-4 h-4 text-emerald-600" />}
+                        {contact.preferred_contact_method === 'email' && <Mail className="w-4 h-4 text-emerald-600" />}
+                        {contact.preferred_contact_method === 'phone' && <Phone className="w-4 h-4 text-emerald-600" />}
                         <span className="capitalize">{contact.preferred_contact_method}</span>
                       </div>
                     ) : '-'}
@@ -467,6 +513,7 @@ export function Contacts() {
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900 dark:hover:text-emerald-300"
                         onClick={() => handleEdit(contact)}
                       >
                         <Edit className="w-4 h-4" />
@@ -474,6 +521,7 @@ export function Contacts() {
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900 dark:hover:text-red-300"
                         onClick={() => handleDelete(contact.id)}
                       >
                         <Trash2 className="w-4 h-4" />

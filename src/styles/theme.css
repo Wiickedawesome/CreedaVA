@@ -85,6 +85,27 @@
     border-color: var(--color-gray-200, currentColor);
   }
 }
+  @layer base {
+    *,
+    ::before,
+    ::after {
+      border-color: var(--border, currentColor);
+    }
+
+    :root {
+      --primary: var(--sky-600);
+      --primary-foreground: white;
+      --accent: var(--emerald-500);
+      --accent-foreground: white;
+    }
+
+    .dark {
+      --primary: var(--sky-500);
+      --primary-foreground: white;
+      --accent: var(--emerald-400);
+      --accent-foreground: #020617;
+    }
+  }
 
 @layer base {
   :root, #spark-app {

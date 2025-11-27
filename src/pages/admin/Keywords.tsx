@@ -81,11 +81,11 @@ export function Keywords() {
     return <Minus className="w-4 h-4 text-gray-400" />;
   };
 
-  if (loading) return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
 
   return (
-    <div className="p-8 space-y-6">
-      <div><h1 className="text-3xl font-bold">Keyword Tracking</h1><p className="text-muted-foreground mt-2">Monitor search rankings and SEO performance</p></div>
+    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
+      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Keyword Tracking</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Monitor search rankings and SEO performance</p></div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-950 dark:to-violet-900 p-4 rounded-lg border border-violet-200 dark:border-violet-800"><p className="text-sm font-medium text-violet-700 dark:text-violet-300">Total Keywords</p><p className="text-3xl font-bold text-violet-900 dark:text-violet-100">{stats.total}</p></div>
         <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800"><p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Top 10</p><p className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">{stats.ranked}</p></div>

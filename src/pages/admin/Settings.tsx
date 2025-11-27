@@ -66,7 +66,7 @@ export function Settings() {
             <div className="space-y-3">
               <Label className="text-slate-900 dark:text-white font-semibold">Theme</Label>
               <Select value={theme || 'system'} onValueChange={(value) => setTheme(value)}>
-                <SelectTrigger className="w-full bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
+                          <SelectTrigger className="w-full bg-white/90 dark:bg-slate-900/90 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
@@ -191,7 +191,7 @@ export function Settings() {
 
         {/* Save Button */}
         <div className="flex justify-end">
-          <Button onClick={handleSaveSettings} className="gap-2 bg-orange-500 hover:bg-orange-600 text-white shadow-lg">
+            <Button onClick={handleSaveSettings} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/40 dark:bg-emerald-500 dark:hover:bg-emerald-600">
             <Save className="w-4 h-4" />
             Save Settings
           </Button>

@@ -49,7 +49,7 @@ const statusConfig = {
 const priorityConfig = {
   low: { label: 'Low', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
   medium: { label: 'Medium', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
-  high: { label: 'High', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' },
+  high: { label: 'High', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' },
   urgent: { label: 'Urgent', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }
 };
 
@@ -201,11 +201,11 @@ export function Tasks() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
       {/* Header with Stats */}
       <div>
-        <h1 className="text-3xl font-bold">Tasks</h1>
-        <p className="text-muted-foreground mt-2">Manage your tasks and to-dos</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Tasks</h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Manage your tasks and to-dos</p>
       </div>
 
       {/* Stats Cards */}

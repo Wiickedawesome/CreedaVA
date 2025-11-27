@@ -12,7 +12,7 @@ import { Plus, Search, Route, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 type CustomerJourney = any;
-const stageColors = { awareness: 'bg-blue-500', consideration: 'bg-purple-500', decision: 'bg-green-500', retention: 'bg-orange-500', advocacy: 'bg-pink-500' };
+const stageColors = { awareness: 'bg-blue-500', consideration: 'bg-purple-500', decision: 'bg-green-500', retention: 'bg-emerald-500', advocacy: 'bg-pink-500' };
 const stages = ['awareness', 'consideration', 'decision', 'retention', 'advocacy'];
 
 export function CustomerJourney() {
@@ -60,11 +60,11 @@ export function CustomerJourney() {
 
   const stats = { total: journeys.length, awareness: journeys.filter(j => j.stage === 'awareness').length, decision: journeys.filter(j => j.stage === 'decision').length, converted: journeys.filter(j => j.converted_at).length };
 
-  if (loading) return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
 
   return (
-    <div className="p-8 space-y-6">
-      <div><h1 className="text-3xl font-bold">Customer Journey</h1><p className="text-muted-foreground mt-2">Track customer progression through sales funnel</p></div>
+    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
+      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Customer Journey</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Track customer lifecycle stages</p></div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 p-4 rounded-lg border border-blue-200 dark:border-blue-800"><p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Journeys</p><p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</p></div>

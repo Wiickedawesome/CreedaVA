@@ -81,11 +81,11 @@ export function Blog() {
 
   const stats = { total: posts.length, published: posts.filter(p => p.status === 'published').length, drafts: posts.filter(p => p.status === 'draft').length, featured: posts.filter(p => p.is_featured).length };
 
-  if (loading) return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
 
   return (
-    <div className="p-8 space-y-6">
-      <div><h1 className="text-3xl font-bold">Blog & News</h1><p className="text-muted-foreground mt-2">Manage articles and company updates</p></div>
+    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
+      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Blog & News</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Manage articles and company updates</p></div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 p-4 rounded-lg border border-purple-200 dark:border-purple-800"><p className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Articles</p><p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{stats.total}</p></div>

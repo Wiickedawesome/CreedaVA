@@ -40,7 +40,7 @@ const statusColors = {
   new: 'bg-blue-500',
   contacted: 'bg-yellow-500',
   qualified: 'bg-purple-500',
-  proposal: 'bg-orange-500',
+  proposal: 'bg-emerald-500',
   negotiation: 'bg-pink-500',
   won: 'bg-green-500',
   lost: 'bg-red-500',
@@ -169,11 +169,11 @@ export function Leads() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Leads Management</h1>
-          <p className="text-muted-foreground mt-1">Manage and track your sales leads</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Leads Management</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-1 font-medium">Manage and track your sales leads</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

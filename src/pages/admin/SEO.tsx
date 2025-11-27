@@ -139,15 +139,15 @@ export function SEO() {
   );
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading...</div>;
+    return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">SEO Content Manager</h1>
-          <p className="text-muted-foreground mt-1">Manage meta tags, Open Graph, and Twitter Cards for all pages</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">SEO Content Management</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-1 font-medium">Optimize your pages for search engines</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
