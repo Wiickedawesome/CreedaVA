@@ -1,12 +1,21 @@
-// Simple service worker for caching static assets
-const CACHE_VERSION = 'v1';
+// Optimized service worker for caching static assets
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `creedava-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `creedava-runtime-${CACHE_VERSION}`;
 
 // Assets to cache immediately
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
+  '/manifest.json',
 ];
+
+// Cache strategies for different asset types
+const CACHE_STRATEGIES = {
+  static: ['css', 'js', 'woff2', 'woff', 'ttf', 'eot'],
+  images: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'],
+  api: ['/api/']
+};
 
 // Install event - cache essential assets
 self.addEventListener('install', (event) => {

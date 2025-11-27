@@ -1,10 +1,11 @@
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { useInView } from '@/hooks/useInView'
+import { memo } from 'react'
 
-export function LazyAnimatedBackground() {
+export const LazyAnimatedBackground = memo(() => {
   const { ref, inView } = useInView<HTMLDivElement>({
-    rootMargin: '200px 0px',
-    threshold: 0.1,
+    rootMargin: '100px 0px', // Reduced from 200px for better performance
+    threshold: 0.05, // Reduced threshold
   })
 
   return (
@@ -12,4 +13,6 @@ export function LazyAnimatedBackground() {
       {inView ? <AnimatedBackground /> : null}
     </div>
   )
-}
+})
+
+LazyAnimatedBackground.displayName = 'LazyAnimatedBackground'

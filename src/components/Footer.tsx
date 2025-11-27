@@ -1,8 +1,9 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { Separator } from '@/components/ui/separator'
 import { EnvelopeSimple, Phone, LinkedinLogo } from '@phosphor-icons/react'
 
-export function Footer() {
+export const Footer = memo(() => {
   return (
     <footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 px-4 overflow-hidden">
       {/* Decorative Elements */}
@@ -119,4 +120,6 @@ export function Footer() {
       </div>
     </footer>
   )
-}
+})
+
+Footer.displayName = 'Footer'

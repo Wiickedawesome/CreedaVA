@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo, useCallback, useMemo } from 'react'
 import { ExternalLink, Heart, MessageCircle, Repeat2, Calendar, Linkedin } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -25,13 +25,69 @@ interface LinkedInFeedProps {
   maxPosts?: number
 }
 
-export function LinkedInFeed({ className = '', maxPosts = 5 }: LinkedInFeedProps) {
+export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeedProps) => {
   const [posts, setPosts] = useState<LinkedInPost[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isConnected, setIsConnected] = useState(false)
 
-  // Mock data for demonstration - replace with actual LinkedIn API calls
-  const mockPosts: LinkedInPost[] = [
+  useEffect(() => {
+    const fetchLinkedInPosts = async () => {
+      setLoading(true)
+      try {
+        // Check if LinkedIn is connected
+        const storedConfig = localStorage.getItem('linkedin-config')
+        const connected = storedConfig && JSON.parse(storedConfig).accessToken
+        setIsConnected(!!connected)
+        
+        if (connected) {
+          // TODO: Replace with actual LinkedIn API call when connected
+          // const response = await fetch('/api/linkedin/posts', {
+          //   headers: { Authorization: `Bearer ${JSON.parse(storedConfig).accessToken}` }
+          // })
+          // const data = await response.json()
+          
+          // Show full mock data when connected
+          await new Promise(resolve => setTimeout(resolve, 300))
+          setPosts(mockPosts.slice(0, maxPosts))
+        } else {
+          // Show limited mock data when not connected
+          setPosts(mockPosts.slice(0, Math.min(2, maxPosts)))
+        }
+        setError(null)
+      } catch (err) {
+        setError('Failed to load LinkedIn posts')
+        // Remove console.error in production builds
+        if (import.meta.env.DEV) {
+          console.error('LinkedIn API Error:', err)
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLinkedInPosts()
+  }, [maxPosts, mockPosts])
+
+  const formatDate = useCallback((dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - date.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 1) return '1 day ago'
+    if (diffDays < 7) return `${diffDays} days ago`
+    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
+    return date.toLocaleDateString()
+  }, [])
+
+  const formatEngagement = useCallback((num: number) => {
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}k`
+    return num.toString()
+  }, [])
+
+  // Memoize mock posts to prevent unnecessary re-renders
+  const mockPosts = useMemo(() => [
     {
       id: '1',
       text: 'Excited to announce CreedaVA\'s new bilingual virtual assistant services! 🚀 Our team of professional VAs from Belize brings both English and Spanish expertise to help businesses scale globally. #VirtualAssistant #BilingualSupport #BusinessGrowth',
@@ -62,7 +118,7 @@ export function LinkedInFeed({ className = '', maxPosts = 5 }: LinkedInFeedProps
       id: '3',
       text: 'Remote work is here to stay! 💻 Our virtual assistants help businesses maintain productivity while reducing overhead costs. From administrative tasks to customer support - we\'ve got you covered. #RemoteWork #Productivity #VirtualTeam',
       publishedAt: '2024-11-20T09:00:00Z',
-      authorName: 'CreeedaVA',
+      authorName: 'CreedaVA',
       authorTitle: 'Bilingual Virtual Assistant Services',
       engagement: {
         likes: 31,
@@ -71,32 +127,9 @@ export function LinkedInFeed({ className = '', maxPosts = 5 }: LinkedInFeedProps
       },
       postUrl: 'https://www.linkedin.com/posts/creedava-activity-1234567892'
     }
-  ]
+  ], [])
 
-  useEffect(() => {
-    const fetchLinkedInPosts = async () => {
-      setLoading(true)
-      try {
-        // TODO: Replace with actual LinkedIn API call
-        // const response = await fetch('/api/linkedin/posts')
-        // const data = await response.json()
-        
-        // For now, use mock data
-        await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API delay
-        setPosts(mockPosts.slice(0, maxPosts))
-        setError(null)
-      } catch (err) {
-        setError('Failed to load LinkedIn posts')
-        console.error('LinkedIn API Error:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchLinkedInPosts()
-  }, [maxPosts])
-
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - date.getTime())
@@ -106,12 +139,12 @@ export function LinkedInFeed({ className = '', maxPosts = 5 }: LinkedInFeedProps
     if (diffDays < 7) return `${diffDays} days ago`
     if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
     return date.toLocaleDateString()
-  }
+  }, [])
 
-  const formatEngagement = (num: number) => {
+  const formatEngagement = useCallback((num: number) => {
     if (num >= 1000) return `${(num / 1000).toFixed(1)}k`
     return num.toString()
-  }
+  }, [])
 
   if (loading) {
     return (
@@ -162,8 +195,12 @@ export function LinkedInFeed({ className = '', maxPosts = 5 }: LinkedInFeedProps
           <Linkedin className="w-6 h-6 text-blue-600" />
           <h3 className="text-xl font-semibold text-gray-900">Latest LinkedIn Updates</h3>
         </div>
-        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-          Live from LinkedIn API
+        <Badge variant="outline" className={`text-xs ${
+          isConnected 
+            ? 'bg-green-50 text-green-700 border-green-200' 
+            : 'bg-amber-50 text-amber-700 border-amber-200'
+        }`}>
+          {isConnected ? 'Connected to LinkedIn' : 'Demo Posts'}
         </Badge>
       </div>
       
@@ -247,4 +284,6 @@ export function LinkedInFeed({ className = '', maxPosts = 5 }: LinkedInFeedProps
       </div>
     </div>
   )
-}
+})
+
+LinkedInFeed.displayName = 'LinkedInFeed'

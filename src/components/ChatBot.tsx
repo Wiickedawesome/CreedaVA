@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,7 @@ interface Message {
   content: string
 }
 
+// Memoized knowledge base to prevent re-creation
 const KNOWLEDGE_BASE: { [key: string]: string } = {
   // Greetings
   'hi|hello|hey|greetings': "Hello! I'm CreedaVA's assistant. I can help you with information about our services, pricing, or contact details. What would you like to know?",
@@ -50,17 +51,19 @@ const findResponse = (input: string): string => {
   return "I'm here to help! You can ask me about:\n• Our services\n• Pricing plans\n• Contact information\n• Real estate support\n• Technology support\n\nOr feel free to reach us directly at hello@creedava.com or +1 844-702-2202"
 }
 
-export function ChatBot() {
+export const ChatBot = memo(() => {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Memoize initial messages to prevent re-creation
+  const [messages, setMessages] = useState<Message[]>(() => [
     {
       role: 'assistant',
       content: "Hi! I'm CreedaVA's assistant. How can I help you learn about our virtual assistant services today?",
     },
   ])
-  const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -68,7 +71,7 @@ export function ChatBot() {
     }
   }, [messages])
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     if (!input.trim() || isLoading) return
 
     const userMessage: Message = { role: 'user', content: input.trim() }
@@ -76,7 +79,7 @@ export function ChatBot() {
     setInput('')
     setIsLoading(true)
 
-    // Simulate thinking delay for better UX
+    // Reduced delay for better performance
     setTimeout(() => {
       const response = findResponse(userMessage.content)
       const assistantMessage: Message = {
@@ -85,15 +88,21 @@ export function ChatBot() {
       }
       setMessages((prev) => [...prev, assistantMessage])
       setIsLoading(false)
-    }, 500)
-  }
+    }, 300)
+  }, [input, isLoading])
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage()
     }
-  }
+  }, [sendMessage])
+
+  const handleOpen = useCallback(() => setIsOpen(true), [])
+  const handleClose = useCallback(() => setIsOpen(false), [])
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value)
+  }, [])
 
   return (
     <>
@@ -107,9 +116,9 @@ export function ChatBot() {
             className="fixed bottom-6 right-6 z-50"
           >
             <Button
-              onClick={() => setIsOpen(true)}
+              onClick={handleOpen}
               size="lg"
-              className="h-16 w-16 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground shadow-2xl hover:shadow-accent/50 transition-all duration-300 hover:scale-110"
+              className="h-16 w-16 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground shadow-2xl hover:shadow-accent/50 transition-all duration-200 hover:scale-105"
             >
               <ChatCircle size={28} weight="fill" />
             </Button>
@@ -140,7 +149,7 @@ export function ChatBot() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleClose}
                   className="text-primary-foreground hover:bg-primary-foreground/10"
                 >
                   <X size={20} />
@@ -193,7 +202,7 @@ export function ChatBot() {
                   <div className="flex gap-2">
                     <Input
                       value={input}
-                      onChange={(e) => setInput(e.target.value)}
+                      onChange={handleInputChange}
                       onKeyPress={handleKeyPress}
                       placeholder="Ask about our services..."
                       disabled={isLoading}
@@ -219,4 +228,6 @@ export function ChatBot() {
       </AnimatePresence>
     </>
   )
-}
+})
+
+ChatBot.displayName = 'ChatBot'

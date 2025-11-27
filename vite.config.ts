@@ -99,8 +99,8 @@ export default defineConfig({
     modulePreload: {
       polyfill: true
     },
-    // Asset inlining threshold
-    assetsInlineLimit: 4096 // 4kb - inline smaller assets as base64
+    // Asset inlining threshold - increased for better caching
+    assetsInlineLimit: 8192 // 8kb - inline smaller assets as base64
   },
   // Performance optimizations
   optimizeDeps: {
@@ -109,14 +109,37 @@ export default defineConfig({
       'react-dom', 
       'react-router-dom',
       'framer-motion',
-      '@radix-ui/react-slot'
+      '@radix-ui/react-slot',
+      '@phosphor-icons/react',
+      'date-fns'
     ],
     exclude: ['sharp'] // Don't optimize dev dependency
   },
-  // Server configuration for development
+  // Enhanced server configuration for development
   server: {
     hmr: {
-      overlay: false // Disable error overlay for better performance
+      overlay: false, // Disable error overlay for better performance
+      port: 24678 // Custom HMR port to avoid conflicts
+    },
+    // Enable compression for dev server
+    middlewareMode: false,
+    // Optimize file watching
+    watch: {
+      usePolling: false,
+      ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**']
+    }
+  },
+  // Enhanced preview configuration
+  preview: {
+    port: 4173,
+    strictPort: true,
+    cors: true
+  },
+  // Add experimental features for better performance
+  experimental: {
+    renderBuiltUrl(filename) {
+      // Use CDN for assets in production if needed
+      return `/${filename}`
     }
   }
 });

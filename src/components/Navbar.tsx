@@ -1,32 +1,43 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo, useCallback, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { List } from '@phosphor-icons/react'
 
-export function Navbar() {
+export const Navbar = memo(() => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
 
   useEffect(() => {
+    let ticking = false
+    
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 20)
+          ticking = false
+        })
+        ticking = true
+      }
     }
-    window.addEventListener('scroll', handleScroll)
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const navLinks = [
+  const navLinks = useMemo(() => [
     { label: 'Home', path: '/' },
     { label: 'Services', path: '/services' },
     { label: 'About', path: '/about' },
     { label: 'Pricing', path: '/pricing' },
     { label: 'News', path: '/news' },
     { label: 'Contact', path: '/contact' },
-  ]
+  ], [])
 
-  const isActive = (path: string) => location.pathname === path
+  const isActive = useCallback((path: string) => location.pathname === path, [location.pathname])
+  
+  const handleMenuClose = useCallback(() => setIsMenuOpen(false), [])
 
   return (
     <header
@@ -74,7 +85,7 @@ export function Navbar() {
                   <Link
                     key={link.path}
                     to={link.path}
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={handleMenuClose}
                     className={`text-center text-lg font-medium transition-colors py-2 ${
                       isActive(link.path)
                         ? 'text-accent'
@@ -85,7 +96,7 @@ export function Navbar() {
                   </Link>
                 ))}
                 <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
-                  <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/contact" onClick={handleMenuClose}>
                     Get Started
                   </Link>
                 </Button>
@@ -96,4 +107,6 @@ export function Navbar() {
       </div>
     </header>
   )
-}
+})
+
+Navbar.displayName = 'Navbar'
