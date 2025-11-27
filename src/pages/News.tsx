@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar, ArrowRight, ExternalLink, Newspaper, Linkedin } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
-import { LinkedInWidget } from '@/components/LinkedInWidget'
+import { LinkedInFeed } from '@/components/LinkedInFeed'
 import { supabase } from '@/lib/supabase'
 import { format } from 'date-fns'
 
@@ -134,11 +134,11 @@ export default function News() {
               </p>
             </div>
 
-            {/* LinkedIn Company Page Widget */}
+            {/* LinkedIn Company Feed */}
             <Card className="border-border/50 overflow-hidden">
               <CardContent className="p-8">
                 <div className="w-full">
-                  <LinkedInWidget embedId="25621666" className="max-w-4xl mx-auto" />
+                  <LinkedInFeed maxPosts={3} className="max-w-4xl mx-auto" />
                 </div>
                   
                 {/* CTA */}

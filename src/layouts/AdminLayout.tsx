@@ -25,7 +25,8 @@ import {
   Linkedin,
   LayoutTemplate,
   Route,
-  BarChart3
+  BarChart3,
+  Link as LinkIcon
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -44,6 +45,7 @@ const navigation = [
 
 const marketingNav = [
   { name: 'Social Media', href: '/admin/social', icon: Linkedin },
+  { name: 'LinkedIn Integration', href: '/admin/linkedin-integration', icon: LinkIcon },
   { name: 'Blog', href: '/admin/blog', icon: FileText },
   { name: 'Ad Campaigns', href: '/admin/ad-campaigns', icon: TrendingUp },
   { name: 'Landing Pages', href: '/admin/landing-pages', icon: LayoutTemplate },

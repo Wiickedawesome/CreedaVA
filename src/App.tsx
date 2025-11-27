@@ -34,6 +34,7 @@ const Settings = lazy(() => import('@/pages/admin/Settings').then(m => ({ defaul
 
 // Marketing pages
 const Social = lazy(() => import('@/pages/admin/Social').then(m => ({ default: m.Social })))
+const LinkedInIntegration = lazy(() => import('@/pages/admin/LinkedInIntegration').then(m => ({ default: m.LinkedInIntegration })))
 const Blog = lazy(() => import('@/pages/admin/Blog').then(m => ({ default: m.Blog })))
 const AdCampaigns = lazy(() => import('@/pages/admin/AdCampaigns').then(m => ({ default: m.AdCampaigns })))
 const LandingPages = lazy(() => import('@/pages/admin/LandingPages').then(m => ({ default: m.LandingPages })))
@@ -118,6 +119,11 @@ function App() {
               <Route path="social" element={
                 <Suspense fallback={<PageLoader />}>
                   <Social />
+                </Suspense>
+              } />
+              <Route path="linkedin-integration" element={
+                <Suspense fallback={<PageLoader />}>
+                  <LinkedInIntegration />
                 </Suspense>
               } />
               <Route path="blog" element={
