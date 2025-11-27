@@ -1,8 +1,72 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Database } from '@/lib/database.types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp, Eye, MousePointer, Users, Globe } from 'lucide-react';
+import { format } from 'date-fns';
+
+type AnalyticsData = Database['public']['Tables']['analytics_data']['Row'];
+
 export function Analytics() {
+  const [analytics, setAnalytics] = useState<AnalyticsData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { fetchAnalytics(); }, []);
+
+  const fetchAnalytics = async () => {
+    try {
+      const { data, error } = await supabase.from('analytics_data').select('*').order('date', { ascending: false }).limit(30);
+      if (error) throw error;
+      setAnalytics(data || []);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const stats = {
+    totalPageViews: analytics.reduce((sum, a) => sum + (a.page_views || 0), 0),
+    totalClicks: analytics.reduce((sum, a) => sum + (a.clicks || 0), 0),
+    totalImpressions: analytics.reduce((sum, a) => sum + (a.impressions || 0), 0),
+    avgCTR: analytics.length > 0 ? analytics.reduce((sum, a) => sum + (Number(a.ctr) || 0), 0) / analytics.length : 0,
+    avgPosition: analytics.length > 0 ? analytics.reduce((sum, a) => sum + (Number(a.avg_position) || 0), 0) / analytics.length : 0
+  };
+
+  const topPages = analytics.slice(0, 10).reduce((acc, curr) => {
+    const existing = acc.find(p => p.page_path === curr.page_path);
+    if (existing) {
+      existing.page_views += curr.page_views || 0;
+      existing.clicks += curr.clicks || 0;
+    } else {
+      acc.push({ page_path: curr.page_path, page_views: curr.page_views || 0, clicks: curr.clicks || 0 });
+    }
+    return acc;
+  }, [] as Array<{ page_path: string; page_views: number; clicks: number; }>).sort((a, b) => b.page_views - a.page_views).slice(0, 5);
+
+  if (loading) return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
+
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold">Analytics & Reporting</h1>
-      <p className="text-muted-foreground mt-2">View content performance and search analytics</p>
+    <div className="p-8 space-y-6">
+      <div><h1 className="text-3xl font-bold">Analytics Dashboard</h1><p className="text-muted-foreground mt-2">Website performance and SEO metrics</p></div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Page Views</CardTitle><Eye className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{stats.totalPageViews.toLocaleString()}</div><p className="text-xs text-muted-foreground">Last 30 days</p></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Impressions</CardTitle><Globe className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{stats.totalImpressions.toLocaleString()}</div><p className="text-xs text-muted-foreground">Search results</p></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Clicks</CardTitle><MousePointer className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{stats.totalClicks.toLocaleString()}</div><p className="text-xs text-muted-foreground">From search</p></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Avg CTR</CardTitle><TrendingUp className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{stats.avgCTR.toFixed(2)}%</div><p className="text-xs text-muted-foreground">Click-through rate</p></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Avg Position</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{stats.avgPosition.toFixed(1)}</div><p className="text-xs text-muted-foreground">Search ranking</p></CardContent></Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card><CardHeader><CardTitle>Top Pages</CardTitle><CardDescription>Most visited pages (last 30 days)</CardDescription></CardHeader><CardContent><div className="space-y-4">{topPages.length === 0 ? <p className="text-sm text-muted-foreground text-center py-4">No data yet. Add analytics data in Supabase to see metrics here.</p> : topPages.map((page, i) => <div key={i} className="flex items-center justify-between"><div className="flex-1"><p className="text-sm font-medium truncate">{page.page_path}</p><p className="text-xs text-muted-foreground">{page.page_views.toLocaleString()} views • {page.clicks.toLocaleString()} clicks</p></div></div>)}</div></CardContent></Card>
+
+        <Card><CardHeader><CardTitle>Recent Activity</CardTitle><CardDescription>Latest analytics data points</CardDescription></CardHeader><CardContent><div className="space-y-4">{analytics.slice(0, 5).length === 0 ? <p className="text-sm text-muted-foreground text-center py-4">No recent activity</p> : analytics.slice(0, 5).map((item, i) => <div key={i} className="flex items-center justify-between border-b pb-2 last:border-0"><div><p className="text-sm font-medium truncate">{item.page_path}</p><p className="text-xs text-muted-foreground">{format(new Date(item.date), 'MMM d, yyyy')}</p></div><div className="text-right"><p className="text-sm font-medium">{item.page_views} views</p><p className="text-xs text-muted-foreground">{item.clicks} clicks</p></div></div>)}</div></CardContent></Card>
+      </div>
+
+      {analytics.length === 0 && (
+        <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800"><CardHeader><CardTitle>Get Started with Analytics</CardTitle><CardDescription>Your analytics dashboard is ready, but no data yet</CardDescription></CardHeader><CardContent><div className="space-y-2 text-sm"><p>To see analytics data here:</p><ol className="list-decimal list-inside space-y-1 text-muted-foreground"><li>Set up Google Search Console integration</li><li>Connect your website to Google Analytics</li><li>Data will automatically sync to your Supabase database</li><li>Or manually add analytics data to the analytics_data table</li></ol></div></CardContent></Card>
+      )}
     </div>
-  )
+  );
 }
