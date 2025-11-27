@@ -210,26 +210,11 @@ export function Tasks() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 p-4 rounded-lg border border-slate-200 dark:border-slate-600">
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Total Tasks</p>
-          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{taskStats.total}</p>
-        </div>
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">To Do</p>
-          <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{taskStats.todo}</p>
-        </div>
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
-          <p className="text-sm font-medium text-purple-700 dark:text-purple-300">In Progress</p>
-          <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{taskStats.inProgress}</p>
-        </div>
-        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 p-4 rounded-lg border border-green-200 dark:border-green-800">
-          <p className="text-sm font-medium text-green-700 dark:text-green-300">Completed</p>
-          <p className="text-3xl font-bold text-green-900 dark:text-green-100">{taskStats.completed}</p>
-        </div>
-        <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 p-4 rounded-lg border border-red-200 dark:border-red-800">
-          <p className="text-sm font-medium text-red-700 dark:text-red-300">Overdue</p>
-          <p className="text-3xl font-bold text-red-900 dark:text-red-100">{taskStats.overdue}</p>
-        </div>
+        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Total Tasks</div><div className="text-2xl font-bold text-gray-900 mt-2">{taskStats.total}</div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">To Do</div><div className="text-2xl font-bold text-gray-900 mt-2">{taskStats.todo}</div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">In Progress</div><div className="text-2xl font-bold text-gray-900 mt-2">{taskStats.inProgress}</div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Completed</div><div className="text-2xl font-bold text-gray-900 mt-2">{taskStats.completed}</div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Overdue</div><div className="text-2xl font-bold text-gray-900 mt-2">{taskStats.overdue}</div></CardContent></Card>
       </div>
 
       {/* Toolbar */}
