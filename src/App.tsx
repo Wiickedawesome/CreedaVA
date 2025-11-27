@@ -5,6 +5,12 @@ import { Footer } from '@/components/Footer'
 import { ChatBot } from '@/components/ChatBot'
 import { Home } from '@/pages/Home'
 import PerformanceMonitor from '@/components/PerformanceMonitor'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { Login } from '@/pages/Login'
+import { SignUp } from '@/pages/SignUp'
+import { AdminLayout } from '@/layouts/AdminLayout'
+import { AdminDashboard } from '@/pages/admin/Dashboard'
 
 // Lazy load route components for better performance
 const Services = lazy(() => import('@/pages/Services').then(module => ({ default: module.Services })))
@@ -12,6 +18,17 @@ const About = lazy(() => import('@/pages/About').then(module => ({ default: modu
 const Pricing = lazy(() => import('@/pages/Pricing').then(module => ({ default: module.Pricing })))
 const News = lazy(() => import('@/pages/News').then(module => ({ default: module.News })))
 const Contact = lazy(() => import('@/pages/Contact'))
+
+// Lazy load admin pages
+const Leads = lazy(() => import('@/pages/admin/Leads').then(m => ({ default: m.Leads })))
+const Contacts = lazy(() => import('@/pages/admin/Contacts').then(m => ({ default: m.Contacts })))
+const Tasks = lazy(() => import('@/pages/admin/Tasks').then(m => ({ default: m.Tasks })))
+const Projects = lazy(() => import('@/pages/admin/Projects').then(m => ({ default: m.Projects })))
+const Emails = lazy(() => import('@/pages/admin/Emails').then(m => ({ default: m.Emails })))
+const SEO = lazy(() => import('@/pages/admin/SEO').then(m => ({ default: m.SEO })))
+const Keywords = lazy(() => import('@/pages/admin/Keywords').then(m => ({ default: m.Keywords })))
+const Analytics = lazy(() => import('@/pages/admin/Analytics').then(m => ({ default: m.Analytics })))
+const Settings = lazy(() => import('@/pages/admin/Settings').then(m => ({ default: m.Settings })))
 
 // Loading fallback component
 const PageLoader = () => (
@@ -27,24 +44,87 @@ function App() {
   
   return (
     <Router basename={basename}>
-      <PerformanceMonitor />
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-grow">
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/contact" element={<Contact />} />
-            </Routes>
-          </Suspense>
-        </main>
-        <Footer />
-        <ChatBot />
-      </div>
+      <AuthProvider>
+        <PerformanceMonitor />
+        <Routes>
+          {/* Public auth routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+
+          {/* Protected admin routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="leads" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Leads />
+                </Suspense>
+              } />
+              <Route path="contacts" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Contacts />
+                </Suspense>
+              } />
+              <Route path="tasks" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Tasks />
+                </Suspense>
+              } />
+              <Route path="projects" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Projects />
+                </Suspense>
+              } />
+              <Route path="emails" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Emails />
+                </Suspense>
+              } />
+              <Route path="seo" element={
+                <Suspense fallback={<PageLoader />}>
+                  <SEO />
+                </Suspense>
+              } />
+              <Route path="keywords" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Keywords />
+                </Suspense>
+              } />
+              <Route path="analytics" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Analytics />
+                </Suspense>
+              } />
+              <Route path="settings" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Settings />
+                </Suspense>
+              } />
+            </Route>
+          </Route>
+
+          {/* Public website routes */}
+          <Route path="*" element={
+            <div className="flex flex-col min-h-screen">
+              <Navbar />
+              <main className="flex-grow">
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/services" element={<Services />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/news" element={<News />} />
+                    <Route path="/contact" element={<Contact />} />
+                  </Routes>
+                </Suspense>
+              </main>
+              <Footer />
+              <ChatBot />
+            </div>
+          } />
+        </Routes>
+      </AuthProvider>
     </Router>
   )
 }
