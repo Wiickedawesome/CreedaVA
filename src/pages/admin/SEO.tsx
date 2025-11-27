@@ -36,7 +36,19 @@ export function SEO() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<SEOPage | null>(null);
-  const [formData, setFormData] = useState<Partial<SEOPageInsert>>({
+  const [formData, setFormData] = useState<{
+    page_path: string
+    page_title: string
+    meta_title: string
+    meta_description: string
+    og_title?: string | null
+    og_description?: string | null
+    og_image?: string | null
+    twitter_title?: string | null
+    twitter_description?: string | null
+    twitter_image?: string | null
+    canonical_url?: string | null
+  }>({
     page_path: '',
     page_title: '',
     meta_title: '',
@@ -84,7 +96,7 @@ export function SEO() {
       } else {
         const { error } = await supabase
           .from('seo_pages')
-          .insert([formData as SEOPageInsert]);
+          .insert([formData]);
 
         if (error) throw error;
       }
@@ -440,12 +452,12 @@ export function SEO() {
       {/* Search */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white" />
           <Input
             placeholder="Search pages..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+            className="pl-9 bg-gray-800 border-gray-600 text-white placeholder-white"
           />
         </div>
         <div className="text-sm text-gray-400">

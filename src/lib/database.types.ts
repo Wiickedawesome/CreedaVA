@@ -332,7 +332,23 @@ export interface Database {
           last_indexed: string | null
           index_status: 'indexed' | 'not_indexed' | 'pending' | 'blocked' | null
         }
-        Insert: Omit<Database['public']['Tables']['seo_pages']['Row'], 'id' | 'created_at' | 'updated_at' | 'meta_keywords' | 'og_type' | 'twitter_card' | 'robots' | 'structured_data' | 'hreflang' | 'page_views' | 'avg_time_on_page' | 'is_published'>
+        Insert: {
+          page_path: string
+          page_title: string
+          meta_title: string
+          meta_description: string
+          og_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          twitter_title?: string | null
+          twitter_description?: string | null
+          twitter_image?: string | null
+          canonical_url?: string | null
+          bounce_rate?: number | null
+          last_published?: string | null
+          last_indexed?: string | null
+          index_status?: 'indexed' | 'not_indexed' | 'pending' | 'blocked' | null
+        }
         Update: Partial<Database['public']['Tables']['seo_pages']['Insert']>
       }
       keyword_tracking: {

@@ -417,12 +417,12 @@ export function Contacts() {
       {/* Search */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white" />
           <Input
             placeholder="Search contacts..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+            className="pl-9 bg-gray-800 border-gray-600 text-white placeholder-white"
           />
         </div>
         <div className="text-sm font-medium text-gray-400">
