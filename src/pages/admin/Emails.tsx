@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Search, Mail, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -56,15 +57,15 @@ export function Emails() {
   const filteredEmails = emails.filter(e => e.subject.toLowerCase().includes(searchTerm.toLowerCase()) || e.to_email.toLowerCase().includes(searchTerm.toLowerCase()));
   const stats = { total: emails.length, sent: emails.filter(e => e.status === 'sent' || e.status === 'delivered').length, opened: emails.filter(e => e.status === 'opened' || e.status === 'clicked').length };
 
-  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-100"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div></div>;
 
   return (
-    <div className="p-8 space-y-6 bg-slate-100 min-h-screen">
-      <div><h1 className="text-3xl font-bold text-white">Email Campaigns</h1><p className="text-white mt-2 font-medium">Manage email outreach</p></div>
+    <div className="p-8 space-y-6 min-h-screen">
+      <div><h1 className="text-2xl font-semibold text-gray-900">Email Campaigns</h1><p className="text-gray-600 mt-1">Manage email outreach</p></div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-slate-100 p-4 rounded-lg border border-slate-300"><p className="text-sm font-medium text-white">Total Emails</p><p className="text-3xl font-bold text-white">{stats.total}</p></div>
-        <div className="bg-slate-100 p-4 rounded-lg border border-slate-300"><p className="text-sm font-medium text-white">Sent</p><p className="text-3xl font-bold text-white">{stats.sent}</p></div>
-        <div className="bg-slate-100 p-4 rounded-lg border border-slate-300"><p className="text-sm font-medium text-white">Opened</p><p className="text-3xl font-bold text-white">{stats.opened}</p></div>
+        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Total Emails</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.total}</div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Sent</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.sent}</div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Opened</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.opened}</div></CardContent></Card>
       </div>
       <div className="flex gap-4">
         <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" /><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" /></div>

@@ -84,7 +84,7 @@ export function Keywords() {
   if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
 
   return (
-    <div className="p-8 space-y-6 bg-slate-100 min-h-screen">
+    <div className="p-8 space-y-6 min-h-screen">
       <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Keyword Tracking</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Monitor search rankings and SEO performance</p></div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-950 dark:to-violet-900 p-4 rounded-lg border border-violet-200 dark:border-violet-800"><p className="text-sm font-medium text-violet-700 dark:text-violet-300">Total Keywords</p><p className="text-3xl font-bold text-violet-900 dark:text-violet-100">{stats.total}</p></div>

@@ -59,22 +59,22 @@ export function Social() {
 
   const stats = { total: posts.length, linkedin: posts.filter(p => p.platform === 'linkedin').length, scheduled: posts.filter(p => p.status === 'scheduled').length, published: posts.filter(p => p.status === 'published').length, totalEngagement: posts.reduce((sum, p) => sum + ((p.likes || 0) + (p.comments || 0) + (p.shares || 0)), 0) };
 
-  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-100"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div></div>;
 
   return (
-    <div className="p-8 space-y-6 bg-slate-100 min-h-screen">
-      <div><h1 className="text-3xl font-bold text-white">Social Media</h1><p className="text-white mt-2 font-medium">Manage posts across LinkedIn, Twitter, Facebook & Instagram</p></div>
+    <div className="p-8 space-y-6 min-h-screen">
+      <div><h1 className="text-2xl font-semibold text-gray-900">Social Media</h1><p className="text-gray-600 mt-1">Manage posts across LinkedIn, Twitter, Facebook & Instagram</p></div>
       
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card className="bg-slate-100 border-slate-300"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-white">Total Posts</CardTitle><Share2 className="h-4 w-4 text-white" /></CardHeader><CardContent><div className="text-2xl font-bold text-white">{stats.total}</div></CardContent></Card>
-        <Card className="bg-slate-100 border-slate-300"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-white">LinkedIn</CardTitle><Linkedin className="h-4 w-4 text-white" /></CardHeader><CardContent><div className="text-2xl font-bold text-white">{stats.linkedin}</div><p className="text-xs text-white">Primary platform</p></CardContent></Card>
-        <Card className="bg-slate-100 border-slate-300"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-white">Scheduled</CardTitle><Calendar className="h-4 w-4 text-white" /></CardHeader><CardContent><div className="text-2xl font-bold text-white">{stats.scheduled}</div></CardContent></Card>
-        <Card className="bg-slate-100 border-slate-300"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-white">Published</CardTitle><TrendingUp className="h-4 w-4 text-white" /></CardHeader><CardContent><div className="text-2xl font-bold text-white">{stats.published}</div></CardContent></Card>
-        <Card className="bg-slate-100 border-slate-300"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-white">Engagement</CardTitle><Heart className="h-4 w-4 text-white" /></CardHeader><CardContent><div className="text-2xl font-bold text-white">{stats.totalEngagement}</div><p className="text-xs text-white">Total interactions</p></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-600">Total Posts</CardTitle><Share2 className="h-4 w-4 text-gray-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-gray-900">{stats.total}</div></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-600">LinkedIn</CardTitle><Linkedin className="h-4 w-4 text-gray-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-gray-900">{stats.linkedin}</div><p className="text-xs text-gray-500">Primary platform</p></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-600">Scheduled</CardTitle><Calendar className="h-4 w-4 text-gray-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-gray-900">{stats.scheduled}</div></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-600">Published</CardTitle><TrendingUp className="h-4 w-4 text-gray-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-gray-900">{stats.published}</div></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-600">Engagement</CardTitle><Heart className="h-4 w-4 text-gray-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-gray-900">{stats.totalEngagement}</div><p className="text-xs text-gray-500">Total interactions</p></CardContent></Card>
       </div>
 
       <div className="flex gap-4">
-        <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white w-4 h-4" /><Input placeholder="Search posts..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 bg-slate-100 border-slate-300 text-white placeholder:text-white" /></div>
+        <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" /><Input placeholder="Search posts..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" /></div>
         <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="Platform" /></SelectTrigger>
           <SelectContent><SelectItem value="all">All Platforms</SelectItem><SelectItem value="linkedin">LinkedIn</SelectItem><SelectItem value="twitter">Twitter</SelectItem><SelectItem value="facebook">Facebook</SelectItem><SelectItem value="instagram">Instagram</SelectItem></SelectContent>

@@ -64,42 +64,17 @@ export function AdminLayout() {
   const userInitials = user?.email?.substring(0, 2).toUpperCase() || 'U'
 
   return (
-    <div className="flex h-screen bg-slate-100">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-100 border-r border-slate-300 flex flex-col">
-        <div className="p-4 border-b border-slate-300">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-white">CreedaVA</div>
-          </Link>
-          <p className="text-xs text-white mt-1 font-medium">CRM & SEO Platform</p>
+      <aside className="w-64 bg-gray-900 flex flex-col">
+        <div className="p-6">
+          <div className="text-xl font-semibold text-white">CreedaVA</div>
+          <p className="text-sm text-gray-400 mt-1">Admin Panel</p>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          {navigation.map((item) => {
-            const isActive = location.pathname === item.href || 
-              (item.href !== '/admin' && location.pathname.startsWith(item.href))
-            const Icon = item.icon
-            
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={cn(
-                  'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-slate-200 text-slate-900'
-                    : 'text-white hover:bg-slate-200 hover:text-slate-900'
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                <span>{item.name}</span>
-              </Link>
-            )
-          })}
-          
-          <div className="pt-4 mt-4 border-t border-slate-300">
-            <p className="px-3 mb-2 text-xs font-bold text-white uppercase tracking-wider">Marketing</p>
-            {marketingNav.map((item) => {
+        <nav className="flex-1 px-4 pb-4">
+          <div className="space-y-1">
+            {navigation.map((item) => {
               const isActive = location.pathname === item.href || 
                 (item.href !== '/admin' && location.pathname.startsWith(item.href))
               const Icon = item.icon
@@ -109,35 +84,64 @@ export function AdminLayout() {
                   key={item.name}
                   to={item.href}
                   className={cn(
-                    'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                    'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
                     isActive
-                      ? 'bg-slate-200 text-slate-900'
-                      : 'text-white hover:bg-slate-200 hover:text-slate-900'
+                      ? 'bg-gray-800 text-white'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                   )}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.name}</span>
+                  <Icon className="mr-3 h-5 w-5" />
+                  {item.name}
                 </Link>
               )
             })}
           </div>
+          
+          <div className="mt-8">
+            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Marketing</div>
+            <div className="mt-2 space-y-1">
+              {marketingNav.map((item) => {
+                const isActive = location.pathname === item.href || 
+                  (item.href !== '/admin' && location.pathname.startsWith(item.href))
+                const Icon = item.icon
+                
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={cn(
+                      'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                      isActive
+                        ? 'bg-gray-800 text-white'
+                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    )}
+                  >
+                    <Icon className="mr-3 h-5 w-5" />
+                    {item.name}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
         </nav>
 
-        <div className="p-4 border-t border-slate-300">
+        <div className="p-4 border-t border-gray-800">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="w-full justify-start space-x-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>{userInitials}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 text-left text-sm">
-                  <p className="font-medium truncate">{user?.email}</p>
-                  <p className="text-xs text-white">Admin</p>
+              <Button variant="ghost" className="w-full justify-start p-2 h-auto hover:bg-gray-800">
+                <div className="flex items-center w-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-gray-700 text-white text-xs">{userInitials}</AvatarFallback>
+                  </Avatar>
+                  <div className="ml-3 text-left">
+                    <p className="text-sm font-medium text-white truncate">{user?.email}</p>
+                    <p className="text-xs text-gray-400">Admin</p>
+                  </div>
                 </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
                 <Settings className="mr-2 h-4 w-4" />
@@ -153,7 +157,7 @@ export function AdminLayout() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-white">
         <Outlet />
       </main>
     </div>
