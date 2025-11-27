@@ -48,44 +48,122 @@ export function Analytics() {
 
   return (
     <div className="p-8 space-y-6 min-h-screen">
-      <div><h1 className="text-2xl font-semibold text-gray-900">Analytics</h1><p className="text-gray-600 mt-1">Website performance and SEO metrics</p></div>
+      <div>
+        <h1 className="text-2xl font-semibold text-white">Analytics</h1>
+        <p className="text-gray-300 mt-1">Website performance and SEO metrics</p>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-600">Page Views</CardTitle><Eye className="h-4 w-4 text-gray-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-gray-900">{stats.totalPageViews.toLocaleString()}</div><p className="text-xs text-gray-500">Last 30 days</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-600">Impressions</CardTitle><Globe className="h-4 w-4 text-gray-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-gray-900">{stats.totalImpressions.toLocaleString()}</div><p className="text-xs text-gray-500">Search results</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-600">Clicks</CardTitle><MousePointer className="h-4 w-4 text-gray-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-gray-900">{stats.totalClicks.toLocaleString()}</div><p className="text-xs text-gray-500">From search</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-600">Avg CTR</CardTitle><TrendingUp className="h-4 w-4 text-gray-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-gray-900">{stats.avgCTR.toFixed(2)}%</div><p className="text-xs text-gray-500">Click-through rate</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-600">Avg Position</CardTitle><Users className="h-4 w-4 text-gray-400" /></CardHeader><CardContent><div className="text-2xl font-bold text-gray-900">{stats.avgPosition.toFixed(1)}</div><p className="text-xs text-gray-500">Search ranking</p></CardContent></Card>
+        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-blue-100">Page Views</h3>
+            <Eye className="h-4 w-4 text-blue-200" />
+          </div>
+          <div className="text-2xl font-bold text-white">{stats.totalPageViews.toLocaleString()}</div>
+          <p className="text-xs text-blue-100">Last 30 days</p>
+        </div>
+        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-green-100">Impressions</h3>
+            <Globe className="h-4 w-4 text-green-200" />
+          </div>
+          <div className="text-2xl font-bold text-white">{stats.totalImpressions.toLocaleString()}</div>
+          <p className="text-xs text-green-100">Search results</p>
+        </div>
+        <div className="bg-yellow-600 p-4 rounded-lg border border-yellow-500">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-yellow-100">Clicks</h3>
+            <MousePointer className="h-4 w-4 text-yellow-200" />
+          </div>
+          <div className="text-2xl font-bold text-white">{stats.totalClicks.toLocaleString()}</div>
+          <p className="text-xs text-yellow-100">From search</p>
+        </div>
+        <div className="bg-purple-600 p-4 rounded-lg border border-purple-500">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-purple-100">Avg CTR</h3>
+            <TrendingUp className="h-4 w-4 text-purple-200" />
+          </div>
+          <div className="text-2xl font-bold text-white">{stats.avgCTR.toFixed(2)}%</div>
+          <p className="text-xs text-purple-100">Click-through rate</p>
+        </div>
+        <div className="bg-red-600 p-4 rounded-lg border border-red-500">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-red-100">Avg Position</h3>
+            <Users className="h-4 w-4 text-red-200" />
+          </div>
+          <div className="text-2xl font-bold text-white">{stats.avgPosition.toFixed(1)}</div>
+          <p className="text-xs text-red-100">Search ranking</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card><CardHeader><CardTitle>Top Pages</CardTitle><CardDescription>Most visited pages (last 30 days)</CardDescription></CardHeader><CardContent><div className="space-y-4">{topPages.length === 0 ? <p className="text-sm text-muted-foreground text-center py-4">No data yet. Add analytics data in Supabase to see metrics here.</p> : topPages.map((page, i) => <div key={i} className="flex items-center justify-between"><div className="flex-1"><p className="text-sm font-medium truncate">{page.page_path}</p><p className="text-xs text-muted-foreground">{page.page_views.toLocaleString()} views • {page.clicks.toLocaleString()} clicks</p></div></div>)}</div></CardContent></Card>
+        <div className="bg-gray-700 p-6 rounded-lg border border-gray-600">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-white">Top Pages</h3>
+            <p className="text-gray-300 text-sm">Most visited pages (last 30 days)</p>
+          </div>
+          <div className="space-y-4">
+            {topPages.length === 0 ? (
+              <p className="text-sm text-gray-300 text-center py-4">No data yet. Add analytics data in Supabase to see metrics here.</p>
+            ) : (
+              topPages.map((page, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium truncate text-white">{page.page_path}</p>
+                    <p className="text-xs text-gray-300">{page.page_views.toLocaleString()} views • {page.clicks.toLocaleString()} clicks</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
 
-        <Card><CardHeader><CardTitle>Recent Activity</CardTitle><CardDescription>Latest analytics data points</CardDescription></CardHeader><CardContent><div className="space-y-4">{analytics.slice(0, 5).length === 0 ? <p className="text-sm text-muted-foreground text-center py-4">No recent activity</p> : analytics.slice(0, 5).map((item, i) => <div key={i} className="flex items-center justify-between border-b pb-2 last:border-0"><div><p className="text-sm font-medium truncate">{item.page_path}</p><p className="text-xs text-muted-foreground">{format(new Date(item.date), 'MMM d, yyyy')}</p></div><div className="text-right"><p className="text-sm font-medium">{item.page_views} views</p><p className="text-xs text-muted-foreground">{item.clicks} clicks</p></div></div>)}</div></CardContent></Card>
+        <div className="bg-gray-700 p-6 rounded-lg border border-gray-600">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
+            <p className="text-gray-300 text-sm">Latest analytics data points</p>
+          </div>
+          <div className="space-y-4">
+            {analytics.slice(0, 5).length === 0 ? (
+              <p className="text-sm text-gray-300 text-center py-4">No recent activity</p>
+            ) : (
+              analytics.slice(0, 5).map((item, i) => (
+                <div key={i} className="flex items-center justify-between border-b border-gray-600 pb-2 last:border-0">
+                  <div>
+                    <p className="text-sm font-medium truncate text-white">{item.page_path}</p>
+                    <p className="text-xs text-gray-300">{format(new Date(item.date), 'MMM d, yyyy')}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-white">{item.page_views} views</p>
+                    <p className="text-xs text-gray-300">{item.clicks} clicks</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
       {analytics.length === 0 && (
-        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-blue-200 dark:border-blue-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+        <div className="bg-blue-800 p-6 rounded-lg border border-blue-600">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
               Google Analytics Connected
-            </CardTitle>
-            <CardDescription>Tracking ID: G-MX1D5RQMQS</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm">
-              <p className="font-medium">✅ Your site is now tracking analytics!</p>
-              <p className="text-muted-foreground">Data will start appearing here within 24-48 hours. To see analytics data immediately:</p>
-              <ol className="list-decimal list-inside space-y-2 text-muted-foreground ml-2">
-                <li>Visit your website and browse a few pages</li>
-                <li>Check <a href="https://analytics.google.com/analytics/web/#/p471719022/reports/intelligenthome" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Google Analytics Dashboard</a> for real-time data</li>
-                <li>Set up Google Search Console integration for search data</li>
-                <li>Or manually add test data to the <code className="bg-muted px-1 py-0.5 rounded">analytics_data</code> table in Supabase</li>
-              </ol>
-            </div>
-          </CardContent>
-        </Card>
+            </h3>
+            <p className="text-blue-200 text-sm">Tracking ID: G-MX1D5RQMQS</p>
+          </div>
+          <div className="space-y-3 text-sm">
+            <p className="font-medium text-white">✅ Your site is now tracking analytics!</p>
+            <p className="text-blue-200">Data will start appearing here within 24-48 hours. To see analytics data immediately:</p>
+            <ol className="list-decimal list-inside space-y-2 text-blue-200 ml-2">
+              <li>Visit your website and browse a few pages</li>
+              <li>Check <a href="https://analytics.google.com/analytics/web/#/p471719022/reports/intelligenthome" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:text-blue-100 hover:underline">Google Analytics Dashboard</a> for real-time data</li>
+              <li>Set up Google Search Console integration for search data</li>
+              <li>Or manually add test data to the <code className="bg-blue-700 text-blue-100 px-1 py-0.5 rounded">analytics_data</code> table in Supabase</li>
+            </ol>
+          </div>
+        </div>
       )}
     </div>
   );

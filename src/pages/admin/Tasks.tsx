@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Search, Edit, Trash2, CheckCircle2, Circle, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -100,14 +101,14 @@ export function Tasks() {
       if (editingTask) {
         const { error } = await supabase
           .from('tasks')
-          .update(dataToSubmit)
+          .update(dataToSubmit as any)
           .eq('id', editingTask.id);
 
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('tasks')
-          .insert([dataToSubmit as TaskInsert]);
+          .insert([dataToSubmit as any]);
 
         if (error) throw error;
       }
@@ -201,20 +202,35 @@ export function Tasks() {
   }
 
   return (
-    <div className="p-8 space-y-6 min-h-screen">
+    <div className="p-6 space-y-6">
       {/* Header with Stats */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Tasks</h1>
-        <p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Manage your tasks and to-dos</p>
+        <h1 className="text-2xl font-semibold text-white">Tasks</h1>
+        <p className="text-gray-300 mt-1">Manage your tasks and to-dos</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Total Tasks</div><div className="text-2xl font-bold text-gray-900 mt-2">{taskStats.total}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">To Do</div><div className="text-2xl font-bold text-gray-900 mt-2">{taskStats.todo}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">In Progress</div><div className="text-2xl font-bold text-gray-900 mt-2">{taskStats.inProgress}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Completed</div><div className="text-2xl font-bold text-gray-900 mt-2">{taskStats.completed}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Overdue</div><div className="text-2xl font-bold text-gray-900 mt-2">{taskStats.overdue}</div></CardContent></Card>
+        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+          <p className="text-sm font-medium text-gray-300">Total Tasks</p>
+          <p className="text-2xl font-bold text-white mt-2">{taskStats.total}</p>
+        </div>
+        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
+          <p className="text-sm font-medium text-blue-100">To Do</p>
+          <p className="text-2xl font-bold text-white mt-2">{taskStats.todo}</p>
+        </div>
+        <div className="bg-yellow-600 p-4 rounded-lg border border-yellow-500">
+          <p className="text-sm font-medium text-yellow-100">In Progress</p>
+          <p className="text-2xl font-bold text-white mt-2">{taskStats.inProgress}</p>
+        </div>
+        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
+          <p className="text-sm font-medium text-green-100">Completed</p>
+          <p className="text-2xl font-bold text-white mt-2">{taskStats.completed}</p>
+        </div>
+        <div className="bg-red-600 p-4 rounded-lg border border-red-500">
+          <p className="text-sm font-medium text-red-100">Overdue</p>
+          <p className="text-2xl font-bold text-white mt-2">{taskStats.overdue}</p>
+        </div>
       </div>
 
       {/* Toolbar */}
@@ -343,17 +359,17 @@ export function Tasks() {
       </div>
 
       {/* Tasks Table */}
-      <div className="border rounded-lg">
+      <div className="bg-gray-700 border border-gray-600 rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Task</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Priority</TableHead>
-              <TableHead>Due Date</TableHead>
-              <TableHead>Estimated</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="border-gray-600 bg-gray-800 hover:bg-gray-800">
+              <TableHead className="text-gray-200 font-medium">Task</TableHead>
+              <TableHead className="text-gray-200 font-medium">Status</TableHead>
+              <TableHead className="text-gray-200 font-medium">Priority</TableHead>
+              <TableHead className="text-gray-200 font-medium">Due Date</TableHead>
+              <TableHead className="text-gray-200 font-medium">Estimated</TableHead>
+              <TableHead className="text-gray-200 font-medium">Created</TableHead>
+              <TableHead className="text-right text-gray-200 font-medium">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -172,8 +172,8 @@ export function Leads() {
     <div className="p-8 space-y-6 min-h-screen">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Leads Management</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-1 font-medium">Manage and track your sales leads</p>
+          <h1 className="text-3xl font-bold text-white">Leads Management</h1>
+          <p className="text-gray-300 mt-1 font-medium">Manage and track your sales leads</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -334,41 +334,41 @@ export function Leads() {
             className="pl-9"
           />
         </div>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-gray-300">
           {filteredLeads.length} lead{filteredLeads.length !== 1 ? 's' : ''}
         </div>
       </div>
 
       {/* Leads Table */}
-      <div className="border rounded-lg">
+      <div className="bg-gray-700 rounded-lg border border-gray-600">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Temperature</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead>Value</TableHead>
-              <TableHead>Score</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="bg-gray-800 border-gray-600">
+              <TableHead className="text-gray-200 font-medium">Name</TableHead>
+              <TableHead className="text-gray-200 font-medium">Company</TableHead>
+              <TableHead className="text-gray-200 font-medium">Email</TableHead>
+              <TableHead className="text-gray-200 font-medium">Status</TableHead>
+              <TableHead className="text-gray-200 font-medium">Temperature</TableHead>
+              <TableHead className="text-gray-200 font-medium">Source</TableHead>
+              <TableHead className="text-gray-200 font-medium">Value</TableHead>
+              <TableHead className="text-gray-200 font-medium">Score</TableHead>
+              <TableHead className="text-gray-200 font-medium">Created</TableHead>
+              <TableHead className="text-right text-gray-200 font-medium">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredLeads.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+              <TableRow className="border-gray-600">
+                <TableCell colSpan={10} className="text-center py-8 text-gray-300">
                   No leads found. Create your first lead to get started.
                 </TableCell>
               </TableRow>
             ) : (
               filteredLeads.map((lead) => (
-                <TableRow key={lead.id}>
-                  <TableCell className="font-medium">{lead.name}</TableCell>
-                  <TableCell>{lead.company || '-'}</TableCell>
-                  <TableCell>{lead.email}</TableCell>
+                <TableRow key={lead.id} className="border-gray-600 hover:bg-gray-650">
+                  <TableCell className="font-medium text-white">{lead.name}</TableCell>
+                  <TableCell className="text-gray-300">{lead.company || '-'}</TableCell>
+                  <TableCell className="text-gray-300">{lead.email}</TableCell>
                   <TableCell>
                     <Badge className={statusColors[lead.status]}>
                       {lead.status.replace('_', ' ')}
@@ -377,25 +377,26 @@ export function Leads() {
                   <TableCell>
                     <div className="flex items-center gap-1">
                       {temperatureIcons[lead.temperature]}
-                      <span className="capitalize">{lead.temperature}</span>
+                      <span className="capitalize text-gray-300">{lead.temperature}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="capitalize">{lead.source.replace('_', ' ')}</TableCell>
-                  <TableCell>
+                  <TableCell className="capitalize text-gray-300">{lead.source.replace('_', ' ')}</TableCell>
+                  <TableCell className="text-gray-300">
                     {lead.estimated_value 
                       ? `$${lead.estimated_value.toLocaleString()}` 
                       : '-'}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{lead.lead_score}/100</Badge>
+                    <Badge variant="outline" className="text-gray-300 border-gray-500">{lead.lead_score}/100</Badge>
                   </TableCell>
-                  <TableCell>{format(new Date(lead.created_at), 'MMM d, yyyy')}</TableCell>
+                  <TableCell className="text-gray-300">{format(new Date(lead.created_at), 'MMM d, yyyy')}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => handleEdit(lead)}
+                        className="text-gray-300 hover:text-white hover:bg-gray-600"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
@@ -403,6 +404,7 @@ export function Leads() {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleDelete(lead.id)}
+                        className="text-red-400 hover:text-red-300 hover:bg-gray-600"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

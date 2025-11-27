@@ -61,17 +61,62 @@ export function Emails() {
 
   return (
     <div className="p-8 space-y-6 min-h-screen">
-      <div><h1 className="text-2xl font-semibold text-gray-900">Email Campaigns</h1><p className="text-gray-600 mt-1">Manage email outreach</p></div>
+      <div>
+        <h1 className="text-2xl font-semibold text-white">Email Campaigns</h1>
+        <p className="text-gray-300 mt-1">Manage email outreach</p>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Total Emails</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.total}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Sent</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.sent}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Opened</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.opened}</div></CardContent></Card>
+        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
+          <p className="text-sm font-medium text-blue-100">Total Emails</p>
+          <p className="text-2xl font-bold text-white mt-2">{stats.total}</p>
+        </div>
+        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
+          <p className="text-sm font-medium text-green-100">Sent</p>
+          <p className="text-2xl font-bold text-white mt-2">{stats.sent}</p>
+        </div>
+        <div className="bg-yellow-600 p-4 rounded-lg border border-yellow-500">
+          <p className="text-sm font-medium text-yellow-100">Opened</p>
+          <p className="text-2xl font-bold text-white mt-2">{stats.opened}</p>
+        </div>
       </div>
       <div className="flex gap-4">
         <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" /><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" /></div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />New Email</Button></DialogTrigger><DialogContent><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>Draft Email</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>From *</Label><Input value={formData.from_email} onChange={(e) => setFormData({ ...formData, from_email: e.target.value })} required type="email" /></div><div className="space-y-2"><Label>To *</Label><Input value={formData.to_email} onChange={(e) => setFormData({ ...formData, to_email: e.target.value })} required type="email" /></div><div className="space-y-2"><Label>Subject *</Label><Input value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} required /></div><div className="space-y-2"><Label>Body *</Label><Textarea value={formData.body} onChange={(e) => setFormData({ ...formData, body: e.target.value })} required rows={6} /></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">Save Draft</Button></DialogFooter></form></DialogContent></Dialog>
       </div>
-      <Table><TableHeader><TableRow><TableHead>Subject</TableHead><TableHead>To</TableHead><TableHead>Status</TableHead><TableHead>Sent</TableHead><TableHead>Opens</TableHead></TableRow></TableHeader><TableBody>{filteredEmails.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No emails yet</TableCell></TableRow> : filteredEmails.map(e => <TableRow key={e.id}><TableCell><div className="font-medium">{e.subject}</div></TableCell><TableCell>{e.to_email}</TableCell><TableCell><Badge className={statusColors[e.status as keyof typeof statusColors]}>{e.status}</Badge></TableCell><TableCell className="text-muted-foreground">{e.sent_at ? format(new Date(e.sent_at), 'MMM d, yyyy') : '—'}</TableCell><TableCell>{e.opens_count || 0}</TableCell></TableRow>)}</TableBody></Table>
+      <div className="bg-gray-700 rounded-lg border border-gray-600">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-800 border-gray-600">
+              <TableHead className="text-gray-200 font-medium">Subject</TableHead>
+              <TableHead className="text-gray-200 font-medium">To</TableHead>
+              <TableHead className="text-gray-200 font-medium">Status</TableHead>
+              <TableHead className="text-gray-200 font-medium">Sent</TableHead>
+              <TableHead className="text-gray-200 font-medium">Opens</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredEmails.length === 0 ? (
+              <TableRow className="border-gray-600">
+                <TableCell colSpan={5} className="text-center text-gray-300 py-8">No emails yet</TableCell>
+              </TableRow>
+            ) : (
+              filteredEmails.map(e => (
+                <TableRow key={e.id} className="border-gray-600 hover:bg-gray-650">
+                  <TableCell>
+                    <div className="font-medium text-white">{e.subject}</div>
+                  </TableCell>
+                  <TableCell className="text-gray-300">{e.to_email}</TableCell>
+                  <TableCell>
+                    <Badge className={statusColors[e.status as keyof typeof statusColors]}>{e.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-gray-300">{e.sent_at ? format(new Date(e.sent_at), 'MMM d, yyyy') : '—'}</TableCell>
+                  <TableCell className="text-gray-300">{e.opens_count || 0}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

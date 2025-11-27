@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Search, TrendingUp, DollarSign, BarChart3, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -49,10 +50,10 @@ export function AdCampaigns() {
     try {
       const dataToSubmit = { ...formData, created_by: user?.id, budget: parseFloat(formData.budget), spend: parseFloat(formData.spend) };
       if (editingCampaign) {
-        const { error } = await supabase.from('ad_campaigns').update(dataToSubmit).eq('id', editingCampaign.id);
+        const { error } = await supabase.from('ad_campaigns').update(dataToSubmit as any).eq('id', editingCampaign.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('ad_campaigns').insert([dataToSubmit]);
+        const { error } = await supabase.from('ad_campaigns').insert([dataToSubmit as any]);
         if (error) throw error;
       }
       setIsDialogOpen(false);
@@ -70,13 +71,28 @@ export function AdCampaigns() {
 
   return (
     <div className="p-8 space-y-6 min-h-screen">
-      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Ad Campaigns</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Track advertising performance and ROI</p></div>
+      <div>
+        <h1 className="text-3xl font-bold text-white">Ad Campaigns</h1>
+        <p className="text-gray-300 mt-2 font-medium">Track advertising performance and ROI</p>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Total Campaigns</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.total}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Active</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.active}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Total Spend</div><div className="text-2xl font-bold text-gray-900 mt-2">${stats.totalSpend.toFixed(2)}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Conversions</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.totalConversions}</div></CardContent></Card>
+        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+          <p className="text-sm font-medium text-gray-300">Total Campaigns</p>
+          <p className="text-2xl font-bold text-white mt-2">{stats.total}</p>
+        </div>
+        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
+          <p className="text-sm font-medium text-green-100">Active</p>
+          <p className="text-2xl font-bold text-white mt-2">{stats.active}</p>
+        </div>
+        <div className="bg-red-600 p-4 rounded-lg border border-red-500">
+          <p className="text-sm font-medium text-red-100">Total Spend</p>
+          <p className="text-2xl font-bold text-white mt-2">${stats.totalSpend.toFixed(2)}</p>
+        </div>
+        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
+          <p className="text-sm font-medium text-blue-100">Conversions</p>
+          <p className="text-2xl font-bold text-white mt-2">{stats.totalConversions}</p>
+        </div>
       </div>
 
       <div className="flex gap-4">

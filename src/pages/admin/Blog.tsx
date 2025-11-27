@@ -85,13 +85,28 @@ export function Blog() {
 
   return (
     <div className="p-8 space-y-6 min-h-screen">
-      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Blog & News</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Manage articles and company updates</p></div>
+      <div>
+        <h1 className="text-3xl font-bold text-white">Blog & News</h1>
+        <p className="text-gray-300 mt-2 font-medium">Manage articles and company updates</p>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 p-4 rounded-lg border border-purple-200 dark:border-purple-800"><p className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Articles</p><p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{stats.total}</p></div>
-        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 p-4 rounded-lg border border-green-200 dark:border-green-800"><p className="text-sm font-medium text-green-700 dark:text-green-300">Published</p><p className="text-3xl font-bold text-green-900 dark:text-green-100">{stats.published}</p></div>
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600"><p className="text-sm font-medium text-gray-700 dark:text-gray-300">Drafts</p><p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.drafts}</p></div>
-        <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 p-4 rounded-lg border border-amber-200 dark:border-amber-800"><p className="text-sm font-medium text-amber-700 dark:text-amber-300">Featured</p><p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{stats.featured}</p></div>
+        <div className="bg-purple-600 p-4 rounded-lg border border-purple-500">
+          <p className="text-sm font-medium text-purple-100">Total Articles</p>
+          <p className="text-3xl font-bold text-white">{stats.total}</p>
+        </div>
+        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
+          <p className="text-sm font-medium text-green-100">Published</p>
+          <p className="text-3xl font-bold text-white">{stats.published}</p>
+        </div>
+        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+          <p className="text-sm font-medium text-gray-300">Drafts</p>
+          <p className="text-3xl font-bold text-white">{stats.drafts}</p>
+        </div>
+        <div className="bg-amber-600 p-4 rounded-lg border border-amber-500">
+          <p className="text-sm font-medium text-amber-100">Featured</p>
+          <p className="text-3xl font-bold text-white">{stats.featured}</p>
+        </div>
       </div>
 
       <div className="flex gap-4">

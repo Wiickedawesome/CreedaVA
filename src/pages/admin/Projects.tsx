@@ -115,15 +115,74 @@ export function Projects() {
     <div className="p-8 space-y-6 min-h-screen">
       <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Projects</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Manage client projects</p></div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Total Projects</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.total}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Active</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.active}</div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="text-sm font-medium text-gray-600">Completed</div><div className="text-2xl font-bold text-gray-900 mt-2">{stats.completed}</div></CardContent></Card>
+        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+          <p className="text-sm font-medium text-gray-300">Total Projects</p>
+          <p className="text-2xl font-bold text-white mt-2">{stats.total}</p>
+        </div>
+        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
+          <p className="text-sm font-medium text-green-100">Active</p>
+          <p className="text-2xl font-bold text-white mt-2">{stats.active}</p>
+        </div>
+        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
+          <p className="text-sm font-medium text-blue-100">Completed</p>
+          <p className="text-2xl font-bold text-white mt-2">{stats.completed}</p>
+        </div>
       </div>
       <div className="flex gap-4">
         <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" /><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" /></div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => setEditingProject(null)}><Plus className="w-4 h-4 mr-2" />New Project</Button></DialogTrigger><DialogContent className="sm:max-w-[600px]"><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingProject ? 'Edit' : 'New'} Project</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div><div className="space-y-2"><Label>Description</Label><Textarea value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Status</Label><Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v as Project['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusConfig).map(([k, c]) => <SelectItem key={k} value={k}>{c.label}</SelectItem>)}</SelectContent></Select></div><div className="space-y-2"><Label>Progress %</Label><Input type="number" min="0" max="100" value={formData.progress_percentage || 0} onChange={(e) => setFormData({ ...formData, progress_percentage: parseInt(e.target.value) || 0 })} /></div></div></div><DialogFooter><Button type="button" variant="outline" onClick={handleCloseDialog}>Cancel</Button><Button type="submit">{editingProject ? 'Update' : 'Create'}</Button></DialogFooter></form></DialogContent></Dialog>
       </div>
-      <Table><TableHeader><TableRow><TableHead>Project</TableHead><TableHead>Status</TableHead><TableHead>Progress</TableHead><TableHead>Created</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader><TableBody>{filteredProjects.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No projects yet</TableCell></TableRow> : filteredProjects.map(p => <TableRow key={p.id}><TableCell><div className="font-medium">{p.name}</div></TableCell><TableCell><Badge className={statusConfig[p.status as keyof typeof statusConfig].color}>{statusConfig[p.status as keyof typeof statusConfig].label}</Badge></TableCell><TableCell><div className="space-y-1 min-w-[100px]"><div className="text-sm">{p.progress_percentage}%</div><Progress value={p.progress_percentage || 0} className="h-2" /></div></TableCell><TableCell className="text-muted-foreground">{format(new Date(p.created_at), 'MMM d, yyyy')}</TableCell><TableCell className="text-right"><div className="flex justify-end gap-2"><Button variant="ghost" size="sm" onClick={() => handleEdit(p)}><Edit className="w-4 h-4" /></Button><Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)}><Trash2 className="w-4 h-4 text-red-500" /></Button></div></TableCell></TableRow>)}</TableBody></Table>
+      <div className="bg-gray-700 rounded-lg border border-gray-600">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-800 border-gray-600">
+              <TableHead className="text-gray-200 font-medium">Project</TableHead>
+              <TableHead className="text-gray-200 font-medium">Status</TableHead>
+              <TableHead className="text-gray-200 font-medium">Progress</TableHead>
+              <TableHead className="text-gray-200 font-medium">Created</TableHead>
+              <TableHead className="text-right text-gray-200 font-medium">Actions</TableHead>
+            </TableRow>
+          </TableHeader>          <TableBody>
+            {filteredProjects.length === 0 ? (
+              <TableRow className="border-gray-600">
+                <TableCell colSpan={5} className="text-center text-gray-300 py-8">No projects yet</TableCell>
+              </TableRow>
+            ) : (
+              filteredProjects.map(p => (
+                <TableRow key={p.id} className="border-gray-600 hover:bg-gray-650">
+                  <TableCell className="text-white">
+                    <div className="font-medium">{p.name}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={statusConfig[p.status as keyof typeof statusConfig].color}>
+                      {statusConfig[p.status as keyof typeof statusConfig].label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1 min-w-[100px]">
+                      <div className="text-sm text-gray-300">{p.progress_percentage}%</div>
+                      <Progress value={p.progress_percentage || 0} className="h-2" />
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-gray-300">
+                    {format(new Date(p.created_at), 'MMM d, yyyy')}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(p)} className="text-gray-300 hover:text-white hover:bg-gray-600">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)} className="text-red-400 hover:text-red-300 hover:bg-gray-600">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

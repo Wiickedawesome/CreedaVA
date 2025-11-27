@@ -241,8 +241,8 @@ export function Contacts() {
     <div className="p-8 space-y-6 min-h-screen">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Contacts Management</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-1 font-medium">Manage your professional network and relationships</p>
+          <h1 className="text-3xl font-bold text-white">Contacts Management</h1>
+          <p className="text-gray-300 mt-1 font-medium">Manage your professional network and relationships</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

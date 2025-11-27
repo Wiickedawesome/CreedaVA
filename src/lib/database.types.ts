@@ -445,6 +445,119 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['notes']['Row'], 'id' | 'created_at' | 'updated_at' | 'is_pinned' | 'tags'>
         Update: Partial<Database['public']['Tables']['notes']['Insert']>
       }
+      ad_campaigns: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          platform: string
+          budget: number
+          spend: number
+          status: string
+          start_date: string | null
+          end_date: string | null
+          impressions: number
+          clicks: number
+          conversions: number
+          conversion_value: number | null
+          created_by: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['ad_campaigns']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['ad_campaigns']['Insert']>
+      }
+      blog_posts: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          title: string
+          slug: string
+          excerpt: string | null
+          content: string
+          category: string | null
+          status: string
+          is_featured: boolean
+          published_at: string | null
+          views: number
+          created_by: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['blog_posts']['Row'], 'id' | 'created_at' | 'updated_at' | 'views'>
+        Update: Partial<Database['public']['Tables']['blog_posts']['Insert']>
+      }
+      social_posts: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          content: string
+          platform: string
+          status: string
+          scheduled_for: string | null
+          hashtags: string[] | null
+          likes: number | null
+          comments: number | null
+          shares: number | null
+          created_by: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['social_posts']['Row'], 'id' | 'created_at' | 'updated_at' | 'likes' | 'comments' | 'shares'>
+        Update: Partial<Database['public']['Tables']['social_posts']['Insert']>
+      }
+      landing_pages: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          url_path: string
+          headline: string | null
+          cta_text: string | null
+          variant: string
+          status: string
+          total_visits: number | null
+          conversions: number | null
+          conversion_rate: number | null
+          created_by: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['landing_pages']['Row'], 'id' | 'created_at' | 'updated_at' | 'total_visits' | 'conversions' | 'conversion_rate'>
+        Update: Partial<Database['public']['Tables']['landing_pages']['Insert']>
+      }
+      customer_journeys: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          lead_id: string | null
+          contact_id: string | null
+          stage: string
+          touchpoints: number | null
+          utm_source: string | null
+          utm_medium: string | null
+          utm_campaign: string | null
+          conversion_value: number | null
+          leads: any | null
+          contacts: any | null
+        }
+        Insert: Omit<Database['public']['Tables']['customer_journeys']['Row'], 'id' | 'created_at' | 'updated_at' | 'leads' | 'contacts'>
+        Update: Partial<Database['public']['Tables']['customer_journeys']['Insert']>
+      }
+      marketing_reports: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string
+          report_type: string
+          date_range_start: string | null
+          date_range_end: string | null
+          schedule_frequency: string | null
+          status: string
+          report_data: Json
+          created_by: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['marketing_reports']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['marketing_reports']['Insert']>
+      }
     }
   }
 }

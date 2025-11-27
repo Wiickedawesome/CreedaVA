@@ -85,11 +85,23 @@ export function Keywords() {
 
   return (
     <div className="p-8 space-y-6 min-h-screen">
-      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Keyword Tracking</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Monitor search rankings and SEO performance</p></div>
+      <div>
+        <h1 className="text-3xl font-bold text-white">Keyword Tracking</h1>
+        <p className="text-gray-300 mt-2 font-medium">Monitor search rankings and SEO performance</p>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-950 dark:to-violet-900 p-4 rounded-lg border border-violet-200 dark:border-violet-800"><p className="text-sm font-medium text-violet-700 dark:text-violet-300">Total Keywords</p><p className="text-3xl font-bold text-violet-900 dark:text-violet-100">{stats.total}</p></div>
-        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800"><p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Top 10</p><p className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">{stats.ranked}</p></div>
-        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-950 dark:to-cyan-900 p-4 rounded-lg border border-cyan-200 dark:border-cyan-800"><p className="text-sm font-medium text-cyan-700 dark:text-cyan-300">Avg Position</p><p className="text-3xl font-bold text-cyan-900 dark:text-cyan-100">{stats.avgPosition.toFixed(1)}</p></div>
+        <div className="bg-violet-600 p-4 rounded-lg border border-violet-500">
+          <p className="text-sm font-medium text-violet-100">Total Keywords</p>
+          <p className="text-3xl font-bold text-white">{stats.total}</p>
+        </div>
+        <div className="bg-emerald-600 p-4 rounded-lg border border-emerald-500">
+          <p className="text-sm font-medium text-emerald-100">Top 10</p>
+          <p className="text-3xl font-bold text-white">{stats.ranked}</p>
+        </div>
+        <div className="bg-cyan-600 p-4 rounded-lg border border-cyan-500">
+          <p className="text-sm font-medium text-cyan-100">Avg Position</p>
+          <p className="text-3xl font-bold text-white">{stats.avgPosition.toFixed(1)}</p>
+        </div>
       </div>
       <div className="flex gap-4">
         <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" /><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" /></div>

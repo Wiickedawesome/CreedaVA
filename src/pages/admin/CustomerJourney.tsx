@@ -64,13 +64,28 @@ export function CustomerJourney() {
 
   return (
     <div className="p-8 space-y-6 min-h-screen">
-      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Customer Journey</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Track customer lifecycle stages</p></div>
+      <div>
+        <h1 className="text-3xl font-bold text-white">Customer Journey</h1>
+        <p className="text-gray-300 mt-2 font-medium">Track customer lifecycle stages</p>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 p-4 rounded-lg border border-blue-200 dark:border-blue-800"><p className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Journeys</p><p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</p></div>
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 p-4 rounded-lg border border-purple-200 dark:border-purple-800"><p className="text-sm font-medium text-purple-700 dark:text-purple-300">Awareness</p><p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{stats.awareness}</p></div>
-        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 p-4 rounded-lg border border-green-200 dark:border-green-800"><p className="text-sm font-medium text-green-700 dark:text-green-300">Decision Stage</p><p className="text-3xl font-bold text-green-900 dark:text-green-100">{stats.decision}</p></div>
-        <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 p-4 rounded-lg border border-amber-200 dark:border-amber-800"><p className="text-sm font-medium text-amber-700 dark:text-amber-300">Converted</p><p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{stats.converted}</p></div>
+        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
+          <p className="text-sm font-medium text-blue-100">Total Journeys</p>
+          <p className="text-3xl font-bold text-white">{stats.total}</p>
+        </div>
+        <div className="bg-purple-600 p-4 rounded-lg border border-purple-500">
+          <p className="text-sm font-medium text-purple-100">Awareness</p>
+          <p className="text-3xl font-bold text-white">{stats.awareness}</p>
+        </div>
+        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
+          <p className="text-sm font-medium text-green-100">Decision Stage</p>
+          <p className="text-3xl font-bold text-white">{stats.decision}</p>
+        </div>
+        <div className="bg-amber-600 p-4 rounded-lg border border-amber-500">
+          <p className="text-sm font-medium text-amber-100">Converted</p>
+          <p className="text-3xl font-bold text-white">{stats.converted}</p>
+        </div>
       </div>
 
       <div className="flex gap-4">

@@ -64,13 +64,28 @@ export function Reports() {
 
   return (
     <div className="p-8 space-y-6 min-h-screen">
-      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Marketing Reports</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Generate and schedule custom reports</p></div>
+      <div>
+        <h1 className="text-3xl font-bold text-white">Marketing Reports</h1>
+        <p className="text-gray-300 mt-2 font-medium">Generate and schedule custom reports</p>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700"><p className="text-sm font-medium text-slate-700 dark:text-slate-300">Total Reports</p><p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{stats.total}</p></div>
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 p-4 rounded-lg border border-blue-200 dark:border-blue-800"><p className="text-sm font-medium text-blue-700 dark:text-blue-300">Scheduled</p><p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{stats.scheduled}</p></div>
-        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 p-4 rounded-lg border border-green-200 dark:border-green-800"><p className="text-sm font-medium text-green-700 dark:text-green-300">Completed</p><p className="text-3xl font-bold text-green-900 dark:text-green-100">{stats.completed}</p></div>
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 p-4 rounded-lg border border-purple-200 dark:border-purple-800"><p className="text-sm font-medium text-purple-700 dark:text-purple-300">Last Generated</p><p className="text-xl font-bold text-purple-900 dark:text-purple-100">{stats.lastGenerated ? format(new Date(stats.lastGenerated), 'MMM d') : 'Never'}</p></div>
+        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+          <p className="text-sm font-medium text-gray-300">Total Reports</p>
+          <p className="text-3xl font-bold text-white">{stats.total}</p>
+        </div>
+        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
+          <p className="text-sm font-medium text-blue-100">Scheduled</p>
+          <p className="text-3xl font-bold text-white">{stats.scheduled}</p>
+        </div>
+        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
+          <p className="text-sm font-medium text-green-100">Completed</p>
+          <p className="text-3xl font-bold text-white">{stats.completed}</p>
+        </div>
+        <div className="bg-purple-600 p-4 rounded-lg border border-purple-500">
+          <p className="text-sm font-medium text-purple-100">Last Generated</p>
+          <p className="text-xl font-bold text-white">{stats.lastGenerated ? format(new Date(stats.lastGenerated), 'MMM d') : 'Never'}</p>
+        </div>
       </div>
 
       <div className="flex gap-4">
@@ -78,7 +93,97 @@ export function Reports() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => { setEditingReport(null); setFormData({ name: '', report_type: 'campaign', date_range_start: '', date_range_end: '', schedule_frequency: '', status: 'completed' }); }}><Plus className="w-4 h-4 mr-2" />New Report</Button></DialogTrigger><DialogContent><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingReport ? 'Edit' : 'Create'} Report</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Type *</Label><Select value={formData.report_type} onValueChange={(value) => setFormData({ ...formData, report_type: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{reportTypes.map(t => <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>)}</SelectContent></Select></div><div className="space-y-2"><Label>Status</Label><Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="scheduled">Scheduled</SelectItem><SelectItem value="completed">Completed</SelectItem><SelectItem value="failed">Failed</SelectItem></SelectContent></Select></div></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Start Date</Label><Input type="date" value={formData.date_range_start} onChange={(e) => setFormData({ ...formData, date_range_start: e.target.value })} /></div><div className="space-y-2"><Label>End Date</Label><Input type="date" value={formData.date_range_end} onChange={(e) => setFormData({ ...formData, date_range_end: e.target.value })} /></div></div><div className="space-y-2"><Label>Schedule Frequency</Label><Select value={formData.schedule_frequency} onValueChange={(value) => setFormData({ ...formData, schedule_frequency: value })}><SelectTrigger><SelectValue placeholder="None" /></SelectTrigger><SelectContent><SelectItem value="daily">Daily</SelectItem><SelectItem value="weekly">Weekly</SelectItem><SelectItem value="monthly">Monthly</SelectItem></SelectContent></Select></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">{editingReport ? 'Update' : 'Create'}</Button></DialogFooter></form></DialogContent></Dialog>
       </div>
 
-      <Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Type</TableHead><TableHead>Date Range</TableHead><TableHead>Frequency</TableHead><TableHead>Status</TableHead><TableHead>Created</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader><TableBody>{reports.filter(r => r.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8"><div className="flex flex-col items-center gap-2"><FileText className="w-12 h-12 text-muted-foreground" /><p className="text-muted-foreground">No reports yet. Create your first!</p></div></TableCell></TableRow> : reports.filter(r => r.name.toLowerCase().includes(searchTerm.toLowerCase())).map(report => <TableRow key={report.id}><TableCell className="font-medium">{report.name}</TableCell><TableCell>{report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1)}</TableCell><TableCell className="text-sm">{report.date_range_start && report.date_range_end ? `${format(new Date(report.date_range_start), 'MMM d')} - ${format(new Date(report.date_range_end), 'MMM d')}` : '—'}</TableCell><TableCell>{report.schedule_frequency ? <div className="flex items-center gap-1"><Calendar className="w-3 h-3" />{report.schedule_frequency}</div> : '—'}</TableCell><TableCell><Badge className={statusColors[report.status as keyof typeof statusColors]}>{report.status}</Badge></TableCell><TableCell>{format(new Date(report.created_at), 'MMM d, yyyy')}</TableCell><TableCell className="text-right"><div className="flex justify-end gap-2"><Button variant="ghost" size="sm" onClick={() => alert('Download functionality coming soon!')}><Download className="w-4 h-4" /></Button><Button variant="ghost" size="sm" onClick={() => { setEditingReport(report); setFormData({ name: report.name, report_type: report.report_type, date_range_start: report.date_range_start || '', date_range_end: report.date_range_end || '', schedule_frequency: report.schedule_frequency || '', status: report.status }); setIsDialogOpen(true); }}><Edit className="w-4 h-4" /></Button><Button variant="ghost" size="sm" onClick={async () => { if (confirm('Delete this report?')) { await supabase.from('marketing_reports').delete().eq('id', report.id); fetchReports(); } }}><Trash2 className="w-4 h-4 text-red-500" /></Button></div></TableCell></TableRow>)}</TableBody></Table>
+      <div className="bg-gray-700 rounded-lg border border-gray-600">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-800 border-gray-600">
+              <TableHead className="text-gray-200 font-medium">Name</TableHead>
+              <TableHead className="text-gray-200 font-medium">Type</TableHead>
+              <TableHead className="text-gray-200 font-medium">Date Range</TableHead>
+              <TableHead className="text-gray-200 font-medium">Frequency</TableHead>
+              <TableHead className="text-gray-200 font-medium">Status</TableHead>
+              <TableHead className="text-gray-200 font-medium">Created</TableHead>
+              <TableHead className="text-right text-gray-200 font-medium">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {reports.filter(r => r.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8">
+                  <div className="flex flex-col items-center gap-2">
+                    <FileText className="w-12 h-12 text-muted-foreground" />
+                    <p className="text-muted-foreground">No reports yet. Create your first!</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              reports.filter(r => r.name.toLowerCase().includes(searchTerm.toLowerCase())).map(report => (
+                <TableRow key={report.id}>
+                  <TableCell className="font-medium">{report.name}</TableCell>
+                  <TableCell>{report.report_type.charAt(0).toUpperCase() + report.report_type.slice(1)}</TableCell>
+                  <TableCell className="text-sm">
+                    {report.date_range_start && report.date_range_end 
+                      ? `${format(new Date(report.date_range_start), 'MMM d')} - ${format(new Date(report.date_range_end), 'MMM d')}`
+                      : '—'
+                    }
+                  </TableCell>
+                  <TableCell>
+                    {report.schedule_frequency ? (
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {report.schedule_frequency}
+                      </div>
+                    ) : '—'}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={statusColors[report.status as keyof typeof statusColors]}>
+                      {report.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{format(new Date(report.created_at), 'MMM d, yyyy')}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => alert('Download functionality coming soon!')}>
+                        <Download className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          setEditingReport(report);
+                          setFormData({
+                            name: report.name,
+                            report_type: report.report_type,
+                            date_range_start: report.date_range_start || '',
+                            date_range_end: report.date_range_end || '',
+                            schedule_frequency: report.schedule_frequency || '',
+                            status: report.status
+                          });
+                          setIsDialogOpen(true);
+                        }}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={async () => {
+                          if (confirm('Delete this report?')) {
+                            await supabase.from('marketing_reports').delete().eq('id', report.id);
+                            fetchReports();
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
