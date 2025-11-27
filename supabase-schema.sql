@@ -1,4 +1,4 @@
--- CreedaVA CRM Database Schema - ENHANCED VERSION
+-- CreedaVA CRM Database Schema 
 -- Run this in your Supabase SQL Editor for comprehensive data tracking
 
 -- Enable UUID extension
@@ -205,6 +205,49 @@ ALTER TABLE public.contact_activities ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage contact activities" ON public.contact_activities FOR ALL USING (true);
 
 -- ============================================================================
+-- PROJECTS & DELIVERABLES
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS public.projects (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  name TEXT NOT NULL,
+  description TEXT,
+  
+  -- Status & Timeline
+  status TEXT CHECK (status IN ('planning', 'active', 'on_hold', 'completed', 'cancelled', 'archived')) DEFAULT 'planning',
+  start_date DATE,
+  end_date DATE,
+  actual_end_date DATE,
+  
+  -- Financial
+  budget DECIMAL(12,2),
+  actual_cost DECIMAL(12,2),
+  revenue DECIMAL(12,2),
+  currency TEXT DEFAULT 'USD',
+  
+  -- Assignment
+  project_manager UUID REFERENCES public.users(id),
+  client_id UUID REFERENCES public.contacts(id) ON DELETE SET NULL,
+  
+  -- Progress tracking
+  progress_percentage INTEGER DEFAULT 0 CHECK (progress_percentage BETWEEN 0 AND 100),
+  completed_tasks INTEGER DEFAULT 0,
+  total_tasks INTEGER DEFAULT 0,
+  
+  -- Additional
+  priority TEXT CHECK (priority IN ('low', 'medium', 'high', 'critical')) DEFAULT 'medium',
+  tags TEXT[] DEFAULT '{}',
+  custom_fields JSONB DEFAULT '{}'::jsonb,
+  health_status TEXT CHECK (health_status IN ('on_track', 'at_risk', 'off_track')) DEFAULT 'on_track'
+);
+
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage projects" ON public.projects FOR ALL USING (true);
+
+-- ============================================================================
 -- TASKS & PRODUCTIVITY
 -- ============================================================================
 
@@ -249,49 +292,6 @@ CREATE TABLE IF NOT EXISTS public.tasks (
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage tasks" ON public.tasks FOR ALL USING (true);
 
--- ============================================================================
--- PROJECTS & DELIVERABLES
--- ============================================================================
-
-CREATE TABLE IF NOT EXISTS public.projects (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
-  name TEXT NOT NULL,
-  description TEXT,
-  
-  -- Status & Timeline
-  status TEXT CHECK (status IN ('planning', 'active', 'on_hold', 'completed', 'cancelled', 'archived')) DEFAULT 'planning',
-  start_date DATE,
-  end_date DATE,
-  actual_end_date DATE,
-  
-  -- Financial
-  budget DECIMAL(12,2),
-  actual_cost DECIMAL(12,2),
-  revenue DECIMAL(12,2),
-  currency TEXT DEFAULT 'USD',
-  
-  -- Assignment
-  project_manager UUID REFERENCES public.users(id),
-  client_id UUID REFERENCES public.contacts(id) ON DELETE SET NULL,
-  
-  -- Progress tracking
-  progress_percentage INTEGER DEFAULT 0 CHECK (progress_percentage BETWEEN 0 AND 100),
-  completed_tasks INTEGER DEFAULT 0,
-  total_tasks INTEGER DEFAULT 0,
-  
-  -- Additional
-  priority TEXT CHECK (priority IN ('low', 'medium', 'high', 'critical')) DEFAULT 'medium',
-  tags TEXT[] DEFAULT '{}',
-  custom_fields JSONB DEFAULT '{}'::jsonb,
-  health_status TEXT CHECK (health_status IN ('on_track', 'at_risk', 'off_track')) DEFAULT 'on_track'
-);
-
-ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage projects" ON public.projects FOR ALL USING (true);
-
 -- Project Milestones
 CREATE TABLE IF NOT EXISTS public.project_milestones (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -312,6 +312,52 @@ CREATE POLICY "Users can manage milestones" ON public.project_milestones FOR ALL
 -- EMAIL CAMPAIGNS & TRACKING
 -- ============================================================================
 
+-- Email Templates (must be created first)
+CREATE TABLE IF NOT EXISTS public.email_templates (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  name TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  body TEXT NOT NULL,
+  category TEXT,
+  is_active BOOLEAN DEFAULT true,
+  usage_count INTEGER DEFAULT 0,
+  created_by UUID REFERENCES public.users(id)
+);
+
+ALTER TABLE public.email_templates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage templates" ON public.email_templates FOR ALL USING (true);
+
+-- Email Campaigns
+CREATE TABLE IF NOT EXISTS public.email_campaigns (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  name TEXT NOT NULL,
+  description TEXT,
+  status TEXT CHECK (status IN ('draft', 'scheduled', 'sending', 'sent', 'paused', 'completed')) DEFAULT 'draft',
+  
+  -- Schedule
+  send_date TIMESTAMPTZ,
+  completed_date TIMESTAMPTZ,
+  
+  -- Performance
+  total_sent INTEGER DEFAULT 0,
+  total_delivered INTEGER DEFAULT 0,
+  total_opened INTEGER DEFAULT 0,
+  total_clicked INTEGER DEFAULT 0,
+  total_bounced INTEGER DEFAULT 0,
+  open_rate DECIMAL(5,2),
+  click_rate DECIMAL(5,2),
+  
+  created_by UUID REFERENCES public.users(id)
+);
+
+ALTER TABLE public.email_campaigns ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage campaigns" ON public.email_campaigns FOR ALL USING (true);
+
+-- Emails table (references templates and campaigns)
 CREATE TABLE IF NOT EXISTS public.emails (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -362,51 +408,6 @@ CREATE TABLE IF NOT EXISTS public.emails (
 
 ALTER TABLE public.emails ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage emails" ON public.emails FOR ALL USING (true);
-
--- Email Templates
-CREATE TABLE IF NOT EXISTS public.email_templates (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  name TEXT NOT NULL,
-  subject TEXT NOT NULL,
-  body TEXT NOT NULL,
-  category TEXT,
-  is_active BOOLEAN DEFAULT true,
-  usage_count INTEGER DEFAULT 0,
-  created_by UUID REFERENCES public.users(id)
-);
-
-ALTER TABLE public.email_templates ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage templates" ON public.email_templates FOR ALL USING (true);
-
--- Email Campaigns
-CREATE TABLE IF NOT EXISTS public.email_campaigns (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  name TEXT NOT NULL,
-  description TEXT,
-  status TEXT CHECK (status IN ('draft', 'scheduled', 'sending', 'sent', 'paused', 'completed')) DEFAULT 'draft',
-  
-  -- Schedule
-  send_date TIMESTAMPTZ,
-  completed_date TIMESTAMPTZ,
-  
-  -- Performance
-  total_sent INTEGER DEFAULT 0,
-  total_delivered INTEGER DEFAULT 0,
-  total_opened INTEGER DEFAULT 0,
-  total_clicked INTEGER DEFAULT 0,
-  total_bounced INTEGER DEFAULT 0,
-  open_rate DECIMAL(5,2),
-  click_rate DECIMAL(5,2),
-  
-  created_by UUID REFERENCES public.users(id)
-);
-
-ALTER TABLE public.email_campaigns ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage campaigns" ON public.email_campaigns FOR ALL USING (true);
 
 -- ============================================================================
 -- SEO & CONTENT MANAGEMENT
