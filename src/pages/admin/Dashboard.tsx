@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
-import { Users, UserPlus, CheckSquare, TrendingUp, Mail, FolderKanban } from 'lucide-react'
+import { Users, UserPlus, CheckSquare, TrendingUp, Mail, FolderKanban, Plus, Edit, Send, FileText } from 'lucide-react'
 
 interface Stats {
   leads: number
@@ -10,6 +12,66 @@ interface Stats {
   projects: number
   emails: number
   recentActivity: number
+}
+
+function QuickActionsCard() {
+  const navigate = useNavigate()
+  
+  const quickActions = [
+    {
+      title: 'Add new lead',
+      description: 'Create a new lead in the system',
+      icon: UserPlus,
+      action: () => navigate('/admin/leads'),
+      color: 'bg-blue-600 hover:bg-blue-700'
+    },
+    {
+      title: 'Create task',
+      description: 'Add a new task to track',
+      icon: Plus,
+      action: () => navigate('/admin/tasks'),
+      color: 'bg-purple-600 hover:bg-purple-700'
+    },
+    {
+      title: 'Send email',
+      description: 'Compose and send an email',
+      icon: Send,
+      action: () => navigate('/admin/emails'),
+      color: 'bg-pink-600 hover:bg-pink-700'
+    },
+    {
+      title: 'Update SEO content',
+      description: 'Manage SEO pages and content',
+      icon: FileText,
+      action: () => navigate('/admin/seo'),
+      color: 'bg-emerald-600 hover:bg-emerald-700'
+    }
+  ]
+
+  return (
+    <div className="bg-gray-700 p-6 rounded-lg border border-gray-600">
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
+        <p className="text-gray-300 text-sm">Common tasks and shortcuts</p>
+      </div>
+      <div className="grid grid-cols-1 gap-3">
+        {quickActions.map((action, index) => (
+          <Button
+            key={index}
+            onClick={action.action}
+            variant="outline"
+            className={`${action.color} border-transparent text-white hover:text-white flex items-center justify-start gap-3 p-4 h-auto transition-colors`}
+          >
+            <action.icon className="w-5 h-5 flex-shrink-0" />
+            <div className="text-left">
+              <div className="font-medium">{action.title}</div>
+              <div className="text-xs opacity-90">{action.description}</div>
+            </div>
+          </Button>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export function AdminDashboard() {
@@ -149,18 +211,7 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-gray-700 p-6 rounded-lg border border-gray-600">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
-            <p className="text-gray-300 text-sm">Common tasks and shortcuts</p>
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm text-gray-300">• Add new lead</p>
-            <p className="text-sm text-gray-300">• Create task</p>
-            <p className="text-sm text-gray-300">• Send email</p>
-            <p className="text-sm text-gray-300">• Update SEO content</p>
-          </div>
-        </div>
+        <QuickActionsCard />
 
         <div className="bg-gray-700 p-6 rounded-lg border border-gray-600">
           <div className="mb-4">

@@ -136,30 +136,8 @@ export default function News() {
 
             {/* LinkedIn Company Feed */}
             <Card className="border-border/50 overflow-hidden">
-              <CardContent className="p-8">
-                <div className="w-full">
-                  <LinkedInFeed maxPosts={3} className="max-w-4xl mx-auto" />
-                </div>
-                  
-                {/* CTA */}
-                <div className="mt-8 text-center">
-                  <Button
-                    asChild
-                    size="lg"
-                    className="bg-[#0A66C2] hover:bg-[#004182] text-white"
-                  >
-                    <a
-                      href="https://www.linkedin.com/company/creedava/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2"
-                    >
-                      <ExternalLink size={24} />
-                      View Full LinkedIn Page
-                      <ArrowRight size={20} />
-                    </a>
-                  </Button>
-                </div>
+              <CardContent className="p-6">
+                <LinkedInFeed maxPosts={3} className="w-full" />
               </CardContent>
 ```
             </Card>

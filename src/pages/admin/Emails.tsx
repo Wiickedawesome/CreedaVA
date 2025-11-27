@@ -80,7 +80,15 @@ export function Emails() {
         </div>
       </div>
       <div className="flex gap-4">
-        <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white w-4 h-4" /><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-white" /></div>
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input 
+            placeholder="Search emails..." 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)} 
+            className="pl-10 bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500" 
+          />
+        </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />New Email</Button></DialogTrigger><DialogContent><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>Draft Email</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>From *</Label><Input value={formData.from_email} onChange={(e) => setFormData({ ...formData, from_email: e.target.value })} required type="email" /></div><div className="space-y-2"><Label>To *</Label><Input value={formData.to_email} onChange={(e) => setFormData({ ...formData, to_email: e.target.value })} required type="email" /></div><div className="space-y-2"><Label>Subject *</Label><Input value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} required /></div><div className="space-y-2"><Label>Body *</Label><Textarea value={formData.body} onChange={(e) => setFormData({ ...formData, body: e.target.value })} required rows={6} /></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">Save Draft</Button></DialogFooter></form></DialogContent></Dialog>
       </div>
       <div className="bg-gray-700 rounded-lg border border-gray-600">

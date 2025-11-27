@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { ExternalLink, Heart, MessageCircle, Repeat2, Calendar } from 'lucide-react'
+import { ExternalLink, Heart, MessageCircle, Repeat2, Calendar, Linkedin } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { CreedaLogo } from '@/components/CreedaLogo'
 
 interface LinkedInPost {
   id: string
@@ -157,11 +158,11 @@ export function LinkedInFeed({ className = '', maxPosts = 5 }: LinkedInFeedProps
   return (
     <div className={`space-y-6 ${className}`}>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-blue-600 rounded"></div>
+        <div className="flex items-center gap-3">
+          <Linkedin className="w-6 h-6 text-blue-600" />
           <h3 className="text-xl font-semibold text-gray-900">Latest LinkedIn Updates</h3>
         </div>
-        <Badge variant="outline" className="text-xs">
+        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
           Live from LinkedIn API
         </Badge>
       </div>
@@ -172,8 +173,8 @@ export function LinkedInFeed({ className = '', maxPosts = 5 }: LinkedInFeedProps
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                    CV
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-gray-200 overflow-hidden">
+                    <CreedaLogo className="w-8 h-8" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">{post.authorName}</h4>
@@ -232,14 +233,15 @@ export function LinkedInFeed({ className = '', maxPosts = 5 }: LinkedInFeedProps
         ))}
       </div>
       
-      <div className="text-center">
+      <div className="text-center pt-4 border-t border-gray-100">
         <a 
           href="https://www.linkedin.com/company/creedava"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
         >
-          View all posts on LinkedIn
+          <Linkedin className="w-4 h-4" />
+          Follow us on LinkedIn
           <ExternalLink className="w-4 h-4" />
         </a>
       </div>
