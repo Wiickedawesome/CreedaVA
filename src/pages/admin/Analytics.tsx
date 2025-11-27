@@ -65,7 +65,27 @@ export function Analytics() {
       </div>
 
       {analytics.length === 0 && (
-        <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800"><CardHeader><CardTitle>Get Started with Analytics</CardTitle><CardDescription>Your analytics dashboard is ready, but no data yet</CardDescription></CardHeader><CardContent><div className="space-y-2 text-sm"><p>To see analytics data here:</p><ol className="list-decimal list-inside space-y-1 text-muted-foreground"><li>Set up Google Search Console integration</li><li>Connect your website to Google Analytics</li><li>Data will automatically sync to your Supabase database</li><li>Or manually add analytics data to the analytics_data table</li></ol></div></CardContent></Card>
+        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 border-blue-200 dark:border-blue-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              Google Analytics Connected
+            </CardTitle>
+            <CardDescription>Tracking ID: G-MX1D5RQMQS</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 text-sm">
+              <p className="font-medium">✅ Your site is now tracking analytics!</p>
+              <p className="text-muted-foreground">Data will start appearing here within 24-48 hours. To see analytics data immediately:</p>
+              <ol className="list-decimal list-inside space-y-2 text-muted-foreground ml-2">
+                <li>Visit your website and browse a few pages</li>
+                <li>Check <a href="https://analytics.google.com/analytics/web/#/p471719022/reports/intelligenthome" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Google Analytics Dashboard</a> for real-time data</li>
+                <li>Set up Google Search Console integration for search data</li>
+                <li>Or manually add test data to the <code className="bg-muted px-1 py-0.5 rounded">analytics_data</code> table in Supabase</li>
+              </ol>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
