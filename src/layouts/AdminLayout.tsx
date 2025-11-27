@@ -21,7 +21,11 @@ import {
   FileText,
   TrendingUp,
   Settings,
-  LogOut
+  LogOut,
+  Linkedin,
+  LayoutTemplate,
+  Route,
+  BarChart3
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -36,6 +40,15 @@ const navigation = [
   { name: 'Keywords', href: '/admin/keywords', icon: Search },
   { name: 'Analytics', href: '/admin/analytics', icon: TrendingUp },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
+]
+
+const marketingNav = [
+  { name: 'Social Media', href: '/admin/social', icon: Linkedin },
+  { name: 'Blog', href: '/admin/blog', icon: FileText },
+  { name: 'Ad Campaigns', href: '/admin/ad-campaigns', icon: TrendingUp },
+  { name: 'Landing Pages', href: '/admin/landing-pages', icon: LayoutTemplate },
+  { name: 'Customer Journey', href: '/admin/customer-journey', icon: Route },
+  { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
 ]
 
 export function AdminLayout() {
@@ -83,6 +96,31 @@ export function AdminLayout() {
               </Link>
             )
           })}
+          
+          <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+            <p className="px-3 mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Marketing</p>
+            {marketingNav.map((item) => {
+              const isActive = location.pathname === item.href || 
+                (item.href !== '/admin' && location.pathname.startsWith(item.href))
+              const Icon = item.icon
+              
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={cn(
+                    'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.name}</span>
+                </Link>
+              )
+            })}
+          </div>
         </nav>
 
         <div className="p-4 border-t border-slate-200 dark:border-slate-700">

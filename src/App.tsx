@@ -31,6 +31,14 @@ const Keywords = lazy(() => import('@/pages/admin/Keywords').then(m => ({ defaul
 const Analytics = lazy(() => import('@/pages/admin/Analytics').then(m => ({ default: m.Analytics })))
 const Settings = lazy(() => import('@/pages/admin/Settings').then(m => ({ default: m.Settings })))
 
+// Marketing pages
+const Social = lazy(() => import('@/pages/admin/Social').then(m => ({ default: m.Social })))
+const Blog = lazy(() => import('@/pages/admin/Blog').then(m => ({ default: m.Blog })))
+const AdCampaigns = lazy(() => import('@/pages/admin/AdCampaigns').then(m => ({ default: m.AdCampaigns })))
+const LandingPages = lazy(() => import('@/pages/admin/LandingPages').then(m => ({ default: m.LandingPages })))
+const CustomerJourney = lazy(() => import('@/pages/admin/CustomerJourney').then(m => ({ default: m.CustomerJourney })))
+const Reports = lazy(() => import('@/pages/admin/Reports').then(m => ({ default: m.Reports })))
+
 // Loading fallback component
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -102,6 +110,38 @@ function App() {
               <Route path="settings" element={
                 <Suspense fallback={<PageLoader />}>
                   <Settings />
+                </Suspense>
+              } />
+              
+              {/* Marketing routes */}
+              <Route path="social" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Social />
+                </Suspense>
+              } />
+              <Route path="blog" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Blog />
+                </Suspense>
+              } />
+              <Route path="ad-campaigns" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AdCampaigns />
+                </Suspense>
+              } />
+              <Route path="landing-pages" element={
+                <Suspense fallback={<PageLoader />}>
+                  <LandingPages />
+                </Suspense>
+              } />
+              <Route path="customer-journey" element={
+                <Suspense fallback={<PageLoader />}>
+                  <CustomerJourney />
+                </Suspense>
+              } />
+              <Route path="reports" element={
+                <Suspense fallback={<PageLoader />}>
+                  <Reports />
                 </Suspense>
               } />
             </Route>
