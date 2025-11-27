@@ -62,9 +62,9 @@ export function Emails() {
     <div className="p-8 space-y-6">
       <div><h1 className="text-3xl font-bold">Emails</h1><p className="text-muted-foreground mt-2">Track and manage email communications</p></div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg border"><p className="text-sm text-muted-foreground">Total</p><p className="text-2xl font-bold">{stats.total}</p></div>
-        <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border"><p className="text-sm text-green-600">Sent</p><p className="text-2xl font-bold text-green-700">{stats.sent}</p></div>
-        <div className="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg border"><p className="text-sm text-yellow-600">Opened</p><p className="text-2xl font-bold text-yellow-700">{stats.opened}</p></div>
+        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800"><p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Total Emails</p><p className="text-3xl font-bold text-indigo-900 dark:text-indigo-100">{stats.total}</p></div>
+        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 p-4 rounded-lg border border-green-200 dark:border-green-800"><p className="text-sm font-medium text-green-700 dark:text-green-300">Sent</p><p className="text-3xl font-bold text-green-900 dark:text-green-100">{stats.sent}</p></div>
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 p-4 rounded-lg border border-amber-200 dark:border-amber-800"><p className="text-sm font-medium text-amber-700 dark:text-amber-300">Opened</p><p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{stats.opened}</p></div>
       </div>
       <div className="flex gap-4">
         <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" /><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" /></div>
