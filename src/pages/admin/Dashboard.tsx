@@ -63,12 +63,12 @@ export function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="p-8">
+      <div className="p-8 bg-slate-100">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-200 rounded w-1/4"></div>
+          <div className="h-8 bg-slate-100 rounded w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-32 bg-slate-200 rounded"></div>
+              <div key={i} className="h-32 bg-slate-100 rounded"></div>
             ))}
           </div>
         </div>
@@ -77,10 +77,10 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="p-8 space-y-8 bg-slate-50 min-h-screen">
+    <div className="p-8 space-y-8 bg-slate-100 min-h-screen">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Dashboard</h1>
-        <p className="text-slate-700 mt-2 font-medium">
+        <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
+        <p className="text-white mt-2 font-medium">
           Welcome to your CRM and SEO management platform
         </p>
       </div>

@@ -44,18 +44,18 @@ export function Analytics() {
     return acc;
   }, [] as Array<{ page_path: string; page_views: number; clicks: number; }>).sort((a, b) => b.page_views - a.page_views).slice(0, 5);
 
-  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-100"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div></div>;
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 min-h-screen">
-      <div><h1 className="text-3xl font-bold text-slate-900">Analytics Dashboard</h1><p className="text-slate-700 mt-2 font-medium">Website performance and SEO metrics</p></div>
+    <div className="p-8 space-y-6 bg-slate-100 min-h-screen">
+      <div><h1 className="text-3xl font-bold text-white">Analytics Dashboard</h1><p className="text-white mt-2 font-medium">Website performance and SEO metrics</p></div>
       
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Page Views</CardTitle><Eye className="h-4 w-4 text-emerald-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{stats.totalPageViews.toLocaleString()}</div><p className="text-xs text-slate-700">Last 30 days</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Impressions</CardTitle><Globe className="h-4 w-4 text-emerald-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{stats.totalImpressions.toLocaleString()}</div><p className="text-xs text-slate-700">Search results</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Clicks</CardTitle><MousePointer className="h-4 w-4 text-emerald-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{stats.totalClicks.toLocaleString()}</div><p className="text-xs text-slate-700">From search</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Avg CTR</CardTitle><TrendingUp className="h-4 w-4 text-emerald-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{stats.avgCTR.toFixed(2)}%</div><p className="text-xs text-slate-700">Click-through rate</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Avg Position</CardTitle><Users className="h-4 w-4 text-emerald-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{stats.avgPosition.toFixed(1)}</div><p className="text-xs text-slate-700">Search ranking</p></CardContent></Card>
+        <Card className="bg-slate-100 border-slate-300"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-white">Page Views</CardTitle><Eye className="h-4 w-4 text-white" /></CardHeader><CardContent><div className="text-2xl font-bold text-white">{stats.totalPageViews.toLocaleString()}</div><p className="text-xs text-white">Last 30 days</p></CardContent></Card>
+        <Card className="bg-slate-100 border-slate-300"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-white">Impressions</CardTitle><Globe className="h-4 w-4 text-white" /></CardHeader><CardContent><div className="text-2xl font-bold text-white">{stats.totalImpressions.toLocaleString()}</div><p className="text-xs text-white">Search results</p></CardContent></Card>
+        <Card className="bg-slate-100 border-slate-300"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-white">Clicks</CardTitle><MousePointer className="h-4 w-4 text-white" /></CardHeader><CardContent><div className="text-2xl font-bold text-white">{stats.totalClicks.toLocaleString()}</div><p className="text-xs text-white">From search</p></CardContent></Card>
+        <Card className="bg-slate-100 border-slate-300"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-white">Avg CTR</CardTitle><TrendingUp className="h-4 w-4 text-white" /></CardHeader><CardContent><div className="text-2xl font-bold text-white">{stats.avgCTR.toFixed(2)}%</div><p className="text-xs text-white">Click-through rate</p></CardContent></Card>
+        <Card className="bg-slate-100 border-slate-300"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-white">Avg Position</CardTitle><Users className="h-4 w-4 text-white" /></CardHeader><CardContent><div className="text-2xl font-bold text-white">{stats.avgPosition.toFixed(1)}</div><p className="text-xs text-white">Search ranking</p></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -139,15 +139,15 @@ export function SEO() {
   );
 
   if (loading) {
-    return <div className="flex items-center justify-center h-96 bg-slate-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
+    return <div className="flex items-center justify-center h-96 bg-slate-100"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div></div>;
   }
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 min-h-screen">
+    <div className="p-8 space-y-6 bg-slate-100 min-h-screen">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">SEO Content Management</h1>
-          <p className="text-slate-700 mt-1 font-medium">Optimize your pages for search engines</p>
+          <h1 className="text-3xl font-bold text-white">SEO Content Management</h1>
+          <p className="text-white mt-1 font-medium">Optimize your pages for search engines</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
