@@ -45,11 +45,18 @@ export default defineConfig({
       compress: {
         drop_console: true, // Remove console.logs in production
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'], // Remove specific console calls
-        passes: 2 // Multiple passes for better compression
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 3, // Increased compression passes
+        dead_code: true,
+        unsafe_arrows: true,
+        unsafe_methods: true
       },
       mangle: {
-        safari10: true // Fix Safari 10 bugs
+        safari10: true,
+        toplevel: true
+      },
+      format: {
+        comments: false // Remove all comments
       }
     },
     // Code splitting optimization
@@ -83,15 +90,17 @@ export default defineConfig({
       }
     },
     // Chunk size warnings
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 800, // Reduced to catch bloat earlier
     // Enable CSS code splitting
     cssCodeSplit: true,
-    // Source maps for production debugging (can be disabled for smaller builds)
+    // No source maps for faster builds and smaller size
     sourcemap: false,
-    // Reduce number of chunks
+    // Preload optimization
     modulePreload: {
       polyfill: true
-    }
+    },
+    // Asset inlining threshold
+    assetsInlineLimit: 4096 // 4kb - inline smaller assets as base64
   },
   // Performance optimizations
   optimizeDeps: {
