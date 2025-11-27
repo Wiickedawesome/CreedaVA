@@ -139,15 +139,15 @@ export function SEO() {
   );
 
   if (loading) {
-    return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
+    return <div className="flex items-center justify-center h-96 bg-slate-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
   }
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">SEO Content Management</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-1 font-medium">Optimize your pages for search engines</p>
+          <h1 className="text-3xl font-bold text-slate-900">SEO Content Management</h1>
+          <p className="text-slate-700 mt-1 font-medium">Optimize your pages for search engines</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -188,7 +188,7 @@ export function SEO() {
                       onChange={(e) => setFormData({ ...formData, page_path: e.target.value })}
                       disabled={!!editingPage}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-700 mt-1">
                       The URL path of the page (e.g., /about, /services)
                     </p>
                   </div>
@@ -202,7 +202,7 @@ export function SEO() {
                       value={formData.page_title}
                       onChange={(e) => setFormData({ ...formData, page_title: e.target.value })}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-700 mt-1">
                       Internal reference name for this page
                     </p>
                   </div>
@@ -216,7 +216,7 @@ export function SEO() {
                       value={formData.canonical_url || ''}
                       onChange={(e) => setFormData({ ...formData, canonical_url: e.target.value })}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-700 mt-1">
                       Preferred URL for this page (helps prevent duplicate content issues)
                     </p>
                   </div>
@@ -233,7 +233,7 @@ export function SEO() {
                       onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
                       maxLength={60}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-700 mt-1">
                       {formData.meta_title?.length || 0}/60 characters - Shown in search results
                     </p>
                   </div>
@@ -249,7 +249,7 @@ export function SEO() {
                       onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })}
                       maxLength={160}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-700 mt-1">
                       {formData.meta_description?.length || 0}/160 characters - Shown in search results
                     </p>
                   </div>
@@ -280,7 +280,7 @@ export function SEO() {
                 <TabsContent value="opengraph" className="space-y-4">
                   <div className="flex items-center gap-2 mb-4">
                     <Facebook className="w-5 h-5" />
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-slate-700">
                       Controls how your page appears when shared on Facebook, LinkedIn, and other platforms
                     </p>
                   </div>

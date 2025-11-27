@@ -64,14 +64,14 @@ export function AdminLayout() {
   const userInitials = user?.email?.substring(0, 2).toUpperCase() || 'U'
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen bg-slate-50">
       {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+        <aside className="w-64 bg-white border-r border-slate-200 flex flex-col">
+        <div className="p-4 border-b border-slate-200">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="text-2xl font-bold bg-gradient-to-r from-sky-500 to-emerald-500 bg-clip-text text-transparent">CreedaVA</div>
+            <div className="text-2xl font-bold text-emerald-600">CreedaVA</div>
           </Link>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">CRM & SEO Platform</p>
+          <p className="text-xs text-slate-700 mt-1 font-medium">CRM & SEO Platform</p>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
@@ -87,8 +87,8 @@ export function AdminLayout() {
                 className={cn(
                   'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/40 dark:bg-emerald-500'
-                    : 'text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/40'
+                    : 'text-slate-900 hover:bg-slate-100'
                 )}
               >
                 <Icon className="h-5 w-5" />

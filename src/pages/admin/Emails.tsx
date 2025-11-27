@@ -59,12 +59,12 @@ export function Emails() {
   if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen">
       <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Email Campaigns</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Manage email outreach</p></div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950 dark:to-indigo-900 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800"><p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Total Emails</p><p className="text-3xl font-bold text-indigo-900 dark:text-indigo-100">{stats.total}</p></div>
-        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 p-4 rounded-lg border border-green-200 dark:border-green-800"><p className="text-sm font-medium text-green-700 dark:text-green-300">Sent</p><p className="text-3xl font-bold text-green-900 dark:text-green-100">{stats.sent}</p></div>
-        <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 p-4 rounded-lg border border-amber-200 dark:border-amber-800"><p className="text-sm font-medium text-amber-700 dark:text-amber-300">Opened</p><p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{stats.opened}</p></div>
+        <div className="bg-white p-4 rounded-lg border border-slate-200"><p className="text-sm font-medium text-slate-700">Total Emails</p><p className="text-3xl font-bold text-slate-900">{stats.total}</p></div>
+        <div className="bg-white p-4 rounded-lg border border-slate-200"><p className="text-sm font-medium text-slate-700">Sent</p><p className="text-3xl font-bold text-slate-900">{stats.sent}</p></div>
+        <div className="bg-white p-4 rounded-lg border border-slate-200"><p className="text-sm font-medium text-slate-700">Opened</p><p className="text-3xl font-bold text-slate-900">{stats.opened}</p></div>
       </div>
       <div className="flex gap-4">
         <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" /><Input placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" /></div>

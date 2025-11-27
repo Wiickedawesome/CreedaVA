@@ -63,7 +63,7 @@ export function CustomerJourney() {
   if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen">
       <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Customer Journey</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Track customer lifecycle stages</p></div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

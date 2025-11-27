@@ -47,10 +47,10 @@ const statusConfig = {
 };
 
 const priorityConfig = {
-  low: { label: 'Low', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  medium: { label: 'Medium', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
-  high: { label: 'High', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' },
-  urgent: { label: 'Urgent', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }
+  low: { label: 'Low', color: 'bg-green-100 text-green-800' },
+  medium: { label: 'Medium', color: 'bg-yellow-100 text-yellow-800' },
+  high: { label: 'High', color: 'bg-emerald-100 text-emerald-800' },
+  urgent: { label: 'Urgent', color: 'bg-red-100 text-red-800' }
 };
 
 export function Tasks() {
@@ -201,7 +201,7 @@ export function Tasks() {
   }
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 dark:bg-slate-900 min-h-screen">
+    <div className="p-8 space-y-6 bg-slate-50 min-h-screen">
       {/* Header with Stats */}
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Tasks</h1>
