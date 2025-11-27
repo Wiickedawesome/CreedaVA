@@ -97,8 +97,8 @@ export function AdminLayout() {
             )
           })}
           
-          <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800">
-            <p className="px-3 mb-2 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Marketing</p>
+          <div className="pt-4 mt-4 border-t border-slate-300">
+            <p className="px-3 mb-2 text-xs font-bold text-white uppercase tracking-wider">Marketing</p>
             {marketingNav.map((item) => {
               const isActive = location.pathname === item.href || 
                 (item.href !== '/admin' && location.pathname.startsWith(item.href))
@@ -111,8 +111,8 @@ export function AdminLayout() {
                   className={cn(
                     'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                     isActive
-                      ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/40 dark:bg-emerald-500'
-                      : 'text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      ? 'bg-slate-200 text-slate-900'
+                      : 'text-white hover:bg-slate-200 hover:text-slate-900'
                   )}
                 >
                   <Icon className="h-5 w-5" />
@@ -123,7 +123,7 @@ export function AdminLayout() {
           </div>
         </nav>
 
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="p-4 border-t border-slate-300">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="w-full justify-start space-x-2">
@@ -132,7 +132,7 @@ export function AdminLayout() {
                 </Avatar>
                 <div className="flex-1 text-left text-sm">
                   <p className="font-medium truncate">{user?.email}</p>
-                  <p className="text-xs text-muted-foreground">Admin</p>
+                  <p className="text-xs text-white">Admin</p>
                 </div>
               </Button>
             </DropdownMenuTrigger>
