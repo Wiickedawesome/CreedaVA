@@ -1,30 +1,27 @@
--- CreedaVA Marketing Extensions
--- Additional tables for marketing automation: landing pages, social media, blogs, ad campaigns
+-- CreedaVA Marketing Extensions 
+-- This version drops existing tables first, then recreates them with correct structure
 -- 
 -- LINKEDIN INTEGRATION NOTES:
 -- The social_posts table includes linkedin_post_id and linkedin_author_urn fields
 -- These are prepared for LinkedIn Lead Sync API integration
 -- Reference: https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync
--- 
--- For future implementation:
--- 1. Set up LinkedIn OAuth 2.0 authentication
--- 2. Use LinkedIn Share API to post content
--- 3. Store linkedin_post_id after successful post
--- 4. Poll LinkedIn Analytics API to update engagement metrics
--- 5. Use Lead Sync API to sync form leads from LinkedIn campaigns
---
--- Note: LinkedIn API requires approved developer application and proper scopes:
--- - w_member_social (post as member)
--- - r_basicprofile (read profile data)
--- - r_organization_social (read org posts)
--- - w_organization_social (post as org)
--- - rw_organization_admin (manage org)
+
+-- ============================================================================
+-- DROP EXISTING TABLES (if they exist)
+-- ============================================================================
+
+DROP TABLE IF EXISTS public.marketing_reports CASCADE;
+DROP TABLE IF EXISTS public.customer_journeys CASCADE;
+DROP TABLE IF EXISTS public.ad_campaigns CASCADE;
+DROP TABLE IF EXISTS public.blog_posts CASCADE;
+DROP TABLE IF EXISTS public.social_posts CASCADE;
+DROP TABLE IF EXISTS public.landing_pages CASCADE;
 
 -- ============================================================================
 -- LANDING PAGES
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS public.landing_pages (
+CREATE TABLE public.landing_pages (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -69,7 +66,7 @@ CREATE POLICY "Authenticated users can manage landing pages" ON public.landing_p
 -- SOCIAL MEDIA POSTS
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS public.social_posts (
+CREATE TABLE public.social_posts (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -117,7 +114,7 @@ CREATE POLICY "Authenticated users can manage social posts" ON public.social_pos
 -- BLOG POSTS (News/Articles)
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS public.blog_posts (
+CREATE TABLE public.blog_posts (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -166,7 +163,7 @@ CREATE POLICY "Authenticated users can manage blog posts" ON public.blog_posts
 -- AD CAMPAIGNS
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS public.ad_campaigns (
+CREATE TABLE public.ad_campaigns (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -204,7 +201,7 @@ CREATE POLICY "Authenticated users can manage ad campaigns" ON public.ad_campaig
 -- CUSTOMER JOURNEY TRACKING
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS public.customer_journeys (
+CREATE TABLE public.customer_journeys (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -239,7 +236,7 @@ CREATE POLICY "Authenticated users can manage customer journeys" ON public.custo
 -- MARKETING REPORTS
 -- ============================================================================
 
-CREATE TABLE IF NOT EXISTS public.marketing_reports (
+CREATE TABLE public.marketing_reports (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   created_by UUID REFERENCES auth.users(id),
@@ -269,7 +266,7 @@ CREATE POLICY "Authenticated users can manage reports" ON public.marketing_repor
 -- INDEXES FOR PERFORMANCE
 -- ============================================================================
 
-CREATE INDEX idx_landing_pages_slug ON public.landing_pages(slug);
+CREATE INDEX idx_landing_pages_url_path ON public.landing_pages(url_path);
 CREATE INDEX idx_landing_pages_status ON public.landing_pages(status);
 CREATE INDEX idx_social_posts_platform ON public.social_posts(platform);
 CREATE INDEX idx_social_posts_status ON public.social_posts(status);
@@ -307,3 +304,18 @@ CREATE TRIGGER update_ad_campaigns_updated_at BEFORE UPDATE ON public.ad_campaig
 INSERT INTO public.blog_posts (title, slug, excerpt, content, category, status, is_published) VALUES
   ('Welcome to CreedaVA Blog', 'welcome-to-creedava-blog', 'Discover how virtual assistants can transform your business', 'Full blog content here...', 'Company News', 'published', true)
 ON CONFLICT (slug) DO NOTHING;
+
+-- ============================================================================
+-- COMPLETION MESSAGE
+-- ============================================================================
+
+DO $$
+BEGIN
+  RAISE NOTICE '✅ Marketing schema installed successfully!';
+  RAISE NOTICE '✅ Created 6 tables: landing_pages, social_posts, blog_posts, ad_campaigns, customer_journeys, marketing_reports';
+  RAISE NOTICE '✅ Created 13 indexes for performance';
+  RAISE NOTICE '✅ Created 4 updated_at triggers';
+  RAISE NOTICE '✅ Enabled RLS policies for authenticated users';
+  RAISE NOTICE '';
+  RAISE NOTICE '🚀 Next: Visit https://creedava.com/admin/social to start using marketing features!';
+END $$;
