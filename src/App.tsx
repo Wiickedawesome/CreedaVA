@@ -9,6 +9,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Login } from '@/pages/Login'
 import { SignUp } from '@/pages/SignUp'
+import { EnvCheck } from '@/pages/EnvCheck'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AdminDashboard } from '@/pages/admin/Dashboard'
 
@@ -47,6 +48,9 @@ function App() {
       <AuthProvider>
         <PerformanceMonitor />
         <Routes>
+          {/* Diagnostic route */}
+          <Route path="/env-check" element={<EnvCheck />} />
+          
           {/* Public auth routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
