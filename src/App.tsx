@@ -17,7 +17,7 @@ import { AdminDashboard } from '@/pages/admin/Dashboard'
 const Services = lazy(() => import('@/pages/Services').then(module => ({ default: module.Services })))
 const About = lazy(() => import('@/pages/About').then(module => ({ default: module.About })))
 const Pricing = lazy(() => import('@/pages/Pricing').then(module => ({ default: module.Pricing })))
-const News = lazy(() => import('@/pages/News').then(module => ({ default: module.News })))
+const News = lazy(() => import('@/pages/News'))
 const Contact = lazy(() => import('@/pages/Contact'))
 
 // Lazy load admin pages

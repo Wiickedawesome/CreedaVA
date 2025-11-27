@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar, ArrowRight, ExternalLink } from 'lucide-react'
+import { Calendar, ArrowRight, ExternalLink, Newspaper, Linkedin } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
 import { LinkedInWidget } from '@/components/LinkedInWidget'
@@ -18,7 +18,7 @@ interface NewsPost {
   image?: string
 }
 
-export function News() {
+export default function News() {
   const [posts, setPosts] = useState<NewsPost[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -268,7 +268,7 @@ export function News() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <Newspaper size={64} className="text-accent mx-auto mb-6" weight="duotone" />
+            <Newspaper size={64} className="text-accent mx-auto mb-6" />
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
               Stay Connected
             </h2>
@@ -286,7 +286,7 @@ export function News() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2"
               >
-                <LinkedinLogo size={24} weight="fill" />
+                <Linkedin size={24} />
                 Follow on LinkedIn
               </a>
             </Button>
