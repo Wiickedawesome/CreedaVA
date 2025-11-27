@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar, LinkedinLogo, ArrowRight, Newspaper, ArrowSquareOut } from '@phosphor-icons/react'
+import { Calendar, ArrowRight, ExternalLink } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
 import { LinkedInWidget } from '@/components/LinkedInWidget'
@@ -176,9 +176,9 @@ export function News() {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2"
                     >
-                      <LinkedinLogo size={24} weight="fill" />
+                      <ExternalLink size={24} />
                       View Full LinkedIn Page
-                      <ArrowSquareOut size={20} />
+                      <ArrowRight size={20} />
                     </a>
                   </Button>
                 </div>
@@ -240,7 +240,7 @@ export function News() {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2"
                           >
-                            <LinkedinLogo size={20} weight="fill" />
+                            <ExternalLink size={20} />
                             View on LinkedIn
                           </a>
                         </Button>
