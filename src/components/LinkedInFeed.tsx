@@ -31,61 +31,6 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
   const [error, setError] = useState<string | null>(null)
   const [isConnected, setIsConnected] = useState(false)
 
-  useEffect(() => {
-    const fetchLinkedInPosts = async () => {
-      setLoading(true)
-      try {
-        // Check if LinkedIn is connected
-        const storedConfig = localStorage.getItem('linkedin-config')
-        const connected = storedConfig && JSON.parse(storedConfig).accessToken
-        setIsConnected(!!connected)
-        
-        if (connected) {
-          // TODO: Replace with actual LinkedIn API call when connected
-          // const response = await fetch('/api/linkedin/posts', {
-          //   headers: { Authorization: `Bearer ${JSON.parse(storedConfig).accessToken}` }
-          // })
-          // const data = await response.json()
-          
-          // Show full mock data when connected
-          await new Promise(resolve => setTimeout(resolve, 300))
-          setPosts(mockPosts.slice(0, maxPosts))
-        } else {
-          // Show limited mock data when not connected
-          setPosts(mockPosts.slice(0, Math.min(2, maxPosts)))
-        }
-        setError(null)
-      } catch (err) {
-        setError('Failed to load LinkedIn posts')
-        // Remove console.error in production builds
-        if (import.meta.env.DEV) {
-          console.error('LinkedIn API Error:', err)
-        }
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchLinkedInPosts()
-  }, [maxPosts, mockPosts])
-
-  const formatDate = useCallback((dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - date.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
-    if (diffDays === 1) return '1 day ago'
-    if (diffDays < 7) return `${diffDays} days ago`
-    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
-    return date.toLocaleDateString()
-  }, [])
-
-  const formatEngagement = useCallback((num: number) => {
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}k`
-    return num.toString()
-  }, [])
-
   // Memoize mock posts to prevent unnecessary re-renders
   const mockPosts = useMemo(() => [
     {
@@ -128,6 +73,34 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
       postUrl: 'https://www.linkedin.com/posts/creedava-activity-1234567892'
     }
   ], [])
+
+  useEffect(() => {
+    const fetchLinkedInPosts = async () => {
+      setLoading(true)
+      try {
+        // Check if LinkedIn is connected
+        const storedConfig = localStorage.getItem('linkedin-config')
+        const connected = storedConfig && JSON.parse(storedConfig).accessToken
+        setIsConnected(!!connected)
+        
+        if (connected) {
+          // TODO: Replace with actual LinkedIn API call when connected
+          await new Promise(resolve => setTimeout(resolve, 300))
+          setPosts(mockPosts.slice(0, maxPosts))
+        } else {
+          // Show limited mock data when not connected
+          setPosts(mockPosts.slice(0, Math.min(2, maxPosts)))
+        }
+        setError(null)
+      } catch (err) {
+        setError('Failed to load LinkedIn posts')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLinkedInPosts()
+  }, [maxPosts, mockPosts])
 
   const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString)
