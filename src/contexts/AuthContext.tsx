@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { isValidCreedaVAEmail, DOMAIN_RESTRICTION_MESSAGE } from '@/lib/utils'
 
 interface AuthContextType {
   user: User | null
@@ -39,6 +40,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    // Validate email domain at auth context level
+    if (!email.endsWith('@creedava.com')) {
+      return { 
+        error: { 
+          message: 'Access restricted to @creedava.com email addresses only',
+          name: 'EmailDomainError'
+        } as AuthError 
+      }
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -47,6 +58,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    // Validate email domain at auth context level
+    if (!email.endsWith('@creedava.com')) {
+      return { 
+        error: { 
+          message: 'Access restricted to @creedava.com email addresses only',
+          name: 'EmailDomainError'
+        } as AuthError 
+      }
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,

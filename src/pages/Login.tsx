@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CreedaLogo } from '@/components/CreedaLogo'
+import { isValidCreedaVAEmail, DOMAIN_RESTRICTION_MESSAGE } from '@/lib/utils'
 
 export function Login() {
   const navigate = useNavigate()
@@ -19,6 +20,14 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    // Validate email domain for login
+    if (!isValidCreedaVAEmail(email)) {
+      setError(DOMAIN_RESTRICTION_MESSAGE)
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
 
     const { error } = await signIn(email, password)
@@ -41,6 +50,8 @@ export function Login() {
           <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
             Sign in to access your CRM dashboard
+            <br />
+            <span className="text-xs text-muted-foreground mt-1">@creedava.com emails only</span>
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -55,7 +66,7 @@ export function Login() {
               <Input
                 id="email"
                 type="email"
-                placeholder="you@creedava.com"
+                placeholder="yourname@creedava.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

@@ -3,6 +3,7 @@ import { ExternalLink, Heart, MessageCircle, Repeat2, Calendar, Linkedin } from 
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CreedaLogo } from '@/components/CreedaLogo'
+import { LinkedInApiService } from '@/lib/linkedin-api'
 
 interface LinkedInPost {
   id: string
@@ -80,13 +81,32 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
       try {
         // Check if LinkedIn is connected
         const storedConfig = localStorage.getItem('linkedin-config')
-        const connected = storedConfig && JSON.parse(storedConfig).accessToken
+        const config = storedConfig ? JSON.parse(storedConfig) : null
+        const connected = config && config.accessToken
         setIsConnected(!!connected)
         
-        if (connected) {
-          // TODO: Replace with actual LinkedIn API call when connected
-          await new Promise(resolve => setTimeout(resolve, 300))
-          setPosts(mockPosts.slice(0, maxPosts))
+        if (connected && config.organizationId) {
+          // Fetch real LinkedIn posts using the API
+          try {
+            const linkedInService = new LinkedInApiService({
+              clientId: config.clientId,
+              clientSecret: config.clientSecret,
+              redirectUri: 'https://creedava.com/api/linkedin/callback',
+              accessToken: config.accessToken
+            })
+            
+            const realPosts = await linkedInService.getOrganizationPosts(
+              config.organizationId,
+              config.accessToken
+            )
+            
+            setPosts(realPosts.slice(0, maxPosts))
+          } catch (apiError) {
+            console.error('LinkedIn API Error:', apiError)
+            // Fall back to mock posts if API fails
+            setPosts(mockPosts.slice(0, maxPosts))
+            setError('Using demo posts - LinkedIn API connection issue')
+          }
         } else {
           // Show limited mock data when not connected
           setPosts(mockPosts.slice(0, Math.min(2, maxPosts)))
@@ -94,6 +114,7 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
         setError(null)
       } catch (err) {
         setError('Failed to load LinkedIn posts')
+        setPosts(mockPosts.slice(0, Math.min(2, maxPosts)))
       } finally {
         setLoading(false)
       }
