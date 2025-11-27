@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 type SocialPost = any;
 
 const platformIcons = { linkedin: Linkedin, twitter: Twitter, facebook: Facebook, instagram: Instagram };
-const statusColors = { draft: 'bg-gray-500', scheduled: 'bg-blue-500', published: 'bg-green-500', failed: 'bg-red-500' };
+const statusColors = { draft: 'secondary', scheduled: 'secondary', published: 'default', failed: 'secondary' };
 
 export function Social() {
   const { user } = useAuth();

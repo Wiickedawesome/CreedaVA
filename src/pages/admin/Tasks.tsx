@@ -38,19 +38,19 @@ type Task = Database['public']['Tables']['tasks']['Row'];
 type TaskInsert = Database['public']['Tables']['tasks']['Insert'];
 
 const statusConfig = {
-  todo: { label: 'To Do', color: 'bg-gray-500', icon: Circle },
-  in_progress: { label: 'In Progress', color: 'bg-blue-500', icon: Clock },
-  blocked: { label: 'Blocked', color: 'bg-red-500', icon: AlertCircle },
-  review: { label: 'Review', color: 'bg-purple-500', icon: Clock },
-  completed: { label: 'Completed', color: 'bg-green-500', icon: CheckCircle2 },
-  cancelled: { label: 'Cancelled', color: 'bg-gray-400', icon: Circle }
+  todo: { label: 'To Do', color: 'secondary', icon: Circle },
+  in_progress: { label: 'In Progress', color: 'default', icon: Clock },
+  blocked: { label: 'Blocked', color: 'secondary', icon: AlertCircle },
+  review: { label: 'Review', color: 'secondary', icon: Clock },
+  completed: { label: 'Completed', color: 'default', icon: CheckCircle2 },
+  cancelled: { label: 'Cancelled', color: 'secondary', icon: Circle }
 };
 
 const priorityConfig = {
-  low: { label: 'Low', color: 'bg-green-100 text-green-800' },
-  medium: { label: 'Medium', color: 'bg-yellow-100 text-yellow-800' },
-  high: { label: 'High', color: 'bg-emerald-100 text-emerald-800' },
-  urgent: { label: 'Urgent', color: 'bg-red-100 text-red-800' }
+  low: { label: 'Low', color: 'secondary' },
+  medium: { label: 'Medium', color: 'secondary' },
+  high: { label: 'High', color: 'default' },
+  urgent: { label: 'Urgent', color: 'default' }
 };
 
 export function Tasks() {
@@ -415,7 +415,7 @@ export function Tasks() {
                       {task.due_date ? (
                         <div className={isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
                           {format(new Date(task.due_date), 'MMM d, yyyy')}
-                          {isOverdue && <Badge className="ml-2 bg-red-500">Overdue</Badge>}
+                          {isOverdue && <Badge variant="secondary" className="ml-2">Overdue</Badge>}
                         </div>
                       ) : (
                         <span className="text-muted-foreground">—</span>
