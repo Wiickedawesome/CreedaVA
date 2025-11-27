@@ -7,100 +7,78 @@ import { Calendar, ArrowRight, ExternalLink, Newspaper, Linkedin } from 'lucide-
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
 import { LinkedInWidget } from '@/components/LinkedInWidget'
+import { supabase } from '@/lib/supabase'
+import { format } from 'date-fns'
 
-interface NewsPost {
+interface BlogPost {
   id: string
   title: string
-  excerpt: string
-  date: string
-  linkedinUrl?: string
-  category: 'announcement' | 'update' | 'insight' | 'success-story'
-  image?: string
+  excerpt: string | null
+  content: string
+  slug: string
+  category: string | null
+  status: 'draft' | 'published' | 'archived'
+  is_featured: boolean
+  is_published: boolean
+  published_at: string | null
+  created_at: string
+  views: number | null
+  created_by: string
 }
 
 export default function News() {
-  const [posts, setPosts] = useState<NewsPost[]>([])
+  const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Load LinkedIn posts
+  // Load blog posts from database
   useEffect(() => {
-    // For now, display sample posts
-    // LinkedIn API requires backend authentication with OAuth
-    // See implementation guide below
-    setPosts(samplePosts)
-    setLoading(false)
+    fetchBlogPosts()
   }, [])
 
-  // Sample/fallback posts - Update these manually or via backend API
-  // To add your LinkedIn posts:
-  // 1. Publish a post on LinkedIn
-  // 2. Click the three dots (...) on your post
-  // 3. Select "Copy link to post"
-  // 4. Paste the URL in linkedinUrl below
-  const samplePosts: NewsPost[] = [
-    {
-      id: '1',
-      title: 'CreedaVA Expands Technology Support Services',
-      excerpt: 'We\'re excited to announce our new Technology Support services, including Tier 1/2 tech support, website development, and IT project management.',
-      date: 'November 10, 2025',
-      category: 'announcement',
-      linkedinUrl: 'https://www.linkedin.com/company/creedava/', // Replace with actual post URL
-    },
-    {
-      id: '2',
-      title: 'Real Estate Support: Your Partner in Property Success',
-      excerpt: 'Introducing specialized Real Estate Support services to help realtors manage leads, transactions, and client relationships more efficiently.',
-      date: 'November 8, 2025',
-      category: 'announcement',
-      linkedinUrl: 'https://www.linkedin.com/company/creedava/', // Replace with actual post URL
-    },
-    {
-      id: '3',
-      title: 'Why Belizean Virtual Assistants Are Your Best Choice',
-      excerpt: 'Discover the unique advantages of working with Belize-based VAs: bilingual excellence, cultural adaptability, and perfect timezone alignment.',
-      date: 'November 5, 2025',
-      category: 'insight',
-      linkedinUrl: 'https://www.linkedin.com/company/creedava/', // Replace with actual post URL
-    },
-    {
-      id: '4',
-      title: 'Client Success Story: 50% Time Savings Achieved',
-      excerpt: 'Learn how one of our clients saved over 50% of their time by partnering with CreedaVA for executive and administrative support.',
-      date: 'November 1, 2025',
-      category: 'success-story',
-      linkedinUrl: 'https://www.linkedin.com/company/creedava/', // Replace with actual post URL
-    },
-  ]
+  const fetchBlogPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('status', 'published')
+        .eq('is_published', true)
+        .order('published_at', { ascending: false })
+        .limit(6)
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'announcement':
-        return 'bg-accent/10 text-accent border-accent/20'
-      case 'update':
-        return 'bg-primary/10 text-primary border-primary/20'
-      case 'insight':
-        return 'bg-secondary/10 text-secondary border-secondary/20'
-      case 'success-story':
-        return 'bg-accent/10 text-accent border-accent/20'
-      default:
-        return 'bg-muted text-muted-foreground'
+      if (error) throw error
+      setPosts(data || [])
+    } catch (error) {
+      console.error('Error fetching blog posts:', error)
+      setError('Failed to load blog posts')
+    } finally {
+      setLoading(false)
     }
   }
 
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'announcement':
-        return 'Announcement'
-      case 'update':
-        return 'Update'
-      case 'insight':
-        return 'Insight'
-      case 'success-story':
-        return 'Success Story'
-      default:
-        return category
+
+
+  const getCategoryColor = (category: string | null) => {
+    if (!category) return 'bg-muted text-muted-foreground'
+    
+    const lowerCategory = category.toLowerCase()
+    if (lowerCategory.includes('announcement') || lowerCategory.includes('news')) {
+      return 'bg-accent/10 text-accent border-accent/20'
     }
+    if (lowerCategory.includes('update') || lowerCategory.includes('feature')) {
+      return 'bg-primary/10 text-primary border-primary/20'
+    }
+    if (lowerCategory.includes('insight') || lowerCategory.includes('tip')) {
+      return 'bg-secondary/10 text-secondary border-secondary/20'
+    }
+    if (lowerCategory.includes('success') || lowerCategory.includes('story')) {
+      return 'bg-green-100 text-green-700 border-green-200'
+    }
+    return 'bg-muted text-muted-foreground'
+  }
+
+  const getCategoryLabel = (category: string | null) => {
+    return category || 'Article'
   }
 
   return (
@@ -190,73 +168,84 @@ export default function News() {
           {/* Featured Posts Grid */}
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-foreground mb-8">
-              {loading ? 'Loading Posts...' : 'Featured Updates'}
+              {loading ? 'Loading Articles...' : 'Latest Articles & Updates'}
             </h2>
             {error && (
-              <div className="mb-4 p-4 bg-muted/50 border border-border/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">{error}</p>
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
           </div>
           
           <div className="grid md:grid-cols-2 gap-8">
-            {posts.map((post, index) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="h-full hover:shadow-xl transition-all duration-300 border-border/50 group">
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-4">
-                      <Badge className={getCategoryColor(post.category)} variant="outline">
-                        {getCategoryLabel(post.category)}
-                      </Badge>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar size={16} />
-                        <span>{post.date}</span>
+            {posts.length === 0 && !loading ? (
+              <div className="col-span-2 text-center py-12">
+                <Newspaper size={48} className="text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No blog posts published yet. Check back soon for updates!</p>
+              </div>
+            ) : (
+              posts.map((post, index) => (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="h-full hover:shadow-xl transition-all duration-300 border-border/50 group">
+                    <CardHeader>
+                      <div className="flex items-center justify-between mb-4">
+                        <Badge className={getCategoryColor(post.category)} variant="outline">
+                          {getCategoryLabel(post.category)}
+                        </Badge>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Calendar size={16} />
+                          <span>
+                            {post.published_at
+                              ? format(new Date(post.published_at), 'MMMM d, yyyy')
+                              : format(new Date(post.created_at), 'MMMM d, yyyy')
+                            }
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <CardTitle className="text-xl group-hover:text-accent transition-colors">
-                      {post.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base leading-relaxed mb-6">
-                      {post.excerpt}
-                    </CardDescription>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      {post.linkedinUrl && (
+                      <CardTitle className="text-xl group-hover:text-accent transition-colors">
+                        {post.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-base leading-relaxed mb-6">
+                        {post.excerpt || post.content.substring(0, 150) + '...'}
+                      </CardDescription>
+                      <div className="flex flex-col sm:flex-row gap-3">
                         <Button
-                          asChild
                           variant="outline"
                           className="border-accent/30 text-accent hover:bg-accent hover:text-accent-foreground transition-all"
+                          onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
+                        >
+                          Read Full Article
+                          <ArrowRight size={16} className="ml-2" />
+                        </Button>
+                        <Button
+                          asChild
+                          variant="ghost"
+                          className="text-accent hover:text-accent hover:bg-accent/10"
                         >
                           <a
-                            href={post.linkedinUrl}
+                            href="https://www.linkedin.com/company/creedava/"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2"
                           >
-                            <ExternalLink size={20} />
-                            View on LinkedIn
+                            <Linkedin size={16} />
+                            Share on LinkedIn
                           </a>
                         </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        className="text-accent hover:text-accent hover:bg-accent/10"
-                      >
-                        Read More
-                        <ArrowRight size={16} className="ml-2" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </section>

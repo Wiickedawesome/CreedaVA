@@ -1,23 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from 'next-themes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Moon, Sun, Bell, User, Save, Database, Monitor } from 'lucide-react';
+import { Bell, User, Save, Database } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function Settings() {
   const { user } = useAuth();
-  const { theme, setTheme } = useTheme();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [leadNotifications, setLeadNotifications] = useState(true);
   const [taskReminders, setTaskReminders] = useState(true);
-  const [compactMode, setCompactMode] = useState(false);
 
   const handleSaveSettings = () => {
     // Save notification preferences to localStorage
@@ -26,7 +22,6 @@ export function Settings() {
       leads: leadNotifications,
       tasks: taskReminders
     }));
-    localStorage.setItem('compactMode', String(compactMode));
     toast.success('Settings saved successfully!');
   };
 
@@ -39,10 +34,6 @@ export function Settings() {
       setLeadNotifications(prefs.leads ?? true);
       setTaskReminders(prefs.tasks ?? true);
     }
-    const savedCompactMode = localStorage.getItem('compactMode');
-    if (savedCompactMode) {
-      setCompactMode(savedCompactMode === 'true');
-    }
   }, []);
 
   return (
@@ -53,58 +44,6 @@ export function Settings() {
       </div>
 
       <div className="space-y-6">
-        {/* Appearance Settings */}
-        <Card className="bg-gray-700 border-gray-600">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              {theme === 'dark' ? <Moon className="w-5 h-5" /> : theme === 'light' ? <Sun className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
-              Appearance
-            </CardTitle>
-            <CardDescription className="text-gray-300">Customize how CreedaVA looks for you</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-3">
-              <Label className="text-white font-semibold">Theme</Label>
-              <Select value={theme || 'system'} onValueChange={(value) => setTheme(value)}>
-                <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-600">
-                  <SelectItem value="light" className="text-white">
-                    <div className="flex items-center gap-2">
-                      <Sun className="w-4 h-4" />
-                      Light
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="dark" className="text-white">
-                    <div className="flex items-center gap-2">
-                      <Moon className="w-4 h-4" />
-                      Dark
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="system" className="text-white">
-                    <div className="flex items-center gap-2">
-                      <Monitor className="w-4 h-4" />
-                      System
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-400">Choose your preferred theme or sync with system</p>
-            </div>
-            
-            <Separator className="bg-gray-600" />
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-white font-semibold">Compact Mode</Label>
-                <p className="text-sm text-gray-300">Reduce spacing between elements</p>
-              </div>
-              <Switch checked={compactMode} onCheckedChange={setCompactMode} />
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Notification Settings */}
         <Card className="bg-gray-700 border-gray-600">
           <CardHeader>

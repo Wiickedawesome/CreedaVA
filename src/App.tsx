@@ -18,6 +18,7 @@ const Services = lazy(() => import('@/pages/Services').then(module => ({ default
 const About = lazy(() => import('@/pages/About').then(module => ({ default: module.About })))
 const Pricing = lazy(() => import('@/pages/Pricing').then(module => ({ default: module.Pricing })))
 const News = lazy(() => import('@/pages/News'))
+const BlogPost = lazy(() => import('@/pages/BlogPost'))
 const Contact = lazy(() => import('@/pages/Contact'))
 
 // Lazy load admin pages
@@ -159,6 +160,7 @@ function App() {
                     <Route path="/about" element={<About />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/news" element={<News />} />
+                    <Route path="/blog/:slug" element={<BlogPost />} />
                     <Route path="/contact" element={<Contact />} />
                   </Routes>
                 </Suspense>
