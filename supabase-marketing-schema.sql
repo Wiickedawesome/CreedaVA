@@ -1,5 +1,24 @@
 -- CreedaVA Marketing Extensions
--- Additional tables for landing pages, social media, blogs, and ad campaigns
+-- Additional tables for marketing automation: landing pages, social media, blogs, ad campaigns
+-- 
+-- LINKEDIN INTEGRATION NOTES:
+-- The social_posts table includes linkedin_post_id and linkedin_author_urn fields
+-- These are prepared for LinkedIn Lead Sync API integration
+-- Reference: https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync
+-- 
+-- For future implementation:
+-- 1. Set up LinkedIn OAuth 2.0 authentication
+-- 2. Use LinkedIn Share API to post content
+-- 3. Store linkedin_post_id after successful post
+-- 4. Poll LinkedIn Analytics API to update engagement metrics
+-- 5. Use Lead Sync API to sync form leads from LinkedIn campaigns
+--
+-- Note: LinkedIn API requires approved developer application and proper scopes:
+-- - w_member_social (post as member)
+-- - r_basicprofile (read profile data)
+-- - r_organization_social (read org posts)
+-- - w_organization_social (post as org)
+-- - rw_organization_admin (manage org)
 
 -- ============================================================================
 -- LANDING PAGES
@@ -12,18 +31,13 @@ CREATE TABLE IF NOT EXISTS public.landing_pages (
   created_by UUID REFERENCES auth.users(id),
   
   -- Page details
-  title TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
-  url TEXT,
-  description TEXT,
-  status TEXT CHECK (status IN ('draft', 'published', 'archived')) DEFAULT 'draft',
-  
-  -- Content
+  name TEXT NOT NULL,
+  url_path TEXT UNIQUE NOT NULL,
   headline TEXT,
   subheadline TEXT,
-  body_content TEXT,
   cta_text TEXT DEFAULT 'Get Started',
   cta_url TEXT,
+  status TEXT CHECK (status IN ('draft', 'active', 'paused')) DEFAULT 'draft',
   
   -- SEO
   meta_title TEXT,
@@ -31,12 +45,11 @@ CREATE TABLE IF NOT EXISTS public.landing_pages (
   keywords TEXT[],
   
   -- Tracking
-  views INTEGER DEFAULT 0,
-  form_submissions INTEGER DEFAULT 0,
+  total_visits INTEGER DEFAULT 0,
+  conversions INTEGER DEFAULT 0,
   conversion_rate DECIMAL(5,2) DEFAULT 0,
   
   -- Settings
-  is_active BOOLEAN DEFAULT true,
   published_at TIMESTAMPTZ,
   
   -- A/B Testing
@@ -46,8 +59,8 @@ CREATE TABLE IF NOT EXISTS public.landing_pages (
 
 ALTER TABLE public.landing_pages ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view published landing pages" ON public.landing_pages
-  FOR SELECT USING (status = 'published' AND is_active = true);
+CREATE POLICY "Authenticated users can view all landing pages" ON public.landing_pages
+  FOR SELECT USING (auth.role() = 'authenticated');
 
 CREATE POLICY "Authenticated users can manage landing pages" ON public.landing_pages
   FOR ALL USING (auth.role() = 'authenticated');
@@ -143,8 +156,8 @@ CREATE TABLE IF NOT EXISTS public.blog_posts (
 
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view published blog posts" ON public.blog_posts
-  FOR SELECT USING (status = 'published' AND is_published = true);
+CREATE POLICY "Authenticated users can view all blog posts" ON public.blog_posts
+  FOR SELECT USING (auth.role() = 'authenticated');
 
 CREATE POLICY "Authenticated users can manage blog posts" ON public.blog_posts
   FOR ALL USING (auth.role() = 'authenticated');
@@ -162,44 +175,24 @@ CREATE TABLE IF NOT EXISTS public.ad_campaigns (
   -- Campaign details
   name TEXT NOT NULL,
   platform TEXT CHECK (platform IN ('google_ads', 'facebook', 'linkedin', 'instagram', 'twitter')) NOT NULL,
-  campaign_type TEXT CHECK (campaign_type IN ('search', 'display', 'video', 'social', 'remarketing')) NOT NULL,
-  status TEXT CHECK (status IN ('draft', 'active', 'paused', 'completed', 'archived')) DEFAULT 'draft',
+  status TEXT CHECK (status IN ('draft', 'active', 'paused', 'completed')) DEFAULT 'draft',
   
   -- Budget
   budget DECIMAL(10,2) DEFAULT 0,
-  daily_budget DECIMAL(10,2),
   spend DECIMAL(10,2) DEFAULT 0,
-  currency TEXT DEFAULT 'USD',
   
   -- Dates
   start_date DATE,
   end_date DATE,
   
-  -- Targeting
-  target_audience JSONB,
-  keywords TEXT[],
-  locations TEXT[],
-  
   -- Performance metrics
   impressions INTEGER DEFAULT 0,
   clicks INTEGER DEFAULT 0,
   conversions INTEGER DEFAULT 0,
-  ctr DECIMAL(5,2) DEFAULT 0, -- Click-through rate
-  cpc DECIMAL(10,2) DEFAULT 0, -- Cost per click
-  cpa DECIMAL(10,2) DEFAULT 0, -- Cost per acquisition
-  roas DECIMAL(10,2) DEFAULT 0, -- Return on ad spend
-  
-  -- Revenue tracking
-  revenue DECIMAL(12,2) DEFAULT 0,
-  roi DECIMAL(10,2) DEFAULT 0,
+  conversion_value DECIMAL(10,2) DEFAULT 0,
   
   -- Platform specific IDs
-  platform_campaign_id TEXT,
-  ad_account_id TEXT,
-  
-  -- Goals
-  goal TEXT,
-  goal_value DECIMAL(10,2)
+  platform_campaign_id TEXT
 );
 
 ALTER TABLE public.ad_campaigns ENABLE ROW LEVEL SECURITY;
@@ -214,6 +207,8 @@ CREATE POLICY "Authenticated users can manage ad campaigns" ON public.ad_campaig
 CREATE TABLE IF NOT EXISTS public.customer_journeys (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  created_by UUID REFERENCES auth.users(id),
   
   -- Customer reference
   lead_id UUID REFERENCES public.leads(id),
@@ -221,30 +216,24 @@ CREATE TABLE IF NOT EXISTS public.customer_journeys (
   
   -- Journey stage
   stage TEXT CHECK (stage IN ('awareness', 'consideration', 'decision', 'retention', 'advocacy')) NOT NULL,
-  touchpoint TEXT NOT NULL, -- e.g., 'website_visit', 'email_open', 'demo_request', 'purchase'
   
-  -- Details
-  source TEXT, -- utm_source
-  medium TEXT, -- utm_medium
-  campaign TEXT, -- utm_campaign
-  page_url TEXT,
+  -- UTM Tracking
+  utm_source TEXT,
+  utm_medium TEXT,
+  utm_campaign TEXT,
   
   -- Engagement
-  duration_seconds INTEGER,
-  interaction_type TEXT,
+  touchpoints INTEGER DEFAULT 0,
   
   -- Conversion tracking
-  converted BOOLEAN DEFAULT false,
+  converted_at TIMESTAMPTZ,
   conversion_value DECIMAL(10,2)
 );
 
 ALTER TABLE public.customer_journeys ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can view customer journeys" ON public.customer_journeys
-  FOR SELECT USING (auth.role() = 'authenticated');
-
-CREATE POLICY "System can insert customer journeys" ON public.customer_journeys
-  FOR INSERT WITH CHECK (true);
+CREATE POLICY "Authenticated users can manage customer journeys" ON public.customer_journeys
+  FOR ALL USING (auth.role() = 'authenticated');
 
 -- ============================================================================
 -- MARKETING REPORTS
@@ -257,23 +246,18 @@ CREATE TABLE IF NOT EXISTS public.marketing_reports (
   
   -- Report details
   name TEXT NOT NULL,
-  report_type TEXT CHECK (report_type IN ('campaign_performance', 'lead_attribution', 'content_analytics', 'social_media', 'custom')) NOT NULL,
+  report_type TEXT CHECK (report_type IN ('campaign', 'attribution', 'content', 'social', 'custom')) NOT NULL,
+  status TEXT CHECK (status IN ('scheduled', 'completed', 'failed')) DEFAULT 'completed',
   
   -- Date range
-  start_date DATE,
-  end_date DATE,
+  date_range_start DATE,
+  date_range_end DATE,
   
-  -- Configuration
-  metrics JSONB, -- Selected metrics to include
-  filters JSONB, -- Applied filters
+  -- Scheduling
+  schedule_frequency TEXT CHECK (schedule_frequency IN ('daily', 'weekly', 'monthly')),
   
   -- Data
-  report_data JSONB,
-  
-  -- Settings
-  is_scheduled BOOLEAN DEFAULT false,
-  schedule_frequency TEXT CHECK (schedule_frequency IN ('daily', 'weekly', 'monthly')),
-  recipients TEXT[]
+  report_data JSONB
 );
 
 ALTER TABLE public.marketing_reports ENABLE ROW LEVEL SECURITY;
