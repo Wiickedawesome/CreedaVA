@@ -157,7 +157,7 @@ export function AdminLayout() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto bg-gray-800">
+      <main className="flex-1 overflow-y-auto bg-gray-900 min-h-screen">
         <Outlet />
       </main>
     </div>

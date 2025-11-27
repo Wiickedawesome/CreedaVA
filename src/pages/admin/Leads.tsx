@@ -331,7 +331,7 @@ export function Leads() {
             placeholder="Search leads..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400"
           />
         </div>
         <div className="text-sm text-gray-300">

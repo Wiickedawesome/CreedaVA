@@ -241,7 +241,7 @@ export function Tasks() {
             placeholder="Search tasks..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400"
           />
         </div>
 

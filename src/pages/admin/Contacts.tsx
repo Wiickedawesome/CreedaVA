@@ -417,15 +417,15 @@ export function Contacts() {
       {/* Search */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             placeholder="Search contacts..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+            className="pl-9 bg-gray-800 border-gray-600 text-white placeholder-gray-400"
           />
         </div>
-        <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+        <div className="text-sm font-medium text-gray-400">
           {filteredContacts.length} contact{filteredContacts.length !== 1 ? 's' : ''}
         </div>
       </div>
