@@ -100,7 +100,90 @@ export function AdCampaigns() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => { setEditingCampaign(null); setFormData({ name: '', platform: 'google_ads', budget: '', spend: '', status: 'draft', start_date: '', end_date: '', impressions: 0, clicks: 0, conversions: 0 }); }}><Plus className="w-4 h-4 mr-2" />New Campaign</Button></DialogTrigger><DialogContent className="max-w-2xl"><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingCampaign ? 'Edit' : 'Create'} Campaign</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Platform *</Label><Select value={formData.platform} onValueChange={(value) => setFormData({ ...formData, platform: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{platforms.map(p => <SelectItem key={p} value={p}>{p.replace('_', ' ').toUpperCase()}</SelectItem>)}</SelectContent></Select></div><div className="space-y-2"><Label>Status *</Label><Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="paused">Paused</SelectItem><SelectItem value="completed">Completed</SelectItem></SelectContent></Select></div></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Budget *</Label><Input type="number" step="0.01" value={formData.budget} onChange={(e) => setFormData({ ...formData, budget: e.target.value })} required /></div><div className="space-y-2"><Label>Spend</Label><Input type="number" step="0.01" value={formData.spend} onChange={(e) => setFormData({ ...formData, spend: e.target.value })} /></div></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Start Date</Label><Input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} /></div><div className="space-y-2"><Label>End Date</Label><Input type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} /></div></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">{editingCampaign ? 'Update' : 'Create'}</Button></DialogFooter></form></DialogContent></Dialog>
       </div>
 
-      <Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Platform</TableHead><TableHead>Status</TableHead><TableHead>Budget</TableHead><TableHead>Spend</TableHead><TableHead>ROI</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader><TableBody>{campaigns.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8"><div className="flex flex-col items-center gap-2"><TrendingUp className="w-12 h-12 text-muted-foreground" /><p className="text-muted-foreground">No campaigns yet. Launch your first ad!</p></div></TableCell></TableRow> : campaigns.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).map(campaign => <TableRow key={campaign.id}><TableCell className="font-medium">{campaign.name}</TableCell><TableCell>{campaign.platform.replace('_', ' ').toUpperCase()}</TableCell><TableCell><Badge className={statusColors[campaign.status as keyof typeof statusColors]}>{campaign.status}</Badge></TableCell><TableCell>${parseFloat(campaign.budget || 0).toFixed(2)}</TableCell><TableCell>${parseFloat(campaign.spend || 0).toFixed(2)}</TableCell><TableCell><span className={parseFloat(calculateROI(campaign)) > 0 ? 'text-green-600' : 'text-red-600'}>{calculateROI(campaign)}%</span></TableCell><TableCell className="text-right"><div className="flex justify-end gap-2"><Button variant="ghost" size="sm" onClick={() => { setEditingCampaign(campaign); setFormData({ name: campaign.name, platform: campaign.platform, budget: campaign.budget, spend: campaign.spend, status: campaign.status, start_date: campaign.start_date || '', end_date: campaign.end_date || '', impressions: campaign.impressions || 0, clicks: campaign.clicks || 0, conversions: campaign.conversions || 0 }); setIsDialogOpen(true); }}><Edit className="w-4 h-4" /></Button><Button variant="ghost" size="sm" onClick={async () => { if (confirm('Delete this campaign?')) { await supabase.from('ad_campaigns').delete().eq('id', campaign.id); fetchCampaigns(); } }}><Trash2 className="w-4 h-4 text-red-500" /></Button></div></TableCell></TableRow>)}</TableBody></Table>
+      <div className="bg-gray-700 rounded-lg border border-gray-600">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-800 border-gray-600">
+              <TableHead className="text-gray-200 font-medium">Name</TableHead>
+              <TableHead className="text-gray-200 font-medium">Platform</TableHead>
+              <TableHead className="text-gray-200 font-medium">Status</TableHead>
+              <TableHead className="text-gray-200 font-medium">Budget</TableHead>
+              <TableHead className="text-gray-200 font-medium">Spend</TableHead>
+              <TableHead className="text-gray-200 font-medium">ROI</TableHead>
+              <TableHead className="text-right text-gray-200 font-medium">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {campaigns.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8">
+                  <div className="flex flex-col items-center gap-2">
+                    <TrendingUp className="w-12 h-12 text-muted-foreground" />
+                    <p className="text-muted-foreground">No campaigns yet. Launch your first ad!</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              campaigns.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).map(campaign => (
+                <TableRow key={campaign.id}>
+                  <TableCell className="font-medium">{campaign.name}</TableCell>
+                  <TableCell>{campaign.platform.replace('_', ' ').toUpperCase()}</TableCell>
+                  <TableCell>
+                    <Badge className={statusColors[campaign.status as keyof typeof statusColors]}>
+                      {campaign.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>${parseFloat(campaign.budget || 0).toFixed(2)}</TableCell>
+                  <TableCell>${parseFloat(campaign.spend || 0).toFixed(2)}</TableCell>
+                  <TableCell>
+                    <span className={parseFloat(calculateROI(campaign)) > 0 ? 'text-green-600' : 'text-red-600'}>
+                      {calculateROI(campaign)}%
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          setEditingCampaign(campaign);
+                          setFormData({
+                            name: campaign.name,
+                            platform: campaign.platform,
+                            budget: campaign.budget,
+                            spend: campaign.spend,
+                            status: campaign.status,
+                            start_date: campaign.start_date || '',
+                            end_date: campaign.end_date || '',
+                            impressions: campaign.impressions || 0,
+                            clicks: campaign.clicks || 0,
+                            conversions: campaign.conversions || 0
+                          });
+                          setIsDialogOpen(true);
+                        }}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={async () => {
+                          if (confirm('Delete this campaign?')) {
+                            await supabase.from('ad_campaigns').delete().eq('id', campaign.id);
+                            fetchCampaigns();
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

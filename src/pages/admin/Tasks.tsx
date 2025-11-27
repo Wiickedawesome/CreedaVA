@@ -195,18 +195,18 @@ export function Tasks() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-6 min-h-screen">
       {/* Header with Stats */}
       <div>
-        <h1 className="text-2xl font-semibold text-white">Tasks</h1>
-        <p className="text-gray-300 mt-1">Manage your tasks and to-dos</p>
+        <h1 className="text-3xl font-bold text-white">Tasks</h1>
+        <p className="text-gray-300 mt-2 font-medium">Manage your tasks and to-dos</p>
       </div>
 
       {/* Stats Cards */}
