@@ -435,43 +435,43 @@ export function Contacts() {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-100 dark:bg-slate-700/50 border-b border-slate-300 dark:border-slate-600">
-              <TableHead className="text-slate-900 dark:text-white font-semibold">Name</TableHead>
-              <TableHead className="text-slate-900 dark:text-white font-semibold">Company</TableHead>
-              <TableHead className="text-slate-900 dark:text-white font-semibold">Position</TableHead>
-              <TableHead className="text-slate-900 dark:text-white font-semibold">Email</TableHead>
-              <TableHead className="text-slate-900 dark:text-white font-semibold">Phone</TableHead>
-              <TableHead className="text-slate-900 dark:text-white font-semibold">Seniority</TableHead>
-              <TableHead className="text-slate-900 dark:text-white font-semibold">Relationship</TableHead>
-              <TableHead className="text-slate-900 dark:text-white font-semibold">Contact Method</TableHead>
-              <TableHead className="text-slate-900 dark:text-white font-semibold">Meetings</TableHead>
-              <TableHead className="text-right text-slate-900 dark:text-white font-semibold">Actions</TableHead>
+              <TableHead className="text-white font-semibold">Name</TableHead>
+              <TableHead className="text-white font-semibold">Company</TableHead>
+              <TableHead className="text-white font-semibold">Position</TableHead>
+              <TableHead className="text-white font-semibold">Email</TableHead>
+              <TableHead className="text-white font-semibold">Phone</TableHead>
+              <TableHead className="text-white font-semibold">Seniority</TableHead>
+              <TableHead className="text-white font-semibold">Relationship</TableHead>
+              <TableHead className="text-white font-semibold">Contact Method</TableHead>
+              <TableHead className="text-white font-semibold">Meetings</TableHead>
+              <TableHead className="text-right text-white font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredContacts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8 text-slate-600 dark:text-slate-400 font-medium">
+                <TableCell colSpan={10} className="text-center py-8 text-white font-medium">
                   No contacts found. Add your first contact to get started.
                 </TableCell>
               </TableRow>
             ) : (
               filteredContacts.map((contact) => (
                 <TableRow key={contact.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                  <TableCell className="font-medium text-slate-900 dark:text-white">
+                  <TableCell className="font-medium text-white">
                     {contact.first_name} {contact.last_name}
                   </TableCell>
-                  <TableCell className="text-slate-800 dark:text-slate-200">{contact.company || '-'}</TableCell>
-                  <TableCell className="text-slate-800 dark:text-slate-200">{contact.position || '-'}</TableCell>
-                  <TableCell className="text-slate-800 dark:text-slate-200">
+                  <TableCell className="text-white">{contact.company || '-'}</TableCell>
+                  <TableCell className="text-white">{contact.position || '-'}</TableCell>
+                  <TableCell className="text-white">
                     <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                      <Mail className="w-4 h-4 text-gray-400" />
                       {contact.email}
                     </div>
                   </TableCell>
-                  <TableCell className="text-slate-800 dark:text-slate-200">
+                  <TableCell className="text-white">
                     {contact.phone || contact.mobile ? (
                       <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        <Phone className="w-4 h-4 text-gray-400" />
                         {contact.phone || contact.mobile}
                       </div>
                     ) : '-'}
@@ -495,7 +495,7 @@ export function Contacts() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-slate-800 dark:text-slate-200">
+                  <TableCell className="text-white">
                     {contact.preferred_contact_method ? (
                       <div className="flex items-center gap-2">
                         {contact.preferred_contact_method === 'linkedin' && <Linkedin className="w-4 h-4 text-emerald-600" />}

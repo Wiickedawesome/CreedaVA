@@ -344,16 +344,16 @@ export function Leads() {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-800 border-gray-600">
-              <TableHead className="text-gray-200 font-medium">Name</TableHead>
-              <TableHead className="text-gray-200 font-medium">Company</TableHead>
-              <TableHead className="text-gray-200 font-medium">Email</TableHead>
-              <TableHead className="text-gray-200 font-medium">Status</TableHead>
-              <TableHead className="text-gray-200 font-medium">Temperature</TableHead>
-              <TableHead className="text-gray-200 font-medium">Source</TableHead>
-              <TableHead className="text-gray-200 font-medium">Value</TableHead>
-              <TableHead className="text-gray-200 font-medium">Score</TableHead>
-              <TableHead className="text-gray-200 font-medium">Created</TableHead>
-              <TableHead className="text-right text-gray-200 font-medium">Actions</TableHead>
+              <TableHead className="text-white font-semibold">Name</TableHead>
+              <TableHead className="text-white font-semibold">Company</TableHead>
+              <TableHead className="text-white font-semibold">Email</TableHead>
+              <TableHead className="text-white font-semibold">Status</TableHead>
+              <TableHead className="text-white font-semibold">Temperature</TableHead>
+              <TableHead className="text-white font-semibold">Source</TableHead>
+              <TableHead className="text-white font-semibold">Value</TableHead>
+              <TableHead className="text-white font-semibold">Score</TableHead>
+              <TableHead className="text-white font-semibold">Created</TableHead>
+              <TableHead className="text-right text-white font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

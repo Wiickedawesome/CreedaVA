@@ -363,13 +363,13 @@ export function Tasks() {
         <Table>
           <TableHeader>
             <TableRow className="border-gray-600 bg-gray-800 hover:bg-gray-800">
-              <TableHead className="text-gray-200 font-medium">Task</TableHead>
-              <TableHead className="text-gray-200 font-medium">Status</TableHead>
-              <TableHead className="text-gray-200 font-medium">Priority</TableHead>
-              <TableHead className="text-gray-200 font-medium">Due Date</TableHead>
-              <TableHead className="text-gray-200 font-medium">Estimated</TableHead>
-              <TableHead className="text-gray-200 font-medium">Created</TableHead>
-              <TableHead className="text-right text-gray-200 font-medium">Actions</TableHead>
+              <TableHead className="text-white font-semibold">Task</TableHead>
+              <TableHead className="text-white font-semibold">Status</TableHead>
+              <TableHead className="text-white font-semibold">Priority</TableHead>
+              <TableHead className="text-white font-semibold">Due Date</TableHead>
+              <TableHead className="text-white font-semibold">Estimated</TableHead>
+              <TableHead className="text-white font-semibold">Created</TableHead>
+              <TableHead className="text-right text-white font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
