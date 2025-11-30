@@ -62,7 +62,7 @@ function QuickActionsCard() {
             variant="outline"
             className={`${action.color} border-transparent text-white hover:text-white flex items-center justify-start gap-3 p-4 h-auto transition-colors`}
           >
-            <action.icon className="w-5 h-5 flex-shrink-0" />
+            <action.icon className="w-5 h-5 shrink-0" />
             <div className="text-left">
               <div className="font-medium">{action.title}</div>
               <div className="text-xs opacity-90">{action.description}</div>
