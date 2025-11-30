@@ -227,7 +227,7 @@ export function Home() {
         </div>
       </section>
 
-      <section className="py-24 px-4 relative overflow-hidden bg-gradient-to-b from-background via-muted/20 to-background">
+      <section className="py-24 px-4 relative overflow-hidden bg-linear-to-b from-background via-muted/20 to-background">
         {/* Subtle modern background pattern */}
         <div className="absolute inset-0 -z-10 opacity-30" style={{
           backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(20, 160, 133, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(44, 62, 80, 0.03) 0%, transparent 50%)'
@@ -250,7 +250,7 @@ export function Home() {
 
           <div className="grid md:grid-cols-3 gap-8 relative">
             {/* Connection lines */}
-            <div className="hidden md:block absolute top-1/3 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+            <div className="hidden md:block absolute top-1/3 left-0 right-0 h-0.5 bg-linear-to-r from-transparent via-accent/30 to-transparent" />
             
             {[
               {
@@ -278,7 +278,7 @@ export function Home() {
                 whileHover={{ y: -8, transition: { duration: 0.2 } }}
                 className="relative"
               >
-                <div className="text-8xl font-bold bg-gradient-to-br from-accent/20 to-accent/5 bg-clip-text text-transparent absolute -top-6 -left-4 select-none">
+                <div className="text-8xl font-bold bg-linear-to-br from-accent/20 to-accent/5 bg-clip-text text-transparent absolute -top-6 -left-4 select-none">
                   {item.step}
                 </div>
                 <Card className="relative z-10 h-full bg-background/80 backdrop-blur-sm hover:shadow-2xl hover:border-accent/50 transition-all duration-300 border-border/50">

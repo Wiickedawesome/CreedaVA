@@ -6,7 +6,7 @@ export const AnimatedBackground = memo(() => {
     <div className="absolute inset-0 -z-10 overflow-hidden">
       {/* Simplified animated gradient layers with reduced performance impact */}
       <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-accent/15 via-emerald-500/15 to-teal-500/10"
+        className="absolute inset-0 bg-linear-to-br from-accent/15 via-emerald-500/15 to-teal-500/10"
         animate={{
           opacity: [0.3, 0.5, 0.3],
         }}
@@ -18,7 +18,7 @@ export const AnimatedBackground = memo(() => {
       />
       
       <motion.div
-        className="absolute inset-0 bg-gradient-to-tl from-accent/20 via-emerald-500/10 to-teal-500/10"
+        className="absolute inset-0 bg-linear-to-tl from-accent/20 via-emerald-500/10 to-teal-500/10"
         animate={{
           opacity: [0.5, 0.3, 0.5],
         }}
