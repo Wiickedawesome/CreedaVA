@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { Database } from '@/lib/database.types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -75,7 +75,7 @@ export function Leads() {
 
   const fetchLeads = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('leads')
         .select('*')
         .order('created_at', { ascending: false });
@@ -95,7 +95,7 @@ export function Leads() {
     try {
       if (editingLead) {
         // Update existing lead
-        const { error } = await supabase
+        const { error } = await db
           .from('leads')
           .update(formData)
           .eq('id', editingLead.id);
@@ -103,7 +103,7 @@ export function Leads() {
         if (error) throw error;
       } else {
         // Create new lead
-        const { error } = await supabase
+        const { error } = await db
           .from('leads')
           .insert([formData as LeadInsert]);
 
@@ -146,7 +146,7 @@ export function Leads() {
     if (!confirm('Are you sure you want to delete this lead?')) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await db
         .from('leads')
         .delete()
         .eq('id', id);

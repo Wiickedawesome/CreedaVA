@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,7 +29,7 @@ export function AdCampaigns() {
 
   const fetchCampaigns = async () => {
     try {
-      const { data, error } = await supabase.from('ad_campaigns').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('ad_campaigns').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setCampaigns(data || []);
     } catch (error) {
@@ -50,10 +50,10 @@ export function AdCampaigns() {
     try {
       const dataToSubmit = { ...formData, created_by: user?.id, budget: parseFloat(formData.budget), spend: parseFloat(formData.spend) };
       if (editingCampaign) {
-        const { error } = await supabase.from('ad_campaigns').update(dataToSubmit as any).eq('id', editingCampaign.id);
+        const { error } = await db.from('ad_campaigns').update(dataToSubmit as any).eq('id', editingCampaign.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('ad_campaigns').insert([dataToSubmit as any]);
+        const { error } = await db.from('ad_campaigns').insert([dataToSubmit as any]);
         if (error) throw error;
       }
       setIsDialogOpen(false);
@@ -177,7 +177,7 @@ export function AdCampaigns() {
                         size="sm" 
                         onClick={async () => {
                           if (confirm('Delete this campaign?')) {
-                            await supabase.from('ad_campaigns').delete().eq('id', campaign.id);
+                            await db.from('ad_campaigns').delete().eq('id', campaign.id);
                             fetchCampaigns();
                           }
                         }}

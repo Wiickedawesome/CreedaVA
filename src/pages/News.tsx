@@ -7,7 +7,7 @@ import { Calendar, ArrowRight, ExternalLink, Newspaper, Linkedin } from 'lucide-
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
 import { LinkedInFeed } from '@/components/LinkedInFeed'
-import { supabase } from '@/lib/supabase'
+import { db } from '@/lib/database'
 import { format } from 'date-fns'
 
 interface BlogPost {
@@ -38,7 +38,7 @@ export default function News() {
 
   const fetchBlogPosts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('blog_posts')
         .select('*')
         .eq('status', 'published')

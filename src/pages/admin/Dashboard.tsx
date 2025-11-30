@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { supabase } from '@/lib/supabase'
+import { db } from '@/lib/database'
 import { Users, UserPlus, CheckSquare, TrendingUp, Mail, FolderKanban, Plus, Edit, Send, FileText } from 'lucide-react'
 
 interface Stats {
@@ -92,11 +92,11 @@ export function AdminDashboard() {
   const loadStats = async () => {
     try {
       const [leadsCount, contactsCount, tasksCount, projectsCount, emailsCount] = await Promise.all([
-        supabase.from('leads').select('*', { count: 'exact', head: true }),
-        supabase.from('contacts').select('*', { count: 'exact', head: true }),
-        supabase.from('tasks').select('*', { count: 'exact', head: true }),
-        supabase.from('projects').select('*', { count: 'exact', head: true }),
-        supabase.from('emails').select('*', { count: 'exact', head: true }),
+        db.from('leads').select('*', { count: 'exact', head: true }),
+        db.from('contacts').select('*', { count: 'exact', head: true }),
+        db.from('tasks').select('*', { count: 'exact', head: true }),
+        db.from('projects').select('*', { count: 'exact', head: true }),
+        db.from('emails').select('*', { count: 'exact', head: true }),
       ])
 
       setStats({

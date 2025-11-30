@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,7 +28,7 @@ export function Reports() {
 
   const fetchReports = async () => {
     try {
-      const { data, error } = await supabase.from('marketing_reports').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('marketing_reports').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setReports(data || []);
     } catch (error) {
@@ -43,10 +43,10 @@ export function Reports() {
     try {
       const dataToSubmit = { ...formData, created_by: user?.id, report_data: {} };
       if (editingReport) {
-        const { error } = await supabase.from('marketing_reports').update(dataToSubmit).eq('id', editingReport.id);
+        const { error } = await db.from('marketing_reports').update(dataToSubmit).eq('id', editingReport.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('marketing_reports').insert([dataToSubmit]);
+        const { error } = await db.from('marketing_reports').insert([dataToSubmit]);
         if (error) throw error;
       }
       setIsDialogOpen(false);
@@ -177,7 +177,7 @@ export function Reports() {
                         size="sm" 
                         onClick={async () => {
                           if (confirm('Delete this report?')) {
-                            await supabase.from('marketing_reports').delete().eq('id', report.id);
+                            await db.from('marketing_reports').delete().eq('id', report.id);
                             fetchReports();
                           }
                         }}

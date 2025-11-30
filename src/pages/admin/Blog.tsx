@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,7 +29,7 @@ export function Blog() {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('blog_posts').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setPosts(data || []);
     } catch (error) {
@@ -47,10 +47,10 @@ export function Blog() {
       const slug = formData.slug || generateSlug(formData.title);
       const dataToSubmit = { ...formData, slug, created_by: user?.id, published_at: formData.status === 'published' ? new Date().toISOString() : null, is_published: formData.status === 'published' };
       if (editingPost) {
-        const { error } = await supabase.from('blog_posts').update(dataToSubmit).eq('id', editingPost.id);
+        const { error } = await db.from('blog_posts').update(dataToSubmit).eq('id', editingPost.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('blog_posts').insert([dataToSubmit]);
+        const { error } = await db.from('blog_posts').insert([dataToSubmit]);
         if (error) throw error;
       }
       setIsDialogOpen(false);
@@ -71,7 +71,7 @@ export function Blog() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this blog post?')) return;
     try {
-      const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+      const { error } = await db.from('blog_posts').delete().eq('id', id);
       if (error) throw error;
       fetchPosts();
     } catch (error) {

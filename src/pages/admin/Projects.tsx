@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { Database } from '@/lib/database.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -55,7 +55,7 @@ export function Projects() {
 
   const fetchProjects = async () => {
     try {
-      const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('projects').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setProjects(data || []);
     } catch (error) {
@@ -70,10 +70,10 @@ export function Projects() {
     try {
       const dataToSubmit = { ...formData, project_manager: user?.id };
       if (editingProject) {
-        const { error } = await supabase.from('projects').update(dataToSubmit).eq('id', editingProject.id);
+        const { error } = await db.from('projects').update(dataToSubmit).eq('id', editingProject.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('projects').insert([dataToSubmit as ProjectInsert]);
+        const { error } = await db.from('projects').insert([dataToSubmit as ProjectInsert]);
         if (error) throw error;
       }
       handleCloseDialog();
@@ -92,7 +92,7 @@ export function Projects() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure?')) return;
     try {
-      const { error } = await supabase.from('projects').delete().eq('id', id);
+      const { error } = await db.from('projects').delete().eq('id', id);
       if (error) throw error;
       fetchProjects();
     } catch (error) {

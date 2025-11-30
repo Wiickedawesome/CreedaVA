@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Calendar, ArrowLeft, Eye, Linkedin, Share2 } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
-import { supabase } from '@/lib/supabase'
+import { db } from '@/lib/database'
 import { format } from 'date-fns'
 
 interface BlogPost {
@@ -42,7 +42,7 @@ export default function BlogPost() {
 
   const fetchPost = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('blog_posts')
         .select('*')
         .eq('slug', slug)
@@ -62,7 +62,7 @@ export default function BlogPost() {
   const incrementViews = async () => {
     try {
       // First get current view count
-      const { data } = await supabase
+      const { data } = await db
         .from('blog_posts')
         .select('views')
         .eq('slug', slug)
@@ -70,7 +70,7 @@ export default function BlogPost() {
 
       if (data) {
         // Increment view count
-        await supabase
+        await db
           .from('blog_posts')
           .update({ views: (data.views || 0) + 1 })
           .eq('slug', slug)

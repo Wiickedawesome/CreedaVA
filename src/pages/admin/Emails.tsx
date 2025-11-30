@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { Database } from '@/lib/database.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,7 @@ export function Emails() {
 
   const fetchEmails = async () => {
     try {
-      const { data, error } = await supabase.from('emails').select('*').order('created_at', { ascending: false });
+      const { data, error } = await db.from('emails').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setEmails(data || []);
     } catch (error) {
@@ -44,7 +44,7 @@ export function Emails() {
     e.preventDefault();
     try {
       const dataToSubmit = { ...formData, user_id: user?.id };
-      const { error } = await supabase.from('emails').insert([dataToSubmit as EmailInsert]);
+      const { error } = await db.from('emails').insert([dataToSubmit as EmailInsert]);
       if (error) throw error;
       setIsDialogOpen(false);
       setFormData({ subject: '', body: '', from_email: '', to_email: '', status: 'draft' });

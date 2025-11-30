@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { Database } from '@/lib/database.types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,7 @@ export function Keywords() {
 
   const fetchKeywords = async () => {
     try {
-      const { data, error } = await supabase.from('keyword_tracking').select('*').order('search_volume', { ascending: false, nullsFirst: false });
+      const { data, error } = await db.from('keyword_tracking').select('*').order('search_volume', { ascending: false, nullsFirst: false });
       if (error) throw error;
       setKeywords(data || []);
     } catch (error) {
@@ -39,10 +39,10 @@ export function Keywords() {
     e.preventDefault();
     try {
       if (editingKeyword) {
-        const { error } = await supabase.from('keyword_tracking').update(formData).eq('id', editingKeyword.id);
+        const { error } = await db.from('keyword_tracking').update(formData).eq('id', editingKeyword.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('keyword_tracking').insert([formData as KeywordInsert]);
+        const { error } = await db.from('keyword_tracking').insert([formData as KeywordInsert]);
         if (error) throw error;
       }
       setIsDialogOpen(false);
@@ -63,7 +63,7 @@ export function Keywords() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete keyword?')) return;
     try {
-      const { error } = await supabase.from('keyword_tracking').delete().eq('id', id);
+      const { error } = await db.from('keyword_tracking').delete().eq('id', id);
       if (error) throw error;
       fetchKeywords();
     } catch (error) {

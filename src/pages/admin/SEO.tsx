@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { Database } from '@/lib/database.types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,7 +68,7 @@ export function SEO() {
 
   const fetchPages = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('seo_pages')
         .select('*')
         .order('page_path', { ascending: true });
@@ -87,14 +87,14 @@ export function SEO() {
     
     try {
       if (editingPage) {
-        const { error } = await supabase
+        const { error } = await db
           .from('seo_pages')
           .update(formData)
           .eq('id', editingPage.id);
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await db
           .from('seo_pages')
           .insert([formData]);
 

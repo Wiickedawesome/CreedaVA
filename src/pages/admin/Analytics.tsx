@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { Database } from '@/lib/database.types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, Eye, MousePointer, Users, Globe } from 'lucide-react';
@@ -15,7 +15,7 @@ export function Analytics() {
 
   const fetchAnalytics = async () => {
     try {
-      const { data, error } = await supabase.from('analytics_data').select('*').order('date', { ascending: false }).limit(30);
+      const { data, error } = await db.from('analytics_data').select('*').order('date', { ascending: false }).limit(30);
       if (error) throw error;
       setAnalytics(data || []);
     } catch (error) {

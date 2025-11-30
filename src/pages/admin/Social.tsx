@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +31,7 @@ export function Social() {
 
   const fetchPosts = async () => {
     try {
-      let query = supabase.from('social_posts').select('*').order('created_at', { ascending: false });
+      let query = db.from('social_posts').select('*').order('created_at', { ascending: false });
       if (selectedPlatform !== 'all') query = query.eq('platform', selectedPlatform);
       const { data, error } = await query;
       if (error) throw error;
@@ -47,7 +47,7 @@ export function Social() {
     e.preventDefault();
     try {
       const dataToSubmit = { ...formData, created_by: user?.id, hashtags: formData.hashtags.split(' ').filter(Boolean) };
-      const { error } = await supabase.from('social_posts').insert([dataToSubmit]);
+      const { error } = await db.from('social_posts').insert([dataToSubmit]);
       if (error) throw error;
       setIsDialogOpen(false);
       setFormData({ content: '', platform: 'linkedin', status: 'draft', scheduled_for: '', hashtags: '' });

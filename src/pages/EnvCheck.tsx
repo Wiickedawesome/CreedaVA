@@ -1,7 +1,7 @@
 // Temporary diagnostic page to check environment variables
 export function EnvCheck() {
-  const hasSupabaseUrl = !!import.meta.env.VITE_SUPABASE_URL
-  const hasSupabaseKey = !!import.meta.env.VITE_SUPABASE_ANON_KEY
+  const hasDbUrl = !!import.meta.env.VITE_SUPABASE_URL
+  const hasDbKey = !!import.meta.env.VITE_SUPABASE_ANON_KEY
   const hasGoogleClient = !!import.meta.env.VITE_GOOGLE_SEARCH_CONSOLE_CLIENT_ID
   const baseUrl = import.meta.env.BASE_URL
   const mode = import.meta.env.MODE
@@ -13,18 +13,18 @@ export function EnvCheck() {
         
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${hasSupabaseUrl ? 'bg-green-500' : 'bg-red-500'}`} />
+            <div className={`w-3 h-3 rounded-full ${hasDbUrl ? 'bg-green-500' : 'bg-red-500'}`} />
             <span className="font-medium">VITE_SUPABASE_URL:</span>
             <span className="text-slate-600 dark:text-slate-400">
-              {hasSupabaseUrl ? '✓ Configured' : '✗ Missing'}
+              {hasDbUrl ? '✓ Configured' : '✗ Missing'}
             </span>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${hasSupabaseKey ? 'bg-green-500' : 'bg-red-500'}`} />
+            <div className={`w-3 h-3 rounded-full ${hasDbKey ? 'bg-green-500' : 'bg-red-500'}`} />
             <span className="font-medium">VITE_SUPABASE_ANON_KEY:</span>
             <span className="text-slate-600 dark:text-slate-400">
-              {hasSupabaseKey ? '✓ Configured' : '✗ Missing'}
+              {hasDbKey ? '✓ Configured' : '✗ Missing'}
             </span>
           </div>
 
@@ -43,7 +43,7 @@ export function EnvCheck() {
             </div>
           </div>
 
-          {hasSupabaseUrl && (
+          {hasDbUrl && (
             <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
               <p className="text-green-800 dark:text-green-200 font-medium">
                 ✓ Configuration looks good! You can proceed to login.
@@ -51,13 +51,13 @@ export function EnvCheck() {
             </div>
           )}
 
-          {!hasSupabaseUrl && (
+          {!hasDbUrl && (
             <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
               <p className="text-red-800 dark:text-red-200 font-medium mb-2">
                 ✗ Missing environment variables
               </p>
               <p className="text-red-700 dark:text-red-300 text-sm">
-                Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your .env file for local development,
+                Please ensure database credentials are set in your .env file for local development,
                 or as GitHub Secrets for production deployment.
               </p>
             </div>

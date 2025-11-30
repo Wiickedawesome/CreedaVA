@@ -1,5 +1,5 @@
 // TypeScript types for Supabase database - Enhanced Schema
-// Auto-generated types matching supabase-schema.sql
+// Auto-generated types matching db-schema.sql
 
 export type Json =
   | string

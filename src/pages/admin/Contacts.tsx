@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { Database } from '@/lib/database.types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -88,7 +88,7 @@ export function Contacts() {
   const fetchContacts = async () => {
     try {
       setError(null);
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('contacts')
         .select('*')
         .order('created_at', { ascending: false });
@@ -112,7 +112,7 @@ export function Contacts() {
     
     try {
       if (editingContact) {
-        const { error } = await supabase
+        const { error } = await db
           .from('contacts')
           .update(formData)
           .eq('id', editingContact.id);
@@ -122,7 +122,7 @@ export function Contacts() {
           throw new Error(error.message);
         }
       } else {
-        const { error } = await supabase
+        const { error } = await db
           .from('contacts')
           .insert([formData as ContactInsert]);
 
@@ -166,7 +166,7 @@ export function Contacts() {
     if (!confirm('Are you sure you want to delete this contact? This action cannot be undone.')) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await db
         .from('contacts')
         .delete()
         .eq('id', id);

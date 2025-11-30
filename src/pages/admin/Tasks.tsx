@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/database';
 import { Database } from '@/lib/database.types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -75,7 +75,7 @@ export function Tasks() {
 
   const fetchTasks = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('tasks')
         .select('*')
         .order('created_at', { ascending: false });
@@ -99,14 +99,14 @@ export function Tasks() {
       };
 
       if (editingTask) {
-        const { error } = await supabase
+        const { error } = await db
           .from('tasks')
           .update(dataToSubmit as any)
           .eq('id', editingTask.id);
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await db
           .from('tasks')
           .insert([dataToSubmit as any]);
 
@@ -137,7 +137,7 @@ export function Tasks() {
     if (!confirm('Are you sure you want to delete this task?')) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await db
         .from('tasks')
         .delete()
         .eq('id', id);
@@ -156,7 +156,7 @@ export function Tasks() {
         updates.completed_at = new Date().toISOString();
       }
 
-      const { error } = await supabase
+      const { error } = await db
         .from('tasks')
         .update(updates)
         .eq('id', taskId);
