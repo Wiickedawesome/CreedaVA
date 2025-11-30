@@ -33,7 +33,7 @@ export function AdCampaigns() {
       if (error) throw error;
       setCampaigns(data || []);
     } catch (error) {
-      console.error('Error:', error);
+      // Failed to fetch campaigns
     } finally {
       setLoading(false);
     }
@@ -61,7 +61,7 @@ export function AdCampaigns() {
       setFormData({ name: '', platform: 'google_ads', budget: '', spend: '', status: 'draft', start_date: '', end_date: '', impressions: 0, clicks: 0, conversions: 0 });
       fetchCampaigns();
     } catch (error) {
-      console.error('Error:', error);
+      alert('Failed to save campaign');
     }
   };
 

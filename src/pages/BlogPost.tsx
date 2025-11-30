@@ -53,7 +53,6 @@ export default function BlogPost() {
       if (error) throw error
       setPost(data)
     } catch (error) {
-      console.error('Error fetching blog post:', error)
       setError('Blog post not found')
     } finally {
       setLoading(false)
@@ -78,7 +77,6 @@ export default function BlogPost() {
       }
     } catch (error) {
       // Silently fail - view count is not critical
-      console.warn('Failed to increment view count:', error)
     }
   }
 

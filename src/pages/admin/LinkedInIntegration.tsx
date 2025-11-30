@@ -48,34 +48,34 @@ export function LinkedInIntegration() {
   const handleConnect = async () => {
     setIsLoading(true)
     try {
-      // In a real implementation, this would:
-      // 1. Validate credentials
-      // 2. Get OAuth authorization URL
-      // 3. Redirect user to LinkedIn
-      // 4. Handle callback and get access token
-      
-      // For demo purposes:
       if (!clientId || !clientSecret) {
         throw new Error('Please enter both Client ID and Client Secret')
       }
 
-      // Save configuration
+      // Get OAuth URL from Azure Function
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
+      const response = await fetch(`${apiUrl}/linkedin-connect?state=${organizationId || 'default'}`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate authentication URL')
+      }
+      
+      const data = await response.json()
+      
+      // Save client credentials locally (tokens will be stored server-side)
       const config = {
         clientId,
         clientSecret,
         organizationId,
-        accessToken: 'demo_access_token_' + Date.now(),
         connectedAt: new Date().toISOString()
       }
       
       localStorage.setItem('linkedin-config', JSON.stringify(config))
-      setAccessToken(config.accessToken)
-      setIsConnected(true)
       
-      toast.success('LinkedIn connected successfully!')
+      // Redirect to LinkedIn OAuth
+      window.location.href = data.authUrl
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to connect')
-    } finally {
       setIsLoading(false)
     }
   }
@@ -111,11 +111,24 @@ export function LinkedInIntegration() {
   const handleSyncNow = async () => {
     setIsLoading(true)
     try {
-      // This would sync existing LinkedIn posts to your database
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const storedConfig = localStorage.getItem('linkedin-config')
+      const config = storedConfig ? JSON.parse(storedConfig) : null
+      
+      if (!config?.organizationId) {
+        throw new Error('Organization ID not configured')
+      }
+      
+      // Force refresh from LinkedIn API
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
+      const response = await fetch(`${apiUrl}/linkedin-posts?org=${config.organizationId}&refresh=true`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to sync posts')
+      }
+      
       toast.success('LinkedIn posts synced successfully!')
     } catch (error) {
-      toast.error('Failed to sync posts')
+      toast.error(error instanceof Error ? error.message : 'Failed to sync posts')
     } finally {
       setIsLoading(false)
     }

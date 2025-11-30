@@ -37,7 +37,7 @@ export function Social() {
       if (error) throw error;
       setPosts(data || []);
     } catch (error) {
-      console.error('Error:', error);
+      // Failed to fetch posts
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,7 @@ export function Social() {
       setFormData({ content: '', platform: 'linkedin', status: 'draft', scheduled_for: '', hashtags: '' });
       fetchPosts();
     } catch (error) {
-      console.error('Error:', error);
+      alert('Failed to save post');
     }
   };
 

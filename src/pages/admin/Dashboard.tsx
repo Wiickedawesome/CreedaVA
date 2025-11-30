@@ -108,7 +108,7 @@ export function AdminDashboard() {
         recentActivity: 0,
       })
     } catch (error) {
-      console.error('Error loading stats:', error)
+      // Stats loading is non-critical, continue rendering
     } finally {
       setLoading(false)
     }

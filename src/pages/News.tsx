@@ -49,7 +49,6 @@ export default function News() {
       if (error) throw error
       setPosts(data || [])
     } catch (error) {
-      console.error('Error fetching blog posts:', error)
       setError('Failed to load blog posts')
     } finally {
       setLoading(false)

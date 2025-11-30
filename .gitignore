@@ -7,11 +7,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build output
 dist
 dist-ssr
 *-dist
-*.local
 
 # Editor directories and files
 .vscode/*
@@ -28,18 +30,18 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+*.local
+
+# Azure Functions
+api/local.settings.json
+api/node_modules
+api/.vscode
 
 # Development files
 **/agent-eval-report*
 pids
 .file-manifest
 .devcontainer/
-.spark-workbench-id
-spark.meta.json
-theme.json
-README_NEW.md
-README_CLEAN.md
-packages/spark-tools/
 
 # Build artifacts
 *.tsbuildinfo

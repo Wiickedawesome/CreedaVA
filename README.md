@@ -19,62 +19,186 @@ CreedaVA provides elite virtual assistant services with bilingual excellence, cu
 - 📊 Financial & Data Management
 
 ## 🛠️ Tech Stack
-- React 19 + Vite 6
-- TypeScript 5
-- Tailwind CSS 4
-- Radix UI Components
-- Framer Motion Animations
-- Phosphor Icons
+
+### Frontend
+- **React 19** - Modern UI framework
+- **Vite 7** - Lightning-fast build tool
+- **TypeScript 5** - Type safety
+- **Tailwind CSS 4** - Utility-first styling
+- **Radix UI** - Accessible component primitives
+- **Framer Motion** - Smooth animations
+
+### Backend & Infrastructure
+- **Azure Static Web Apps** - Hosting and CI/CD
+- **Azure Functions** - Serverless API (Node.js)
+- **Azure Cosmos DB** - Serverless database
+- **Supabase** - Authentication & blog posts
+
+### Integrations
+- **LinkedIn API** - Organization post sync via Azure Functions
+- **Google Analytics 4** - Optional analytics tracking
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or pnpm
+- Node.js 18+
+- Azure account (for production deployment)
+- LinkedIn Developer App (for LinkedIn integration)
+
+### Environment Variables
+
+Create `.env` file:
+```bash
+# Supabase (Auth & Blog)
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+
+# Optional
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+VITE_API_URL=/api
+VITE_BASE_PATH=/
+```
 
 ### Local Development
+
+**Frontend:**
 ```bash
 npm install
 npm run dev
 ```
 
+**Azure Functions API** (separate terminal):
+```bash
+cd api
+npm install
+func start
+```
+
+API will be available at `http://localhost:7071/api/*`
+
 ### Production Build
 ```bash
-npm run build
-npm run preview
+npm run build        # Build React app + widget
+npm run preview      # Preview production build
 ```
 
 ## 📦 Deployment
 
-This static site is deployed on **Azure Static Web Apps** and can also be deployed to:
-- Vercel
-- Netlify
-- Cloudflare Pages
-- GitHub Pages
+### Azure Static Web Apps (Current)
+
+Deployment is **fully automated** via GitHub Actions:
+1. Push to `main` branch
+2. Workflow builds and deploys automatically
+3. Frontend: `https://www.creedava.com`
+4. API: `https://www.creedava.com/api/*`
+
+**Workflow:** `.github/workflows/azure-static-web-apps-wonderful-glacier-08b16321e.yml`
+
+### Required Azure Resources
+- Static Web App: `CreedaVA`
+- Cosmos DB Account: `creedava-db` (serverless)
+  - Database: `website-data`
+  - Container: `linkedin-data` (partition key: `/id`)
+- Resource Group: `CreedaVA`
+- Region: West US 2
+
+### GitHub Secrets
+Configure in repository settings:
+- `AZURE_STATIC_WEB_APPS_API_TOKEN_WONDERFUL_GLACIER_08B16321E`
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_GA_MEASUREMENT_ID` (optional)
+
+### Azure App Settings
+Configure in Azure Portal or CLI:
+- `COSMOS_ENDPOINT`
+- `COSMOS_KEY`
+- `LINKEDIN_CLIENT_ID`
+- `LINKEDIN_CLIENT_SECRET`
+- `LINKEDIN_REDIRECT_URI`
 
 ## 🏗️ Project Structure
 
 ```
-src/
-├── pages/          # Main pages (Home, Services, About, Contact, etc.)
-├── components/     # Reusable UI components
-│   ├── ui/         # shadcn/ui components
-│   └── ...         # Custom components (Navbar, Footer, ChatBot, etc.)
-├── hooks/          # Custom React hooks
-├── lib/            # Utility functions
-└── styles/         # Global styles and themes
+CreedaVA/
+├── src/
+│   ├── pages/              # Main pages + admin panel
+│   │   ├── admin/          # 16 admin dashboard pages
+│   │   └── ...             # Public pages (Home, Services, etc.)
+│   ├── components/         # Reusable UI components
+│   │   ├── ui/             # shadcn/ui components
+│   │   └── ...             # Custom components
+│   ├── contexts/           # React contexts (AuthContext)
+│   ├── hooks/              # Custom React hooks
+│   ├── layouts/            # Layout components (AdminLayout)
+│   ├── lib/                # Utilities + Supabase client
+│   └── styles/             # Global styles
+├── api/                    # Azure Functions
+│   ├── linkedin-auth/      # OAuth callback
+│   ├── linkedin-connect/   # OAuth URL generator
+│   ├── linkedin-posts/     # Posts endpoint with cache
+│   └── shared/             # Cosmos DB + LinkedIn helpers
+├── public/                 # Static assets
+│   └── staticwebapp.config.json  # Azure SWA config
+└── .github/workflows/      # CI/CD automation
 ```
 
-## ✨ Features
+## ✨ Key Features
 
-- ⚡ Lightning-fast performance with Vite
-- 🎨 Modern, responsive design with Tailwind CSS
-- 🌓 Clean theme system
-- 📱 Mobile-first approach
-- ♿ Accessible components (Radix UI)
-- 🎭 Smooth animations with Framer Motion
-- 💬 Interactive AI chatbot integration
-- 🔗 LinkedIn widget integration
+### Performance Optimizations
+- ⚡ Vite for lightning-fast dev/build
+- 🎯 Lazy loading with IntersectionObserver
+- 🖼️ Image lazy loading + async decoding
+- 📦 Code splitting with React.lazy
+- 💾 Cosmos DB caching (1-hour TTL)
+
+### Admin Panel
+- 🎛️ Complete CRM and marketing dashboard
+- 📊 Analytics, leads, and customer journey tracking
+- 📝 Blog management with Supabase
+- 🔐 Protected routes with authentication
+- 💼 LinkedIn integration for post sync
+
+### LinkedIn Integration
+- 🔗 OAuth 2.0 authentication flow
+- 📰 Organization post fetching
+- 💾 Token storage in Cosmos DB
+- 🔄 Automatic token refresh
+- ⚡ Post caching for performance
+
+### Widget Build
+- 🔌 Embeddable widget version (`vite.widget.config.ts`)
+- 📦 IIFE bundle for WordPress/Squarespace
+- 🎨 Self-contained styles
+
+## 📚 Documentation
+
+- [LinkedIn Integration Guide](./LINKEDIN_INTEGRATION.md) - Complete API setup and usage
+- [Azure Deployment](https://learn.microsoft.com/azure/static-web-apps/) - Official Azure docs
+- [Cosmos DB Best Practices](https://learn.microsoft.com/azure/cosmos-db/) - Database guidelines
+
+## 🔧 Development Tips
+
+### Running Locally with API
+```bash
+# Terminal 1: Frontend
+npm run dev
+
+# Terminal 2: Azure Functions
+cd api && func start
+```
+
+### Testing LinkedIn OAuth Locally
+1. Update `api/local.settings.json` with your credentials
+2. Set `LINKEDIN_REDIRECT_URI` to `http://localhost:4280/api/linkedin-auth`
+3. Configure same redirect URI in LinkedIn Developer Portal
+4. Visit `http://localhost:5173/admin/linkedin-integration`
+
+### Debugging
+- Frontend errors: Check browser console
+- API errors: Check Azure Functions terminal output
+- Cosmos DB: Use Azure Data Explorer in portal
+- Build errors: Check `npm run build` output
 
 ## 📄 License
 

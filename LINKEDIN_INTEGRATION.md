@@ -1,103 +1,219 @@
-# LinkedIn API Integration Guide
+# LinkedIn API Integration - Azure Functions Implementation
 
 ## Overview
-The Social Media management page is already prepared for LinkedIn API integration with dedicated database fields and UI components.
+CreedaVA uses Azure Functions as a secure backend to handle LinkedIn OAuth and API interactions. This architecture keeps credentials server-side and provides persistent token storage via Azure Cosmos DB.
+
+## Architecture
+
+```
+User → Frontend (React) → Azure Functions API → LinkedIn API
+                              ↓
+                        Azure Cosmos DB
+                        (Token Storage)
+```
 
 ## Current Status
-✅ **Database Ready**: `linkedin_post_id` and `linkedin_author_urn` fields in `social_posts` table  
-✅ **UI Ready**: LinkedIn prominently featured as primary platform  
-⏳ **API Integration**: Requires LinkedIn Developer Application approval
+✅ **Azure Functions API**: Deployed at `/api/*` endpoints  
+✅ **Cosmos DB Storage**: Tokens and posts cached with 1-hour TTL  
+✅ **OAuth Flow**: Complete authentication with token refresh  
+✅ **Admin UI**: LinkedIn integration page at `/admin/linkedin-integration`
 
-## LinkedIn Lead Sync API
-**Documentation**: https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync
+## API Endpoints
 
-### What is Lead Sync?
-LinkedIn Lead Sync allows you to automatically sync leads from LinkedIn Lead Gen Forms into your CRM (CreedaVA). When someone fills out a form on your LinkedIn ad campaign, their information is automatically sent to your database.
+### 1. `/api/linkedin-connect`
+**Purpose**: Generate LinkedIn OAuth authorization URL  
+**Method**: GET  
+**Response**: `{ authUrl: "https://www.linkedin.com/oauth/v2/authorization?..." }`
 
-### Key Features:
-- **Automatic Lead Capture**: No manual CSV downloads
-- **Real-time Sync**: Leads appear in your CRM within minutes
-- **Form Integration**: Works with LinkedIn Lead Gen Forms
-- **Campaign Attribution**: Track which LinkedIn campaigns generate leads
-
-## Required API Scopes
-
-To integrate LinkedIn posting and lead sync, you'll need:
-
-### For Posting Content:
-- `w_member_social` - Post content as a member
-- `r_basicprofile` - Read basic profile information
-
-### For Organization Pages:
-- `r_organization_social` - Read organization posts and analytics
-- `w_organization_social` - Post content on behalf of organization
-- `rw_organization_admin` - Manage organization page
-
-### For Lead Sync:
-- `r_ads_leadgen_automation` - Access to lead gen form data
-- `r_ads_reporting` - Access to campaign performance data
-
-## Implementation Steps
-
-### Phase 1: LinkedIn Developer Setup
-1. **Create LinkedIn App**
-   - Go to https://www.linkedin.com/developers/apps
-   - Click "Create App"
-   - Fill in app details (CreedaVA, logo, etc.)
-   - Select appropriate LinkedIn Page for organization
-
-2. **Request API Access**
-   - Navigate to Products tab
-   - Request "Share on LinkedIn" product
-   - Request "Advertising API" product (for Lead Sync)
-   - Wait for LinkedIn approval (typically 1-3 days)
-
-3. **Configure OAuth**
-   - Add redirect URLs: `https://creedava.com/api/linkedin/callback`
-   - Note down Client ID and Client Secret
-
-### Phase 2: Backend API Integration
-
+**Frontend Usage**:
 ```typescript
-// Example: Post to LinkedIn
-async function postToLinkedIn(content: string, accessToken: string) {
-  const response = await fetch('https://api.linkedin.com/v2/ugcPosts', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      'X-Restli-Protocol-Version': '2.0.0'
-    },
-    body: JSON.stringify({
-      author: 'urn:li:person:YOUR_PERSON_ID',
-      lifecycleState: 'PUBLISHED',
-      specificContent: {
-        'com.linkedin.ugc.ShareContent': {
-          shareCommentary: {
-            text: content
-          },
-          shareMediaCategory: 'NONE'
-        }
-      },
-      visibility: {
-        'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC'
+const response = await fetch('/api/linkedin-connect');
+const { authUrl } = await response.json();
+window.location.href = authUrl; // Redirect to LinkedIn
+```
+
+### 2. `/api/linkedin-auth`
+**Purpose**: OAuth callback handler (LinkedIn redirects here)  
+**Method**: GET  
+**Query Params**: `code`, `state`  
+**Flow**:
+1. Exchange authorization code for access token
+2. Calculate token expiration time
+3. Store tokens in Cosmos DB
+4. Redirect to `/admin/linkedin-integration?success=true`
+
+**Security**: This endpoint handles sensitive token exchange and should never be called directly from client code.
+
+### 3. `/api/linkedin-posts`
+**Purpose**: Fetch organization posts with caching  
+**Method**: GET  
+**Query Params**: `refresh=true` (optional - force cache refresh)  
+**Response**:
+```json
+{
+  "posts": [
+    {
+      "id": "urn:li:share:123",
+      "text": "Post content...",
+      "created": 1234567890,
+      "stats": {
+        "likes": 42,
+        "comments": 5,
+        "shares": 3,
+        "impressions": 1250
       }
-    })
-  });
-  
-  const data = await response.json();
-  return data.id; // This is the linkedin_post_id to store in database
+    }
+  ],
+  "cached": true,
+  "cacheAge": 1800
 }
 ```
 
-### Phase 3: Lead Sync Integration
-
+**Frontend Usage**:
 ```typescript
-// Example: Fetch leads from LinkedIn Lead Gen Forms
-async function syncLinkedInLeads(accessToken: string) {
-  const response = await fetch(
-    'https://api.linkedin.com/v2/leadFormResponses?' +
-    'q=owner&owner=urn:li:sponsoredAccount:YOUR_ACCOUNT_ID',
+// Normal fetch (uses cache if available)
+const response = await fetch('/api/linkedin-posts');
+
+// Force refresh
+const response = await fetch('/api/linkedin-posts?refresh=true');
+```
+
+## Database Schema (Cosmos DB)
+
+### Container: `linkedin-data`
+**Partition Key**: `/id`  
+**TTL**: Enabled (1 hour for cached posts)
+
+**Token Document**:
+```json
+{
+  "id": "linkedin-token",
+  "accessToken": "AQV...",
+  "refreshToken": "AQW...",
+  "expiresAt": 1234567890,
+  "organizationId": "12345678",
+  "type": "token"
+}
+```
+
+**Cached Posts Document**:
+```json
+{
+  "id": "posts-cache",
+  "posts": [...],
+  "cachedAt": 1234567890,
+  "ttl": 3600,
+  "type": "cache"
+}
+```
+
+## Required LinkedIn API Scopes
+
+Configure these in your LinkedIn Developer App:
+- `r_organization_social` - Read organization posts and analytics
+- `w_organization_social` - Post content on behalf of organization  
+- `rw_organization_admin` - Manage organization page
+
+## Environment Variables
+
+### Azure Static Web App Settings
+Configure via Azure Portal or CLI:
+```bash
+COSMOS_ENDPOINT=https://creedava-db.documents.azure.com:443/
+COSMOS_KEY=<your-cosmos-primary-key>
+LINKEDIN_CLIENT_ID=<your-linkedin-client-id>
+LINKEDIN_CLIENT_SECRET=<your-linkedin-client-secret>
+LINKEDIN_REDIRECT_URI=https://www.creedava.com/api/linkedin-auth
+```
+
+### Local Development (`api/local.settings.json`)
+```json
+{
+  "Values": {
+    "COSMOS_ENDPOINT": "https://creedava-db.documents.azure.com:443/",
+    "COSMOS_KEY": "...",
+    "COSMOS_DATABASE": "website-data",
+    "COSMOS_CONTAINER": "linkedin-data",
+    "LINKEDIN_CLIENT_ID": "...",
+    "LINKEDIN_CLIENT_SECRET": "...",
+    "LINKEDIN_REDIRECT_URI": "http://localhost:4280/api/linkedin-auth"
+  }
+}
+```
+
+## Token Refresh Flow
+
+The API automatically refreshes expired tokens:
+1. Check if `expiresAt < Date.now()`
+2. If expired, call `refreshAccessToken(refreshToken)`
+3. Update Cosmos DB with new token and expiration
+4. Proceed with API request
+
+## Security Best Practices
+
+✅ **Never expose credentials in frontend**: All LinkedIn API calls go through Azure Functions  
+✅ **Token storage**: Tokens stored server-side in Cosmos DB, not localStorage  
+✅ **HTTPS only**: OAuth redirects require HTTPS in production  
+✅ **State parameter**: OAuth flow includes state validation  
+✅ **Token expiration**: Automatic refresh prevents stale credentials
+
+## Testing Locally
+
+1. **Install Azure Functions Core Tools**:
+   ```bash
+   npm install -g azure-functions-core-tools@4
+   ```
+
+2. **Configure local settings**: Update `api/local.settings.json`
+
+3. **Run Functions locally**:
+   ```bash
+   cd api
+   func start
+   ```
+
+4. **Run frontend** (separate terminal):
+   ```bash
+   npm run dev
+   ```
+
+5. **Test OAuth**: Navigate to `http://localhost:5173/admin/linkedin-integration`
+
+## Deployment
+
+Deployment happens automatically via GitHub Actions when pushing to `main`:
+1. Workflow builds React app with environment variables
+2. Deploys `/api` folder to Azure Functions
+3. Frontend deployed to Azure Static Web Apps
+4. API accessible at `https://www.creedava.com/api/*`
+
+## Troubleshooting
+
+### "Access token expired"
+- Check if token refresh is working in `/api/linkedin-posts`
+- Verify `expiresAt` timestamp in Cosmos DB
+- Re-authenticate via `/admin/linkedin-integration`
+
+### "Organization not found"
+- Ensure LinkedIn app has organization page selected
+- Verify `rw_organization_admin` scope is approved
+- Check organization ID in stored token
+
+### "CORS errors"
+- Azure Functions handle CORS automatically for Static Web Apps
+- Verify `VITE_API_URL=/api` is set correctly
+
+### "Cached data too old"
+- Use `?refresh=true` to force cache invalidation
+- Check TTL settings in Cosmos DB container
+
+## Future Enhancements
+
+- [ ] Posting content to LinkedIn from admin panel
+- [ ] Lead Gen Form sync integration
+- [ ] Multi-organization support
+- [ ] Analytics dashboard with engagement metrics
+- [ ] Scheduled post publishing
     {
       headers: {
         'Authorization': `Bearer ${accessToken}`,

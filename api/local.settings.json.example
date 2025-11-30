@@ -1,0 +1,8 @@
+COSMOS_ENDPOINT=https://creedava-db.documents.azure.com:443/
+COSMOS_KEY=your-cosmos-primary-key-here
+COSMOS_DATABASE=website-data
+COSMOS_CONTAINER=linkedin-data
+
+LINKEDIN_CLIENT_ID=your-linkedin-client-id
+LINKEDIN_CLIENT_SECRET=your-linkedin-client-secret
+LINKEDIN_REDIRECT_URI=https://creedava.com/api/linkedin-auth

@@ -3,7 +3,6 @@ import { ExternalLink, Heart, MessageCircle, Repeat2, Calendar, Linkedin } from 
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CreedaLogo } from '@/components/CreedaLogo'
-import { LinkedInApiService } from '@/lib/linkedin-api'
 import { useInView } from '@/hooks/useInView'
 
 interface LinkedInPost {
@@ -96,19 +95,16 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
 
         if (connected && config.organizationId) {
           try {
-            const linkedInService = new LinkedInApiService({
-              clientId: config.clientId,
-              clientSecret: config.clientSecret,
-              redirectUri: 'https://creedava.com/api/linkedin/callback',
-              accessToken: config.accessToken
-            })
-
-            const realPosts = await linkedInService.getOrganizationPosts(
-              config.organizationId,
-              config.accessToken
-            )
-
-            setPosts(realPosts.slice(0, maxPosts))
+            // Call Azure Function API instead of direct LinkedIn API
+            const apiUrl = import.meta.env.VITE_API_URL || '/api'
+            const response = await fetch(`${apiUrl}/linkedin-posts?org=${config.organizationId}`)
+            
+            if (!response.ok) {
+              throw new Error(`API returned ${response.status}`)
+            }
+            
+            const data = await response.json()
+            setPosts(data.posts.slice(0, maxPosts))
           } catch (apiError) {
             console.error('LinkedIn API Error:', apiError)
             setPosts(mockPosts.slice(0, maxPosts))

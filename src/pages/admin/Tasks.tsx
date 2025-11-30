@@ -83,7 +83,7 @@ export function Tasks() {
       if (error) throw error;
       setTasks(data || []);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      // Task fetch failed, display empty state
     } finally {
       setLoading(false);
     }
@@ -164,7 +164,7 @@ export function Tasks() {
       if (error) throw error;
       fetchTasks();
     } catch (error) {
-      console.error('Error updating task status:', error);
+      // Status update failed, revert will happen on next fetch
     }
   };
 
