@@ -1,16 +1,25 @@
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { useInView } from '@/hooks/useInView'
-import { memo } from 'react'
+import { memo, useState, useEffect } from 'react'
 
 export const LazyAnimatedBackground = memo(() => {
+  const [hasLoaded, setHasLoaded] = useState(false)
   const { ref, inView } = useInView<HTMLDivElement>({
-    rootMargin: '100px 0px', // Reduced from 200px for better performance
-    threshold: 0.05, // Reduced threshold
+    rootMargin: '200px 0px',
+    threshold: 0,
+    triggerOnce: false, // Keep checking
   })
+
+  // Once loaded, keep it loaded
+  useEffect(() => {
+    if (inView && !hasLoaded) {
+      setHasLoaded(true)
+    }
+  }, [inView, hasLoaded])
 
   return (
     <div ref={ref} className="absolute inset-0 -z-10 overflow-hidden">
-      {inView ? <AnimatedBackground /> : null}
+      {hasLoaded ? <AnimatedBackground /> : null}
     </div>
   )
 })
