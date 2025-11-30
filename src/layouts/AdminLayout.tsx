@@ -22,11 +22,10 @@ import {
   TrendingUp,
   Settings,
   LogOut,
-  Linkedin,
   LayoutTemplate,
   Route,
   BarChart3,
-  Link as LinkIcon
+  Share2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -44,8 +43,7 @@ const navigation = [
 ]
 
 const marketingNav = [
-  { name: 'Social Media', href: '/admin/social', icon: Linkedin },
-  { name: 'LinkedIn Integration', href: '/admin/linkedin-integration', icon: LinkIcon },
+  { name: 'Social Media', href: '/admin/social', icon: Share2 },
   { name: 'Blog', href: '/admin/blog', icon: FileText },
   { name: 'Ad Campaigns', href: '/admin/ad-campaigns', icon: TrendingUp },
   { name: 'Landing Pages', href: '/admin/landing-pages', icon: LayoutTemplate },

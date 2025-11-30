@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Calendar, ArrowRight, ExternalLink, Newspaper, Linkedin } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
-import { LinkedInFeed } from '@/components/LinkedInFeed'
 import { db } from '@/lib/database'
 import { format } from 'date-fns'
 
@@ -117,31 +116,6 @@ export default function News() {
 
       <section className="py-24 px-4">
         <div className="container mx-auto max-w-6xl">
-          {/* LinkedIn Feed Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-16"
-          >
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-4">
-                Latest from <span className="text-accent">LinkedIn</span>
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Follow our LinkedIn page for real-time updates, insights, and company news
-              </p>
-            </div>
-
-            {/* LinkedIn Company Feed */}
-            <Card className="border-border/50 overflow-hidden">
-              <CardContent className="p-6">
-                <LinkedInFeed maxPosts={3} className="w-full" />
-              </CardContent>
-```
-            </Card>
-          </motion.div>
-
           {/* Featured Posts Grid */}
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-foreground mb-8">
