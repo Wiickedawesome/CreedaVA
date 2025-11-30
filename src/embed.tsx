@@ -11,9 +11,6 @@ type MountOptions = {
   route?: string
 }
 
-// Mark page as embedded so the app can disable Spark-specific features
-;(window as any).__CREEDAVA_EMBEDDED__ = true
-
 const roots = new Map<HTMLElement, Root>()
 
 function mount(el: HTMLElement, _opts?: MountOptions) {

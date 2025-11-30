@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
@@ -12,6 +12,7 @@ import { SignUp } from '@/pages/SignUp'
 import { EnvCheck } from '@/pages/EnvCheck'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AdminDashboard } from '@/pages/admin/Dashboard'
+import { useInView } from '@/hooks/useInView'
 
 // Lazy load route components for better performance
 const Services = lazy(() => import('@/pages/Services').then(module => ({ default: module.Services })))
@@ -49,7 +50,6 @@ const PageLoader = () => (
 )
 
 function App() {
-  const embedded = (typeof window !== 'undefined') && (window as any).__CREEDAVA_EMBEDDED__ === true
   // Use basename for GitHub Pages deployment with /CreedaVA/ path
   const basename = import.meta.env.BASE_URL
   
@@ -158,7 +158,7 @@ function App() {
           <Route path="*" element={
             <div className="flex flex-col min-h-screen">
               <Navbar />
-              <main className="flex-grow">
+              <main className="grow">
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/" element={<Home />} />
@@ -172,7 +172,7 @@ function App() {
                 </Suspense>
               </main>
               <Footer />
-              <ChatBot />
+              <DeferredChatBot />
             </div>
           } />
         </Routes>
@@ -182,3 +182,26 @@ function App() {
 }
 
 export default App
+
+function DeferredChatBot() {
+  const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: '200px' })
+  const [shouldRender, setShouldRender] = useState(false)
+
+  useEffect(() => {
+    if (inView) {
+      setShouldRender(true)
+    }
+  }, [inView])
+
+  return (
+    <div ref={ref}>
+      {shouldRender ? (
+        <ChatBot />
+      ) : (
+        <div className="py-10 text-center text-sm text-muted-foreground">
+          Assistant loads when needed…
+        </div>
+      )}
+    </div>
+  )
+}

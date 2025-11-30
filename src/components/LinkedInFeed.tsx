@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CreedaLogo } from '@/components/CreedaLogo'
 import { LinkedInApiService } from '@/lib/linkedin-api'
+import { useInView } from '@/hooks/useInView'
 
 interface LinkedInPost {
   id: string
@@ -31,6 +32,8 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isConnected, setIsConnected] = useState(false)
+  const [hasRequested, setHasRequested] = useState(false)
+  const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: '200px' })
 
   // Memoize mock posts to prevent unnecessary re-renders
   const mockPosts = useMemo(() => [
@@ -76,17 +79,22 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
   ], [])
 
   useEffect(() => {
+    if (!inView || hasRequested) {
+      return
+    }
+
+    setHasRequested(true)
+
     const fetchLinkedInPosts = async () => {
       setLoading(true)
+      setError(null)
       try {
-        // Check if LinkedIn is connected
         const storedConfig = localStorage.getItem('linkedin-config')
         const config = storedConfig ? JSON.parse(storedConfig) : null
         const connected = config && config.accessToken
         setIsConnected(!!connected)
-        
+
         if (connected && config.organizationId) {
-          // Fetch real LinkedIn posts using the API
           try {
             const linkedInService = new LinkedInApiService({
               clientId: config.clientId,
@@ -94,24 +102,21 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
               redirectUri: 'https://creedava.com/api/linkedin/callback',
               accessToken: config.accessToken
             })
-            
+
             const realPosts = await linkedInService.getOrganizationPosts(
               config.organizationId,
               config.accessToken
             )
-            
+
             setPosts(realPosts.slice(0, maxPosts))
           } catch (apiError) {
             console.error('LinkedIn API Error:', apiError)
-            // Fall back to mock posts if API fails
             setPosts(mockPosts.slice(0, maxPosts))
             setError('Using demo posts - LinkedIn API connection issue')
           }
         } else {
-          // Show limited mock data when not connected
           setPosts(mockPosts.slice(0, Math.min(2, maxPosts)))
         }
-        setError(null)
       } catch (err) {
         setError('Failed to load LinkedIn posts')
         setPosts(mockPosts.slice(0, Math.min(2, maxPosts)))
@@ -121,7 +126,7 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
     }
 
     fetchLinkedInPosts()
-  }, [maxPosts, mockPosts])
+  }, [inView, hasRequested, maxPosts, mockPosts])
 
   const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString)
@@ -140,9 +145,23 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
     return num.toString()
   }, [])
 
+  if (!hasRequested) {
+    return (
+      <div ref={ref} className={`space-y-4 ${className}`}>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-6 h-6 bg-blue-600 rounded"></div>
+          <h3 className="text-xl font-semibold text-gray-900">Latest LinkedIn Updates</h3>
+        </div>
+        <div className="h-48 rounded-xl border border-dashed border-gray-200 flex items-center justify-center text-sm text-gray-500">
+          Content loads when visible
+        </div>
+      </div>
+    )
+  }
+
   if (loading) {
     return (
-      <div className={`space-y-4 ${className}`}>
+      <div ref={ref} className={`space-y-4 ${className}`}>
         <div className="flex items-center gap-2 mb-4">
           <div className="w-6 h-6 bg-blue-600 rounded"></div>
           <h3 className="text-xl font-semibold text-gray-900">Latest LinkedIn Updates</h3>
@@ -173,7 +192,7 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
 
   if (error) {
     return (
-      <Card className={`border-red-200 ${className}`}>
+      <Card ref={ref} className={`border-red-200 ${className}`}>
         <CardContent className="p-6 text-center">
           <div className="text-red-600 mb-2">⚠️ {error}</div>
           <p className="text-sm text-gray-600">Please check your LinkedIn API connection</p>
@@ -183,7 +202,7 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div ref={ref} className={`space-y-6 ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Linkedin className="w-6 h-6 text-blue-600" />
@@ -241,6 +260,8 @@ export const LinkedInFeed = memo(({ className = '', maxPosts = 5 }: LinkedInFeed
                     src={post.mediaUrls[0]} 
                     alt="Post image"
                     className="rounded-lg max-w-full h-auto"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
               )}

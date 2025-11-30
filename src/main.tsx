@@ -4,9 +4,6 @@ import { Toaster } from 'sonner'
 import { ThemeProvider } from 'next-themes'
 import './sw-register'
 
-// Use fallback shim since Spark runtime may not be available
-
-
 import App from './App.tsx'
 import { ErrorFallback } from './ErrorFallback.tsx'
 
