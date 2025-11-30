@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { CreedaLogo } from '@/components/CreedaLogo';
+import { submitContactForm, trackButtonClick } from '@/lib/tracking';
 import {
   Dialog,
   DialogContent,
@@ -81,26 +82,45 @@ export default function Contact() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Store form data
-    localStorage.setItem('contactSubmission', JSON.stringify({
-      ...formData,
-      timestamp: new Date().toISOString()
-    }));
-    
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      company: '',
-      service: '',
-      message: ''
-    });
-    
-    alert('Thank you! Your message has been received.');
+    try {
+      // Submit to Cosmos DB via Azure Function
+      const result = await submitContactForm({
+        name: formData.name,
+        email: formData.email,
+        company: formData.company,
+        phone: formData.phone,
+        message: formData.message,
+        service: formData.service
+      });
+
+      if (result.success) {
+        // Also store in localStorage as backup
+        localStorage.setItem('contactSubmission', JSON.stringify({
+          ...formData,
+          timestamp: new Date().toISOString()
+        }));
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          company: '',
+          service: '',
+          message: ''
+        });
+        
+        alert(result.message || 'Thank you! Your message has been received.');
+      } else {
+        alert('There was an error submitting your message. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('There was an error submitting your message. Please try again.');
+    }
   };
 
   const handleBookingSubmit = (e: React.FormEvent) => {

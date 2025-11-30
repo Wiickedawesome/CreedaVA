@@ -43,6 +43,10 @@ jobs:
           VITE_APP_URL: https://www.creedava.com
           VITE_API_URL: /api
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
+          COSMOS_ENDPOINT: ${{ secrets.COSMOS_ENDPOINT }}
+          COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
+          COSMOS_DATABASE: website-data
+          COSMOS_CONTAINER: analytics
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WONDERFUL_GLACIER_08B16321E }}
           action: "upload"

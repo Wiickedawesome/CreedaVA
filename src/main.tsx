@@ -17,7 +17,7 @@ initializeGA()
 
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary FallbackComponent={ErrorFallback}>
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <App />
       <Toaster position="top-center" />
     </ThemeProvider>

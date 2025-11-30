@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { ChatBot } from '@/components/ChatBot'
@@ -13,6 +13,7 @@ import { EnvCheck } from '@/pages/EnvCheck'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AdminDashboard } from '@/pages/admin/Dashboard'
 import { useInView } from '@/hooks/useInView'
+import { trackPageView } from '@/lib/tracking'
 
 // Lazy load route components for better performance
 const Services = lazy(() => import('@/pages/Services').then(module => ({ default: module.Services })))
@@ -56,6 +57,7 @@ function App() {
     <Router basename={basename}>
       <AuthProvider>
         <PerformanceMonitor />
+        <PageViewTracker />
         <Routes>
           {/* Diagnostic route */}
           <Route path="/env-check" element={<EnvCheck />} />
@@ -176,6 +178,17 @@ function App() {
 }
 
 export default App
+
+// Component to track page views
+function PageViewTracker() {
+  const location = useLocation()
+  
+  useEffect(() => {
+    trackPageView(location.pathname)
+  }, [location])
+  
+  return null
+}
 
 function DeferredChatBot() {
   const { ref, inView } = useInView<HTMLDivElement>({ rootMargin: '200px' })
