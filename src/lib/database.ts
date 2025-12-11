@@ -200,6 +200,68 @@ class QueryBuilder {
   then(resolve: any, reject: any) {
     return this.execute().then(resolve, reject)
   }
+
+  // Update method for chaining
+  update(data: any) {
+    return {
+      eq: async (column: string, value: any) => {
+        try {
+          const response = await fetch(`${API_BASE}/submitContact`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              table: this.table, 
+              data, 
+              filter: { column, value } 
+            })
+          })
+          if (!response.ok) throw new Error('Failed to update data')
+          const result = await response.json()
+          return { data: result, error: null }
+        } catch (error: any) {
+          return { data: null, error: { message: error.message } }
+        }
+      }
+    }
+  }
+
+  // Insert method
+  async insert(data: any[]) {
+    try {
+      const response = await fetch(`${API_BASE}/submitContact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: this.table, data: data[0] })
+      })
+      if (!response.ok) throw new Error('Failed to insert data')
+      const result = await response.json()
+      return { data: result, error: null }
+    } catch (error: any) {
+      return { data: null, error: { message: error.message } }
+    }
+  }
+
+  // Delete method
+  delete() {
+    return {
+      eq: async (column: string, value: any) => {
+        try {
+          const response = await fetch(`${API_BASE}/submitContact`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              table: this.table, 
+              filter: { column, value } 
+            })
+          })
+          if (!response.ok) throw new Error('Failed to delete data')
+          return { error: null }
+        } catch (error: any) {
+          return { error: { message: error.message } }
+        }
+      }
+    }
+  }
 }
 
 // Azure Cosmos DB API Client via Azure Functions
@@ -208,27 +270,6 @@ class DatabaseClient {
 
   from(table: string) {
     return new QueryBuilder(table)
-  }
-
-  async insert(table: string, data: any) {
-    try {
-      const response = await fetch(`${API_BASE}/submitContact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ table, data })
-      })
-      
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`API Error: ${response.status} - ${errorText}`)
-      }
-      
-      const result = await response.json()
-      return { data: result, error: null }
-    } catch (error: any) {
-      console.error('Database insert error:', error)
-      return { data: null, error: { message: error.message } }
-    }
   }
 }
 

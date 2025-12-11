@@ -60,7 +60,7 @@ export function Reports() {
 
   const stats = { total: reports.length, scheduled: reports.filter(r => r.status === 'scheduled').length, completed: reports.filter(r => r.status === 'completed').length, lastGenerated: reports.length > 0 ? reports[0].created_at : null };
 
-  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96 bg-gray-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>;
 
   return (
     <div className="p-8 space-y-6 min-h-screen">
@@ -91,11 +91,11 @@ export function Reports() {
       <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input 
-            placeholder="Search reports..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-            className="pl-10 bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500" 
+          <Input
+            placeholder="Search reports..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => { setEditingReport(null); setFormData({ name: '', report_type: 'campaign', date_range_start: '', date_range_end: '', schedule_frequency: '', status: 'completed' }); }}><Plus className="w-4 h-4 mr-2" />New Report</Button></DialogTrigger><DialogContent><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingReport ? 'Edit' : 'Create'} Report</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Type *</Label><Select value={formData.report_type} onValueChange={(value) => setFormData({ ...formData, report_type: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{reportTypes.map(t => <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>)}</SelectContent></Select></div><div className="space-y-2"><Label>Status</Label><Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="scheduled">Scheduled</SelectItem><SelectItem value="completed">Completed</SelectItem><SelectItem value="failed">Failed</SelectItem></SelectContent></Select></div></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Start Date</Label><Input type="date" value={formData.date_range_start} onChange={(e) => setFormData({ ...formData, date_range_start: e.target.value })} /></div><div className="space-y-2"><Label>End Date</Label><Input type="date" value={formData.date_range_end} onChange={(e) => setFormData({ ...formData, date_range_end: e.target.value })} /></div></div><div className="space-y-2"><Label>Schedule Frequency</Label><Select value={formData.schedule_frequency} onValueChange={(value) => setFormData({ ...formData, schedule_frequency: value })}><SelectTrigger><SelectValue placeholder="None" /></SelectTrigger><SelectContent><SelectItem value="daily">Daily</SelectItem><SelectItem value="weekly">Weekly</SelectItem><SelectItem value="monthly">Monthly</SelectItem></SelectContent></Select></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">{editingReport ? 'Update' : 'Create'}</Button></DialogFooter></form></DialogContent></Dialog>

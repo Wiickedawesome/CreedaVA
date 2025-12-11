@@ -151,7 +151,7 @@ export function SEO() {
   );
 
   if (loading) {
-    return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
+    return <div className="flex items-center justify-center h-96 bg-gray-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>;
   }
 
   return (
@@ -457,7 +457,7 @@ export function SEO() {
             placeholder="Search pages..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+            className="pl-9 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
         <div className="text-sm text-gray-400">

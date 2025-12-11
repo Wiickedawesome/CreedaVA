@@ -58,7 +58,7 @@ export function LandingPages() {
 
   const stats = { total: pages.length, active: pages.filter(p => p.status === 'active').length, avgConversion: pages.length > 0 ? (pages.reduce((sum, p) => sum + (p.conversion_rate || 0), 0) / pages.length).toFixed(2) : '0.00', totalVisits: pages.reduce((sum, p) => sum + (p.total_visits || 0), 0) };
 
-  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96 bg-gray-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>;
 
   return (
     <div className="p-8 space-y-6 min-h-screen">

@@ -81,7 +81,7 @@ export function Keywords() {
     return <Minus className="w-4 h-4 text-gray-400" />;
   };
 
-  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96 bg-gray-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>;
 
   return (
     <div className="p-8 space-y-6 min-h-screen">
@@ -106,11 +106,11 @@ export function Keywords() {
       <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input 
-            placeholder="Search keywords..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-            className="pl-10 bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500" 
+          <Input
+            placeholder="Search keywords..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => { setEditingKeyword(null); setFormData({ keyword: '', target_url: '', search_volume: null, difficulty: null }); }}><Plus className="w-4 h-4 mr-2" />Add Keyword</Button></DialogTrigger><DialogContent><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingKeyword ? 'Edit' : 'Add'} Keyword</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Keyword *</Label><Input value={formData.keyword} onChange={(e) => setFormData({ ...formData, keyword: e.target.value })} required /></div><div className="space-y-2"><Label>Target URL *</Label><Input value={formData.target_url} onChange={(e) => setFormData({ ...formData, target_url: e.target.value })} required type="url" /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Search Volume</Label><Input type="number" value={formData.search_volume || ''} onChange={(e) => setFormData({ ...formData, search_volume: parseInt(e.target.value) || null })} /></div><div className="space-y-2"><Label>Difficulty (0-100)</Label><Input type="number" min="0" max="100" value={formData.difficulty || ''} onChange={(e) => setFormData({ ...formData, difficulty: parseInt(e.target.value) || null })} /></div></div><div className="space-y-2"><Label>Current Position</Label><Input type="number" min="1" value={formData.current_position || ''} onChange={(e) => setFormData({ ...formData, current_position: parseInt(e.target.value) || null })} /></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">{editingKeyword ? 'Update' : 'Add'}</Button></DialogFooter></form></DialogContent></Dialog>

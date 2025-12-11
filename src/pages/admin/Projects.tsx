@@ -109,11 +109,11 @@ export function Projects() {
   const filteredProjects = projects.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
   const stats = { total: projects.length, active: projects.filter(p => p.status === 'active').length, completed: projects.filter(p => p.status === 'completed').length };
 
-  if (loading) return <div className="flex items-center justify-center h-96 bg-slate-50 dark:bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-96 bg-gray-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>;
 
   return (
     <div className="p-8 space-y-6 min-h-screen">
-      <div><h1 className="text-3xl font-bold text-slate-900 dark:text-white">Projects</h1><p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Manage client projects</p></div>
+      <div><h1 className="text-3xl font-bold text-white">Projects</h1><p className="text-gray-400 mt-2 font-medium">Manage client projects</p></div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
           <p className="text-sm font-medium text-gray-300">Total Projects</p>
@@ -131,11 +131,11 @@ export function Projects() {
       <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input 
-            placeholder="Search projects..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-            className="pl-10 bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500" 
+          <Input
+            placeholder="Search projects..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => setEditingProject(null)}><Plus className="w-4 h-4 mr-2" />New Project</Button></DialogTrigger><DialogContent className="sm:max-w-[600px]"><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingProject ? 'Edit' : 'New'} Project</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div><div className="space-y-2"><Label>Description</Label><Textarea value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Status</Label><Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v as Project['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusConfig).map(([k, c]) => <SelectItem key={k} value={k}>{c.label}</SelectItem>)}</SelectContent></Select></div><div className="space-y-2"><Label>Progress %</Label><Input type="number" min="0" max="100" value={formData.progress_percentage || 0} onChange={(e) => setFormData({ ...formData, progress_percentage: parseInt(e.target.value) || 0 })} /></div></div></div><DialogFooter><Button type="button" variant="outline" onClick={handleCloseDialog}>Cancel</Button><Button type="submit">{editingProject ? 'Update' : 'Create'}</Button></DialogFooter></form></DialogContent></Dialog>
