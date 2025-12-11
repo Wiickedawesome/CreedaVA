@@ -1,7 +1,7 @@
 // Temporary diagnostic page to check environment variables
 export function EnvCheck() {
-  const hasDbUrl = !!import.meta.env.VITE_SUPABASE_URL
-  const hasDbKey = !!import.meta.env.VITE_SUPABASE_ANON_KEY
+  const hasDbUrl = !!import.meta.env.VITE_COSMOS_ENDPOINT
+  const hasDbKey = !!import.meta.env.VITE_COSMOS_KEY
   const hasGoogleClient = !!import.meta.env.VITE_GOOGLE_SEARCH_CONSOLE_CLIENT_ID
   const baseUrl = import.meta.env.BASE_URL
   const mode = import.meta.env.MODE
@@ -14,7 +14,7 @@ export function EnvCheck() {
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full ${hasDbUrl ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span className="font-medium">VITE_SUPABASE_URL:</span>
+            <span className="font-medium">VITE_COSMOS_ENDPOINT:</span>
             <span className="text-slate-600 dark:text-slate-400">
               {hasDbUrl ? '✓ Configured' : '✗ Missing'}
             </span>
@@ -22,7 +22,7 @@ export function EnvCheck() {
 
           <div className="flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full ${hasDbKey ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span className="font-medium">VITE_SUPABASE_ANON_KEY:</span>
+            <span className="font-medium">VITE_COSMOS_KEY:</span>
             <span className="text-slate-600 dark:text-slate-400">
               {hasDbKey ? '✓ Configured' : '✗ Missing'}
             </span>

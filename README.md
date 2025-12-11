@@ -49,13 +49,13 @@ CreedaVA provides elite virtual assistant services with bilingual excellence, cu
 
 Create `.env` file:
 ```bash
-# Supabase (Auth & Blog)
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
+# Azure Configuration
+VITE_API_BASE_URL=/api
+VITE_COSMOS_ENDPOINT=https://your-account.documents.azure.com:443/
+VITE_COSMOS_KEY=your-cosmos-key
 
 # Optional
 VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
-VITE_API_URL=/api
 VITE_BASE_PATH=/
 ```
 
@@ -105,9 +105,9 @@ Deployment is **fully automated** via GitHub Actions:
 ### GitHub Secrets
 Configure in repository settings:
 - `AZURE_STATIC_WEB_APPS_API_TOKEN_WONDERFUL_GLACIER_08B16321E`
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
 - `VITE_GA_MEASUREMENT_ID` (optional)
+- `COSMOS_ENDPOINT`
+- `COSMOS_KEY`
 
 ### Azure App Settings
 Configure in Azure Portal or CLI:

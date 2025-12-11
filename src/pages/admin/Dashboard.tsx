@@ -49,10 +49,10 @@ function QuickActionsCard() {
   ]
 
   return (
-    <div className="bg-gray-700 p-6 rounded-lg border border-gray-600">
+    <Card className="p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
-        <p className="text-gray-300 text-sm">Common tasks and shortcuts</p>
+        <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
+        <p className="text-gray-600 text-sm">Common tasks and shortcuts</p>
       </div>
       <div className="grid grid-cols-1 gap-3">
         {quickActions.map((action, index) => (
@@ -60,17 +60,17 @@ function QuickActionsCard() {
             key={index}
             onClick={action.action}
             variant="outline"
-            className={`${action.color} border-transparent text-white hover:text-white flex items-center justify-start gap-3 p-4 h-auto transition-colors`}
+            className="flex items-center justify-start gap-3 p-4 h-auto hover:bg-gray-50"
           >
-            <action.icon className="w-5 h-5 shrink-0" />
+            <action.icon className="w-5 h-5 shrink-0 text-gray-600" />
             <div className="text-left">
-              <div className="font-medium">{action.title}</div>
-              <div className="text-xs opacity-90">{action.description}</div>
+              <div className="font-medium text-gray-900">{action.title}</div>
+              <div className="text-xs text-gray-600">{action.description}</div>
             </div>
           </Button>
         ))}
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -125,12 +125,12 @@ export function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="p-8">
+      <div className="space-y-6">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-600 rounded w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-700 rounded-lg border border-gray-600"></div>
+              <div key={i} className="h-32 bg-gray-100 rounded-lg"></div>
             ))}
           </div>
         </div>
@@ -139,87 +139,92 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="p-8 space-y-8 min-h-screen">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-white">Dashboard</h1>
-        <p className="text-gray-300 mt-1">
+        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-1">
           Welcome to your CRM and SEO management platform
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-blue-100">Total Leads</h3>
-            <UserPlus className="h-5 w-5 text-blue-200" />
+            <h3 className="text-sm font-medium text-gray-600">Total Leads</h3>
+            <UserPlus className="h-5 w-5 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold text-white">{stats.leads}</div>
-          <p className="text-xs text-blue-100 mt-1">
+          <div className="text-2xl font-bold text-gray-900">{stats.leads}</div>
+          <p className="text-xs text-gray-500 mt-1">
             {stats.leads === 0 ? 'No data yet' : 'Total count'}
           </p>
-        </div>
-        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
+        </Card>
+        
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-green-100">Total Contacts</h3>
-            <Users className="h-5 w-5 text-green-200" />
+            <h3 className="text-sm font-medium text-gray-600">Total Contacts</h3>
+            <Users className="h-5 w-5 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold text-white">{stats.contacts}</div>
-          <p className="text-xs text-green-100 mt-1">
+          <div className="text-2xl font-bold text-gray-900">{stats.contacts}</div>
+          <p className="text-xs text-gray-500 mt-1">
             {stats.contacts === 0 ? 'No data yet' : 'Total count'}
           </p>
-        </div>
-        <div className="bg-purple-600 p-4 rounded-lg border border-purple-500">
+        </Card>
+        
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-purple-100">Active Tasks</h3>
-            <CheckSquare className="h-5 w-5 text-purple-200" />
+            <h3 className="text-sm font-medium text-gray-600">Active Tasks</h3>
+            <CheckSquare className="h-5 w-5 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold text-white">{stats.tasks}</div>
-          <p className="text-xs text-purple-100 mt-1">
+          <div className="text-2xl font-bold text-gray-900">{stats.tasks}</div>
+          <p className="text-xs text-gray-500 mt-1">
             {stats.tasks === 0 ? 'No data yet' : 'Total count'}
           </p>
-        </div>
-        <div className="bg-emerald-600 p-4 rounded-lg border border-emerald-500">
+        </Card>
+        
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-emerald-100">Projects</h3>
-            <FolderKanban className="h-5 w-5 text-emerald-200" />
+            <h3 className="text-sm font-medium text-gray-600">Projects</h3>
+            <FolderKanban className="h-5 w-5 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold text-white">{stats.projects}</div>
-          <p className="text-xs text-emerald-100 mt-1">
+          <div className="text-2xl font-bold text-gray-900">{stats.projects}</div>
+          <p className="text-xs text-gray-500 mt-1">
             {stats.projects === 0 ? 'No data yet' : 'Total count'}
           </p>
-        </div>
-        <div className="bg-pink-600 p-4 rounded-lg border border-pink-500">
+        </Card>
+        
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-pink-100">Emails Sent</h3>
-            <Mail className="h-5 w-5 text-pink-200" />
+            <h3 className="text-sm font-medium text-gray-600">Emails Sent</h3>
+            <Mail className="h-5 w-5 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold text-white">{stats.emails}</div>
-          <p className="text-xs text-pink-100 mt-1">
+          <div className="text-2xl font-bold text-gray-900">{stats.emails}</div>
+          <p className="text-xs text-gray-500 mt-1">
             {stats.emails === 0 ? 'No data yet' : 'Total count'}
           </p>
-        </div>
-        <div className="bg-teal-600 p-4 rounded-lg border border-teal-500">
+        </Card>
+        
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-teal-100">Recent Activity</h3>
-            <TrendingUp className="h-5 w-5 text-teal-200" />
+            <h3 className="text-sm font-medium text-gray-600">Recent Activity</h3>
+            <TrendingUp className="h-5 w-5 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold text-white">{stats.recentActivity}</div>
-          <p className="text-xs text-teal-100 mt-1">
+          <div className="text-2xl font-bold text-gray-900">{stats.recentActivity}</div>
+          <p className="text-xs text-gray-500 mt-1">
             {stats.recentActivity === 0 ? 'No data yet' : 'Total count'}
           </p>
-        </div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <QuickActionsCard />
 
-        <div className="bg-gray-700 p-6 rounded-lg border border-gray-600">
+        <Card className="p-6">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
-            <p className="text-gray-300 text-sm">Latest updates and changes</p>
+            <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+            <p className="text-gray-600 text-sm">Latest updates and changes</p>
           </div>
-          <p className="text-sm text-gray-300">No recent activity</p>
-        </div>
+          <p className="text-sm text-gray-500">No recent activity</p>
+        </Card>
       </div>
     </div>
   )

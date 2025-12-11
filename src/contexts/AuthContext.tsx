@@ -1,7 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session, AuthError } from '@db/db-js'
-import { db } from '@/lib/database'
-import { isValidCreedaVAEmail, DOMAIN_RESTRICTION_MESSAGE } from '@/lib/utils'
+import { db, User, Session, AuthError } from '@/lib/database'
 
 interface AuthContextType {
   user: User | null

@@ -121,9 +121,9 @@ export function Settings() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                <Label className="text-white font-semibold">Connected to Supabase</Label>
+                <Label className="text-gray-900 font-semibold">Connected to Azure Cosmos DB</Label>
               </div>
-              <p className="text-sm text-gray-300">Project: {import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0] || 'Not configured'}</p>
+              <p className="text-sm text-gray-600">Endpoint: {import.meta.env.VITE_COSMOS_ENDPOINT?.split('//')[1]?.split('.')[0] || 'Not configured'}</p>
             </div>
           </CardContent>
         </Card>
