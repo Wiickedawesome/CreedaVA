@@ -23,36 +23,36 @@ function QuickActionsCard() {
       description: 'Create a new lead in the system',
       icon: UserPlus,
       action: () => navigate('/admin/leads'),
-      color: 'bg-blue-600 hover:bg-blue-700'
+      color: 'text-blue-400'
     },
     {
       title: 'Create task',
       description: 'Add a new task to track',
       icon: Plus,
       action: () => navigate('/admin/tasks'),
-      color: 'bg-purple-600 hover:bg-purple-700'
+      color: 'text-purple-400'
     },
     {
       title: 'Send email',
       description: 'Compose and send an email',
       icon: Send,
       action: () => navigate('/admin/emails'),
-      color: 'bg-pink-600 hover:bg-pink-700'
+      color: 'text-pink-400'
     },
     {
       title: 'Update SEO content',
       description: 'Manage SEO pages and content',
       icon: FileText,
       action: () => navigate('/admin/seo'),
-      color: 'bg-emerald-600 hover:bg-emerald-700'
+      color: 'text-emerald-400'
     }
   ]
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 bg-gray-800 border-gray-700">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
-        <p className="text-gray-600 text-sm">Common tasks and shortcuts</p>
+        <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
+        <p className="text-gray-400 text-sm">Common tasks and shortcuts</p>
       </div>
       <div className="grid grid-cols-1 gap-3">
         {quickActions.map((action, index) => (
@@ -60,12 +60,12 @@ function QuickActionsCard() {
             key={index}
             onClick={action.action}
             variant="outline"
-            className="flex items-center justify-start gap-3 p-4 h-auto hover:bg-gray-50"
+            className="flex items-center justify-start gap-3 p-4 h-auto bg-gray-700/50 border-gray-600 hover:bg-gray-700 text-white"
           >
-            <action.icon className="w-5 h-5 shrink-0 text-gray-600" />
+            <action.icon className={`w-5 h-5 shrink-0 ${action.color}`} />
             <div className="text-left">
-              <div className="font-medium text-gray-900">{action.title}</div>
-              <div className="text-xs text-gray-600">{action.description}</div>
+              <div className="font-medium text-white">{action.title}</div>
+              <div className="text-xs text-gray-400">{action.description}</div>
             </div>
           </Button>
         ))}
@@ -91,24 +91,26 @@ export function AdminDashboard() {
 
   const loadStats = async () => {
     try {
-      const [leadsCount, contactsCount, tasksCount, projectsCount, emailsCount] = await Promise.all([
-        db.from('leads').select('*', { count: 'exact', head: true }),
-        db.from('contacts').select('*', { count: 'exact', head: true }),
-        db.from('tasks').select('*', { count: 'exact', head: true }),
-        db.from('projects').select('*', { count: 'exact', head: true }),
-        db.from('emails').select('*', { count: 'exact', head: true }),
+      // Fetch data from Azure Cosmos DB via Azure Functions
+      const [leadsRes, contactsRes, tasksRes, projectsRes, emailsRes] = await Promise.all([
+        db.from('leads').select('*'),
+        db.from('contacts').select('*'),
+        db.from('tasks').select('*'),
+        db.from('projects').select('*'),
+        db.from('emails').select('*'),
       ])
 
       setStats({
-        leads: leadsCount.count || 0,
-        contacts: contactsCount.count || 0,
-        tasks: tasksCount.count || 0,
-        projects: projectsCount.count || 0,
-        emails: emailsCount.count || 0,
+        leads: (leadsRes as any).data?.length || 0,
+        contacts: (contactsRes as any).data?.length || 0,
+        tasks: (tasksRes as any).data?.length || 0,
+        projects: (projectsRes as any).data?.length || 0,
+        emails: (emailsRes as any).data?.length || 0,
         recentActivity: 0,
       })
     } catch (error) {
-      // Stats loading is non-critical, continue rendering
+      console.error('Error loading stats:', error)
+      // Stats loading is non-critical, continue rendering with zeros
     } finally {
       setLoading(false)
     }
@@ -125,12 +127,12 @@ export function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-gray-800 rounded w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-100 rounded-lg"></div>
+              <div key={i} className="h-32 bg-gray-800 rounded-lg"></div>
             ))}
           </div>
         </div>
@@ -139,76 +141,76 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-2xl font-semibold text-white">Dashboard</h1>
+        <p className="text-gray-400 mt-1">
           Welcome to your CRM and SEO management platform
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="p-6">
+        <Card className="p-6 bg-gray-800 border-gray-700">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Leads</h3>
-            <UserPlus className="h-5 w-5 text-gray-400" />
+            <h3 className="text-sm font-medium text-gray-400">Total Leads</h3>
+            <UserPlus className="h-5 w-5 text-blue-400" />
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.leads}</div>
+          <div className="text-3xl font-bold text-white">{stats.leads}</div>
           <p className="text-xs text-gray-500 mt-1">
             {stats.leads === 0 ? 'No data yet' : 'Total count'}
           </p>
         </Card>
         
-        <Card className="p-6">
+        <Card className="p-6 bg-gray-800 border-gray-700">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Total Contacts</h3>
-            <Users className="h-5 w-5 text-gray-400" />
+            <h3 className="text-sm font-medium text-gray-400">Total Contacts</h3>
+            <Users className="h-5 w-5 text-green-400" />
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.contacts}</div>
+          <div className="text-3xl font-bold text-white">{stats.contacts}</div>
           <p className="text-xs text-gray-500 mt-1">
             {stats.contacts === 0 ? 'No data yet' : 'Total count'}
           </p>
         </Card>
         
-        <Card className="p-6">
+        <Card className="p-6 bg-gray-800 border-gray-700">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Active Tasks</h3>
-            <CheckSquare className="h-5 w-5 text-gray-400" />
+            <h3 className="text-sm font-medium text-gray-400">Active Tasks</h3>
+            <CheckSquare className="h-5 w-5 text-purple-400" />
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.tasks}</div>
+          <div className="text-3xl font-bold text-white">{stats.tasks}</div>
           <p className="text-xs text-gray-500 mt-1">
             {stats.tasks === 0 ? 'No data yet' : 'Total count'}
           </p>
         </Card>
         
-        <Card className="p-6">
+        <Card className="p-6 bg-gray-800 border-gray-700">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Projects</h3>
-            <FolderKanban className="h-5 w-5 text-gray-400" />
+            <h3 className="text-sm font-medium text-gray-400">Projects</h3>
+            <FolderKanban className="h-5 w-5 text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.projects}</div>
+          <div className="text-3xl font-bold text-white">{stats.projects}</div>
           <p className="text-xs text-gray-500 mt-1">
             {stats.projects === 0 ? 'No data yet' : 'Total count'}
           </p>
         </Card>
         
-        <Card className="p-6">
+        <Card className="p-6 bg-gray-800 border-gray-700">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Emails Sent</h3>
-            <Mail className="h-5 w-5 text-gray-400" />
+            <h3 className="text-sm font-medium text-gray-400">Emails Sent</h3>
+            <Mail className="h-5 w-5 text-pink-400" />
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.emails}</div>
+          <div className="text-3xl font-bold text-white">{stats.emails}</div>
           <p className="text-xs text-gray-500 mt-1">
             {stats.emails === 0 ? 'No data yet' : 'Total count'}
           </p>
         </Card>
         
-        <Card className="p-6">
+        <Card className="p-6 bg-gray-800 border-gray-700">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-600">Recent Activity</h3>
-            <TrendingUp className="h-5 w-5 text-gray-400" />
+            <h3 className="text-sm font-medium text-gray-400">Recent Activity</h3>
+            <TrendingUp className="h-5 w-5 text-orange-400" />
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.recentActivity}</div>
+          <div className="text-3xl font-bold text-white">{stats.recentActivity}</div>
           <p className="text-xs text-gray-500 mt-1">
             {stats.recentActivity === 0 ? 'No data yet' : 'Total count'}
           </p>
@@ -218,10 +220,10 @@ export function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <QuickActionsCard />
 
-        <Card className="p-6">
+        <Card className="p-6 bg-gray-800 border-gray-700">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-            <p className="text-gray-600 text-sm">Latest updates and changes</p>
+            <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
+            <p className="text-gray-400 text-sm">Latest updates and changes</p>
           </div>
           <p className="text-sm text-gray-500">No recent activity</p>
         </Card>

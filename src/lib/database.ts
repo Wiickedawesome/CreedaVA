@@ -134,41 +134,100 @@ class AuthClient {
   }
 }
 
-// Mock database client
+// Query builder for chaining operations
+class QueryBuilder {
+  private table: string
+  private columns: string = '*'
+  private orderColumn?: string
+  private orderAscending: boolean = true
+  private limitCount?: number
+  private filters: Array<{ column: string; value: any }> = []
+
+  constructor(table: string) {
+    this.table = table
+  }
+
+  select(columns: string = '*') {
+    this.columns = columns
+    return this
+  }
+
+  order(column: string, options?: { ascending?: boolean }) {
+    this.orderColumn = column
+    this.orderAscending = options?.ascending !== false
+    return this
+  }
+
+  limit(count: number) {
+    this.limitCount = count
+    return this
+  }
+
+  eq(column: string, value: any) {
+    this.filters.push({ column, value })
+    return this
+  }
+
+  async execute() {
+    try {
+      const params = new URLSearchParams({
+        table: this.table,
+        columns: this.columns,
+        ...(this.orderColumn && { orderBy: this.orderColumn }),
+        ...(this.orderColumn && { orderDirection: this.orderAscending ? 'asc' : 'desc' }),
+        ...(this.limitCount && { limit: this.limitCount.toString() }),
+      })
+
+      this.filters.forEach((filter, index) => {
+        params.append(`filter${index}`, JSON.stringify(filter))
+      })
+
+      const response = await fetch(`${API_BASE}/getAnalytics?${params}`)
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`API Error: ${response.status} - ${errorText}`)
+      }
+      
+      const data = await response.json()
+      return { data, error: null }
+    } catch (error: any) {
+      console.error('Database query error:', error)
+      return { data: null, error: { message: error.message } }
+    }
+  }
+
+  // Make it thenable for backwards compatibility with await
+  then(resolve: any, reject: any) {
+    return this.execute().then(resolve, reject)
+  }
+}
+
+// Azure Cosmos DB API Client via Azure Functions
 class DatabaseClient {
   auth = new AuthClient()
 
   from(table: string) {
-    return {
-      select: async (columns: string = '*') => {
-        try {
-          const response = await fetch(`${API_BASE}/getAnalytics?table=${table}`)
-          if (!response.ok) throw new Error('Failed to fetch data')
-          const data = await response.json()
-          return { data, error: null }
-        } catch (error: any) {
-          return { data: null, error: { message: error.message } }
-        }
-      },
-      insert: async (data: any) => {
-        try {
-          const response = await fetch(`${API_BASE}/submitContact`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ table, data })
-          })
-          if (!response.ok) throw new Error('Failed to insert data')
-          const result = await response.json()
-          return { data: result, error: null }
-        } catch (error: any) {
-          return { data: null, error: { message: error.message } }
-        }
-      },
-      update: async (data: any) => ({ data, error: null }),
-      delete: async () => ({ data: null, error: null }),
-      order: function(column: string, options?: any) { return this },
-      limit: function(count: number) { return this },
-      eq: function(column: string, value: any) { return this },
+    return new QueryBuilder(table)
+  }
+
+  async insert(table: string, data: any) {
+    try {
+      const response = await fetch(`${API_BASE}/submitContact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table, data })
+      })
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`API Error: ${response.status} - ${errorText}`)
+      }
+      
+      const result = await response.json()
+      return { data: result, error: null }
+    } catch (error: any) {
+      console.error('Database insert error:', error)
+      return { data: null, error: { message: error.message } }
     }
   }
 }
