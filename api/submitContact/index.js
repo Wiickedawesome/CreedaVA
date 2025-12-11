@@ -15,7 +15,7 @@ if (endpoint && key) {
 }
 
 app.http('submitContact', {
-  methods: ['POST', 'OPTIONS'],
+  methods: ['POST', 'PUT', 'DELETE', 'OPTIONS'],
   authLevel: 'anonymous',
   handler: async (request, context) => {
     // Handle CORS preflight
@@ -24,7 +24,7 @@ app.http('submitContact', {
         status: 200,
         headers: {
           'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Methods': 'POST, PUT, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type'
         }
       };
@@ -32,7 +32,7 @@ app.http('submitContact', {
 
     try {
       if (!endpoint || !key) {
-        context.log('Cosmos DB not configured - contact form submitted but not stored');
+        context.log('Cosmos DB not configured');
         return {
           status: 200,
           headers: {
@@ -41,12 +41,97 @@ app.http('submitContact', {
           },
           body: JSON.stringify({ 
             success: true, 
-            message: 'Contact form received (storage not configured)' 
+            message: 'Request received (storage not configured)' 
           })
         };
       }
 
       const body = await request.json();
+      const { table, data, filter } = body;
+
+      // Handle different HTTP methods
+      if (request.method === 'POST') {
+        // INSERT operation
+        const tableName = table || 'contacts';
+        const targetContainer = database.container(tableName);
+        
+        const item = {
+          id: `${tableName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          ...data,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        await targetContainer.items.create(item);
+        
+        return {
+          status: 200,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ success: true, data: item })
+        };
+      } else if (request.method === 'PUT') {
+        // UPDATE operation
+        const tableName = table || 'contacts';
+        const targetContainer = database.container(tableName);
+        
+        if (!filter || !filter.column || !filter.value) {
+          return {
+            status: 400,
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ error: 'Filter required for update' })
+          };
+        }
+
+        const updatedData = {
+          ...data,
+          updated_at: new Date().toISOString()
+        };
+
+        await targetContainer.item(filter.value, filter.value).replace(updatedData);
+        
+        return {
+          status: 200,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ success: true, data: updatedData })
+        };
+      } else if (request.method === 'DELETE') {
+        // DELETE operation
+        const tableName = table || 'contacts';
+        const targetContainer = database.container(tableName);
+        
+        if (!filter || !filter.column || !filter.value) {
+          return {
+            status: 400,
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ error: 'Filter required for delete' })
+          };
+        }
+
+        await targetContainer.item(filter.value, filter.value).delete();
+        
+        return {
+          status: 200,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ success: true })
+        };
+      }
+
+      // Legacy contact form handling (backward compatibility)
       const { name, email, company, phone, message, service } = body;
 
       // Validate required fields

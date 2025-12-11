@@ -65,13 +65,13 @@ export function Reports() {
   return (
     <div className="p-8 space-y-6 min-h-screen">
       <div>
-        <h1 className="text-3xl font-bold text-white">Marketing Reports</h1>
-        <p className="text-gray-300 mt-2 font-medium">Generate and schedule custom reports</p>
+        <h1 className="text-2xl font-semibold text-white">Marketing Reports</h1>
+        <p className="text-gray-400 mt-1">Generate and schedule custom reports</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
-          <p className="text-sm font-medium text-gray-300">Total Reports</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <p className="text-sm font-medium text-gray-400">Total Reports</p>
           <p className="text-3xl font-bold text-white">{stats.total}</p>
         </div>
         <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
@@ -101,10 +101,10 @@ export function Reports() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => { setEditingReport(null); setFormData({ name: '', report_type: 'campaign', date_range_start: '', date_range_end: '', schedule_frequency: '', status: 'completed' }); }}><Plus className="w-4 h-4 mr-2" />New Report</Button></DialogTrigger><DialogContent><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingReport ? 'Edit' : 'Create'} Report</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Type *</Label><Select value={formData.report_type} onValueChange={(value) => setFormData({ ...formData, report_type: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{reportTypes.map(t => <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>)}</SelectContent></Select></div><div className="space-y-2"><Label>Status</Label><Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="scheduled">Scheduled</SelectItem><SelectItem value="completed">Completed</SelectItem><SelectItem value="failed">Failed</SelectItem></SelectContent></Select></div></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Start Date</Label><Input type="date" value={formData.date_range_start} onChange={(e) => setFormData({ ...formData, date_range_start: e.target.value })} /></div><div className="space-y-2"><Label>End Date</Label><Input type="date" value={formData.date_range_end} onChange={(e) => setFormData({ ...formData, date_range_end: e.target.value })} /></div></div><div className="space-y-2"><Label>Schedule Frequency</Label><Select value={formData.schedule_frequency} onValueChange={(value) => setFormData({ ...formData, schedule_frequency: value })}><SelectTrigger><SelectValue placeholder="None" /></SelectTrigger><SelectContent><SelectItem value="daily">Daily</SelectItem><SelectItem value="weekly">Weekly</SelectItem><SelectItem value="monthly">Monthly</SelectItem></SelectContent></Select></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">{editingReport ? 'Update' : 'Create'}</Button></DialogFooter></form></DialogContent></Dialog>
       </div>
 
-      <div className="bg-gray-700 rounded-lg border border-gray-600">
+      <div className="bg-gray-800 rounded-lg border border-gray-700">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-800 border-gray-600">
+            <TableRow className="bg-gray-800 border-gray-700">
               <TableHead className="text-gray-200 font-medium">Name</TableHead>
               <TableHead className="text-gray-200 font-medium">Type</TableHead>
               <TableHead className="text-gray-200 font-medium">Date Range</TableHead>

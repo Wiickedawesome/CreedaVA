@@ -112,12 +112,12 @@ export function Projects() {
   if (loading) return <div className="flex items-center justify-center h-96 bg-gray-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>;
 
   return (
-    <div className="p-8 space-y-6 min-h-screen">
-      <div><h1 className="text-3xl font-bold text-white">Projects</h1><p className="text-gray-400 mt-2 font-medium">Manage client projects</p></div>
+    <div className="space-y-6 p-6">
+      <div><h1 className="text-2xl font-semibold text-white">Projects</h1><p className="text-gray-400 mt-1">Manage client projects</p></div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
-          <p className="text-sm font-medium text-gray-300">Total Projects</p>
-          <p className="text-2xl font-bold text-white mt-2">{stats.total}</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <p className="text-sm font-medium text-gray-400">Total Projects</p>
+          <p className="text-3xl font-bold text-white mt-2">{stats.total}</p>
         </div>
         <div className="bg-green-600 p-4 rounded-lg border border-green-500">
           <p className="text-sm font-medium text-green-100">Active</p>
@@ -140,10 +140,10 @@ export function Projects() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => setEditingProject(null)}><Plus className="w-4 h-4 mr-2" />New Project</Button></DialogTrigger><DialogContent className="sm:max-w-[600px]"><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingProject ? 'Edit' : 'New'} Project</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div><div className="space-y-2"><Label>Description</Label><Textarea value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Status</Label><Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v as Project['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusConfig).map(([k, c]) => <SelectItem key={k} value={k}>{c.label}</SelectItem>)}</SelectContent></Select></div><div className="space-y-2"><Label>Progress %</Label><Input type="number" min="0" max="100" value={formData.progress_percentage || 0} onChange={(e) => setFormData({ ...formData, progress_percentage: parseInt(e.target.value) || 0 })} /></div></div></div><DialogFooter><Button type="button" variant="outline" onClick={handleCloseDialog}>Cancel</Button><Button type="submit">{editingProject ? 'Update' : 'Create'}</Button></DialogFooter></form></DialogContent></Dialog>
       </div>
-      <div className="bg-gray-700 rounded-lg border border-gray-600">
+      <div className="bg-gray-800 rounded-lg border border-gray-700">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-800 border-gray-600">
+            <TableRow className="bg-gray-800 border-gray-700">
               <TableHead className="text-gray-200 font-medium">Project</TableHead>
               <TableHead className="text-gray-200 font-medium">Status</TableHead>
               <TableHead className="text-gray-200 font-medium">Progress</TableHead>

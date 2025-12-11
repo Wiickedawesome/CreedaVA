@@ -91,10 +91,10 @@ export function Emails() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />New Email</Button></DialogTrigger><DialogContent><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>Draft Email</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>From *</Label><Input value={formData.from_email} onChange={(e) => setFormData({ ...formData, from_email: e.target.value })} required type="email" /></div><div className="space-y-2"><Label>To *</Label><Input value={formData.to_email} onChange={(e) => setFormData({ ...formData, to_email: e.target.value })} required type="email" /></div><div className="space-y-2"><Label>Subject *</Label><Input value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} required /></div><div className="space-y-2"><Label>Body *</Label><Textarea value={formData.body} onChange={(e) => setFormData({ ...formData, body: e.target.value })} required rows={6} /></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">Save Draft</Button></DialogFooter></form></DialogContent></Dialog>
       </div>
-      <div className="bg-gray-700 rounded-lg border border-gray-600">
+      <div className="bg-gray-800 rounded-lg border border-gray-700">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-800 border-gray-600">
+            <TableRow className="bg-gray-800 border-gray-700">
               <TableHead className="text-gray-200 font-medium">Subject</TableHead>
               <TableHead className="text-gray-200 font-medium">To</TableHead>
               <TableHead className="text-gray-200 font-medium">Status</TableHead>

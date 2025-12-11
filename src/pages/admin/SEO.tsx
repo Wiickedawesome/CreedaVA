@@ -467,9 +467,9 @@ export function SEO() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
-          <p className="text-sm font-medium text-gray-300">Total Pages</p>
-          <p className="text-2xl font-bold text-white mt-2">{pages.length}</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <p className="text-sm font-medium text-gray-400">Total Pages</p>
+          <p className="text-3xl font-bold text-white mt-2">{pages.length}</p>
         </div>
         <div className="bg-green-600 p-4 rounded-lg border border-green-500">
           <p className="text-sm font-medium text-green-100">Published</p>
@@ -486,10 +486,10 @@ export function SEO() {
       </div>
 
       {/* Pages Table */}
-      <div className="bg-gray-700 rounded-lg border border-gray-600">
+      <div className="bg-gray-800 rounded-lg border border-gray-700">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-800 border-gray-600">
+            <TableRow className="bg-gray-800 border-gray-700">
               <TableHead className="text-gray-200 font-medium">Page Path</TableHead>
               <TableHead className="text-gray-200 font-medium">Page Title</TableHead>
               <TableHead className="text-gray-200 font-medium">Meta Title</TableHead>

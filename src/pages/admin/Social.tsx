@@ -62,19 +62,19 @@ export function Social() {
   if (loading) return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div></div>;
 
   return (
-    <div className="p-8 space-y-6 min-h-screen">
+    <div className="space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold text-white">Social Media</h1>
-        <p className="text-gray-300 mt-1">Manage posts across LinkedIn, Twitter, Facebook & Instagram</p>
+        <p className="text-gray-400 mt-1">Manage posts across LinkedIn, Twitter, Facebook & Instagram</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-300">Total Posts</h3>
+            <h3 className="text-sm font-medium text-gray-400">Total Posts</h3>
             <Share2 className="h-4 w-4 text-gray-400" />
           </div>
-          <div className="text-2xl font-bold text-white">{stats.total}</div>
+          <div className="text-3xl font-bold text-white">{stats.total}</div>
         </div>
         <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
           <div className="flex items-center justify-between mb-2">

@@ -434,7 +434,7 @@ export function Contacts() {
       <div className="border border-gray-700 rounded-lg bg-gray-800 shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-700/50 border-b border-gray-600">
+            <TableRow className="bg-gray-800 border-b border-gray-700">
               <TableHead className="text-white font-semibold">Name</TableHead>
               <TableHead className="text-white font-semibold">Company</TableHead>
               <TableHead className="text-white font-semibold">Position</TableHead>
@@ -456,7 +456,7 @@ export function Contacts() {
               </TableRow>
             ) : (
               filteredContacts.map((contact) => (
-                <TableRow key={contact.id} className="border-b border-gray-700 hover:bg-gray-700/50">
+                <TableRow key={contact.id} className="border-b border-gray-700 hover:bg-gray-800/50">
                   <TableCell className="font-medium text-white">
                     {contact.first_name} {contact.last_name}
                   </TableCell>

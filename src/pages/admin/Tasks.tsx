@@ -202,18 +202,18 @@ export function Tasks() {
   }
 
   return (
-    <div className="p-8 space-y-6 min-h-screen">
+    <div className="space-y-6 p-6">
       {/* Header with Stats */}
       <div>
-        <h1 className="text-3xl font-bold text-white">Tasks</h1>
-        <p className="text-gray-300 mt-2 font-medium">Manage your tasks and to-dos</p>
+        <h1 className="text-2xl font-semibold text-white">Tasks</h1>
+        <p className="text-gray-400 mt-1">Manage your tasks and to-dos</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
-          <p className="text-sm font-medium text-gray-300">Total Tasks</p>
-          <p className="text-2xl font-bold text-white mt-2">{taskStats.total}</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <p className="text-sm font-medium text-gray-400">Total Tasks</p>
+          <p className="text-3xl font-bold text-white mt-2">{taskStats.total}</p>
         </div>
         <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
           <p className="text-sm font-medium text-blue-100">To Do</p>
@@ -359,10 +359,10 @@ export function Tasks() {
       </div>
 
       {/* Tasks Table */}
-      <div className="bg-gray-700 border border-gray-600 rounded-lg">
+      <div className="bg-gray-800 border border-gray-700 rounded-lg">
         <Table>
           <TableHeader>
-            <TableRow className="border-gray-600 bg-gray-800 hover:bg-gray-800">
+            <TableRow className="border-gray-700 bg-gray-800 hover:bg-gray-800">
               <TableHead className="text-white font-semibold">Task</TableHead>
               <TableHead className="text-white font-semibold">Status</TableHead>
               <TableHead className="text-white font-semibold">Priority</TableHead>

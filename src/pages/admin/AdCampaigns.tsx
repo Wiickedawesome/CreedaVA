@@ -72,14 +72,14 @@ export function AdCampaigns() {
   return (
     <div className="p-8 space-y-6 min-h-screen">
       <div>
-        <h1 className="text-3xl font-bold text-white">Ad Campaigns</h1>
-        <p className="text-gray-300 mt-2 font-medium">Track advertising performance and ROI</p>
+        <h1 className="text-2xl font-semibold text-white">Ad Campaigns</h1>
+        <p className="text-gray-400 mt-1">Track advertising performance and ROI</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
-          <p className="text-sm font-medium text-gray-300">Total Campaigns</p>
-          <p className="text-2xl font-bold text-white mt-2">{stats.total}</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <p className="text-sm font-medium text-gray-400">Total Campaigns</p>
+          <p className="text-3xl font-bold text-white mt-2">{stats.total}</p>
         </div>
         <div className="bg-green-600 p-4 rounded-lg border border-green-500">
           <p className="text-sm font-medium text-green-100">Active</p>
@@ -108,10 +108,10 @@ export function AdCampaigns() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => { setEditingCampaign(null); setFormData({ name: '', platform: 'google_ads', budget: '', spend: '', status: 'draft', start_date: '', end_date: '', impressions: 0, clicks: 0, conversions: 0 }); }}><Plus className="w-4 h-4 mr-2" />New Campaign</Button></DialogTrigger><DialogContent className="max-w-2xl"><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingCampaign ? 'Edit' : 'Create'} Campaign</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Platform *</Label><Select value={formData.platform} onValueChange={(value) => setFormData({ ...formData, platform: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{platforms.map(p => <SelectItem key={p} value={p}>{p.replace('_', ' ').toUpperCase()}</SelectItem>)}</SelectContent></Select></div><div className="space-y-2"><Label>Status *</Label><Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="paused">Paused</SelectItem><SelectItem value="completed">Completed</SelectItem></SelectContent></Select></div></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Budget *</Label><Input type="number" step="0.01" value={formData.budget} onChange={(e) => setFormData({ ...formData, budget: e.target.value })} required /></div><div className="space-y-2"><Label>Spend</Label><Input type="number" step="0.01" value={formData.spend} onChange={(e) => setFormData({ ...formData, spend: e.target.value })} /></div></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Start Date</Label><Input type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} /></div><div className="space-y-2"><Label>End Date</Label><Input type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} /></div></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">{editingCampaign ? 'Update' : 'Create'}</Button></DialogFooter></form></DialogContent></Dialog>
       </div>
 
-      <div className="bg-gray-700 rounded-lg border border-gray-600">
+      <div className="bg-gray-800 rounded-lg border border-gray-700">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-800 border-gray-600">
+            <TableRow className="bg-gray-800 border-gray-700">
               <TableHead className="text-gray-200 font-medium">Name</TableHead>
               <TableHead className="text-gray-200 font-medium">Platform</TableHead>
               <TableHead className="text-gray-200 font-medium">Status</TableHead>

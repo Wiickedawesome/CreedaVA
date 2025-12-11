@@ -99,8 +99,8 @@ export function Blog() {
           <p className="text-sm font-medium text-green-100">Published</p>
           <p className="text-3xl font-bold text-white">{stats.published}</p>
         </div>
-        <div className="bg-gray-700 p-4 rounded-lg border border-gray-600">
-          <p className="text-sm font-medium text-gray-300">Drafts</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <p className="text-sm font-medium text-gray-400">Drafts</p>
           <p className="text-3xl font-bold text-white">{stats.drafts}</p>
         </div>
         <div className="bg-amber-600 p-4 rounded-lg border border-amber-500">
@@ -116,7 +116,7 @@ export function Blog() {
             placeholder="Search articles..." 
             value={searchTerm} 
             onChange={(e) => setSearchTerm(e.target.value)} 
-            className="pl-10 bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500" 
+            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => { setEditingPost(null); setFormData({ title: '', slug: '', excerpt: '', content: '', category: '', status: 'draft', is_featured: false }); }}><Plus className="w-4 h-4 mr-2" />New Article</Button></DialogTrigger><DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto"><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingPost ? 'Edit' : 'Create'} Blog Post</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Title *</Label><Input value={formData.title} onChange={(e) => { setFormData({ ...formData, title: e.target.value, slug: generateSlug(e.target.value) }); }} required /></div><div className="space-y-2"><Label>Slug *</Label><Input value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} required /></div></div><div className="space-y-2"><Label>Excerpt</Label><Textarea value={formData.excerpt} onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })} rows={2} placeholder="Brief summary..." /></div><div className="space-y-2"><Label>Content *</Label><Textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} required rows={10} placeholder="Full article content..." /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Category</Label><Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="e.g., Company News, Tips" /></div><div className="space-y-2"><Label>Status *</Label><Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="published">Published</SelectItem><SelectItem value="archived">Archived</SelectItem></SelectContent></Select></div></div><div className="flex items-center space-x-2"><Switch checked={formData.is_featured} onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })} /><Label>Featured Article</Label></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">{editingPost ? 'Update' : 'Create'}</Button></DialogFooter></form></DialogContent></Dialog>

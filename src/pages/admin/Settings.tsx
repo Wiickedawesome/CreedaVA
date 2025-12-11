@@ -37,27 +37,27 @@ export function Settings() {
   }, []);
 
   return (
-    <div className="p-8 space-y-6 max-w-4xl">
+    <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-3xl font-bold text-white">Settings</h1>
-        <p className="text-gray-300 mt-2">Configure your CRM preferences and account settings</p>
+        <h1 className="text-2xl font-semibold text-white">Settings</h1>
+        <p className="text-gray-400 mt-1">Configure your CRM preferences and account settings</p>
       </div>
 
       <div className="space-y-6">
         {/* Notification Settings */}
-        <Card className="bg-gray-700 border-gray-600">
+        <Card className="p-6 bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Bell className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-white text-lg">
+              <Bell className="w-5 h-5 text-blue-400" />
               Notifications
             </CardTitle>
-            <CardDescription className="text-gray-300">Manage your notification preferences</CardDescription>
+            <CardDescription className="text-gray-400">Manage your notification preferences</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-white font-semibold">Email Notifications</Label>
-                <p className="text-sm text-gray-300">Receive email updates about activity</p>
+                <Label className="text-white text-sm font-medium">Email Notifications</Label>
+                <p className="text-sm text-gray-400">Receive email updates about activity</p>
               </div>
               <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
             </div>
@@ -67,7 +67,7 @@ export function Settings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label className="text-white font-semibold">New Lead Alerts</Label>
-                <p className="text-sm text-gray-300">Get notified when new leads are added</p>
+                <p className="text-sm text-gray-400">Get notified when new leads are added</p>
               </div>
               <Switch checked={leadNotifications} onCheckedChange={setLeadNotifications} />
             </div>
@@ -77,7 +77,7 @@ export function Settings() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label className="text-white font-semibold">Task Reminders</Label>
-                <p className="text-sm text-gray-300">Receive reminders for upcoming tasks</p>
+                <p className="text-sm text-gray-400">Receive reminders for upcoming tasks</p>
               </div>
               <Switch checked={taskReminders} onCheckedChange={setTaskReminders} />
             </div>
@@ -85,37 +85,37 @@ export function Settings() {
         </Card>
 
         {/* Profile Settings */}
-        <Card className="bg-gray-700 border-gray-600">
+        <Card className="p-6 bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <User className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-white text-lg">
+              <User className="w-5 h-5 text-green-400" />
               Profile
             </CardTitle>
-            <CardDescription className="text-gray-300">Manage your account information</CardDescription>
+            <CardDescription className="text-gray-400">Manage your account information</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label className="text-white font-semibold">Email</Label>
-              <Input value={user?.email || ''} disabled className="bg-gray-800 border-gray-600 text-gray-300" />
+              <Input value={user?.email || ''} disabled className="bg-gray-800 border-gray-600 text-gray-400" />
               <p className="text-xs text-gray-400">Your email cannot be changed</p>
             </div>
             
             <div className="space-y-2">
               <Label className="text-white font-semibold">Role</Label>
-              <Input value={user?.user_metadata?.role || 'Admin'} disabled className="bg-gray-800 border-gray-600 text-gray-300" />
+              <Input value={user?.user_metadata?.role || 'Admin'} disabled className="bg-gray-800 border-gray-600 text-gray-400" />
               <p className="text-xs text-gray-400">Contact support to change your role</p>
             </div>
           </CardContent>
         </Card>
 
         {/* Database Settings */}
-        <Card className="bg-gray-700 border-gray-600">
+        <Card className="p-6 bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Database className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-white text-lg">
+              <Database className="w-5 h-5 text-purple-400" />
               Database
             </CardTitle>
-            <CardDescription className="text-gray-300">Supabase connection status</CardDescription>
+            <CardDescription className="text-gray-400">Supabase connection status</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">

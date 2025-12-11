@@ -16,7 +16,7 @@ if (endpoint && key) {
 
 app.http('getAnalytics', {
   methods: ['GET', 'OPTIONS'],
-  authLevel: 'function', // Requires function key for security
+  authLevel: 'anonymous', // Changed to anonymous for admin panel access
   handler: async (request, context) => {
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
@@ -41,50 +41,55 @@ app.http('getAnalytics', {
           body: JSON.stringify({ 
             success: true, 
             data: [], 
-            message: 'Analytics not configured' 
+            message: 'Database not configured' 
           })
         };
       }
 
       // Get query parameters
       const url = new URL(request.url);
-      const days = parseInt(url.searchParams.get('days') || '30');
-      const eventType = url.searchParams.get('eventType');
+      const tableName = url.searchParams.get('table') || 'analytics';
+      const orderBy = url.searchParams.get('orderBy');
+      const orderDirection = url.searchParams.get('orderDirection') || 'desc';
+      const limitCount = parseInt(url.searchParams.get('limit') || '1000');
 
-      // Calculate date range
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
+      // Use specified table
+      const targetContainer = database.container(tableName);
 
-      // Build query
-      let query = 'SELECT * FROM c WHERE c.type = "event" AND c.timestamp >= @startDate';
-      const parameters = [
-        { name: '@startDate', value: startDate.toISOString() }
-      ];
+      // Build query for general table access
+      let query = 'SELECT * FROM c';
+      const parameters = [];
 
-      if (eventType) {
-        query += ' AND c.eventType = @eventType';
-        parameters.push({ name: '@eventType', value: eventType });
+      // Add filters if provided
+      const filterKeys = Array.from(url.searchParams.keys()).filter(k => k.startsWith('filter'));
+      if (filterKeys.length > 0) {
+        const conditions = [];
+        filterKeys.forEach((key, index) => {
+          try {
+            const filter = JSON.parse(url.searchParams.get(key));
+            conditions.push(`c.${filter.column} = @filter${index}`);
+            parameters.push({ name: `@filter${index}`, value: filter.value });
+          } catch (e) {
+            context.error('Invalid filter:', e);
+          }
+        });
+        if (conditions.length > 0) {
+          query += ' WHERE ' + conditions.join(' AND ');
+        }
       }
 
-      query += ' ORDER BY c.timestamp DESC';
+      // Add ordering
+      if (orderBy) {
+        query += ` ORDER BY c.${orderBy} ${orderDirection.toUpperCase()}`;
+      }
 
-      const { resources } = await container.items
+      // Execute query
+      const { resources } = await targetContainer.items
         .query({ query, parameters })
         .fetchAll();
 
-      // Calculate summary statistics
-      const summary = {
-        totalEvents: resources.length,
-        uniquePages: new Set(resources.map(r => r.page)).size,
-        eventTypes: {}
-      };
-
-      resources.forEach(event => {
-        if (!summary.eventTypes[event.eventType]) {
-          summary.eventTypes[event.eventType] = 0;
-        }
-        summary.eventTypes[event.eventType]++;
-      });
+      // Apply limit if needed
+      const limitedResources = limitCount ? resources.slice(0, limitCount) : resources;
 
       return {
         status: 200,
@@ -92,11 +97,7 @@ app.http('getAnalytics', {
           'Access-Control-Allow-Origin': '*',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ 
-          success: true, 
-          data: resources,
-          summary
-        })
+        body: JSON.stringify(limitedResources)
       };
     } catch (error) {
       context.error('Error fetching analytics:', error);

@@ -340,10 +340,10 @@ export function Leads() {
       </div>
 
       {/* Leads Table */}
-      <div className="bg-gray-700 rounded-lg border border-gray-600">
+      <div className="bg-gray-800 rounded-lg border border-gray-700">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-800 border-gray-600">
+            <TableRow className="bg-gray-800 border-gray-700">
               <TableHead className="text-white font-semibold">Name</TableHead>
               <TableHead className="text-white font-semibold">Company</TableHead>
               <TableHead className="text-white font-semibold">Email</TableHead>
