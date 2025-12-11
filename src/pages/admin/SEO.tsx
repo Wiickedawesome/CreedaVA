@@ -347,7 +347,7 @@ export function SEO() {
                               e.currentTarget.src = 'https://via.placeholder.com/1200x630?text=Invalid+Image+URL';
                             }}
                           />
-                          <div className="p-3 bg-gray-50">
+                          <div className="p-3 bg-gray-800">
                             <div className="font-semibold text-sm">
                               {formData.og_title || formData.meta_title || 'Title'}
                             </div>

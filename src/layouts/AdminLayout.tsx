@@ -64,7 +64,7 @@ export function AdminLayout() {
   const userInitials = user?.email?.substring(0, 2).toUpperCase() || 'U'
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-900">
       {/* Sidebar */}
       <aside className="w-64 bg-gray-900 flex flex-col">
         <div className="p-6">
