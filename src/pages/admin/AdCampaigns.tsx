@@ -81,16 +81,25 @@ export function AdCampaigns() {
           <p className="text-sm font-medium text-gray-400">Total Campaigns</p>
           <p className="text-3xl font-bold text-white mt-2">{stats.total}</p>
         </div>
-        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
-          <p className="text-sm font-medium text-green-100">Active</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <p className="text-sm font-medium text-gray-400">Active</p>
+          </div>
           <p className="text-2xl font-bold text-white mt-2">{stats.active}</p>
         </div>
-        <div className="bg-red-600 p-4 rounded-lg border border-red-500">
-          <p className="text-sm font-medium text-red-100">Total Spend</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+            <p className="text-sm font-medium text-gray-400">Total Spend</p>
+          </div>
           <p className="text-2xl font-bold text-white mt-2">${stats.totalSpend.toFixed(2)}</p>
         </div>
-        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
-          <p className="text-sm font-medium text-blue-100">Conversions</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+            <p className="text-sm font-medium text-gray-400">Conversions</p>
+          </div>
           <p className="text-2xl font-bold text-white mt-2">{stats.totalConversions}</p>
         </div>
       </div>

@@ -76,35 +76,47 @@ export function Social() {
           </div>
           <div className="text-3xl font-bold text-white">{stats.total}</div>
         </div>
-        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-blue-100">LinkedIn</h3>
-            <Linkedin className="h-4 w-4 text-blue-200" />
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              <h3 className="text-sm font-medium text-gray-400">LinkedIn</h3>
+            </div>
+            <Linkedin className="h-4 w-4 text-gray-400" />
           </div>
           <div className="text-2xl font-bold text-white">{stats.linkedin}</div>
-          <p className="text-xs text-blue-100">Primary platform</p>
+          <p className="text-xs text-gray-400">Primary platform</p>
         </div>
-        <div className="bg-yellow-600 p-4 rounded-lg border border-yellow-500">
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-yellow-100">Scheduled</h3>
-            <Calendar className="h-4 w-4 text-yellow-200" />
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+              <h3 className="text-sm font-medium text-gray-400">Scheduled</h3>
+            </div>
+            <Calendar className="h-4 w-4 text-gray-400" />
           </div>
           <div className="text-2xl font-bold text-white">{stats.scheduled}</div>
         </div>
-        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-green-100">Published</h3>
-            <TrendingUp className="h-4 w-4 text-green-200" />
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <h3 className="text-sm font-medium text-gray-400">Published</h3>
+            </div>
+            <TrendingUp className="h-4 w-4 text-gray-400" />
           </div>
           <div className="text-2xl font-bold text-white">{stats.published}</div>
         </div>
-        <div className="bg-red-600 p-4 rounded-lg border border-red-500">
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-red-100">Engagement</h3>
-            <Heart className="h-4 w-4 text-red-200" />
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-red-500"></div>
+              <h3 className="text-sm font-medium text-gray-400">Engagement</h3>
+            </div>
+            <Heart className="h-4 w-4 text-gray-400" />
           </div>
           <div className="text-2xl font-bold text-white">{stats.totalEngagement}</div>
-          <p className="text-xs text-red-100">Total interactions</p>
+          <p className="text-xs text-gray-400">Total interactions</p>
         </div>
       </div>
 

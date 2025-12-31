@@ -68,20 +68,32 @@ export function LandingPages() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-indigo-600 p-4 rounded-lg border border-indigo-500">
-          <p className="text-sm font-medium text-indigo-100">Total Pages</p>
+        <div className="p-6 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+            <p className="text-sm font-medium text-gray-400">Total Pages</p>
+          </div>
           <p className="text-3xl font-bold text-white">{stats.total}</p>
         </div>
-        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
-          <p className="text-sm font-medium text-green-100">Active</p>
+        <div className="p-6 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <p className="text-sm font-medium text-gray-400">Active</p>
+          </div>
           <p className="text-3xl font-bold text-white">{stats.active}</p>
         </div>
-        <div className="bg-purple-600 p-4 rounded-lg border border-purple-500">
-          <p className="text-sm font-medium text-purple-100">Avg Conversion</p>
+        <div className="p-6 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+            <p className="text-sm font-medium text-gray-400">Avg Conversion</p>
+          </div>
           <p className="text-3xl font-bold text-white">{stats.avgConversion}%</p>
         </div>
-        <div className="bg-emerald-600 p-4 rounded-lg border border-emerald-500">
-          <p className="text-sm font-medium text-emerald-100">Total Visits</p>
+        <div className="p-6 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+            <p className="text-sm font-medium text-gray-400">Total Visits</p>
+          </div>
           <p className="text-3xl font-bold text-white">{stats.totalVisits}</p>
         </div>
       </div>

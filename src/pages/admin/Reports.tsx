@@ -74,16 +74,25 @@ export function Reports() {
           <p className="text-sm font-medium text-gray-400">Total Reports</p>
           <p className="text-3xl font-bold text-white">{stats.total}</p>
         </div>
-        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
-          <p className="text-sm font-medium text-blue-100">Scheduled</p>
+        <div className="p-6 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+            <p className="text-sm font-medium text-gray-400">Scheduled</p>
+          </div>
           <p className="text-3xl font-bold text-white">{stats.scheduled}</p>
         </div>
-        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
-          <p className="text-sm font-medium text-green-100">Completed</p>
+        <div className="p-6 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <p className="text-sm font-medium text-gray-400">Completed</p>
+          </div>
           <p className="text-3xl font-bold text-white">{stats.completed}</p>
         </div>
-        <div className="bg-purple-600 p-4 rounded-lg border border-purple-500">
-          <p className="text-sm font-medium text-purple-100">Last Generated</p>
+        <div className="p-6 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+            <p className="text-sm font-medium text-gray-400">Last Generated</p>
+          </div>
           <p className="text-xl font-bold text-white">{stats.lastGenerated ? format(new Date(stats.lastGenerated), 'MMM d') : 'Never'}</p>
         </div>
       </div>

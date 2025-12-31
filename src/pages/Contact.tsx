@@ -219,6 +219,8 @@ ${bookingData.notes || 'None'}
   // Get minimum date (today)
   const today = new Date().toISOString().split('T')[0];
 
+  const contactFieldClass = "bg-background text-foreground placeholder:text-muted-foreground border-input focus-visible:border-primary focus-visible:ring-primary/20";
+
   return (
     <div className="min-h-screen bg-background">
       <section className="relative py-32 px-4 overflow-hidden">
@@ -256,7 +258,7 @@ ${bookingData.notes || 'None'}
                           value={formData.name}
                           onChange={handleInputChange}
                           required
-                          className="mt-2"
+                          className={`mt-2 ${contactFieldClass}`}
                           placeholder="John Smith"
                         />
                       </div>
@@ -270,7 +272,7 @@ ${bookingData.notes || 'None'}
                           value={formData.email}
                           onChange={handleInputChange}
                           required
-                          className="mt-2"
+                          className={`mt-2 ${contactFieldClass}`}
                           placeholder="john@company.com"
                         />
                       </div>
@@ -284,7 +286,7 @@ ${bookingData.notes || 'None'}
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className="mt-2"
+                          className={`mt-2 ${contactFieldClass}`}
                           placeholder="+1 (555) 000-0000"
                         />
                       </div>
@@ -296,7 +298,7 @@ ${bookingData.notes || 'None'}
                           name="company"
                           value={formData.company}
                           onChange={handleInputChange}
-                          className="mt-2"
+                          className={`mt-2 ${contactFieldClass}`}
                           placeholder="Your company name"
                         />
                       </div>
@@ -330,7 +332,7 @@ ${bookingData.notes || 'None'}
                         onChange={handleInputChange}
                         required
                         rows={6}
-                        className="mt-2"
+                        className={`mt-2 ${contactFieldClass}`}
                         placeholder="Tell us about your project or requirements..."
                       />
                     </div>
@@ -447,7 +449,7 @@ ${bookingData.notes || 'None'}
                             value={bookingData.name}
                             onChange={handleBookingChange}
                             required
-                            className="pl-10"
+                            className={`pl-10 ${contactFieldClass}`}
                             placeholder="John Smith"
                           />
                         </div>
@@ -461,7 +463,7 @@ ${bookingData.notes || 'None'}
                           value={bookingData.company}
                           onChange={handleBookingChange}
                           required
-                          className="mt-2"
+                          className={`mt-2 ${contactFieldClass}`}
                           placeholder="Your Company"
                         />
                       </div>
@@ -479,7 +481,7 @@ ${bookingData.notes || 'None'}
                             value={bookingData.email}
                             onChange={handleBookingChange}
                             required
-                            className="pl-10"
+                            className={`pl-10 ${contactFieldClass}`}
                             placeholder="john@company.com"
                           />
                         </div>
@@ -496,7 +498,7 @@ ${bookingData.notes || 'None'}
                             value={bookingData.phone}
                             onChange={handleBookingChange}
                             required
-                            className="pl-10"
+                            className={`pl-10 ${contactFieldClass}`}
                             placeholder="+1 (555) 000-0000"
                           />
                         </div>
@@ -548,7 +550,7 @@ ${bookingData.notes || 'None'}
                           name="currentProvider"
                           value={bookingData.currentProvider}
                           onChange={handleBookingChange}
-                          className="mt-2"
+                          className={`mt-2 ${contactFieldClass}`}
                           placeholder="Provider name"
                         />
                       </div>
@@ -567,7 +569,7 @@ ${bookingData.notes || 'None'}
                             value={bookingData.date}
                             onChange={handleBookingChange}
                             required
-                            className="pl-10"
+                            className={`pl-10 ${contactFieldClass}`}
                           />
                         </div>
                       </div>
@@ -602,7 +604,7 @@ ${bookingData.notes || 'None'}
                         name="timezone"
                         value={bookingData.timezone}
                         onChange={handleBookingChange}
-                        className="mt-2"
+                        className={`mt-2 ${contactFieldClass}`}
                         placeholder="America/Chicago"
                       />
                       <p className="text-xs text-muted-foreground mt-1">Detected: {Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
@@ -616,7 +618,7 @@ ${bookingData.notes || 'None'}
                         value={bookingData.notes}
                         onChange={handleBookingChange}
                         rows={3}
-                        className="mt-2"
+                        className={`mt-2 ${contactFieldClass}`}
                         placeholder="Anything specific you'd like to discuss?"
                       />
                     </div>

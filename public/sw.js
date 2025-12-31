@@ -1,5 +1,5 @@
 // Optimized service worker for caching static assets
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `creedava-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `creedava-runtime-${CACHE_VERSION}`;
 
@@ -8,6 +8,7 @@ const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/favicon.svg?v=4',
 ];
 
 // Cache strategies for different asset types

@@ -90,16 +90,25 @@ export function Keywords() {
         <p className="text-gray-300 mt-2 font-medium">Monitor search rankings and SEO performance</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-violet-600 p-4 rounded-lg border border-violet-500">
-          <p className="text-sm font-medium text-violet-100">Total Keywords</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-violet-500"></div>
+            <p className="text-sm font-medium text-gray-400">Total Keywords</p>
+          </div>
           <p className="text-3xl font-bold text-white">{stats.total}</p>
         </div>
-        <div className="bg-emerald-600 p-4 rounded-lg border border-emerald-500">
-          <p className="text-sm font-medium text-emerald-100">Top 10</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+            <p className="text-sm font-medium text-gray-400">Top 10</p>
+          </div>
           <p className="text-3xl font-bold text-white">{stats.ranked}</p>
         </div>
-        <div className="bg-cyan-600 p-4 rounded-lg border border-cyan-500">
-          <p className="text-sm font-medium text-cyan-100">Avg Position</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+            <p className="text-sm font-medium text-gray-400">Avg Position</p>
+          </div>
           <p className="text-3xl font-bold text-white">{stats.avgPosition.toFixed(1)}</p>
         </div>
       </div>

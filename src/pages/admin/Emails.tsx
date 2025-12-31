@@ -66,16 +66,25 @@ export function Emails() {
         <p className="text-gray-300 mt-1">Manage email outreach</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
-          <p className="text-sm font-medium text-blue-100">Total Emails</p>
+        <div className="p-6 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+            <p className="text-sm font-medium text-gray-400">Total Emails</p>
+          </div>
           <p className="text-2xl font-bold text-white mt-2">{stats.total}</p>
         </div>
-        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
-          <p className="text-sm font-medium text-green-100">Sent</p>
+        <div className="p-6 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <p className="text-sm font-medium text-gray-400">Sent</p>
+          </div>
           <p className="text-2xl font-bold text-white mt-2">{stats.sent}</p>
         </div>
-        <div className="bg-yellow-600 p-4 rounded-lg border border-yellow-500">
-          <p className="text-sm font-medium text-yellow-100">Opened</p>
+        <div className="p-6 bg-gray-800 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+            <p className="text-sm font-medium text-gray-400">Opened</p>
+          </div>
           <p className="text-2xl font-bold text-white mt-2">{stats.opened}</p>
         </div>
       </div>

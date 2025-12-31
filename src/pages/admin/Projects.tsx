@@ -119,12 +119,18 @@ export function Projects() {
           <p className="text-sm font-medium text-gray-400">Total Projects</p>
           <p className="text-3xl font-bold text-white mt-2">{stats.total}</p>
         </div>
-        <div className="bg-green-600 p-4 rounded-lg border border-green-500">
-          <p className="text-sm font-medium text-green-100">Active</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <p className="text-sm font-medium text-gray-400">Active</p>
+          </div>
           <p className="text-2xl font-bold text-white mt-2">{stats.active}</p>
         </div>
-        <div className="bg-blue-600 p-4 rounded-lg border border-blue-500">
-          <p className="text-sm font-medium text-blue-100">Completed</p>
+        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+            <p className="text-sm font-medium text-gray-400">Completed</p>
+          </div>
           <p className="text-2xl font-bold text-white mt-2">{stats.completed}</p>
         </div>
       </div>

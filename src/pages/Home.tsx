@@ -139,7 +139,7 @@ export function Home() {
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               className="relative flex justify-center"
             >
-              <CreedaLogo variant="main" size={420} animate={true} className="w-full max-w-[420px]" />
+              <CreedaLogo variant="main" size={420} animate={false} className="w-full max-w-[420px]" />
             </motion.div>
           </div>
         </div>

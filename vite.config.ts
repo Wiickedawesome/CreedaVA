@@ -1,25 +1,32 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react-swc";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { resolve } from 'path'
 
 const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Vite does not automatically inject `.env*` values into `process.env` inside config.
+  // Use `loadEnv` so `VITE_BASE_PATH` from `.env.local` is honored for local builds/preview.
+  const env = loadEnv(mode, process.cwd(), '')
+
   // Use repository name for GitHub Pages, root for Azure/custom domain
   // Set VITE_BASE_PATH=/ for Azure deployment or use default for GitHub Pages
-  base: process.env.VITE_BASE_PATH || '/CreedaVA/',
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
-  resolve: {
-    alias: {
-      '@': resolve(projectRoot, 'src')
-    }
-  },
-  build: {
+  const base = env.VITE_BASE_PATH || process.env.VITE_BASE_PATH || '/CreedaVA/'
+
+  return {
+    base,
+    plugins: [
+      react(),
+      tailwindcss(),
+    ],
+    resolve: {
+      alias: {
+        '@': resolve(projectRoot, 'src')
+      }
+    },
+    build: {
     // Optimize bundle
     target: 'esnext',
     minify: 'terser',
@@ -83,9 +90,9 @@ export default defineConfig({
     },
     // Asset inlining threshold - increased for better caching
     assetsInlineLimit: 8192 // 8kb - inline smaller assets as base64
-  },
-  // Performance optimizations
-  optimizeDeps: {
+    },
+    // Performance optimizations
+    optimizeDeps: {
     include: [
       'react', 
       'react-dom', 
@@ -96,9 +103,9 @@ export default defineConfig({
       'date-fns'
     ],
     exclude: ['sharp'] // Don't optimize dev dependency
-  },
-  // Enhanced server configuration for development
-  server: {
+    },
+    // Enhanced server configuration for development
+    server: {
     hmr: {
       overlay: false, // Disable error overlay for better performance
       port: 24678 // Custom HMR port to avoid conflicts
@@ -110,18 +117,19 @@ export default defineConfig({
       usePolling: false,
       ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**']
     }
-  },
-  // Enhanced preview configuration
-  preview: {
+    },
+    // Enhanced preview configuration
+    preview: {
     port: 4173,
     strictPort: true,
     cors: true
-  },
-  // Add experimental features for better performance
-  experimental: {
+    },
+    // Add experimental features for better performance
+    experimental: {
     renderBuiltUrl(filename) {
       // Use CDN for assets in production if needed
       return `/${filename}`
+    }
     }
   }
 });
