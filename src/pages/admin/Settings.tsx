@@ -123,7 +123,8 @@ export function Settings() {
                 <div className="w-2 h-2 rounded-full bg-green-500"></div>
                 <Label className="text-white font-semibold">Connected to Azure Cosmos DB</Label>
               </div>
-              <p className="text-sm text-gray-400">Endpoint: {import.meta.env.VITE_COSMOS_ENDPOINT?.split('//')[1]?.split('.')[0] || 'Not configured'}</p>
+              <p className="text-sm text-gray-400">API: Azure Functions (Managed Backend)</p>
+              <p className="text-xs text-gray-500">Database operations handled securely via server-side API</p>
             </div>
           </CardContent>
         </Card>
