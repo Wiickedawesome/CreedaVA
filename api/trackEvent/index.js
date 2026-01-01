@@ -3,7 +3,7 @@ const { CosmosClient } = require('@azure/cosmos');
 
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
-const databaseId = process.env.COSMOS_DATABASE || 'website-data';
+const databaseId = process.env.COSMOS_DATABASE || 'creedava';
 const containerId = process.env.COSMOS_CONTAINER || 'analytics';
 
 let client, database, container;

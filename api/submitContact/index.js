@@ -3,7 +3,7 @@ const { CosmosClient } = require('@azure/cosmos');
 
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
-const databaseId = process.env.COSMOS_DATABASE || 'website-data';
+const databaseId = process.env.COSMOS_DATABASE || 'creedava';
 const containerId = process.env.COSMOS_CONTAINER || 'contacts';
 
 let client, database, container;
@@ -57,6 +57,7 @@ app.http('submitContact', {
         
         const item = {
           id: `${tableName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          type: tableName, // Add type field for partition key
           ...data,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -88,12 +89,16 @@ app.http('submitContact', {
           };
         }
 
+        // Fetch existing item first to preserve partition key and merge updates
+        const { resource: existingItem } = await targetContainer.item(filter.value, tableName).read();
+        
         const updatedData = {
+          ...existingItem,
           ...data,
           updated_at: new Date().toISOString()
         };
 
-        await targetContainer.item(filter.value, filter.value).replace(updatedData);
+        await targetContainer.item(filter.value, tableName).replace(updatedData);
         
         return {
           status: 200,
@@ -119,7 +124,8 @@ app.http('submitContact', {
           };
         }
 
-        await targetContainer.item(filter.value, filter.value).delete();
+        // Use tableName as partition key value (matches the type field)
+        await targetContainer.item(filter.value, tableName).delete();
         
         return {
           status: 200,

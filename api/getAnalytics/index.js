@@ -3,7 +3,7 @@ const { CosmosClient } = require('@azure/cosmos');
 
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
-const databaseId = process.env.COSMOS_DATABASE || 'website-data';
+const databaseId = process.env.COSMOS_DATABASE || 'creedava';
 const containerId = process.env.COSMOS_CONTAINER || 'analytics';
 
 let client, database, container;
@@ -52,6 +52,7 @@ app.http('getAnalytics', {
       const orderBy = url.searchParams.get('orderBy');
       const orderDirection = url.searchParams.get('orderDirection') || 'desc';
       const limitCount = parseInt(url.searchParams.get('limit') || '1000');
+      const days = url.searchParams.get('days');
 
       // Use specified table
       const targetContainer = database.container(tableName);
@@ -59,11 +60,19 @@ app.http('getAnalytics', {
       // Build query for general table access
       let query = 'SELECT * FROM c';
       const parameters = [];
+      const conditions = [];
+
+      // Add time-based filter if days parameter is provided (for analytics dashboard)
+      if (days) {
+        const daysAgo = new Date();
+        daysAgo.setDate(daysAgo.getDate() - parseInt(days));
+        conditions.push('c.timestamp >= @startDate');
+        parameters.push({ name: '@startDate', value: daysAgo.toISOString() });
+      }
 
       // Add filters if provided
       const filterKeys = Array.from(url.searchParams.keys()).filter(k => k.startsWith('filter'));
       if (filterKeys.length > 0) {
-        const conditions = [];
         filterKeys.forEach((key, index) => {
           try {
             const filter = JSON.parse(url.searchParams.get(key));
@@ -73,9 +82,10 @@ app.http('getAnalytics', {
             context.error('Invalid filter:', e);
           }
         });
-        if (conditions.length > 0) {
-          query += ' WHERE ' + conditions.join(' AND ');
-        }
+      }
+
+      if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
       }
 
       // Add ordering
@@ -91,6 +101,39 @@ app.http('getAnalytics', {
       // Apply limit if needed
       const limitedResources = limitCount ? resources.slice(0, limitCount) : resources;
 
+      // For analytics dashboard requests (when days param is provided), return enhanced response
+      if (days) {
+        // Calculate summary statistics
+        const eventTypes: Record<string, number> = {};
+        const uniquePages = new Set<string>();
+
+        limitedResources.forEach(event => {
+          if (event.eventType) {
+            eventTypes[event.eventType] = (eventTypes[event.eventType] || 0) + 1;
+          }
+          if (event.page) {
+            uniquePages.add(event.page);
+          }
+        });
+
+        return {
+          status: 200,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            data: limitedResources,
+            summary: {
+              totalEvents: limitedResources.length,
+              uniquePages: uniquePages.size,
+              eventTypes
+            }
+          })
+        };
+      }
+
+      // For general queries (backward compatibility), return raw array
       return {
         status: 200,
         headers: {
