@@ -37,7 +37,7 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         env:
           VITE_BASE_PATH: /
-          VITE_API_BASE_URL: /api
+          VITE_API_BASE_URL: https://creedava-api.azurewebsites.net/api
           VITE_GOOGLE_SEARCH_CONSOLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_SEARCH_CONSOLE_CLIENT_ID }}
           VITE_APP_URL: https://www.creedava.com
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
