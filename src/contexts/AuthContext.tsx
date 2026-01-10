@@ -42,8 +42,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isDevMode) {
       // Dev mode: check localStorage
       const devUser = localStorage.getItem('dev_user')
+      console.log('AuthContext: Dev mode - checking localStorage for dev_user:', devUser)
       if (devUser) {
-        setUser(JSON.parse(devUser))
+        try {
+          const user = JSON.parse(devUser)
+          console.log('AuthContext: Found dev user:', user)
+          setUser(user)
+        } catch (err) {
+          console.error('AuthContext: Failed to parse dev_user from localStorage:', err)
+        }
       }
       setLoading(false)
     } else {

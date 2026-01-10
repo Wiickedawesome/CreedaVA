@@ -73,12 +73,16 @@ export function Login() {
         return
       }
       // Store mock user in localStorage
-      localStorage.setItem('dev_user', JSON.stringify({ 
+      const devUser = { 
         email, 
         name: email.split('@')[0],
         id: 'dev-' + Date.now()
-      }))
-      navigate('/admin')
+      }
+      localStorage.setItem('dev_user', JSON.stringify(devUser))
+      
+      // Force AuthContext to refresh by reloading the page
+      window.location.href = '/admin'
+      return
     } else {
       // Production: use Entra ID
       const { error } = await signIn()
@@ -158,7 +162,7 @@ export function Login() {
             onClick={handleSubmit} 
             className="w-full" 
             disabled={loading || (isDevMode && (!email || !email.includes('@')))}
-            type="button"
+            type="submit"
           >
             {loading ? 'Signing in...' : (isDevMode ? 'Sign In' : 'Sign in with Microsoft')}
           </Button>
