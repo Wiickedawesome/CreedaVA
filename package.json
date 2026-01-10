@@ -34,7 +34,9 @@
         "lint": "eslint .",
         "optimize": "vite optimize",
         "preview": "vite preview",
-        "setup:db": "cd api && NODE_TLS_REJECT_UNAUTHORIZED=0 node create-containers.js"
+        "setup:db": "cd api && NODE_TLS_REJECT_UNAUTHORIZED=0 node create-containers.js",
+        "start:cosmos": "bash scripts/start-cosmos-emulator.sh",
+        "stop:cosmos": "bash scripts/stop-cosmos-emulator.sh"
     },
     "dependencies": {
         "@azure/cosmos": "^4.2.1",

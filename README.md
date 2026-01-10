@@ -78,6 +78,8 @@ cd api && npm install && cd ..
 ```
 
 3. **Start Cosmos DB Emulator (Docker)**
+
+Option A — quick (manual Docker):
 ```bash
 docker run -d \
   --name cosmosdb-emulator \
@@ -88,6 +90,20 @@ docker run -d \
   -v cosmos-data:/tmp/cosmos \
   mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
 ```
+
+Option B — helper script (recommended):
+```bash
+# start the emulator (waits until ready)
+npm run start:cosmos
+
+# stop and remove it
+npm run stop:cosmos
+```
+
+Notes:
+- The helper script runs the official emulator container and polls for readiness on https://127.0.0.1:8081. It requires Docker.
+- The emulator uses HTTPS and a self-signed cert; local functions often set NODE_TLS_REJECT_UNAUTHORIZED=0 when calling the emulator in scripts.
+- The emulator can be slow to start (20–60s). If the helper script times out, check `docker logs cosmosdb-emulator` for details.
 
 4. **Initialize database containers**
 ```bash
@@ -120,8 +136,10 @@ npm run dev
 # Base path for routing
 VITE_BASE_PATH=/
 
-# API endpoint
-VITE_API_BASE_URL=http://localhost:7071/api
+# API endpoint (optional)
+# - If unset, the frontend uses `/api` and Vite proxies to the local Functions host.
+# - Set this only when pointing the frontend at a non-default API base (e.g. a deployed Functions URL).
+# VITE_API_BASE_URL=http://localhost:7071/api
 
 # Entra ID auth
 VITE_AAD_CLIENT_ID=77207644-cbca-4d8f-b6f0-a9b077ba0f46
@@ -129,8 +147,21 @@ VITE_AAD_TENANT_ID=9c5238b8-3203-42de-a5c6-d401fa735fd5
 # Optional authority override (otherwise derived from tenant)
 # VITE_AAD_AUTHORITY=https://login.microsoftonline.com/9c5238b8-3203-42de-a5c6-d401fa735fd5/v2.0
 
+# Optional: Google OIDC (enable "Sign in with Google")
+# Create a Google OAuth Client ID (Web application) and set this value for local testing
+# VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+# (Functions host - api/local.settings.json)
+# "GOOGLE_CLIENT_ID": "your-google-client-id.apps.googleusercontent.com",
+# "GOOGLE_ALLOWED_DOMAIN": "creedava.com"  # optional - restrict sign-in to a domain
+
 # Application URL (used by MSAL redirect)
 VITE_APP_URL=http://localhost:5173
+
+# Dev mode (local testing)
+# Enable dev-mode on the frontend to bypass Entra during development and use a simple email-based login.
+# - Frontend: set VITE_DEV_MODE=true
+# - Functions (api/local.settings.json): set "ALLOW_DEV_TOKEN": "true"
+# In dev mode you can sign in via the UI using any email, and the frontend will send a placeholder token ("dev-token") to the Functions host which will accept it when ALLOW_DEV_TOKEN=true.
 
 # Optional analytics
 VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
