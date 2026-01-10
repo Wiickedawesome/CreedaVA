@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/admin/PageLayout';
 import { LeadDialog, Lead } from '@/components/admin/LeadDialog';
-import { authorizedFetch } from '@/lib/api-client';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { ErrorPanel } from '@/components/ErrorPanel'
 import { 
   Table,
   TableBody,
@@ -57,6 +58,8 @@ export function Leads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null)
+  const { signIn } = useAuth()
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
@@ -72,7 +75,6 @@ export function Leads() {
     try {
       setLoading(true);
       setError(null);
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
       const response = await authorizedFetch(`${API_BASE}/getLeads`);
       
       if (response.ok) {
@@ -81,20 +83,19 @@ export function Leads() {
       } else {
         throw new Error('Failed to fetch leads');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching leads:', err);
       setError(err instanceof Error ? err.message : 'Failed to load leads');
+      setErrorStatus(err?.status || null)
     } finally {
       setLoading(false);
     }
   };
 
   const handleSaveLead = async (leadData: LeadFormData) => {
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-    
     try {
       if (dialogMode === 'create') {
-        const response = await authorizedFetch(`${API_BASE}/createLead`, {
+        const response = await authorizedFetch(`${API_BASE}/createLeads`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -106,7 +107,7 @@ export function Leads() {
           throw new Error('Failed to create lead');
         }
       } else if (dialogMode === 'edit' && selectedLead) {
-        const response = await authorizedFetch(`${API_BASE}/updateLead/${selectedLead.id}`, {
+        const response = await authorizedFetch(`${API_BASE}/updateLeads/${selectedLead.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -131,8 +132,7 @@ export function Leads() {
     if (!leadToDelete) return;
     
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-      const response = await authorizedFetch(`${API_BASE}/deleteLead/${leadToDelete.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteLeads/${leadToDelete.id}`, {
         method: 'DELETE',
       });
       
@@ -230,7 +230,13 @@ export function Leads() {
         {loading ? (
           <div className="text-center py-8 text-gray-300">Loading leads...</div>
         ) : error ? (
-          <div className="text-center py-8 text-red-400">Error: {error}</div>
+          <div className="text-center py-8">
+            <ErrorPanel
+              message={error}
+              onRetry={fetchLeads}
+              onSignIn={errorStatus === 401 ? async () => { await signIn(); fetchLeads() } : undefined}
+            />
+          </div>
         ) : (
           <div className="bg-gray-900 rounded-lg border border-gray-700">
             <Table>

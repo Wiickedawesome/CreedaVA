@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Users, UserPlus, CheckSquare, TrendingUp, Mail, FolderKanban, Plus, Edit, Send, FileText } from 'lucide-react'
-import { authorizedFetch } from '@/lib/api-client'
+import { API_BASE, authorizedFetch } from '@/lib/api-client'
 
 interface Stats {
   leads: number
@@ -94,7 +94,6 @@ export function AdminDashboard() {
   const loadStats = async () => {
     try {
       setLoading(true);
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
       
       // Fetch contacts and analytics from our working API
       const [contactsRes, analyticsRes] = await Promise.all([

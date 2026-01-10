@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/admin/PageLayout';
 import { SEODialog, SEOContent } from '@/components/admin/SEODialog';
-import { authorizedFetch } from '@/lib/api-client';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { ErrorPanel } from '@/components/ErrorPanel'
 import { 
   Table,
   TableBody,
@@ -86,6 +87,8 @@ export function SEO() {
   const [seoContent, setSEOContent] = useState<SEOContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null)
+  const { signIn } = useAuth()
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
@@ -101,8 +104,7 @@ export function SEO() {
     try {
       setLoading(true);
       setError(null);
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-      const response = await authorizedFetch(`${API_BASE}/getSEO`);
+      const response = await authorizedFetch(`${API_BASE}/getSeo`);
       
       if (response.ok) {
         const result = await response.json();
@@ -110,9 +112,10 @@ export function SEO() {
       } else {
         throw new Error('Failed to fetch SEO content');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching SEO content:', error);
-      setError('Failed to load SEO content. Please try again.');
+      setError(error instanceof Error ? error.message : 'Failed to load SEO content. Please try again.');
+      setErrorStatus(error?.status || null)
     } finally {
       setLoading(false);
     }
@@ -138,10 +141,8 @@ export function SEO() {
 
   const handleSaveSEO = async (seoData: Omit<SEOContent, 'id' | 'type' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-      
       if (dialogMode === 'create') {
-        const response = await authorizedFetch(`${API_BASE}/createSEO`, {
+        const response = await authorizedFetch(`${API_BASE}/createSeo`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(seoData)
@@ -153,7 +154,7 @@ export function SEO() {
           throw new Error('Failed to create SEO content');
         }
       } else if (dialogMode === 'edit' && selectedSEO) {
-        const response = await authorizedFetch(`${API_BASE}/updateSEO/${selectedSEO.id}`, {
+        const response = await authorizedFetch(`${API_BASE}/updateSeo/${selectedSEO.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(seoData)
@@ -175,8 +176,7 @@ export function SEO() {
     if (!seoToDelete) return;
     
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-      const response = await authorizedFetch(`${API_BASE}/deleteSEO/${seoToDelete.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteSeo/${seoToDelete.id}`, {
         method: 'DELETE'
       });
       
@@ -246,10 +246,7 @@ export function SEO() {
         ) : error ? (
           <div className="text-center py-12">
             <Search className="h-8 w-8 text-red-400 mx-auto mb-4" />
-            <p className="text-red-400 mb-4">{error}</p>
-            <Button onClick={fetchSEOContent} variant="outline">
-              Try Again
-            </Button>
+            <ErrorPanel message={error} onRetry={fetchSEOContent} onSignIn={errorStatus === 401 ? async () => { await signIn(); fetchSEOContent() } : undefined} />
           </div>
         ) : (
           <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">

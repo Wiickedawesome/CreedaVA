@@ -14,12 +14,56 @@ if (authority) {
   jwks = createRemoteJWKSet(jwksUrl)
 }
 
+// Optional Google OIDC verification
+let googleJwks
+const googleJwksUrl = new URL('https://www.googleapis.com/oauth2/v3/certs')
+googleJwks = createRemoteJWKSet(googleJwksUrl)
+const googleClientId = process.env.GOOGLE_CLIENT_ID || null
+const googleAllowedDomain = process.env.GOOGLE_ALLOWED_DOMAIN || 'creedava.com'
+
 async function validateBearer(request) {
   const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw new Error('Missing bearer token')
   }
   const token = authHeader.slice('Bearer '.length)
+
+  // Local dev bypass (explicitly opt-in): accept only the dev token.
+  // This unblocks local admin testing without Entra configuration.
+  // Do not enable this in production.
+  const allowDevToken = process.env.ALLOW_DEV_TOKEN === 'true'
+  if (allowDevToken && token === 'dev-token') {
+    return {
+      sub: 'dev-user',
+      name: 'Dev User',
+      preferred_username: 'dev@local',
+      roles: ['admin'],
+      iss: 'local-dev',
+      aud: clientId || 'local-dev'
+    }
+  }
+
+  // Try Google token validation (optional, requires GOOGLE_CLIENT_ID)
+  if (googleClientId) {
+    try {
+      const { payload } = await jwtVerify(token, googleJwks, {
+        issuer: ['https://accounts.google.com', 'accounts.google.com'],
+        audience: googleClientId
+      })
+      // email and domain checks
+      if (payload.email && payload.email_verified && payload.email.endsWith(`@${googleAllowedDomain}`)) {
+        // Note: successful Google validation
+        // eslint-disable-next-line no-console
+        console.info(`Google sign-in accepted for ${payload.email}`)
+        payload.roles = payload.roles || ['admin']
+        return payload
+      }
+    } catch (err) {
+      // ignore and fall through to Entra validation
+      // console.debug('Google token validation failed', err)
+    }
+  }
+
   if (!authority || !clientId || !jwks) {
     throw new Error('Identity configuration missing')
   }

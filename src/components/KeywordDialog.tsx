@@ -86,22 +86,15 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Generate mock rank history if this is a new keyword
+    // Initialize a single rank history entry for newly created keywords instead of random mocks
     if (!keyword && formData.currentRank) {
-      const history: Array<{ date: string; rank: number; searchVolume: number }> = [];
-      for (let i = 30; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const baseRank = formData.currentRank;
-        const variation = Math.floor(Math.random() * 10) - 5;
-        const newEntry = {
-          date: date.toISOString(),
-          rank: Math.max(1, baseRank + variation),
-          searchVolume: (formData.searchVolume || 0) + Math.floor(Math.random() * 200) - 100
-        };
-        history.push(newEntry);
-      }
-      formData.rankHistory = history;
+      formData.rankHistory = [
+        {
+          date: new Date().toISOString(),
+          rank: formData.currentRank,
+          searchVolume: formData.searchVolume || 0
+        }
+      ];
     }
     
     onSave(formData as Omit<Keyword, 'id'>);

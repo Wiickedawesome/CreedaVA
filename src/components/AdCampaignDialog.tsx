@@ -16,7 +16,7 @@ interface AdCampaign {
   id?: string;
   name: string;
   platform: string;
-  type: string;
+  campaignType: string;
   objective: string;
   status: 'draft' | 'active' | 'paused' | 'completed' | 'rejected';
   budget: {
@@ -154,7 +154,7 @@ export function AdCampaignDialog({ isOpen, onClose, onSave, campaign }: AdCampai
   const [formData, setFormData] = useState<Partial<AdCampaign>>({
     name: campaign?.name || '',
     platform: campaign?.platform || 'google',
-    type: campaign?.type || 'Search',
+    campaignType: campaign?.campaignType || 'Search',
     objective: campaign?.objective || 'Traffic',
     status: campaign?.status || 'draft',
     budget: campaign?.budget || {
@@ -218,17 +218,16 @@ export function AdCampaignDialog({ isOpen, onClose, onSave, campaign }: AdCampai
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Generate mock performance data for new campaigns
+    // Performance metrics are recorded by tracking/integration systems; keep initial metrics empty.
     if (!campaign) {
-      const mockPerformance = {
-        impressions: Math.floor(Math.random() * 50000) + 10000,
-        clicks: Math.floor(Math.random() * 2000) + 500,
-        conversions: Math.floor(Math.random() * 100) + 20,
-        ctr: parseFloat((Math.random() * 5 + 1).toFixed(2)),
-        cpc: parseFloat((Math.random() * 3 + 0.5).toFixed(2)),
-        roas: parseFloat((Math.random() * 5 + 2).toFixed(2))
+      formData.performance = {
+        impressions: 0,
+        clicks: 0,
+        conversions: 0,
+        ctr: 0,
+        cpc: 0,
+        roas: 0
       };
-      formData.performance = mockPerformance;
     }
     
     onSave(formData as Omit<AdCampaign, 'id'>);
@@ -330,6 +329,7 @@ export function AdCampaignDialog({ isOpen, onClose, onSave, campaign }: AdCampai
           </DialogTitle>
           <DialogDescription className="text-gray-300">
             Set up and manage your advertising campaigns across multiple platforms.
+            <div className="text-xs text-gray-400 mt-2">Performance metrics will appear after a campaign runs or when tracking is enabled.</div>
           </DialogDescription>
         </DialogHeader>
 
@@ -351,7 +351,7 @@ export function AdCampaignDialog({ isOpen, onClose, onSave, campaign }: AdCampai
 
               <div>
                 <Label htmlFor="platform" className="text-white">Platform</Label>
-                <Select value={formData.platform} onValueChange={(value) => setFormData(prev => ({ ...prev, platform: value, type: campaignTypes[value as keyof typeof campaignTypes]?.[0] || 'Search' }))}>
+                <Select value={formData.platform} onValueChange={(value) => setFormData(prev => ({ ...prev, platform: value, campaignType: campaignTypes[value as keyof typeof campaignTypes]?.[0] || 'Search' }))}>
                   <SelectTrigger className="">
                     <SelectValue placeholder="Select platform" />
                   </SelectTrigger>
@@ -367,7 +367,7 @@ export function AdCampaignDialog({ isOpen, onClose, onSave, campaign }: AdCampai
 
               <div>
                 <Label htmlFor="type" className="text-white">Campaign Type</Label>
-                <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}>
+                <Select value={formData.campaignType} onValueChange={(value) => setFormData(prev => ({ ...prev, campaignType: value }))}>
                   <SelectTrigger className="">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>

@@ -9,6 +9,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Search, Filter, MoreHorizontal, TrendingUp, TrendingDown, Minus, Target, Users, DollarSign, BarChart3 } from 'lucide-react';
 import { KeywordDialog } from '@/components/KeywordDialog';
 import { Progress } from '@/components/ui/progress';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { useAuth } from '@/contexts/AuthContext'
+import { ErrorPanel } from '@/components/ErrorPanel'
 
 interface Keyword {
   id: string;
@@ -44,6 +47,9 @@ export function Keywords() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null)
+  const [errorStatus, setErrorStatus] = useState<number | null>(null)
+  const { signIn } = useAuth()
 
   useEffect(() => {
     fetchKeywords();
@@ -52,15 +58,17 @@ export function Keywords() {
   const fetchKeywords = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:7071/api/getKeywords');
+      const response = await authorizedFetch(`${API_BASE}/getKeywords`);
       if (response.ok) {
         const data = await response.json();
         setKeywords(data.data || []);
       } else {
         console.error('Failed to fetch keywords');
       }
-    } catch (error) {
-      console.error('Error fetching keywords:', error);
+    } catch (err: any) {
+      console.error('Error fetching keywords:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load keywords')
+      setErrorStatus(err?.status || null)
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +76,7 @@ export function Keywords() {
 
   const handleCreateKeyword = async (keywordData: Omit<Keyword, 'id'>) => {
     try {
-      const response = await fetch('http://localhost:7071/api/createKeyword', {
+      const response = await authorizedFetch(`${API_BASE}/createKeywords`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +99,7 @@ export function Keywords() {
     if (!editingKeyword) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/updateKeyword/${editingKeyword.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/updateKeywords/${editingKeyword.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +123,7 @@ export function Keywords() {
     if (!deleteKeyword) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/deleteKeyword/${deleteKeyword.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteKeywords/${deleteKeyword.id}`, {
         method: 'DELETE',
       });
 
@@ -294,6 +302,8 @@ export function Keywords() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
               <p className="mt-2 text-gray-400">Loading keywords...</p>
             </div>
+          ) : error ? (
+            <ErrorPanel message={error} onRetry={fetchKeywords} onSignIn={errorStatus === 401 ? async () => { await signIn(); fetchKeywords() } : undefined} />
           ) : filteredKeywords.length > 0 ? (
             <div className="rounded-md border border-gray-700">
               <Table>

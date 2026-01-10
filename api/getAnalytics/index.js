@@ -115,10 +115,21 @@ app.http('getAnalytics', {
 
       // Execute query
       const start = Date.now();
-      const { resources, headers } = await targetContainer.items
-        .query({ query, parameters })
-        .fetchAll();
-      logDiagnostics(context, 'query-analytics', start, headers);
+      let resources = [];
+      try {
+        const result = await targetContainer.items.query({ query, parameters }).fetchAll();
+        resources = result.resources || [];
+        logDiagnostics(context, 'query-analytics', start, result.headers || {});
+      } catch (err) {
+        context.warn('Analytics query failed:', err && err.message ? err.message : err);
+        // If local fallback is allowed, return empty dataset instead of failing hard
+        if (process.env.ALLOW_INMEMORY_FALLBACK === 'true') {
+          resources = [];
+          // continue and return empty result
+        } else {
+          throw err;
+        }
+      }
 
       // Apply limit if needed
       const limitedResources = limitCount ? resources.slice(0, limitCount) : resources;

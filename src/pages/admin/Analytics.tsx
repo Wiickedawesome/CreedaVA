@@ -5,7 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Eye, MousePointer, Users, Globe, Calendar, RefreshCw } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { authorizedFetch } from '@/lib/api-client';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { useAuth } from '@/contexts/AuthContext'
+import { ErrorPanel } from '@/components/ErrorPanel'
 
 interface AnalyticsEvent {
   id: string;
@@ -29,13 +31,15 @@ export function Analytics() {
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [daysFilter, setDaysFilter] = useState(30);
+  const [error, setError] = useState<string | null>(null)
+  const [errorStatus, setErrorStatus] = useState<number | null>(null)
+  const { signIn } = useAuth()
 
   useEffect(() => { fetchAnalytics(); }, [daysFilter]);
 
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
       const response = await authorizedFetch(`${API_BASE}/getAnalytics?days=${daysFilter}`);
       
       if (response.ok) {
@@ -43,8 +47,10 @@ export function Analytics() {
         setAnalytics(result.data || []);
         setSummary(result.summary || null);
       }
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
+    } catch (err: any) {
+      console.error('Error fetching analytics:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch analytics')
+      setErrorStatus(err?.status || null)
     } finally {
       setLoading(false);
     }
@@ -192,7 +198,9 @@ export function Analytics() {
         </Card>
       </div>
 
-      {analytics.length === 0 ? (
+      {error ? (
+        <ErrorPanel message={error} onRetry={fetchAnalytics} onSignIn={errorStatus === 401 ? async () => { await signIn(); fetchAnalytics() } : undefined} />
+      ) : analytics.length === 0 ? (
         <Card className="p-8 bg-gray-800 border-gray-700">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 mb-4">

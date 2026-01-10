@@ -188,6 +188,14 @@ export function SEODialog({ open, onOpenChange, seo, onSave, mode }: SEODialogPr
 
   const handleSave = () => {
     if (validateForm()) {
+      const computeReadability = (text: string) => {
+        // Simple heuristic: longer content with more words tends to have higher readability score in this app.
+        const words = text.trim().split(/\s+/).filter(w => w.length > 0).length || 0
+        const base = 50
+        const bonus = Math.min(40, Math.floor(words / 50)) // +1 per 50 words up to +40
+        return Math.min(100, base + bonus)
+      }
+
       onSave({
         title: formData.title,
         metaDescription: formData.metaDescription,
@@ -207,8 +215,9 @@ export function SEODialog({ open, onOpenChange, seo, onSave, mode }: SEODialogPr
         openGraphDescription: enableSocialMedia ? formData.openGraphDescription : undefined,
         twitterTitle: enableSocialMedia ? formData.twitterTitle : undefined,
         twitterDescription: enableSocialMedia ? formData.twitterDescription : undefined,
-        seoScore: Math.floor(Math.random() * 40) + 60, // Mock SEO score
-        readabilityScore: Math.floor(Math.random() * 30) + 70, // Mock readability score
+        // Compute SEO/readability scores deterministically instead of using random mocks
+        seoScore: getSEOScore(),
+        readabilityScore: computeReadability(formData.content),
       });
       onOpenChange(false);
     }
@@ -354,6 +363,7 @@ export function SEODialog({ open, onOpenChange, seo, onSave, mode }: SEODialogPr
               <div className="flex items-center justify-between mb-2">
                 <Label className="text-sm font-medium text-gray-300">SEO Score</Label>
                 <span className="text-white font-medium">{getSEOScore()}/100</span>
+                <div className="text-xs text-gray-400 mt-1">Note: a final, persisted score is calculated on save by the server.</div>
               </div>
               <div className="flex-1 bg-gray-700 rounded-full h-2">
                 <div 

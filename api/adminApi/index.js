@@ -12,6 +12,7 @@ const inMemoryData = {
     tasks: [],
     projects: [],
     contacts: [],
+    reports: [],
     seo: [],
     keywords: [],
     social: [],
@@ -87,6 +88,7 @@ const CONTAINERS = {
     tasks: 'tasks', 
     projects: 'projects',
     contacts: 'contacts',
+    reports: 'reports',
     seo: 'seo',
     keywords: 'keywords',
     social: 'socialmedia',
@@ -96,6 +98,27 @@ const CONTAINERS = {
     customerJourneys: 'customerjourney',
     emails: 'emails'
 };
+
+// Helpers: compute SEO and readability deterministically so items created via API have sensible defaults
+function computeReadability(text) {
+    const words = (text || '').trim().split(/\s+/).filter(w => w.length > 0).length || 0;
+    const base = 50;
+    const bonus = Math.min(40, Math.floor(words / 50)); // +1 per 50 words up to +40
+    return Math.min(100, base + bonus);
+}
+
+function computeSeoScore(item) {
+    // Simple deterministic scoring to mirror frontend heuristics
+    let score = 0;
+    if (item.title && item.title.length <= 60) score += 20;
+    if (item.metaDescription && item.metaDescription.length <= 160) score += 20;
+    if (item.targetKeywords) score += 15;
+    if (item.focusKeyword) score += 15;
+    if (item.content && item.content.length > 300) score += 15;
+    if (item.canonicalUrl) score += 10;
+    if (item.openGraphTitle || item.twitterTitle) score += 5;
+    return Math.min(score, 100);
+}
 
 // GET functions
 Object.keys(CONTAINERS).forEach(entityType => {
@@ -198,13 +221,39 @@ Object.keys(CONTAINERS).forEach(entityType => {
             try {
                 await initializeCosmosDB();
                 const data = await request.json();
+                // `type` is the Cosmos partition key (and used in reads); never accept it from callers.
+                // Also never accept `id` or timestamps from callers.
+                const {
+                    type: _ignoredType,
+                    id: _ignoredId,
+                    createdAt: _ignoredCreatedAt,
+                    updatedAt: _ignoredUpdatedAt,
+                    ...payload
+                } = data || {};
+
+                const nowIso = new Date().toISOString();
                 const newItem = {
+                    ...payload,
                     id: `${entityType}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
                     type: entityType,
-                    ...data,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
+                    createdAt: nowIso,
+                    updatedAt: nowIso
                 };
+
+                // Set deterministic defaults for certain entity types
+                if (entityType === 'seo') {
+                    newItem.seoScore = computeSeoScore(newItem);
+                    newItem.readabilityScore = computeReadability(newItem.content || '');
+                }
+
+                if (entityType === 'keywords') {
+                    // If no rank history provided but a currentRank exists, seed one entry
+                    if ((!newItem.rankHistory || newItem.rankHistory.length === 0) && newItem.currentRank) {
+                        newItem.rankHistory = [
+                            { date: nowIso, rank: newItem.currentRank, searchVolume: newItem.searchVolume || 0 }
+                        ];
+                    }
+                }
 
                 if (cosmosAvailable && database) {
                     const container = database.container(CONTAINERS[entityType]);
@@ -286,7 +335,23 @@ Object.keys(CONTAINERS).forEach(entityType => {
                             };
                         }
                         const data = await request.json();
-                        const updated = { ...inMemoryItems[index], ...data, updatedAt: new Date().toISOString() };
+                        const {
+                            type: _ignoredType,
+                            id: _ignoredId,
+                            createdAt: _ignoredCreatedAt,
+                            updatedAt: _ignoredUpdatedAt,
+                            ...payload
+                        } = data || {};
+                        const nowIso = new Date().toISOString();
+                        const existing = inMemoryItems[index] || {};
+                        const updated = {
+                            ...existing,
+                            ...payload,
+                            id: request.params.id,
+                            type: entityType,
+                            createdAt: existing.createdAt || nowIso,
+                            updatedAt: nowIso
+                        };
                         inMemoryItems[index] = updated;
                         return {
                             status: 200,
@@ -304,13 +369,57 @@ Object.keys(CONTAINERS).forEach(entityType => {
                 const id = request.params.id;
                 const data = await request.json();
                 const container = database.container(CONTAINERS[entityType]);
+
+                const {
+                    type: _ignoredType,
+                    id: _ignoredId,
+                    createdAt: _ignoredCreatedAt,
+                    updatedAt: _ignoredUpdatedAt,
+                    ...payload
+                } = data || {};
+
+                const nowIso = new Date().toISOString();
+
+                let existing;
+                try {
+                    const startRead = Date.now();
+                    const { resource, headers } = await container.item(id, entityType).read();
+                    logDiagnostics(context, `read-${entityType}`, startRead, headers);
+                    existing = resource;
+                } catch (readError) {
+                    const statusCode = readError?.statusCode || readError?.code;
+                    if (statusCode === 404) {
+                        return {
+                            status: 404,
+                            headers: corsHeaders({ 'Content-Type': 'application/json' }),
+                            body: JSON.stringify({ success: false, error: 'Item not found' })
+                        };
+                    }
+                    throw readError;
+                }
                 
                 const updatedItem = {
-                    ...data,
+                    ...(existing || {}),
+                    ...payload,
                     id,
                     type: entityType,
-                    updatedAt: new Date().toISOString()
+                    createdAt: existing?.createdAt || nowIso,
+                    updatedAt: nowIso
                 };
+
+                // Recompute derived fields for SEO and ensure keyword rank history exists
+                if (entityType === 'seo') {
+                    updatedItem.seoScore = computeSeoScore(updatedItem);
+                    updatedItem.readabilityScore = computeReadability(updatedItem.content || '');
+                }
+
+                if (entityType === 'keywords') {
+                    if ((!updatedItem.rankHistory || updatedItem.rankHistory.length === 0) && updatedItem.currentRank) {
+                        updatedItem.rankHistory = [
+                            { date: nowIso, rank: updatedItem.currentRank, searchVolume: updatedItem.searchVolume || 0 }
+                        ];
+                    }
+                }
 
                 const start = Date.now();
                 const { resource, headers } = await container.item(id, entityType).replace(updatedItem);
