@@ -16,6 +16,49 @@ export function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+
+  const signInWithGooglePopup = () => {
+    if (!googleClientId) return
+    const params = new URLSearchParams({
+      client_id: googleClientId,
+      response_type: 'id_token',
+      scope: 'openid email profile',
+      redirect_uri: `${window.location.origin}/google-callback.html`,
+      nonce: String(Date.now()),
+      prompt: 'select_account'
+    })
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
+    const popup = window.open(url, 'googleSignIn', 'width=500,height=600')
+    if (!popup) {
+      setError('Unable to open popup. Please allow popups for this site.')
+      return
+    }
+    function handler(event: MessageEvent) {
+      if (event.origin !== window.location.origin) return
+      const id_token = event.data?.id_token
+      if (id_token) {
+        try {
+          // decode JWT to extract email/name quickly
+          const parts = id_token.split('.')
+          const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+          const email = payload.email || ''
+          const name = payload.name || payload.email?.split('@')[0] || 'Google User'
+          localStorage.setItem('google_id_token', id_token)
+          // store a user object like dev mode so the app can use it
+          localStorage.setItem('dev_user', JSON.stringify({ email, name, id: 'google-' + (payload.sub || Date.now()) }))
+          window.removeEventListener('message', handler)
+          if (popup && !popup.closed) popup.close()
+          // navigate to admin
+          window.location.href = '/admin'
+        } catch (err) {
+          console.error('Failed to parse Google token', err)
+          setError('Invalid Google sign-in response')
+        }
+      }
+    }
+    window.addEventListener('message', handler)
+  }
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -62,6 +105,9 @@ export function Login() {
                 Sign in to access your CRM dashboard
                 <br />
                 <span className="text-xs text-muted-foreground mt-1">@creedava.com emails only</span>
+                {googleClientId && (
+                  <div className="text-xs text-muted-foreground mt-1">Or sign in with Google if configured</div>
+                )}
               </>
             )}
           </CardDescription>
@@ -116,6 +162,17 @@ export function Login() {
           >
             {loading ? 'Signing in...' : (isDevMode ? 'Sign In' : 'Sign in with Microsoft')}
           </Button>
+
+          {googleClientId && (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => signInWithGooglePopup()}
+            >
+              Sign in with Google
+            </Button>
+          )}
+
           <div className="text-sm text-center">
             <Link to="/" className="text-muted-foreground hover:text-primary">
               ← Back to website

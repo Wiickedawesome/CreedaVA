@@ -9,12 +9,15 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Search, Filter, MoreHorizontal, DollarSign, Target, Users, TrendingUp, Play, Pause, BarChart } from 'lucide-react';
 import { AdCampaignDialog } from '@/components/AdCampaignDialog';
 import { format } from 'date-fns';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { useAuth } from '@/contexts/AuthContext'
+import { ErrorPanel } from '@/components/ErrorPanel'
 
 interface AdCampaign {
   id: string;
   name: string;
   platform: string;
-  type: string;
+  campaignType: string;
   objective: string;
   status: 'draft' | 'active' | 'paused' | 'completed' | 'rejected';
   budget: {
@@ -89,6 +92,9 @@ export function AdCampaigns() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null)
+  const [errorStatus, setErrorStatus] = useState<number | null>(null)
+  const { signIn } = useAuth()
 
   useEffect(() => {
     fetchCampaigns();
@@ -97,15 +103,17 @@ export function AdCampaigns() {
   const fetchCampaigns = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:7071/api/getAdCampaigns');
+      const response = await authorizedFetch(`${API_BASE}/getCampaigns`);
       if (response.ok) {
         const data = await response.json();
         setCampaigns(data.data || []);
       } else {
         console.error('Failed to fetch ad campaigns');
       }
-    } catch (error) {
-      console.error('Error fetching ad campaigns:', error);
+    } catch (err: any) {
+      console.error('Error fetching ad campaigns:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch ad campaigns')
+      setErrorStatus(err?.status || null)
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +121,7 @@ export function AdCampaigns() {
 
   const handleCreateCampaign = async (campaignData: Omit<AdCampaign, 'id'>) => {
     try {
-      const response = await fetch('http://localhost:7071/api/createAdCampaign', {
+      const response = await authorizedFetch(`${API_BASE}/createCampaigns`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,7 +144,7 @@ export function AdCampaigns() {
     if (!editingCampaign) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/updateAdCampaign/${editingCampaign.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/updateCampaigns/${editingCampaign.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -160,7 +168,7 @@ export function AdCampaigns() {
     if (!deleteCampaign) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/deleteAdCampaign/${deleteCampaign.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteCampaigns/${deleteCampaign.id}`, {
         method: 'DELETE',
       });
 
@@ -323,6 +331,8 @@ export function AdCampaigns() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="mt-2 text-gray-400">Loading campaigns...</p>
             </div>
+          ) : error ? (
+            <ErrorPanel message={error} onRetry={fetchCampaigns} onSignIn={errorStatus === 401 ? async () => { await signIn(); fetchCampaigns() } : undefined} />
           ) : filteredCampaigns.length > 0 ? (
             <div className="rounded-md border border-gray-700">
               <Table>
@@ -343,7 +353,7 @@ export function AdCampaigns() {
                       <TableCell>
                         <div className="space-y-1">
                           <div className="font-medium text-white">{campaign.name}</div>
-                          <div className="text-sm text-gray-400">{campaign.objective} • {campaign.type}</div>
+                          <div className="text-sm text-gray-400">{campaign.objective} • {campaign.campaignType}</div>
                           <div className="text-sm text-gray-500">
                             Started {format(new Date(campaign.schedule.startDate), 'MMM d, yyyy')}
                           </div>

@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Google Sign-in Callback</title>
+  </head>
+  <body>
+    <script>
+      // This page is the redirect_uri for Google's implicit id_token flow.
+      // It reads the id_token from the URL fragment and posts it to the opener window.
+      (function () {
+        function parseHash(hash) {
+          const obj = {}
+          const trimmed = hash.replace(/^#/, '')
+          trimmed.split('&').forEach(pair => {
+            const [k, v] = pair.split('=')
+            if (k) obj[k] = decodeURIComponent(v || '')
+          })
+          return obj
+        }
+        const payload = parseHash(location.hash || '')
+        if (payload.id_token && window.opener) {
+          window.opener.postMessage({ id_token: payload.id_token }, window.location.origin)
+        }
+        // Close the popup shortly after posting
+        setTimeout(() => window.close(), 500)
+      })()
+    </script>
+    <p>Signing you in…</p>
+  </body>
+</html>
