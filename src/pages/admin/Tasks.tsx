@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/admin/PageLayout';
 import { TaskDialog, Task } from '@/components/admin/TaskDialog';
-import { authorizedFetch } from '@/lib/api-client';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { ErrorPanel } from '@/components/ErrorPanel'
 import { 
   Table,
   TableBody,
@@ -90,7 +91,6 @@ export function Tasks() {
     try {
       setLoading(true);
       setError(null);
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
       const response = await authorizedFetch(`${API_BASE}/getTasks`);
       
       if (response.ok) {
@@ -108,11 +108,9 @@ export function Tasks() {
   };
 
   const handleSaveTask = async (taskData: TaskFormData) => {
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-    
     try {
       if (dialogMode === 'create') {
-        const response = await authorizedFetch(`${API_BASE}/createTask`, {
+        const response = await authorizedFetch(`${API_BASE}/createTasks`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -127,7 +125,7 @@ export function Tasks() {
           throw new Error('Failed to create task');
         }
       } else if (dialogMode === 'edit' && selectedTask) {
-        const response = await authorizedFetch(`${API_BASE}/updateTask/${selectedTask.id}`, {
+        const response = await authorizedFetch(`${API_BASE}/updateTasks/${selectedTask.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -155,8 +153,7 @@ export function Tasks() {
     if (!taskToDelete) return;
     
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-      const response = await authorizedFetch(`${API_BASE}/deleteTask/${taskToDelete.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteTasks/${taskToDelete.id}`, {
         method: 'DELETE',
       });
       
@@ -253,7 +250,7 @@ export function Tasks() {
         {loading ? (
           <div className="text-center py-8 text-gray-300">Loading tasks...</div>
         ) : error ? (
-          <div className="text-center py-8 text-red-400">Error: {error}</div>
+          <ErrorPanel message={error} onRetry={fetchTasks} />
         ) : (
           <div className="bg-gray-900 rounded-lg border border-gray-700">
             <Table>

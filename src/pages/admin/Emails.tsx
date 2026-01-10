@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/admin/PageLayout';
 import { EmailDialog, EmailCampaign } from '@/components/admin/EmailDialog';
-import { authorizedFetch } from '@/lib/api-client';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { ErrorPanel } from '@/components/ErrorPanel'
 import { 
   Table,
   TableBody,
@@ -89,7 +90,6 @@ export function Emails() {
     try {
       setLoading(true);
       setError(null);
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
       const response = await authorizedFetch(`${API_BASE}/getEmails`);
       
       if (response.ok) {
@@ -126,10 +126,8 @@ export function Emails() {
 
   const handleSaveEmail = async (emailData: Omit<EmailCampaign, 'id' | 'type' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-      
       if (dialogMode === 'create') {
-        const response = await authorizedFetch(`${API_BASE}/createEmail`, {
+        const response = await authorizedFetch(`${API_BASE}/createEmails`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(emailData)
@@ -141,7 +139,7 @@ export function Emails() {
           throw new Error('Failed to create email campaign');
         }
       } else if (dialogMode === 'edit' && selectedEmail) {
-        const response = await authorizedFetch(`${API_BASE}/updateEmail/${selectedEmail.id}`, {
+        const response = await authorizedFetch(`${API_BASE}/updateEmails/${selectedEmail.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(emailData)
@@ -163,8 +161,7 @@ export function Emails() {
     if (!emailToDelete) return;
     
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-      const response = await authorizedFetch(`${API_BASE}/deleteEmail/${emailToDelete.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteEmails/${emailToDelete.id}`, {
         method: 'DELETE'
       });
       
@@ -225,13 +222,7 @@ export function Emails() {
             <p className="text-gray-400">Loading email campaigns...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-12">
-            <Mail className="h-8 w-8 text-red-400 mx-auto mb-4" />
-            <p className="text-red-400 mb-4">{error}</p>
-            <Button onClick={fetchEmails} variant="outline">
-              Try Again
-            </Button>
-          </div>
+          <ErrorPanel message={error} onRetry={fetchEmails} />
         ) : (
           <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
             <Table>

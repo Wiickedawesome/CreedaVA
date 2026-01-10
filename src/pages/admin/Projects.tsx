@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/admin/PageLayout';
 import { ProjectDialog, Project } from '@/components/admin/ProjectDialog';
-import { authorizedFetch } from '@/lib/api-client';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { ErrorPanel } from '@/components/ErrorPanel'
 import { 
   Table,
   TableBody,
@@ -95,7 +96,6 @@ export function Projects() {
     try {
       setLoading(true);
       setError(null);
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
       const response = await authorizedFetch(`${API_BASE}/getProjects`);
       
       if (response.ok) {
@@ -132,10 +132,8 @@ export function Projects() {
 
   const handleSaveProject = async (projectData: Omit<Project, 'id' | 'type' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-      
       if (dialogMode === 'create') {
-        const response = await authorizedFetch(`${API_BASE}/createProject`, {
+        const response = await authorizedFetch(`${API_BASE}/createProjects`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(projectData)
@@ -147,7 +145,7 @@ export function Projects() {
           throw new Error('Failed to create project');
         }
       } else if (dialogMode === 'edit' && selectedProject) {
-        const response = await authorizedFetch(`${API_BASE}/updateProject/${selectedProject.id}`, {
+        const response = await authorizedFetch(`${API_BASE}/updateProjects/${selectedProject.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(projectData)
@@ -169,8 +167,7 @@ export function Projects() {
     if (!projectToDelete) return;
     
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-      const response = await authorizedFetch(`${API_BASE}/deleteProject/${projectToDelete.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteProjects/${projectToDelete.id}`, {
         method: 'DELETE'
       });
       
@@ -242,13 +239,7 @@ export function Projects() {
             <p className="text-gray-400">Loading projects...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-12">
-            <Target className="h-8 w-8 text-red-400 mx-auto mb-4" />
-            <p className="text-red-400 mb-4">{error}</p>
-            <Button onClick={fetchProjects} variant="outline">
-              Try Again
-            </Button>
-          </div>
+          <ErrorPanel message={error} onRetry={fetchProjects} />
         ) : (
           <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
             <Table>

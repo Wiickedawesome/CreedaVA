@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/admin/PageLayout';
 import { ContactDialog, Contact } from '@/components/admin/ContactDialog';
-import { authorizedFetch } from '@/lib/api-client';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { ErrorPanel } from '@/components/ErrorPanel'
 import { 
   Table,
   TableBody,
@@ -72,7 +73,6 @@ export function Contacts() {
     try {
       setLoading(true);
       setError(null);
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
       const response = await authorizedFetch(`${API_BASE}/getContacts`);
       
       if (response.ok) {
@@ -90,11 +90,9 @@ export function Contacts() {
   };
 
   const handleSaveContact = async (contactData: ContactFormData) => {
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-    
     try {
       if (dialogMode === 'create') {
-        const response = await authorizedFetch(`${API_BASE}/createContact`, {
+        const response = await authorizedFetch(`${API_BASE}/createContacts`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -106,7 +104,7 @@ export function Contacts() {
           throw new Error('Failed to create contact');
         }
       } else if (dialogMode === 'edit' && selectedContact) {
-        const response = await authorizedFetch(`${API_BASE}/updateContact/${selectedContact.id}`, {
+        const response = await authorizedFetch(`${API_BASE}/updateContacts/${selectedContact.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -130,10 +128,8 @@ export function Contacts() {
   const handleDeleteContact = async () => {
     if (!contactToDelete) return;
     
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
-    
     try {
-      const response = await authorizedFetch(`${API_BASE}/deleteContact/${contactToDelete.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteContacts/${contactToDelete.id}`, {
         method: 'DELETE',
       });
       
@@ -208,7 +204,7 @@ export function Contacts() {
       {loading ? (
         <div className="text-center py-8">Loading contacts...</div>
       ) : error ? (
-        <div className="text-center py-8 text-red-600">Error: {error}</div>
+        <ErrorPanel message={error} onRetry={fetchContacts} />
       ) : (
         <div className="bg-gray-900 rounded-lg border border-gray-700">
           <Table>
