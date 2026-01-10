@@ -9,6 +9,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Search, Filter, MoreHorizontal, BarChart, LineChart, Calendar, Download, Mail, Share, Clock, Database, Eye, AlertTriangle } from 'lucide-react';
 import { ReportsDialog } from '@/components/ReportsDialog';
 import { format } from 'date-fns';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { ErrorPanel } from '@/components/ErrorPanel'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Report {
   id: string;
@@ -100,6 +103,9 @@ export function Reports() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const { signIn } = useAuth();
 
   useEffect(() => {
     fetchReports();
@@ -108,15 +114,20 @@ export function Reports() {
   const fetchReports = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:7071/api/getReports');
+      setError(null);
+      setErrorStatus(null);
+      const response = await authorizedFetch(`${API_BASE}/getReports`);
       if (response.ok) {
         const data = await response.json();
         setReports(data.data || []);
       } else {
-        console.error('Failed to fetch reports');
+        setError('Failed to fetch reports');
+        setErrorStatus(response.status || null);
+        console.error('Failed to fetch reports', response.status);
       }
-    } catch (error) {
-      console.error('Error fetching reports:', error);
+    } catch (err) {
+      console.error('Error fetching reports:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch reports');
     } finally {
       setIsLoading(false);
     }
@@ -124,7 +135,7 @@ export function Reports() {
 
   const handleCreateReport = async (reportData: Omit<Report, 'id'>) => {
     try {
-      const response = await fetch('http://localhost:7071/api/createReport', {
+      const response = await authorizedFetch(`${API_BASE}/createReports`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +158,7 @@ export function Reports() {
     if (!editingReport) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/updateReport/${editingReport.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/updateReports/${editingReport.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -171,7 +182,7 @@ export function Reports() {
     if (!deleteReport) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/deleteReport/${deleteReport.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteReports/${deleteReport.id}`, {
         method: 'DELETE',
       });
 
@@ -353,6 +364,8 @@ export function Reports() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="mt-2 text-gray-400">Loading reports...</p>
             </div>
+          ) : error ? (
+            <ErrorPanel message={error} onRetry={fetchReports} onSignIn={errorStatus === 401 ? async () => { await signIn(); fetchReports(); } : undefined} />
           ) : filteredReports.length > 0 ? (
             <div className="rounded-md border border-gray-700">
               <Table>

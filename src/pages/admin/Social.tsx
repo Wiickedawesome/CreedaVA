@@ -9,6 +9,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Calendar, TrendingUp, MoreHorizontal, Search, Filter, Facebook, Twitter, Instagram, Linkedin, Users, Eye, Heart, Share } from 'lucide-react';
 import { SocialMediaDialog } from '@/components/SocialMediaDialog';
 import { format } from 'date-fns';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { ErrorPanel } from '@/components/ErrorPanel'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface SocialMediaPost {
   id: string;
@@ -41,6 +44,9 @@ export function Social() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const { signIn } = useAuth();
 
   useEffect(() => {
     fetchPosts();
@@ -49,15 +55,20 @@ export function Social() {
   const fetchPosts = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:7071/api/getSocialMedia');
+      setError(null);
+      setErrorStatus(null);
+      const response = await authorizedFetch(`${API_BASE}/getSocial`);
       if (response.ok) {
         const data = await response.json();
         setPosts(data.data || []);
       } else {
-        console.error('Failed to fetch social media posts');
+        setError('Failed to fetch social media posts');
+        setErrorStatus(response.status || null);
+        console.error('Failed to fetch social media posts', response.status);
       }
-    } catch (error) {
-      console.error('Error fetching social media posts:', error);
+    } catch (err) {
+      console.error('Error fetching social media posts:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch social media posts');
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +76,7 @@ export function Social() {
 
   const handleCreatePost = async (postData: Omit<SocialMediaPost, 'id'>) => {
     try {
-      const response = await fetch('http://localhost:7071/api/createSocialMedia', {
+      const response = await authorizedFetch(`${API_BASE}/createSocial`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +99,7 @@ export function Social() {
     if (!editingPost) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/updateSocialMedia/${editingPost.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/updateSocial/${editingPost.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +123,7 @@ export function Social() {
     if (!deletePost) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/deleteSocialMedia/${deletePost.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteSocial/${deletePost.id}`, {
         method: 'DELETE',
       });
 
@@ -279,6 +290,8 @@ export function Social() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
               <p className="mt-2 text-gray-400">Loading posts...</p>
             </div>
+          ) : error ? (
+            <ErrorPanel message={error} onRetry={fetchPosts} onSignIn={errorStatus === 401 ? async () => { await signIn(); fetchPosts(); } : undefined} />
           ) : filteredPosts.length > 0 ? (
             <div className="rounded-md border border-gray-700">
               <Table>

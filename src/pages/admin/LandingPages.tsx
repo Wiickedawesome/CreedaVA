@@ -9,6 +9,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Search, Filter, MoreHorizontal, Globe, Eye, BarChart, Users, Zap, Target, Code, Palette, TrendingUp } from 'lucide-react';
 import { LandingPagesDialog } from '@/components/LandingPagesDialog';
 import { format } from 'date-fns';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { ErrorPanel } from '@/components/ErrorPanel'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface LandingPage {
   id: string;
@@ -109,6 +112,9 @@ export function LandingPages() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const { signIn } = useAuth();
 
   useEffect(() => {
     fetchPages();
@@ -117,15 +123,20 @@ export function LandingPages() {
   const fetchPages = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:7071/api/getLandingPages');
+      setError(null);
+      setErrorStatus(null);
+      const response = await authorizedFetch(`${API_BASE}/getLandingPages`);
       if (response.ok) {
         const data = await response.json();
         setPages(data.data || []);
       } else {
-        console.error('Failed to fetch landing pages');
+        setError('Failed to fetch landing pages');
+        setErrorStatus(response.status || null);
+        console.error('Failed to fetch landing pages', response.status);
       }
-    } catch (error) {
-      console.error('Error fetching landing pages:', error);
+    } catch (err) {
+      console.error('Error fetching landing pages:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch landing pages');
     } finally {
       setIsLoading(false);
     }
@@ -133,7 +144,7 @@ export function LandingPages() {
 
   const handleCreatePage = async (pageData: Omit<LandingPage, 'id'>) => {
     try {
-      const response = await fetch('http://localhost:7071/api/createLandingPage', {
+      const response = await authorizedFetch(`${API_BASE}/createLandingPages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -156,7 +167,7 @@ export function LandingPages() {
     if (!editingPage) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/updateLandingPage/${editingPage.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/updateLandingPages/${editingPage.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -180,7 +191,7 @@ export function LandingPages() {
     if (!deletePage) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/deleteLandingPage/${deletePage.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteLandingPages/${deletePage.id}`, {
         method: 'DELETE',
       });
 
@@ -352,6 +363,8 @@ export function LandingPages() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="mt-2 text-gray-400">Loading pages...</p>
             </div>
+          ) : error ? (
+            <ErrorPanel message={error} onRetry={fetchPages} onSignIn={errorStatus === 401 ? async () => { await signIn(); fetchPages(); } : undefined} />
           ) : filteredPages.length > 0 ? (
             <div className="rounded-md border border-gray-700">
               <Table>

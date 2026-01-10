@@ -9,6 +9,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Search, Filter, MoreHorizontal, Users, MapPin, Target, TrendingUp, Clock, Star } from 'lucide-react';
 import { CustomerJourneyDialog } from '@/components/CustomerJourneyDialog';
 import { format } from 'date-fns';
+import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { ErrorPanel } from '@/components/ErrorPanel'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface CustomerJourney {
   id: string;
@@ -85,6 +88,9 @@ export function CustomerJourney() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const { signIn } = useAuth();
 
   useEffect(() => {
     fetchJourneys();
@@ -93,15 +99,20 @@ export function CustomerJourney() {
   const fetchJourneys = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:7071/api/getCustomerJourneys');
+      setError(null);
+      setErrorStatus(null);
+      const response = await authorizedFetch(`${API_BASE}/getCustomerJourneys`);
       if (response.ok) {
         const data = await response.json();
         setJourneys(data.data || []);
       } else {
-        console.error('Failed to fetch customer journeys');
+        setError('Failed to fetch customer journeys');
+        setErrorStatus(response.status || null);
+        console.error('Failed to fetch customer journeys', response.status);
       }
-    } catch (error) {
-      console.error('Error fetching customer journeys:', error);
+    } catch (err) {
+      console.error('Error fetching customer journeys:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch customer journeys');
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +120,7 @@ export function CustomerJourney() {
 
   const handleCreateJourney = async (journeyData: Omit<CustomerJourney, 'id'>) => {
     try {
-      const response = await fetch('http://localhost:7071/api/createCustomerJourney', {
+      const response = await authorizedFetch(`${API_BASE}/createCustomerJourneys`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +143,7 @@ export function CustomerJourney() {
     if (!editingJourney) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/updateCustomerJourney/${editingJourney.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/updateCustomerJourneys/${editingJourney.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -156,7 +167,7 @@ export function CustomerJourney() {
     if (!deleteJourney) return;
 
     try {
-      const response = await fetch(`http://localhost:7071/api/deleteCustomerJourney/${deleteJourney.id}`, {
+      const response = await authorizedFetch(`${API_BASE}/deleteCustomerJourneys/${deleteJourney.id}`, {
         method: 'DELETE',
       });
 
@@ -311,6 +322,8 @@ export function CustomerJourney() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <p className="mt-2 text-gray-400">Loading journeys...</p>
             </div>
+          ) : error ? (
+            <ErrorPanel message={error} onRetry={fetchJourneys} onSignIn={errorStatus === 401 ? async () => { await signIn(); fetchJourneys(); } : undefined} />
           ) : filteredJourneys.length > 0 ? (
             <div className="rounded-md border border-gray-700">
               <Table>
