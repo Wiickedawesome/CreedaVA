@@ -4,7 +4,8 @@ const { CosmosClient } = require('@azure/cosmos');
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
 const databaseId = process.env.COSMOS_DATABASE || 'creedava';
-const containerId = process.env.COSMOS_CONTAINER || 'contacts';
+const containerId = 'contacts';
+const { corsHeaders } = require('../shared/cors');
 
 let client, database, container;
 
@@ -22,11 +23,7 @@ app.http('submitContact', {
     if (request.method === 'OPTIONS') {
       return {
         status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, PUT, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type'
-        }
+        headers: corsHeaders({ 'Access-Control-Allow-Methods': 'POST, PUT, DELETE, OPTIONS' })
       };
     }
 
@@ -35,10 +32,7 @@ app.http('submitContact', {
         context.log('Cosmos DB not configured');
         return {
           status: 200,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json'
-          },
+          headers: corsHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ 
             success: true, 
             message: 'Request received (storage not configured)' 
@@ -67,10 +61,7 @@ app.http('submitContact', {
         
         return {
           status: 200,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json'
-          },
+          headers: corsHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ success: true, data: item })
         };
       } else if (request.method === 'PUT') {
@@ -81,10 +72,7 @@ app.http('submitContact', {
         if (!filter || !filter.column || !filter.value) {
           return {
             status: 400,
-            headers: {
-              'Access-Control-Allow-Origin': '*',
-              'Content-Type': 'application/json'
-            },
+            headers: corsHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ error: 'Filter required for update' })
           };
         }
@@ -102,10 +90,7 @@ app.http('submitContact', {
         
         return {
           status: 200,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json'
-          },
+          headers: corsHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ success: true, data: updatedData })
         };
       } else if (request.method === 'DELETE') {
@@ -116,10 +101,7 @@ app.http('submitContact', {
         if (!filter || !filter.column || !filter.value) {
           return {
             status: 400,
-            headers: {
-              'Access-Control-Allow-Origin': '*',
-              'Content-Type': 'application/json'
-            },
+            headers: corsHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ error: 'Filter required for delete' })
           };
         }
@@ -129,10 +111,7 @@ app.http('submitContact', {
         
         return {
           status: 200,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json'
-          },
+          headers: corsHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ success: true })
         };
       }
@@ -144,15 +123,12 @@ app.http('submitContact', {
       if (!name || !email || !message) {
         return {
           status: 400,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json'
-          },
+          headers: corsHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ 
             success: false, 
             error: 'Name, email, and message are required' 
           })
-        };
+        }
       }
 
       const item = {
@@ -175,10 +151,7 @@ app.http('submitContact', {
 
       return {
         status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
+        headers: corsHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ 
           success: true, 
           message: 'Thank you for contacting us! We will get back to you soon.' 
@@ -188,10 +161,7 @@ app.http('submitContact', {
       context.error('Error submitting contact form:', error);
       return {
         status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
+        headers: corsHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ 
           success: false, 
           error: 'Failed to submit contact form. Please try again.' 

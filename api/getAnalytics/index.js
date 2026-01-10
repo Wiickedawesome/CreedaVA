@@ -1,47 +1,67 @@
 const { app } = require('@azure/functions');
 const { CosmosClient } = require('@azure/cosmos');
+const { validateBearer } = require('../shared/auth');
+const { corsHeaders } = require('../shared/cors');
+
+const useCosmosEmulator = process.env.USE_COSMOS_EMULATOR === 'true';
+
+function logDiagnostics(context, operation, startTime, headers = {}) {
+  const durationMs = Date.now() - startTime;
+  const charge = headers['x-ms-request-charge'] || headers['X-MS-REQUEST-CHARGE'];
+  const activityId = headers['x-ms-activity-id'] || headers['X-MS-ACTIVITY-ID'];
+  if (durationMs > 500 || charge || activityId) {
+    context.log(`diag ${operation}: ${durationMs}ms${charge ? ` RU:${charge}` : ''}${activityId ? ` activity:${activityId}` : ''}`);
+  }
+}
 
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
 const databaseId = process.env.COSMOS_DATABASE || 'creedava';
-const containerId = process.env.COSMOS_CONTAINER || 'analytics';
+const containerId = 'analytics';
 
 let client, database, container;
 
 if (endpoint && key) {
-  client = new CosmosClient({ endpoint, key });
+  const connectionPolicy = {};
+  if (useCosmosEmulator || endpoint.includes('localhost')) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    connectionPolicy.DisableSSLVerification = true;
+  }
+  client = new CosmosClient({ endpoint, key, connectionPolicy });
   database = client.database(databaseId);
   container = database.container(containerId);
 }
 
 app.http('getAnalytics', {
   methods: ['GET', 'OPTIONS'],
-  authLevel: 'anonymous', // Changed to anonymous for admin panel access
+  authLevel: 'anonymous',
   handler: async (request, context) => {
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return {
         status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, x-functions-key'
-        }
+        headers: corsHeaders({ 'Access-Control-Allow-Methods': 'GET, OPTIONS' })
       };
     }
 
     try {
+      try {
+        await validateBearer(request)
+      } catch (authError) {
+        return {
+          status: 401,
+          headers: corsHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ success: false, error: 'Unauthorized' })
+        }
+      }
+
       if (!endpoint || !key) {
         return {
-          status: 200,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json'
-          },
+          status: 503,
+          headers: corsHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ 
-            success: true, 
-            data: [], 
-            message: 'Database not configured' 
+            success: false, 
+            error: 'Database not configured' 
           })
         };
       }
@@ -94,9 +114,11 @@ app.http('getAnalytics', {
       }
 
       // Execute query
-      const { resources } = await targetContainer.items
+      const start = Date.now();
+      const { resources, headers } = await targetContainer.items
         .query({ query, parameters })
         .fetchAll();
+      logDiagnostics(context, 'query-analytics', start, headers);
 
       // Apply limit if needed
       const limitedResources = limitCount ? resources.slice(0, limitCount) : resources;
@@ -104,8 +126,8 @@ app.http('getAnalytics', {
       // For analytics dashboard requests (when days param is provided), return enhanced response
       if (days) {
         // Calculate summary statistics
-        const eventTypes: Record<string, number> = {};
-        const uniquePages = new Set<string>();
+        const eventTypes = {};
+        const uniquePages = new Set();
 
         limitedResources.forEach(event => {
           if (event.eventType) {
@@ -118,10 +140,7 @@ app.http('getAnalytics', {
 
         return {
           status: 200,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json'
-          },
+          headers: corsHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({
             data: limitedResources,
             summary: {
@@ -136,20 +155,14 @@ app.http('getAnalytics', {
       // For general queries (backward compatibility), return raw array
       return {
         status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
+        headers: corsHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(limitedResources)
       };
     } catch (error) {
       context.error('Error fetching analytics:', error);
       return {
         status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
+        headers: corsHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ 
           success: false, 
           error: error.message 

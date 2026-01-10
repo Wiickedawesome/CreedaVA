@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/database';
-import { Database } from '@/lib/database.types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { PageLayout } from '@/components/admin/PageLayout';
+import { ContactDialog, Contact } from '@/components/admin/ContactDialog';
+import { authorizedFetch } from '@/lib/api-client';
 import { 
   Table,
   TableBody,
@@ -11,52 +10,45 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Edit, Trash2, Mail, Phone, Linkedin, Heart } from 'lucide-react';
-import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { 
+  Mail, 
+  Calendar, 
+  RefreshCw, 
+  Plus, 
+  Eye, 
+  Edit, 
+  Trash2 
+} from 'lucide-react';
 
-type Contact = Database['public']['Tables']['contacts']['Row'];
-type ContactInsert = Database['public']['Tables']['contacts']['Insert'];
+interface Contact {
+  id: string;
+  type: string;
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
+  timestamp: string;
+  service?: string;
+}
 
-const relationshipColors = {
-  weak: 'bg-gray-500',
-  moderate: 'bg-yellow-500',
-  strong: 'bg-blue-500',
-  champion: 'bg-purple-500'
-};
-
-const relationshipIcons = {
-  weak: 1,
-  moderate: 2,
-  strong: 3,
-  champion: 4
-};
-
-const seniorityLevels = {
-  c_level: 'C-Level',
-  vp: 'VP',
-  director: 'Director',
-  manager: 'Manager',
-  individual_contributor: 'Individual Contributor',
-  other: 'Other'
+type ContactFormData = {
+  name: string;
+  email: string;
+  service?: string;
+  message: string;
 };
 
 export function Contacts() {
@@ -64,22 +56,13 @@ export function Contacts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingContact, setEditingContact] = useState<Contact | null>(null);
-  const [formData, setFormData] = useState<Partial<ContactInsert>>({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    mobile: '',
-    company: '',
-    position: '',
-    department: '',
-    seniority: null,
-    linkedin_url: '',
-    preferred_contact_method: null,
-    notes: ''
-  });
+  
+  // Dialog states
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState<Contact | null>(null);
 
   useEffect(() => {
     fetchContacts();
@@ -87,453 +70,270 @@ export function Contacts() {
 
   const fetchContacts = async () => {
     try {
+      setLoading(true);
       setError(null);
-      const { data, error } = await db
-        .from('contacts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw new Error(error.message);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      const response = await authorizedFetch(`${API_BASE}/getContacts`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        setContacts(result.data || []);
+      } else {
+        throw new Error('Failed to fetch contacts');
       }
-      setContacts(data || []);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch contacts';
-      console.error('Error fetching contacts:', error);
-      setError(errorMessage);
+    } catch (err) {
+      console.error('Error fetching contacts:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load contacts');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveContact = async (contactData: ContactFormData) => {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
     
     try {
-      if (editingContact) {
-        const { error } = await db
-          .from('contacts')
-          .update(formData)
-          .eq('id', editingContact.id);
-
-        if (error) {
-          console.error('Update error:', error);
-          throw new Error(error.message);
+      if (dialogMode === 'create') {
+        const response = await authorizedFetch(`${API_BASE}/createContact`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(contactData),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to create contact');
         }
-      } else {
-        const { error } = await db
-          .from('contacts')
-          .insert([formData as ContactInsert]);
-
-        if (error) {
-          console.error('Insert error:', error);
-          throw new Error(error.message);
+      } else if (dialogMode === 'edit' && selectedContact) {
+        const response = await authorizedFetch(`${API_BASE}/updateContact/${selectedContact.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(contactData),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update contact');
         }
       }
-
-      setIsDialogOpen(false);
-      setEditingContact(null);
-      resetForm();
-      fetchContacts();
+      
+      // Refresh the contacts list
+      await fetchContacts();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save contact';
-      alert(`Error: ${errorMessage}`);
       console.error('Error saving contact:', error);
+      throw error;
     }
   };
 
-  const handleEdit = (contact: Contact) => {
-    setEditingContact(contact);
-    setFormData({
-      first_name: contact.first_name,
-      last_name: contact.last_name,
-      email: contact.email,
-      phone: contact.phone,
-      mobile: contact.mobile,
-      company: contact.company,
-      position: contact.position,
-      department: contact.department,
-      seniority: contact.seniority,
-      linkedin_url: contact.linkedin_url,
-      preferred_contact_method: contact.preferred_contact_method,
-      notes: contact.notes
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this contact? This action cannot be undone.')) return;
-
+  const handleDeleteContact = async () => {
+    if (!contactToDelete) return;
+    
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+    
     try {
-      const { error } = await db
-        .from('contacts')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Delete error:', error);
-        throw new Error(error.message);
+      const response = await authorizedFetch(`${API_BASE}/deleteContact/${contactToDelete.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete contact');
       }
-      fetchContacts();
+      
+      // Refresh the contacts list
+      await fetchContacts();
+      setDeleteDialogOpen(false);
+      setContactToDelete(null);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete contact';
-      alert(`Error: ${errorMessage}`);
       console.error('Error deleting contact:', error);
+      // You might want to show a toast notification here
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone: '',
-      mobile: '',
-      company: '',
-      position: '',
-      department: '',
-      seniority: null,
-      linkedin_url: '',
-      preferred_contact_method: null,
-      notes: ''
-    });
+  const openCreateDialog = () => {
+    setSelectedContact(null);
+    setDialogMode('create');
+    setDialogOpen(true);
+  };
+
+  const openEditDialog = (contact: Contact) => {
+    setSelectedContact(contact);
+    setDialogMode('edit');
+    setDialogOpen(true);
+  };
+
+  const openViewDialog = (contact: Contact) => {
+    setSelectedContact(contact);
+    setDialogMode('view');
+    setDialogOpen(true);
+  };
+
+  const openDeleteDialog = (contact: Contact) => {
+    setContactToDelete(contact);
+    setDeleteDialogOpen(true);
   };
 
   const filteredContacts = contacts.filter(contact =>
-    contact.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.company?.toLowerCase().includes(searchTerm.toLowerCase())
+    contact.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.message?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-gray-400 font-medium">Loading contacts...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900">
-        <div className="text-center max-w-md p-8 bg-gray-800 rounded-lg shadow-lg border border-red-800">
-          <div className="text-red-400 mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">Failed to Load Contacts</h3>
-          <p className="text-gray-400 mb-4">{error}</p>
-          <Button onClick={fetchContacts} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-8 space-y-6 min-h-screen">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Contacts Management</h1>
-          <p className="text-gray-300 mt-1 font-medium">Manage your professional network and relationships</p>
-        </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md" onClick={() => {
-              setEditingContact(null);
-              resetForm();
-            }}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Contact
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingContact ? 'Edit Contact' : 'Create New Contact'}</DialogTitle>
-              <DialogDescription>
-                {editingContact ? 'Update contact information' : 'Add a new contact to your network'}
-              </DialogDescription>
-            </DialogHeader>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="first_name">First Name *</Label>
-                  <Input
-                    id="first_name"
-                    required
-                    value={formData.first_name}
-                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="last_name">Last Name *</Label>
-                  <Input
-                    id="last_name"
-                    required
-                    value={formData.last_name}
-                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone || ''}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="mobile">Mobile</Label>
-                  <Input
-                    id="mobile"
-                    value={formData.mobile || ''}
-                    onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="company">Company</Label>
-                  <Input
-                    id="company"
-                    value={formData.company || ''}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="position">Position</Label>
-                  <Input
-                    id="position"
-                    value={formData.position || ''}
-                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="department">Department</Label>
-                  <Input
-                    id="department"
-                    value={formData.department || ''}
-                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="seniority">Seniority Level</Label>
-                  <Select
-                    value={formData.seniority || ''}
-                    onValueChange={(value) => setFormData({ ...formData, seniority: value as Contact['seniority'] })}
-                  >
-                    <SelectTrigger id="seniority">
-                      <SelectValue placeholder="Select seniority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="c_level">C-Level</SelectItem>
-                      <SelectItem value="vp">VP</SelectItem>
-                      <SelectItem value="director">Director</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="individual_contributor">Individual Contributor</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="preferred_contact_method">Preferred Contact Method</Label>
-                  <Select
-                    value={formData.preferred_contact_method || ''}
-                    onValueChange={(value) => setFormData({ ...formData, preferred_contact_method: value as Contact['preferred_contact_method'] })}
-                  >
-                    <SelectTrigger id="preferred_contact_method">
-                      <SelectValue placeholder="Select method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="phone">Phone</SelectItem>
-                      <SelectItem value="sms">SMS</SelectItem>
-                      <SelectItem value="linkedin">LinkedIn</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="col-span-2">
-                  <Label htmlFor="linkedin_url">LinkedIn URL</Label>
-                  <Input
-                    id="linkedin_url"
-                    type="url"
-                    placeholder="https://linkedin.com/in/..."
-                    value={formData.linkedin_url || ''}
-                    onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    rows={3}
-                    value={formData.notes || ''}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                  {editingContact ? 'Update Contact' : 'Create Contact'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Search */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Search contacts..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-        <div className="text-sm font-medium text-gray-400">
-          {filteredContacts.length} contact{filteredContacts.length !== 1 ? 's' : ''}
-        </div>
-      </div>
-
-      {/* Contacts Table */}
-      <div className="border border-gray-700 rounded-lg bg-gray-800 shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-800 border-b border-gray-700">
-              <TableHead className="text-white font-semibold">Name</TableHead>
-              <TableHead className="text-white font-semibold">Company</TableHead>
-              <TableHead className="text-white font-semibold">Position</TableHead>
-              <TableHead className="text-white font-semibold">Email</TableHead>
-              <TableHead className="text-white font-semibold">Phone</TableHead>
-              <TableHead className="text-white font-semibold">Seniority</TableHead>
-              <TableHead className="text-white font-semibold">Relationship</TableHead>
-              <TableHead className="text-white font-semibold">Contact Method</TableHead>
-              <TableHead className="text-white font-semibold">Meetings</TableHead>
-              <TableHead className="text-right text-white font-semibold">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredContacts.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={10} className="text-center py-8 text-white font-medium">
-                  No contacts found. Add your first contact to get started.
-                </TableCell>
+    <PageLayout
+      title="Contacts"
+      description="Manage contact form submissions"
+      searchPlaceholder="Search contacts..."
+      searchValue={searchTerm}
+      onSearchChange={setSearchTerm}
+      stats={[
+        { label: 'total contacts', value: contacts.length }
+      ]}
+      secondaryActions={[
+        {
+          label: 'Refresh',
+          onClick: fetchContacts,
+          variant: 'outline',
+          icon: <RefreshCw className="h-4 w-4" />
+        }
+      ]}
+      primaryAction={{
+        label: 'Add Contact',
+        onClick: openCreateDialog,
+        icon: <Plus className="h-4 w-4" />
+      }}
+    >
+      {loading ? (
+        <div className="text-center py-8">Loading contacts...</div>
+      ) : error ? (
+        <div className="text-center py-8 text-red-600">Error: {error}</div>
+      ) : (
+        <div className="bg-gray-900 rounded-lg border border-gray-700">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-gray-700">
+                <TableHead className="text-gray-300">Name</TableHead>
+                <TableHead className="text-gray-300">Email</TableHead>
+                <TableHead className="text-gray-300">Phone</TableHead>
+                <TableHead className="text-gray-300">Service</TableHead>
+                <TableHead className="text-gray-300">Message</TableHead>
+                <TableHead className="text-gray-300">Date</TableHead>
+                <TableHead className="text-gray-300">Actions</TableHead>
               </TableRow>
-            ) : (
-              filteredContacts.map((contact) => (
-                <TableRow key={contact.id} className="border-b border-gray-700 hover:bg-gray-800/50">
-                  <TableCell className="font-medium text-white">
-                    {contact.first_name} {contact.last_name}
-                  </TableCell>
-                  <TableCell className="text-white">{contact.company || '-'}</TableCell>
-                  <TableCell className="text-white">{contact.position || '-'}</TableCell>
-                  <TableCell className="text-white">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-gray-400" />
-                      {contact.email}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-white">
-                    {contact.phone || contact.mobile ? (
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-gray-400" />
-                        {contact.phone || contact.mobile}
-                      </div>
-                    ) : '-'}
-                  </TableCell>
-                  <TableCell>
-                    {contact.seniority ? (
-                      <Badge variant="outline">
-                        {seniorityLevels[contact.seniority]}
-                      </Badge>
-                    ) : '-'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Badge className={relationshipColors[contact.relationship_strength]}>
-                        {contact.relationship_strength}
-                      </Badge>
-                      <div className="flex gap-0.5">
-                        {[...Array(relationshipIcons[contact.relationship_strength])].map((_, i) => (
-                          <Heart key={i} className="w-3 h-3 fill-current text-red-500" />
-                        ))}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-white">
-                    {contact.preferred_contact_method ? (
-                      <div className="flex items-center gap-2">
-                        {contact.preferred_contact_method === 'linkedin' && <Linkedin className="w-4 h-4 text-emerald-600" />}
-                        {contact.preferred_contact_method === 'email' && <Mail className="w-4 h-4 text-emerald-600" />}
-                        {contact.preferred_contact_method === 'phone' && <Phone className="w-4 h-4 text-emerald-600" />}
-                        <span className="capitalize">{contact.preferred_contact_method}</span>
-                      </div>
-                    ) : '-'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{contact.total_meetings}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900 dark:hover:text-emerald-300"
-                        onClick={() => handleEdit(contact)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900 dark:hover:text-red-300"
-                        onClick={() => handleDelete(contact.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {filteredContacts.length === 0 ? (
+                <TableRow className="border-gray-700">
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-400">
+                    {searchTerm ? 'No contacts found matching your search' : 'No contacts found'}
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  )
+              ) : (
+                filteredContacts.map((contact) => (
+                  <TableRow key={contact.id} className="border-gray-700 hover:bg-gray-800">
+                    <TableCell className="font-medium text-gray-200">{contact.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Mail className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-300">{contact.email}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-gray-300">
+                        {contact.phone || <span className="text-gray-500">—</span>}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {contact.service && (
+                        <Badge variant="secondary">{contact.service}</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate text-gray-300" title={contact.message}>
+                        {contact.message}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                        <span className="text-sm text-gray-400">
+                          {new Date(contact.timestamp).toLocaleDateString()} {' '}
+                          {new Date(contact.timestamp).toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openViewDialog(contact)}
+                          title="View details"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditDialog(contact)}
+                          title="Edit contact"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openDeleteDialog(contact)}
+                          title="Delete contact"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Contact Dialog */}
+      <ContactDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        contact={selectedContact}
+        onSave={handleSaveContact}
+        mode={dialogMode}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Contact</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the contact for{' '}
+              <strong>{contactToDelete?.name}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteContact}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </PageLayout>
+  );
 }

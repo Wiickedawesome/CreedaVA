@@ -7,7 +7,7 @@
 - `npm run build:widget` → IIFE bundle for embedding in WordPress/Squarespace
 - Widget entry point sets `window.__CREEDAVA_EMBEDDED__ = true` to disable Spark-specific features
 
-**Tech Stack**: React 19 + Vite 6 + TypeScript + Tailwind CSS 4 + Radix UI + Supabase
+**Tech Stack**: React 19 + Vite 6 + TypeScript + Tailwind CSS 4 + Radix UI + Azure Cosmos DB + Entra ID (MSAL)
 
 ## Key Patterns
 
@@ -25,9 +25,9 @@ All admin pages follow consistent patterns in `src/pages/admin/`:
 - **Navigation**: Sidebar with 16 admin sections (CRM, Marketing, Analytics, Settings)
 
 ### Authentication & Data
-- **Supabase**: Primary backend (`src/lib/supabase.ts`)
-- **Auth Context**: `src/contexts/AuthContext.tsx` wraps protected routes
-- **Database types**: Auto-generated in `src/lib/database.types.ts`
+- **Entra ID (MSAL)**: `src/lib/auth.ts` + `src/contexts/AuthContext.tsx` manage login and tokens
+- **API client**: `src/lib/api-client.ts` attaches bearer tokens for admin API calls
+- **Cosmos DB**: Functions use `api/shared/auth.js` (JWT validation) + `api/adminApi` containers per entity
 - **Protected routes**: Use `<ProtectedRoute>` wrapper component
 
 ## Development Workflow
@@ -41,8 +41,9 @@ npm run preview    # Preview production build
 
 ### Environment Setup
 Required `.env` variables:
-- `VITE_SUPABASE_URL` - Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Supabase anon key
+- `VITE_AAD_CLIENT_ID` - Entra app registration client ID
+- `VITE_AAD_TENANT_ID` - Entra tenant ID
+- `VITE_API_BASE_URL` - API base (default `/api` for Azure Static Web Apps)
 - `VITE_BASE_PATH` - Set to `/` for Azure, `/CreedaVA/` for GitHub Pages
 
 ### Deployment
@@ -86,7 +87,7 @@ export function PageName() {
 - `src/layouts/AdminLayout.tsx` - Admin shell with navigation
 - `vite.config.ts` vs `vite.widget.config.ts` - Dual build configs
 - `public/staticwebapp.config.json` - Azure deployment config
-- `src/contexts/AuthContext.tsx` - Supabase authentication wrapper
+- `src/contexts/AuthContext.tsx` - Entra ID authentication wrapper
 
 ## Spark Integration Note
 Optional GitHub Spark plugins are gracefully handled - code runs with/without Spark runtime using try/catch in `vite.config.ts`.

@@ -1,10 +1,11 @@
 const { app } = require('@azure/functions');
 const { CosmosClient } = require('@azure/cosmos');
+const { corsHeaders } = require('../shared/cors');
 
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
 const databaseId = process.env.COSMOS_DATABASE || 'creedava';
-const containerId = process.env.COSMOS_CONTAINER || 'analytics';
+const containerId = 'analytics';
 
 let client, database, container;
 
@@ -22,11 +23,7 @@ app.http('trackEvent', {
     if (request.method === 'OPTIONS') {
       return {
         status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type'
-        }
+        headers: corsHeaders({ 'Access-Control-Allow-Methods': 'POST, OPTIONS' })
       };
     }
 
@@ -35,10 +32,7 @@ app.http('trackEvent', {
         context.log('Cosmos DB not configured - skipping data collection');
         return {
           status: 200,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json'
-          },
+          headers: corsHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ success: true, message: 'Analytics not configured' })
         };
       }
@@ -64,20 +58,14 @@ app.http('trackEvent', {
 
       return {
         status: 200,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
+        headers: corsHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ success: true })
       };
     } catch (error) {
       context.error('Error tracking event:', error);
       return {
         status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
+        headers: corsHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ success: false, error: error.message })
       };
     }

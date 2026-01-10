@@ -3,7 +3,7 @@ const { CosmosClient } = require('@azure/cosmos');
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
 const databaseId = process.env.COSMOS_DATABASE || 'creedava';
-const containerId = process.env.COSMOS_CONTAINER || 'linkedin-data';
+const containerId = 'linkedin-data';
 
 if (!endpoint || !key) {
   throw new Error('COSMOS_ENDPOINT and COSMOS_KEY must be set in environment variables');

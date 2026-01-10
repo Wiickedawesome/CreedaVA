@@ -115,7 +115,7 @@ export function Settings() {
               <Database className="w-5 h-5 text-purple-400" />
               Database
             </CardTitle>
-            <CardDescription className="text-gray-400">Supabase connection status</CardDescription>
+            <CardDescription className="text-gray-400">Azure Cosmos DB connection status</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">

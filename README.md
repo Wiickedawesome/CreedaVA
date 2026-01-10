@@ -2,7 +2,7 @@
 
 > **Empowering Leaders with Elite Virtual Assistant Support**
 
-Professional marketing website for CreedaVA, showcasing our premium virtual assistant services from Belize.
+Professional marketing website and CRM platform for CreedaVA, showcasing premium virtual assistant services from Belize with a comprehensive admin dashboard.
 
 🌐 **Live Site:** [www.creedava.com](https://www.creedava.com)
 
@@ -18,6 +18,25 @@ CreedaVA provides elite virtual assistant services with bilingual excellence, cu
 - 🎨 Marketing & Creative Services
 - 📊 Financial & Data Management
 
+## ✨ Features
+
+### Public Website
+- 🎨 Modern, responsive design with smooth animations
+- 📱 Mobile-first approach with Tailwind CSS
+- 🌐 SEO-optimized pages for services, about, pricing, and contact
+- 📰 Blog section for news and insights
+- 💬 Interactive chatbot for visitor engagement
+
+### Admin Dashboard (16 Pages)
+- 📊 **Dashboard** - Analytics overview and key metrics
+- 👥 **CRM** - Leads, contacts, and customer management
+- ✅ **Project Management** - Tasks and projects tracking
+- 📧 **Email Management** - Campaign and template management
+- 🎯 **Marketing** - SEO, keywords, social media, ad campaigns, landing pages
+- 🛤️ **Customer Journey** - Journey mapping and analytics
+- 📈 **Reports** - Comprehensive analytics and reporting
+- ⚙️ **Settings** - System configuration
+
 ## 🛠️ Tech Stack
 
 ### Frontend
@@ -26,61 +45,269 @@ CreedaVA provides elite virtual assistant services with bilingual excellence, cu
 - **TypeScript 5** - Type safety
 - **Tailwind CSS 4** - Utility-first styling
 - **Radix UI** - Accessible component primitives
-- **Framer Motion** - Smooth animations
+- **shadcn/ui** - Re-usable component library
 
-### Backend & Infrastructure
-- **Azure Static Web Apps** - Hosting and CI/CD
-- **Azure Functions** - Serverless API (Node.js)
-- **Azure Cosmos DB** - Serverless database
-- **Supabase** - Authentication & blog posts
+### Backend & Database
+- **Azure Functions (Node.js)** - Serverless API with comprehensive CRUD operations
+- **Azure Cosmos DB** - NoSQL database with full admin API support
+- **Docker Cosmos DB Emulator** - Local development environment
 
-### Integrations
-- **LinkedIn API** - Organization post sync via Azure Functions
-- **Google Analytics 4** - Optional analytics tracking
+### Infrastructure
+- **Azure Static Web Apps** - Production hosting and CI/CD
+- **GitHub Actions** - Automated deployment pipeline
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 20+
+- Docker Desktop (for local database)
 - Azure account (for production deployment)
-- LinkedIn Developer App (for LinkedIn integration)
+
+### Local Development Setup
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/Wiickedawesome/CreedaVA.git
+cd CreedaVA
+```
+
+2. **Install dependencies**
+```bash
+npm install
+cd api && npm install && cd ..
+```
+
+3. **Start Cosmos DB Emulator (Docker)**
+```bash
+docker run -d \
+  --name cosmosdb-emulator \
+  -p 8081:8081 \
+  -p 10251-10254:10251-10254 \
+  -e AZURE_COSMOS_EMULATOR_PARTITION_COUNT=10 \
+  -e AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true \
+  -v cosmos-data:/tmp/cosmos \
+  mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+```
+
+4. **Initialize database containers**
+```bash
+cd api
+NODE_TLS_REJECT_UNAUTHORIZED=0 node create-containers.js
+```
+
+5. **Start Azure Functions backend**
+```bash
+cd api
+npm start
+# Functions will run on http://localhost:7071
+```
+
+6. **Start frontend dev server** (in a new terminal)
+```bash
+npm run dev
+# Frontend will run on http://localhost:5173
+```
+
+7. **Access the application**
+- Frontend: http://localhost:5173
+- Admin Panel: http://localhost:5173/admin
+- API: http://localhost:7071/api
 
 ### Environment Variables
 
-Create `.env` file:
+**Frontend (.env.local)**
 ```bash
-# Azure Configuration
-VITE_API_BASE_URL=/api
-VITE_COSMOS_ENDPOINT=https://your-account.documents.azure.com:443/
-VITE_COSMOS_KEY=your-cosmos-key
-
-# Optional
-VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+# Base path for routing
 VITE_BASE_PATH=/
+
+# API endpoint
+VITE_API_BASE_URL=http://localhost:7071/api
+
+# Entra ID auth
+VITE_AAD_CLIENT_ID=77207644-cbca-4d8f-b6f0-a9b077ba0f46
+VITE_AAD_TENANT_ID=9c5238b8-3203-42de-a5c6-d401fa735fd5
+# Optional authority override (otherwise derived from tenant)
+# VITE_AAD_AUTHORITY=https://login.microsoftonline.com/9c5238b8-3203-42de-a5c6-d401fa735fd5/v2.0
+
+# Application URL (used by MSAL redirect)
+VITE_APP_URL=http://localhost:5173
+
+# Optional analytics
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
-### Local Development
-
-**Frontend:**
-```bash
-npm install
-npm run dev
+**Backend (api/local.settings.json)**
+```json
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsStorage": "",
+    "COSMOS_ENDPOINT": "https://localhost:8081",
+    "COSMOS_KEY": "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+    "COSMOS_DATABASE": "CreedaVA",
+    "APP_ORIGIN": "http://localhost:5173",
+    "CORS_ORIGIN": "http://localhost:5173",
+    "ALLOW_INMEMORY_FALLBACK": "false"
+  },
+  "Host": {
+    "CORS": "http://localhost:5173",
+    "CORSCredentials": false
+  }
+}
 ```
 
-**Azure Functions API** (separate terminal):
-```bash
-cd api
-npm install
-func start
-```
-
-API will be available at `http://localhost:7071/api/*`
+## 📦 Build & Deploy
 
 ### Production Build
 ```bash
-npm run build        # Build React app + widget
-npm run preview      # Preview production build
+# Build both React app and embeddable widget
+npm run build
+
+# Preview production build
+npm run preview
 ```
+
+### Smoke Tests (pre-release)
+- Sign in with Entra ID (popup) and load `/admin`
+- Create/update a record via Admin (any entity) and see it persist
+- Load Analytics (admin) to confirm `/api/getAnalytics` succeeds
+- Submit the public contact form and verify a success response
+- Run both builds: `npm run build:app` and `npm run build:widget` when applicable
+
+### Observability
+- Enable Application Insights on the Functions app for request/dep traces and failures
+- Add Cosmos alerts for RU consumption, throttling (429), latency, and availability
+- Review Functions diagnostic strings (RU charge, activityId) on slow/unexpected responses
+- Honor `Retry-After` on 429s from Cosmos in clients/invocations
+
+### Operations
+- See the runbook at docs/OPERATIONS.md for deployments, backups, and incident response
+
+### Deploy to Azure
+
+The repository includes GitHub Actions workflow for automatic deployment to Azure Static Web Apps:
+
+1. Create an Azure Static Web App
+2. Add GitHub secrets:
+   - `AZURE_STATIC_WEB_APPS_API_TOKEN`
+   - Configure Cosmos DB connection strings in Azure
+3. Push to `main` branch - automatic deployment via GitHub Actions
+
+### Database Setup (Production)
+
+1. Create Azure Cosmos DB account
+2. Create database named `CreedaVA`
+3. Run container creation script (partitions use `/type` to match the Functions):
+```bash
+COSMOS_ENDPOINT=https://your-account.documents.azure.com:443/ \
+COSMOS_KEY=your-production-key \
+node api/create-containers.js
+```
+
+## 🗂️ Project Structure
+
+```
+CreedaVA/
+├── src/
+│   ├── components/        # Reusable UI components
+│   │   ├── ui/           # shadcn/ui components
+│   │   ├── Navbar.tsx
+│   │   ├── Footer.tsx
+│   │   └── ChatBot.tsx
+│   ├── pages/            # Page components
+│   │   ├── admin/        # 16 admin dashboard pages
+│   │   ├── Home.tsx
+│   │   ├── Services.tsx
+│   │   ├── About.tsx
+│   │   ├── Pricing.tsx
+│   │   └── Contact.tsx
+│   ├── contexts/         # React contexts (Auth)
+│   ├── lib/              # Utilities and database types
+│   └── layouts/          # Layout components
+├── api/                  # Azure Functions backend
+│   ├── adminApi/         # Comprehensive CRUD API
+│   ├── submitContact/    # Contact form handler
+│   ├── trackEvent/       # Analytics tracker
+│   ├── getAnalytics/     # Analytics retrieval
+│   └── shared/           # Shared utilities
+├── public/               # Static assets
+└── .github/workflows/    # CI/CD configuration
+```
+
+## 🔌 API Endpoints
+
+### Admin API (CRUD operations)
+All endpoints support full CRUD operations:
+
+**GET Endpoints:**
+- `/api/getLeads` - Get all leads
+- `/api/getContacts` - Get all contacts
+- `/api/getTasks` - Get all tasks
+- `/api/getProjects` - Get all projects
+- `/api/getEmails` - Get all emails
+- `/api/getSeo` - Get SEO content
+- `/api/getKeywords` - Get keywords
+- `/api/getSocial` - Get social media posts
+- `/api/getBlog` - Get blog posts
+- `/api/getCampaigns` - Get ad campaigns
+- `/api/getLandingPages` - Get landing pages
+- `/api/getCustomerJourneys` - Get customer journeys
+
+**POST Endpoints:**
+- `/api/createLeads` - Create new lead
+- `/api/createContacts` - Create new contact
+- (Similar create endpoints for all entities)
+
+**PUT Endpoints:**
+- `/api/updateLeads/{id}` - Update lead
+- `/api/updateContacts/{id}` - Update contact
+- (Similar update endpoints for all entities)
+
+**DELETE Endpoints:**
+- `/api/deleteLeads/{id}` - Delete lead
+- `/api/deleteContacts/{id}` - Delete contact
+- (Similar delete endpoints for all entities)
+
+### Public API
+- `/api/submitContact` - Submit contact form
+- `/api/trackEvent` - Track analytics events
+- `/api/getAnalytics` - Get analytics data
+
+## 🛡️ Features
+
+### Security
+- CORS protection
+- Environment variable isolation
+- Secure API key management
+- SSL/TLS encryption
+
+### Performance
+- Code splitting and lazy loading
+- Optimized bundle sizes
+- CDN-served static assets
+- Serverless auto-scaling
+
+### SEO
+- Server-side meta tags
+- Semantic HTML structure
+- Sitemap generation
+- Structured data markup
+
+## 📝 License
+
+© 2026 CreedaVA. All rights reserved.
+
+## 🤝 Support
+
+For support and inquiries:
+- 📧 Email: john@creedava.com
+- 🌐 Website: www.creedava.com
+- 📍 Location: Belize
+
+---
+
+**Built with ❤️ in Belize 🇧🇿**
 
 ## 📦 Deployment
 
@@ -131,7 +358,7 @@ CreedaVA/
 │   ├── contexts/           # React contexts (AuthContext)
 │   ├── hooks/              # Custom React hooks
 │   ├── layouts/            # Layout components (AdminLayout)
-│   ├── lib/                # Utilities + Supabase client
+│   ├── lib/                # Utilities + auth/Cosmos API clients
 │   └── styles/             # Global styles
 ├── api/                    # Azure Functions
 │   ├── linkedin-auth/      # OAuth callback
@@ -155,8 +382,8 @@ CreedaVA/
 ### Admin Panel
 - 🎛️ Complete CRM and marketing dashboard
 - 📊 Analytics, leads, and customer journey tracking
-- 📝 Blog management with Supabase
-- 🔐 Protected routes with authentication
+- 📝 Blog management backed by Cosmos DB
+- 🔐 Protected routes with Entra ID authentication
 - 💼 LinkedIn integration for post sync
 
 ### LinkedIn Integration

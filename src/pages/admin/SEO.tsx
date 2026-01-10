@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/database';
-import { Database } from '@/lib/database.types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { PageLayout } from '@/components/admin/PageLayout';
+import { SEODialog, SEOContent } from '@/components/admin/SEODialog';
+import { authorizedFetch } from '@/lib/api-client';
 import { 
   Table,
   TableBody,
@@ -11,558 +10,408 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Search, Edit, Eye, Globe, Twitter, Facebook } from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { 
+  Search, 
+  Plus, 
+  RefreshCw, 
+  MoreHorizontal, 
+  Eye, 
+  Edit, 
+  Trash2, 
+  TrendingUp, 
+  Globe, 
+  BarChart3,
+  FileText,
+  Target
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
-type SEOPage = Database['public']['Tables']['seo_pages']['Row'];
-type SEOPageInsert = Database['public']['Tables']['seo_pages']['Insert'];
+type SEOFormData = {
+  title: string;
+  metaDescription: string;
+  content: string;
+  url: string;
+  status: string;
+  contentType: string;
+  targetKeywords: string;
+  focusKeyword?: string;
+  wordCount: number;
+  publishedDate?: Date;
+  tags?: string;
+  category?: string;
+  canonicalUrl?: string;
+  openGraphTitle?: string;
+  openGraphDescription?: string;
+  twitterTitle?: string;
+  twitterDescription?: string;
+};
+
+const seoStatuses = [
+  { value: 'draft', label: 'Draft', color: 'bg-gray-500', textColor: 'text-gray-400' },
+  { value: 'review', label: 'In Review', color: 'bg-yellow-500', textColor: 'text-yellow-400' },
+  { value: 'optimized', label: 'Optimized', color: 'bg-green-500', textColor: 'text-green-400' },
+  { value: 'published', label: 'Published', color: 'bg-blue-500', textColor: 'text-blue-400' },
+  { value: 'needs-work', label: 'Needs Work', color: 'bg-red-500', textColor: 'text-red-400' },
+];
+
+const contentTypes = [
+  { value: 'page', label: 'Web Page' },
+  { value: 'blog-post', label: 'Blog Post' },
+  { value: 'product', label: 'Product Page' },
+  { value: 'category', label: 'Category Page' },
+  { value: 'landing', label: 'Landing Page' },
+  { value: 'service', label: 'Service Page' },
+];
 
 export function SEO() {
-  const [pages, setPages] = useState<SEOPage[]>([]);
+  const [seoContent, setSEOContent] = useState<SEOContent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPage, setEditingPage] = useState<SEOPage | null>(null);
-  const [formData, setFormData] = useState<{
-    page_path: string
-    page_title: string
-    meta_title: string
-    meta_description: string
-    og_title?: string | null
-    og_description?: string | null
-    og_image?: string | null
-    twitter_title?: string | null
-    twitter_description?: string | null
-    twitter_image?: string | null
-    canonical_url?: string | null
-  }>({
-    page_path: '',
-    page_title: '',
-    meta_title: '',
-    meta_description: '',
-    og_title: '',
-    og_description: '',
-    og_image: '',
-    twitter_title: '',
-    twitter_description: '',
-    twitter_image: '',
-    canonical_url: ''
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [selectedSEO, setSelectedSEO] = useState<SEOContent | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [seoToDelete, setSEOToDelete] = useState<SEOContent | null>(null);
 
   useEffect(() => {
-    fetchPages();
+    fetchSEOContent();
   }, []);
 
-  const fetchPages = async () => {
+  const fetchSEOContent = async () => {
     try {
-      const { data, error } = await db
-        .from('seo_pages')
-        .select('*')
-        .order('page_path', { ascending: true });
-
-      if (error) throw error;
-      setPages(data || []);
+      setLoading(true);
+      setError(null);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      const response = await authorizedFetch(`${API_BASE}/getSEO`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        setSEOContent(result.data || []);
+      } else {
+        throw new Error('Failed to fetch SEO content');
+      }
     } catch (error) {
-      console.error('Error fetching SEO pages:', error);
+      console.error('Error fetching SEO content:', error);
+      setError('Failed to load SEO content. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleCreateSEO = () => {
+    setSelectedSEO(null);
+    setDialogMode('create');
+    setDialogOpen(true);
+  };
+
+  const handleEditSEO = (seo: SEOContent) => {
+    setSelectedSEO(seo);
+    setDialogMode('edit');
+    setDialogOpen(true);
+  };
+
+  const handleViewSEO = (seo: SEOContent) => {
+    setSelectedSEO(seo);
+    setDialogMode('view');
+    setDialogOpen(true);
+  };
+
+  const handleSaveSEO = async (seoData: Omit<SEOContent, 'id' | 'type' | 'createdAt' | 'updatedAt'>) => {
     try {
-      if (editingPage) {
-        const { error } = await db
-          .from('seo_pages')
-          .update(formData)
-          .eq('id', editingPage.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await db
-          .from('seo_pages')
-          .insert([formData]);
-
-        if (error) throw error;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      
+      if (dialogMode === 'create') {
+        const response = await authorizedFetch(`${API_BASE}/createSEO`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(seoData)
+        });
+        
+        if (response.ok) {
+          await fetchSEOContent();
+        } else {
+          throw new Error('Failed to create SEO content');
+        }
+      } else if (dialogMode === 'edit' && selectedSEO) {
+        const response = await authorizedFetch(`${API_BASE}/updateSEO/${selectedSEO.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(seoData)
+        });
+        
+        if (response.ok) {
+          await fetchSEOContent();
+        } else {
+          throw new Error('Failed to update SEO content');
+        }
       }
-
-      setIsDialogOpen(false);
-      setEditingPage(null);
-      resetForm();
-      fetchPages();
     } catch (error) {
-      console.error('Error saving SEO page:', error);
+      console.error('Error saving SEO content:', error);
+      setError('Failed to save SEO content. Please try again.');
     }
   };
 
-  const handleEdit = (page: SEOPage) => {
-    setEditingPage(page);
-    setFormData({
-      page_path: page.page_path,
-      page_title: page.page_title,
-      meta_title: page.meta_title,
-      meta_description: page.meta_description,
-      og_title: page.og_title,
-      og_description: page.og_description,
-      og_image: page.og_image,
-      twitter_title: page.twitter_title,
-      twitter_description: page.twitter_description,
-      twitter_image: page.twitter_image,
-      canonical_url: page.canonical_url
-    });
-    setIsDialogOpen(true);
+  const handleDeleteSEO = async () => {
+    if (!seoToDelete) return;
+    
+    try {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      const response = await authorizedFetch(`${API_BASE}/deleteSEO/${seoToDelete.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        await fetchSEOContent();
+        setDeleteDialogOpen(false);
+        setSEOToDelete(null);
+      } else {
+        throw new Error('Failed to delete SEO content');
+      }
+    } catch (error) {
+      console.error('Error deleting SEO content:', error);
+      setError('Failed to delete SEO content. Please try again.');
+    }
   };
 
-  const resetForm = () => {
-    setFormData({
-      page_path: '',
-      page_title: '',
-      meta_title: '',
-      meta_description: '',
-      og_title: '',
-      og_description: '',
-      og_image: '',
-      twitter_title: '',
-      twitter_description: '',
-      twitter_image: '',
-      canonical_url: ''
-    });
-  };
-
-  const filteredPages = pages.filter(page =>
-    page.page_path.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    page.page_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    page.meta_title.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSEO = seoContent.filter(seo =>
+    seo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    seo.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    seo.targetKeywords.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-96 bg-gray-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>;
-  }
+  const getStatusBadge = (status: string) => {
+    const statusConfig = seoStatuses.find(s => s.value === status);
+    if (!statusConfig) return null;
+    
+    return (
+      <Badge className={cn("px-2 py-1 text-xs font-medium rounded-full", statusConfig.color)}>
+        {statusConfig.label}
+      </Badge>
+    );
+  };
+
+  const getSEOScoreColor = (score?: number) => {
+    if (!score) return 'text-gray-400';
+    if (score >= 80) return 'text-green-400';
+    if (score >= 60) return 'text-yellow-400';
+    return 'text-red-400';
+  };
 
   return (
-    <div className="p-8 space-y-6 min-h-screen">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-white">SEO Content Management</h1>
-          <p className="text-gray-300 mt-2 font-medium">Optimize your pages for search engines</p>
-        </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingPage(null);
-              resetForm();
-            }}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Page
+    <>
+      <PageLayout
+        title="SEO Content"
+        description="Manage SEO optimization for pages and content"
+        searchPlaceholder="Search content..."
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        primaryAction={{
+          label: 'Create Content',
+          onClick: handleCreateSEO,
+          icon: <Plus className="h-4 w-4" />
+        }}
+        secondaryActions={[
+          {
+            label: 'Refresh',
+            onClick: fetchSEOContent,
+            icon: <RefreshCw className="h-4 w-4" />
+          }
+        ]}
+      >
+        {loading ? (
+          <div className="text-center py-12">
+            <RefreshCw className="h-8 w-8 animate-spin text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-400">Loading SEO content...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <Search className="h-8 w-8 text-red-400 mx-auto mb-4" />
+            <p className="text-red-400 mb-4">{error}</p>
+            <Button onClick={fetchSEOContent} variant="outline">
+              Try Again
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingPage ? 'Edit SEO Settings' : 'Add New Page'}</DialogTitle>
-              <DialogDescription>
-                {editingPage ? 'Update SEO metadata for this page' : 'Configure SEO settings for a new page'}
-              </DialogDescription>
-            </DialogHeader>
-
-            <form onSubmit={handleSubmit}>
-              <Tabs defaultValue="basic" className="space-y-4">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="basic">Basic</TabsTrigger>
-                  <TabsTrigger value="meta">Meta Tags</TabsTrigger>
-                  <TabsTrigger value="opengraph">Open Graph</TabsTrigger>
-                  <TabsTrigger value="twitter">Twitter Card</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="basic" className="space-y-4">
-                  <div>
-                    <Label htmlFor="page_path">Page Path *</Label>
-                    <Input
-                      id="page_path"
-                      required
-                      placeholder="/about"
-                      value={formData.page_path}
-                      onChange={(e) => setFormData({ ...formData, page_path: e.target.value })}
-                      disabled={!!editingPage}
-                    />
-                    <p className="text-xs text-gray-400 mt-1">
-                      The URL path of the page (e.g., /about, /services)
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="page_title">Page Title *</Label>
-                    <Input
-                      id="page_title"
-                      required
-                      placeholder="About Us"
-                      value={formData.page_title}
-                      onChange={(e) => setFormData({ ...formData, page_title: e.target.value })}
-                    />
-                    <p className="text-xs text-gray-400 mt-1">
-                      Internal reference name for this page
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="canonical_url">Canonical URL</Label>
-                    <Input
-                      id="canonical_url"
-                      type="url"
-                      placeholder="https://www.creedava.com/about"
-                      value={formData.canonical_url || ''}
-                      onChange={(e) => setFormData({ ...formData, canonical_url: e.target.value })}
-                    />
-                    <p className="text-xs text-gray-400 mt-1">
-                      Preferred URL for this page (helps prevent duplicate content issues)
-                    </p>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="meta" className="space-y-4">
-                  <div>
-                    <Label htmlFor="meta_title">Meta Title *</Label>
-                    <Input
-                      id="meta_title"
-                      required
-                      placeholder="About CreedaVA - Bilingual Virtual Assistants"
-                      value={formData.meta_title}
-                      onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
-                      maxLength={60}
-                    />
-                    <p className="text-xs text-gray-400 mt-1">
-                      {formData.meta_title?.length || 0}/60 characters - Shown in search results
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="meta_description">Meta Description *</Label>
-                    <Textarea
-                      id="meta_description"
-                      required
-                      rows={3}
-                      placeholder="Professional bilingual virtual assistant services from Belize. Expert support in English & Spanish for businesses worldwide."
-                      value={formData.meta_description}
-                      onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })}
-                      maxLength={160}
-                    />
-                    <p className="text-xs text-gray-400 mt-1">
-                      {formData.meta_description?.length || 0}/160 characters - Shown in search results
-                    </p>
-                  </div>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Eye className="w-4 h-4" />
-                        Search Result Preview
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-1">
-                        <div className="text-blue-600 text-xl hover:underline cursor-pointer">
-                          {formData.meta_title || 'Your Page Title'}
-                        </div>
-                        <div className="text-green-700 text-sm">
-                          https://www.creedava.com{formData.page_path || '/page'}
-                        </div>
-                        <div className="text-gray-600 text-sm">
-                          {formData.meta_description || 'Your meta description will appear here...'}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="opengraph" className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Facebook className="w-5 h-5" />
-                    <p className="text-sm text-gray-400">
-                      Controls how your page appears when shared on Facebook, LinkedIn, and other platforms
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="og_title">OG Title</Label>
-                    <Input
-                      id="og_title"
-                      placeholder="About CreedaVA - Your Bilingual VA Partner"
-                      value={formData.og_title || ''}
-                      onChange={(e) => setFormData({ ...formData, og_title: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="og_description">OG Description</Label>
-                    <Textarea
-                      id="og_description"
-                      rows={2}
-                      placeholder="Discover how CreedaVA's bilingual virtual assistants can transform your business..."
-                      value={formData.og_description || ''}
-                      onChange={(e) => setFormData({ ...formData, og_description: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="og_image">OG Image URL</Label>
-                    <Input
-                      id="og_image"
-                      type="url"
-                      placeholder="https://www.creedava.com/images/og-about.jpg"
-                      value={formData.og_image || ''}
-                      onChange={(e) => setFormData({ ...formData, og_image: e.target.value })}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Recommended size: 1200x630px
-                    </p>
-                  </div>
-
-                  {formData.og_image && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm">Preview</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="border rounded-lg overflow-hidden max-w-md">
-                          <img 
-                            src={formData.og_image} 
-                            alt="OG Preview" 
-                            className="w-full h-auto"
-                            onError={(e) => {
-                              e.currentTarget.src = 'https://via.placeholder.com/1200x630?text=Invalid+Image+URL';
-                            }}
-                          />
-                          <div className="p-3 bg-gray-800">
-                            <div className="font-semibold text-sm">
-                              {formData.og_title || formData.meta_title || 'Title'}
-                            </div>
-                            <div className="text-xs text-gray-600 mt-1">
-                              {formData.og_description || formData.meta_description || 'Description'}
-                            </div>
-                            <div className="text-xs text-gray-500 mt-1">creedava.com</div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="twitter" className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Twitter className="w-5 h-5" />
-                    <p className="text-sm text-muted-foreground">
-                      Controls how your page appears when shared on Twitter/X
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="twitter_title">Twitter Title</Label>
-                    <Input
-                      id="twitter_title"
-                      placeholder="About CreedaVA - Your Bilingual VA Partner"
-                      value={formData.twitter_title || ''}
-                      onChange={(e) => setFormData({ ...formData, twitter_title: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="twitter_description">Twitter Description</Label>
-                    <Textarea
-                      id="twitter_description"
-                      rows={2}
-                      placeholder="Discover how CreedaVA's bilingual virtual assistants can transform your business..."
-                      value={formData.twitter_description || ''}
-                      onChange={(e) => setFormData({ ...formData, twitter_description: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="twitter_image">Twitter Image URL</Label>
-                    <Input
-                      id="twitter_image"
-                      type="url"
-                      placeholder="https://www.creedava.com/images/twitter-about.jpg"
-                      value={formData.twitter_image || ''}
-                      onChange={(e) => setFormData({ ...formData, twitter_image: e.target.value })}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Recommended size: 1200x675px (16:9 ratio)
-                    </p>
-                  </div>
-
-                  {formData.twitter_image && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm">Twitter Card Preview</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="border rounded-xl overflow-hidden max-w-md">
-                          <img 
-                            src={formData.twitter_image} 
-                            alt="Twitter Preview" 
-                            className="w-full h-auto"
-                            onError={(e) => {
-                              e.currentTarget.src = 'https://via.placeholder.com/1200x675?text=Invalid+Image+URL';
-                            }}
-                          />
-                          <div className="p-3 border-t">
-                            <div className="text-xs text-gray-500 mb-1">creedava.com</div>
-                            <div className="font-semibold text-sm">
-                              {formData.twitter_title || formData.meta_title || 'Title'}
-                            </div>
-                            <div className="text-xs text-gray-600 mt-1">
-                              {formData.twitter_description || formData.meta_description || 'Description'}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </TabsContent>
-              </Tabs>
-
-              <DialogFooter className="mt-6">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  {editingPage ? 'Update Page' : 'Create Page'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Search */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Search pages..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-        <div className="text-sm text-gray-400">
-          {filteredPages.length} page{filteredPages.length !== 1 ? 's' : ''}
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <p className="text-sm font-medium text-gray-400">Total Pages</p>
-          <p className="text-3xl font-bold text-white mt-2">{pages.length}</p>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <p className="text-sm font-medium text-gray-400">Published</p>
           </div>
-          <p className="text-2xl font-bold text-white mt-2">{pages.filter(p => p.is_published).length}</p>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-            <p className="text-sm font-medium text-gray-400">Drafts</p>
-          </div>
-          <p className="text-2xl font-bold text-white mt-2">{pages.filter(p => !p.is_published).length}</p>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-            <p className="text-sm font-medium text-gray-400">Total Views</p>
-          </div>
-          <p className="text-2xl font-bold text-white mt-2">{pages.reduce((sum, p) => sum + (p.page_views || 0), 0).toLocaleString()}</p>
-        </div>
-      </div>
-
-      {/* Pages Table */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-800 border-gray-700">
-              <TableHead className="text-gray-200 font-medium">Page Path</TableHead>
-              <TableHead className="text-gray-200 font-medium">Page Title</TableHead>
-              <TableHead className="text-gray-200 font-medium">Meta Title</TableHead>
-              <TableHead className="text-gray-200 font-medium">Description Length</TableHead>
-              <TableHead className="text-gray-200 font-medium">Views</TableHead>
-              <TableHead className="text-gray-200 font-medium">Status</TableHead>
-              <TableHead className="text-right text-gray-200 font-medium">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredPages.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                  No pages found. Add your first page to manage SEO settings.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredPages.map((page) => (
-                <TableRow key={page.id}>
-                  <TableCell className="font-mono text-sm">{page.page_path}</TableCell>
-                  <TableCell>{page.page_title}</TableCell>
-                  <TableCell className="max-w-xs truncate">{page.meta_title}</TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={page.meta_description.length > 160 ? 'destructive' : 'secondary'}
-                    >
-                      {page.meta_description.length} chars
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-muted-foreground" />
-                      {page.page_views.toLocaleString()}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={page.is_published ? 'default' : 'secondary'}>
-                      {page.is_published ? 'Published' : 'Draft'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => window.open(`https://www.creedava.com${page.page_path}`, '_blank')}
-                      >
-                        <Globe className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleEdit(page)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        ) : (
+          <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700">
+                  <TableHead className="text-gray-300">Content</TableHead>
+                  <TableHead className="text-gray-300">Status</TableHead>
+                  <TableHead className="text-gray-300">SEO Score</TableHead>
+                  <TableHead className="text-gray-300">Type</TableHead>
+                  <TableHead className="text-gray-300">Keywords</TableHead>
+                  <TableHead className="text-gray-300">Performance</TableHead>
+                  <TableHead className="text-gray-300">Modified</TableHead>
+                  <TableHead className="text-gray-300 w-[100px]">Actions</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  )
+              </TableHeader>
+              <TableBody>
+                {filteredSEO.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-12">
+                      <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-400 text-lg mb-2">No SEO content found</p>
+                      <p className="text-gray-500 mb-4">
+                        {searchTerm ? 'Try adjusting your search criteria' : 'Get started by creating your first SEO content'}
+                      </p>
+                      {!searchTerm && (
+                        <Button onClick={handleCreateSEO} className="bg-blue-600 hover:bg-blue-700">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create Content
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredSEO.map((seo) => {
+                    return (
+                      <TableRow key={seo.id} className="border-gray-700 hover:bg-gray-750">
+                        <TableCell>
+                          <div>
+                            <div className="font-medium text-white">{seo.title}</div>
+                            <div className="text-sm text-blue-400">{seo.url}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(seo.status)}
+                        </TableCell>
+                        <TableCell>
+                          <div className={cn("flex items-center space-x-2", getSEOScoreColor(seo.seoScore))}>
+                            <BarChart3 className="h-4 w-4" />
+                            <span className="font-medium">{seo.seoScore || 'N/A'}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-gray-300">
+                            {contentTypes.find(t => t.value === seo.contentType)?.label || seo.contentType}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="max-w-32">
+                            {seo.focusKeyword ? (
+                              <Badge variant="outline" className="text-blue-400 border-blue-500">
+                                {seo.focusKeyword}
+                              </Badge>
+                            ) : (
+                              <span className="text-gray-500 text-sm">No focus keyword</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm space-y-1">
+                            {seo.pageViews ? (
+                              <div className="text-green-400">{seo.pageViews.toLocaleString()} views</div>
+                            ) : (
+                              <div className="text-gray-500">No data</div>
+                            )}
+                            {seo.averagePosition && (
+                              <div className="text-blue-400">Pos #{seo.averagePosition}</div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-gray-300 text-sm">
+                            {format(new Date(seo.lastModified), 'MMM dd, yyyy')}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-gray-800 border-gray-600">
+                              <DropdownMenuItem onClick={() => handleViewSEO(seo)} className="text-gray-300 hover:bg-gray-700">
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEditSEO(seo)} className="text-gray-300 hover:bg-gray-700">
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit Content
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => window.open(seo.url.startsWith('http') ? seo.url : `https://creedava.com${seo.url}`, '_blank')}
+                                className="text-blue-400 hover:bg-blue-900/20"
+                              >
+                                <Globe className="h-4 w-4 mr-2" />
+                                View Live
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setSEOToDelete(seo);
+                                  setDeleteDialogOpen(true);
+                                }}
+                                className="text-red-400 hover:bg-red-900/20"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </PageLayout>
+
+      {/* SEO Dialog */}
+      <SEODialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        seo={selectedSEO}
+        onSave={handleSaveSEO}
+        mode={dialogMode}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-gray-900 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Delete SEO Content</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Are you sure you want to delete "{seoToDelete?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteSEO}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Content
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
 }

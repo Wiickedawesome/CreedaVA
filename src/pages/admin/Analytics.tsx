@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Eye, MousePointer, Users, Globe, Calendar, RefreshCw } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { authorizedFetch } from '@/lib/api-client';
 
 interface AnalyticsEvent {
   id: string;
@@ -35,7 +36,7 @@ export function Analytics() {
     setLoading(true);
     try {
       const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
-      const response = await fetch(`${API_BASE}/getAnalytics?days=${daysFilter}`);
+      const response = await authorizedFetch(`${API_BASE}/getAnalytics?days=${daysFilter}`);
       
       if (response.ok) {
         const result = await response.json();
@@ -121,7 +122,7 @@ export function Analytics() {
             variant={daysFilter === 7 ? 'default' : 'outline'}
             size="sm"
             onClick={() => setDaysFilter(7)}
-            className="text-xs"
+            className={`text-xs ${daysFilter === 7 ? 'bg-blue-600 text-white' : 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600'}`}
           >
             7 Days
           </Button>
@@ -129,7 +130,7 @@ export function Analytics() {
             variant={daysFilter === 30 ? 'default' : 'outline'}
             size="sm"
             onClick={() => setDaysFilter(30)}
-            className="text-xs"
+            className={`text-xs ${daysFilter === 30 ? 'bg-blue-600 text-white' : 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600'}`}
           >
             30 Days
           </Button>
@@ -137,11 +138,16 @@ export function Analytics() {
             variant={daysFilter === 90 ? 'default' : 'outline'}
             size="sm"
             onClick={() => setDaysFilter(90)}
-            className="text-xs"
+            className={`text-xs ${daysFilter === 90 ? 'bg-blue-600 text-white' : 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600'}`}
           >
             90 Days
           </Button>
-          <Button variant="outline" size="sm" onClick={fetchAnalytics}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetchAnalytics}
+            className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+          >
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/database';
-import { Database } from '@/lib/database.types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { PageLayout } from '@/components/admin/PageLayout';
+import { LeadDialog, Lead } from '@/components/admin/LeadDialog';
+import { authorizedFetch } from '@/lib/api-client';
 import { 
   Table,
   TableBody,
@@ -11,63 +10,59 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Edit, Trash2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { format } from 'date-fns';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Mail, Phone, Calendar, RefreshCw, Plus, MoreHorizontal, Eye, Edit, Trash2, Star, Building2, DollarSign } from 'lucide-react';
 
-type Lead = Database['public']['Tables']['leads']['Row'];
-type LeadInsert = Database['public']['Tables']['leads']['Insert'];
-
-const statusColors = {
-  new: 'bg-blue-500',
-  contacted: 'bg-yellow-500',
-  qualified: 'bg-purple-500',
-  proposal: 'bg-emerald-500',
-  negotiation: 'bg-pink-500',
-  won: 'bg-green-500',
-  lost: 'bg-red-500',
-  on_hold: 'bg-gray-500'
+type LeadFormData = {
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  position?: string;
+  source: string;
+  stage: string;
+  score: number;
+  estimatedValue?: number;
+  notes?: string;
 };
 
-const temperatureIcons = {
-  cold: <Minus className="w-4 h-4 text-blue-400" />,
-  warm: <TrendingUp className="w-4 h-4 text-yellow-400" />,
-  hot: <TrendingUp className="w-4 h-4 text-red-400" />
-};
+const leadStages = [
+  { value: 'new', label: 'New Lead', color: 'bg-blue-500' },
+  { value: 'contacted', label: 'Contacted', color: 'bg-yellow-500' },
+  { value: 'qualified', label: 'Qualified', color: 'bg-purple-500' },
+  { value: 'proposal', label: 'Proposal Sent', color: 'bg-orange-500' },
+  { value: 'negotiation', label: 'Negotiation', color: 'bg-pink-500' },
+  { value: 'closed-won', label: 'Closed Won', color: 'bg-green-500' },
+  { value: 'closed-lost', label: 'Closed Lost', color: 'bg-red-500' },
+];
 
 export function Leads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingLead, setEditingLead] = useState<Lead | null>(null);
-  const [formData, setFormData] = useState<Partial<LeadInsert>>({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    status: 'new',
-    source: 'website',
-    estimated_value: null
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
 
   useEffect(() => {
     fetchLeads();
@@ -75,348 +70,328 @@ export function Leads() {
 
   const fetchLeads = async () => {
     try {
-      const { data, error } = await db
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setLeads(data || []);
-    } catch (error) {
-      console.error('Error fetching leads:', error);
+      setLoading(true);
+      setError(null);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      const response = await authorizedFetch(`${API_BASE}/getLeads`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        setLeads(result.data || []);
+      } else {
+        throw new Error('Failed to fetch leads');
+      }
+    } catch (err) {
+      console.error('Error fetching leads:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load leads');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveLead = async (leadData: LeadFormData) => {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
     
     try {
-      if (editingLead) {
-        // Update existing lead
-        const { error } = await db
-          .from('leads')
-          .update(formData)
-          .eq('id', editingLead.id);
-
-        if (error) throw error;
-      } else {
-        // Create new lead
-        const { error } = await db
-          .from('leads')
-          .insert([formData as LeadInsert]);
-
-        if (error) throw error;
+      if (dialogMode === 'create') {
+        const response = await authorizedFetch(`${API_BASE}/createLead`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(leadData),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to create lead');
+        }
+      } else if (dialogMode === 'edit' && selectedLead) {
+        const response = await authorizedFetch(`${API_BASE}/updateLead/${selectedLead.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(leadData),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update lead');
+        }
       }
-
-      setIsDialogOpen(false);
-      setEditingLead(null);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        status: 'new',
-        source: 'website',
-        estimated_value: null
-      });
-      fetchLeads();
+      
+      // Refresh leads after save
+      await fetchLeads();
     } catch (error) {
       console.error('Error saving lead:', error);
+      throw error;
     }
   };
 
-  const handleEdit = (lead: Lead) => {
-    setEditingLead(lead);
-    setFormData({
-      name: lead.name,
-      email: lead.email,
-      phone: lead.phone,
-      company: lead.company,
-      status: lead.status,
-      source: lead.source,
-      estimated_value: lead.estimated_value,
-      notes: lead.notes
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this lead?')) return;
-
+  const handleDeleteLead = async () => {
+    if (!leadToDelete) return;
+    
     try {
-      const { error } = await db
-        .from('leads')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      fetchLeads();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      const response = await authorizedFetch(`${API_BASE}/deleteLead/${leadToDelete.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete lead');
+      }
+      
+      // Refresh leads after delete
+      await fetchLeads();
+      setDeleteDialogOpen(false);
+      setLeadToDelete(null);
     } catch (error) {
       console.error('Error deleting lead:', error);
     }
   };
 
   const filteredLeads = leads.filter(lead =>
-    lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.company?.toLowerCase().includes(searchTerm.toLowerCase())
+    lead.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lead.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lead.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lead.source?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading...</div>;
-  }
+  const handleViewLead = (lead: Lead) => {
+    setSelectedLead(lead);
+    setDialogMode('view');
+    setDialogOpen(true);
+  };
+
+  const handleEditLead = (lead: Lead) => {
+    setSelectedLead(lead);
+    setDialogMode('edit');
+    setDialogOpen(true);
+  };
+
+  const handleCreateLead = () => {
+    setSelectedLead(null);
+    setDialogMode('create');
+    setDialogOpen(true);
+  };
+
+  const confirmDeleteLead = (lead: Lead) => {
+    setLeadToDelete(lead);
+    setDeleteDialogOpen(true);
+  };
+
+  const getStageInfo = (stage: string) => {
+    return leadStages.find(s => s.value === stage) || { label: stage, color: 'bg-gray-500' };
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-400';
+    if (score >= 60) return 'text-yellow-400';
+    if (score >= 40) return 'text-orange-400';
+    return 'text-red-400';
+  };
+
+  // Calculate stats
+  const totalLeads = leads.length;
+  const qualifiedLeads = leads.filter(lead => ['qualified', 'proposal', 'negotiation'].includes(lead.stage)).length;
+  const closedWonLeads = leads.filter(lead => lead.stage === 'closed-won').length;
+  const totalValue = leads
+    .filter(lead => lead.stage === 'closed-won')
+    .reduce((sum, lead) => sum + (lead.estimatedValue || 0), 0);
 
   return (
-    <div className="p-8 space-y-6 min-h-screen">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Leads Management</h1>
-          <p className="text-gray-300 mt-1 font-medium">Manage and track your sales leads</p>
-        </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingLead(null);
-              setFormData({
-                name: '',
-                email: '',
-                phone: '',
-                company: '',
-                status: 'new',
-                source: 'website',
-                estimated_value: null
-              });
-            }}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Lead
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingLead ? 'Edit Lead' : 'Create New Lead'}</DialogTitle>
-              <DialogDescription>
-                {editingLead ? 'Update lead information' : 'Add a new lead to your pipeline'}
-              </DialogDescription>
-            </DialogHeader>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Name *</Label>
-                  <Input
-                    id="name"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone || ''}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="company">Company</Label>
-                  <Input
-                    id="company"
-                    value={formData.company || ''}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={formData.status as string}
-                    onValueChange={(value) => setFormData({ ...formData, status: value as Lead['status'] })}
-                  >
-                    <SelectTrigger id="status">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="contacted">Contacted</SelectItem>
-                      <SelectItem value="qualified">Qualified</SelectItem>
-                      <SelectItem value="proposal">Proposal</SelectItem>
-                      <SelectItem value="negotiation">Negotiation</SelectItem>
-                      <SelectItem value="won">Won</SelectItem>
-                      <SelectItem value="lost">Lost</SelectItem>
-                      <SelectItem value="on_hold">On Hold</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="source">Source</Label>
-                  <Select
-                    value={formData.source as string}
-                    onValueChange={(value) => setFormData({ ...formData, source: value as Lead['source'] })}
-                  >
-                    <SelectTrigger id="source">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="website">Website</SelectItem>
-                      <SelectItem value="referral">Referral</SelectItem>
-                      <SelectItem value="social_media">Social Media</SelectItem>
-                      <SelectItem value="cold_call">Cold Call</SelectItem>
-                      <SelectItem value="email_campaign">Email Campaign</SelectItem>
-                      <SelectItem value="event">Event</SelectItem>
-                      <SelectItem value="partner">Partner</SelectItem>
-                      <SelectItem value="advertising">Advertising</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="col-span-2">
-                  <Label htmlFor="estimated_value">Estimated Value ($)</Label>
-                  <Input
-                    id="estimated_value"
-                    type="number"
-                    step="0.01"
-                    value={formData.estimated_value || ''}
-                    onChange={(e) => setFormData({ ...formData, estimated_value: parseFloat(e.target.value) || null })}
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    rows={3}
-                    value={formData.notes || ''}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  {editingLead ? 'Update Lead' : 'Create Lead'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Search */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search leads..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-        <div className="text-sm text-gray-300">
-          {filteredLeads.length} lead{filteredLeads.length !== 1 ? 's' : ''}
-        </div>
-      </div>
-
-      {/* Leads Table */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-800 border-gray-700">
-              <TableHead className="text-white font-semibold">Name</TableHead>
-              <TableHead className="text-white font-semibold">Company</TableHead>
-              <TableHead className="text-white font-semibold">Email</TableHead>
-              <TableHead className="text-white font-semibold">Status</TableHead>
-              <TableHead className="text-white font-semibold">Temperature</TableHead>
-              <TableHead className="text-white font-semibold">Source</TableHead>
-              <TableHead className="text-white font-semibold">Value</TableHead>
-              <TableHead className="text-white font-semibold">Score</TableHead>
-              <TableHead className="text-white font-semibold">Created</TableHead>
-              <TableHead className="text-right text-white font-semibold">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredLeads.length === 0 ? (
-              <TableRow className="border-gray-600">
-                <TableCell colSpan={10} className="text-center py-8 text-gray-300">
-                  No leads found. Create your first lead to get started.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredLeads.map((lead) => (
-                <TableRow key={lead.id} className="border-gray-600 hover:bg-gray-650">
-                  <TableCell className="font-medium text-white">{lead.name}</TableCell>
-                  <TableCell className="text-gray-300">{lead.company || '-'}</TableCell>
-                  <TableCell className="text-gray-300">{lead.email}</TableCell>
-                  <TableCell>
-                    <Badge className={statusColors[lead.status]}>
-                      {lead.status.replace('_', ' ')}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      {temperatureIcons[lead.temperature]}
-                      <span className="capitalize text-gray-300">{lead.temperature}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="capitalize text-gray-300">{lead.source.replace('_', ' ')}</TableCell>
-                  <TableCell className="text-gray-300">
-                    {lead.estimated_value 
-                      ? `$${lead.estimated_value.toLocaleString()}` 
-                      : '-'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="text-gray-300 border-gray-500">{lead.lead_score}/100</Badge>
-                  </TableCell>
-                  <TableCell className="text-gray-300">{format(new Date(lead.created_at), 'MMM d, yyyy')}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleEdit(lead)}
-                        className="text-gray-300 hover:text-white hover:bg-gray-600"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDelete(lead.id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-gray-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+    <>
+      <PageLayout
+        title="Leads"
+        description="Lead pipeline and management"
+        searchPlaceholder="Search leads..."
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        stats={[
+          { label: 'total leads', value: totalLeads },
+          { label: 'qualified leads', value: qualifiedLeads },
+          { label: 'closed won', value: closedWonLeads },
+          { label: 'total value', value: `$${totalValue.toLocaleString()}` }
+        ]}
+        secondaryActions={[
+          {
+            label: 'Refresh',
+            onClick: fetchLeads,
+            variant: 'outline',
+            icon: <RefreshCw className="h-4 w-4" />
+          }
+        ]}
+        primaryAction={{
+          label: 'Add Lead',
+          onClick: handleCreateLead,
+          icon: <Plus className="h-4 w-4" />
+        }}
+      >
+        {loading ? (
+          <div className="text-center py-8 text-gray-300">Loading leads...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-400">Error: {error}</div>
+        ) : (
+          <div className="bg-gray-900 rounded-lg border border-gray-700">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700">
+                  <TableHead className="text-gray-300">Lead</TableHead>
+                  <TableHead className="text-gray-300">Contact</TableHead>
+                  <TableHead className="text-gray-300">Company</TableHead>
+                  <TableHead className="text-gray-300">Source</TableHead>
+                  <TableHead className="text-gray-300">Stage</TableHead>
+                  <TableHead className="text-gray-300">Score</TableHead>
+                  <TableHead className="text-gray-300">Value</TableHead>
+                  <TableHead className="text-gray-300">Date</TableHead>
+                  <TableHead className="text-gray-300">Actions</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  )
-}
+              </TableHeader>
+              <TableBody>
+                {filteredLeads.length === 0 ? (
+                  <TableRow className="border-gray-700">
+                    <TableCell colSpan={9} className="text-center py-8 text-gray-400">
+                      {searchTerm ? 'No leads found matching your search' : 'No leads found'}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredLeads.map((lead) => {
+                    const stageInfo = getStageInfo(lead.stage);
+                    return (
+                      <TableRow key={lead.id} className="border-gray-700 hover:bg-gray-800">
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-gray-200">{lead.name}</p>
+                            {lead.position && (
+                              <p className="text-sm text-gray-400">{lead.position}</p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <Mail className="h-3 w-3 text-gray-400" />
+                              <span className="text-sm text-gray-300">{lead.email}</span>
+                            </div>
+                            {lead.phone && (
+                              <div className="flex items-center space-x-2">
+                                <Phone className="h-3 w-3 text-gray-400" />
+                                <span className="text-sm text-gray-300">{lead.phone}</span>
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Building2 className="h-4 w-4 text-gray-400" />
+                            <span className="text-gray-300">{lead.company || '—'}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{lead.source}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`${stageInfo.color} text-white`}>
+                            {stageInfo.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Star className={`h-4 w-4 ${getScoreColor(lead.score)}`} />
+                            <span className={`font-medium ${getScoreColor(lead.score)}`}>
+                              {lead.score}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <DollarSign className="h-4 w-4 text-green-400" />
+                            <span className="text-green-400 font-medium">
+                              {lead.estimatedValue?.toLocaleString() || '0'}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm text-gray-400">
+                              {new Date(lead.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                              <DropdownMenuItem 
+                                onClick={() => handleViewLead(lead)}
+                                className="text-gray-300 hover:bg-gray-700"
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleEditLead(lead)}
+                                className="text-gray-300 hover:bg-gray-700"
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Lead
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => confirmDeleteLead(lead)}
+                                className="text-red-400 hover:bg-gray-700"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Lead
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </PageLayout>
 
+      {/* Lead Dialog */}
+      <LeadDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        lead={selectedLead}
+        onSave={handleSaveLead}
+        mode={dialogMode}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-gray-900 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Delete Lead</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Are you sure you want to delete "{leadToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteLead}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Lead
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}

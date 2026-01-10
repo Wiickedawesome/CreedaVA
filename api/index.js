@@ -1,9 +1,12 @@
 // Azure Functions v4 Entry Point
-// This file loads all function handlers
+// This file exports all function handlers for the v4 programming model
 
-// Load all functions
-require('./getAnalytics');
-require('./trackEvent');
-require('./submitContact');
+// Export individual functions
+module.exports = {
+  ...require('./getAnalytics'),
+  ...require('./trackEvent'), 
+  ...require('./submitContact'),
+  ...require('./adminApi')
+};
 
 console.log('✅ Azure Functions loaded successfully');

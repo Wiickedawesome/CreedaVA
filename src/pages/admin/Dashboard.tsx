@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { db } from '@/lib/database'
 import { Users, UserPlus, CheckSquare, TrendingUp, Mail, FolderKanban, Plus, Edit, Send, FileText } from 'lucide-react'
+import { authorizedFetch } from '@/lib/api-client'
 
 interface Stats {
   leads: number
@@ -49,27 +49,29 @@ function QuickActionsCard() {
   ]
 
   return (
-    <Card className="p-6 bg-gray-800 border-gray-700">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
-        <p className="text-gray-400 text-sm">Common tasks and shortcuts</p>
-      </div>
-      <div className="grid grid-cols-1 gap-3">
-        {quickActions.map((action, index) => (
-          <Button
-            key={index}
-            onClick={action.action}
-            variant="outline"
-            className="flex items-center justify-start gap-3 p-4 h-auto bg-gray-700/50 border-gray-600 hover:bg-gray-700 text-white"
-          >
-            <action.icon className={`w-5 h-5 shrink-0 ${action.color}`} />
-            <div className="text-left">
-              <div className="font-medium text-white">{action.title}</div>
-              <div className="text-xs text-gray-400">{action.description}</div>
-            </div>
-          </Button>
-        ))}
-      </div>
+    <Card className="bg-gray-800 border-gray-700">
+      <CardHeader>
+        <CardTitle className="text-white">Quick Actions</CardTitle>
+        <CardDescription className="text-gray-300">Common tasks and shortcuts</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 gap-3">
+          {quickActions.map((action, index) => (
+            <Button
+              key={index}
+              onClick={action.action}
+              variant="outline"
+              className="flex items-center justify-start gap-3 p-4 h-auto bg-gray-700 border-gray-600 hover:bg-gray-600 text-white"
+            >
+              <action.icon className={`w-5 h-5 shrink-0 ${action.color}`} />
+              <div className="text-left">
+                <div className="font-medium">{action.title}</div>
+                <div className="text-xs text-gray-400">{action.description}</div>
+              </div>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
     </Card>
   )
 }
@@ -91,30 +93,34 @@ export function AdminDashboard() {
 
   const loadStats = async () => {
     try {
-      // Fetch data from Azure Cosmos DB via Azure Functions
-      const [leadsRes, contactsRes, tasksRes, projectsRes, emailsRes] = await Promise.all([
-        db.from('leads').select('*'),
-        db.from('contacts').select('*'),
-        db.from('tasks').select('*'),
-        db.from('projects').select('*'),
-        db.from('emails').select('*'),
-      ])
+      setLoading(true);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+      
+      // Fetch contacts and analytics from our working API
+      const [contactsRes, analyticsRes] = await Promise.all([
+        authorizedFetch(`${API_BASE}/getContacts`).then(r => r.json()).catch(() => ({ data: [] })),
+        authorizedFetch(`${API_BASE}/getAnalytics?days=30`).then(r => r.json()).catch(() => ({ data: [], summary: {} }))
+      ]);
+
+      const contactsCount = contactsRes.data?.length || 0;
+      const analyticsCount = analyticsRes.data?.length || 0;
+      const uniquePages = analyticsRes.summary?.uniquePages || 0;
 
       setStats({
-        leads: (leadsRes as any).data?.length || 0,
-        contacts: (contactsRes as any).data?.length || 0,
-        tasks: (tasksRes as any).data?.length || 0,
-        projects: (projectsRes as any).data?.length || 0,
-        emails: (emailsRes as any).data?.length || 0,
-        recentActivity: 0,
-      })
+        leads: contactsCount, // Use contacts as leads for now
+        contacts: contactsCount,
+        tasks: 0, // Not implemented yet
+        projects: 0, // Not implemented yet
+        emails: 0, // Not implemented yet
+        recentActivity: analyticsCount,
+      });
     } catch (error) {
-      console.error('Error loading stats:', error)
+      console.error('Error loading stats:', error);
       // Stats loading is non-critical, continue rendering with zeros
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const statCards = [
     { title: 'Total Leads', value: stats.leads, icon: UserPlus, color: 'text-blue-600' },
@@ -127,12 +133,12 @@ export function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-6">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-800 rounded w-1/4"></div>
+          <div className="h-8 bg-gray-700 rounded w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-800 rounded-lg"></div>
+              <div key={i} className="h-32 bg-gray-700 rounded-lg"></div>
             ))}
           </div>
         </div>
@@ -141,7 +147,7 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-white">Dashboard</h1>
         <p className="text-gray-400 mt-1">

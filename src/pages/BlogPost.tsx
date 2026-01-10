@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Calendar, ArrowLeft, Eye, Linkedin, Share2 } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
-import { db } from '@/lib/database'
+// Database removed - will use CosmosDB API when implemented
 import { format } from 'date-fns'
 
 interface BlogPost {

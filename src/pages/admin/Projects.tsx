@@ -1,53 +1,91 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/database';
-import { Database } from '@/lib/database.types';
-import { useAuth } from '@/contexts/AuthContext';
+import { PageLayout } from '@/components/admin/PageLayout';
+import { ProjectDialog, Project } from '@/components/admin/ProjectDialog';
+import { authorizedFetch } from '@/lib/api-client';
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Search, Edit, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { 
+  FolderKanban, 
+  Plus, 
+  RefreshCw, 
+  MoreHorizontal, 
+  Eye, 
+  Edit, 
+  Trash2, 
+  Target, 
+  Users, 
+  Calendar, 
+  DollarSign,
+  Percent 
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Progress } from '@/components/ui/progress';
 
-type Project = Database['public']['Tables']['projects']['Row'];
-type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
-
-const statusConfig = {
-  planning: { label: 'Planning', color: 'bg-blue-500' },
-  active: { label: 'Active', color: 'bg-green-500' },
-  on_hold: { label: 'On Hold', color: 'bg-yellow-500' },
-  completed: { label: 'Completed', color: 'bg-purple-500' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-500' },
-  archived: { label: 'Archived', color: 'bg-gray-500' }
+type ProjectFormData = {
+  name: string;
+  description?: string;
+  status: string;
+  priority: string;
+  manager?: string;
+  team?: string;
+  budget?: number;
+  progress: number;
+  startDate?: Date;
+  endDate?: Date;
+  milestones?: string;
+  tags?: string;
+  category?: string;
 };
 
-const healthConfig = {
-  on_track: { label: 'On Track', icon: CheckCircle, color: 'text-green-600' },
-  at_risk: { label: 'At Risk', icon: AlertTriangle, color: 'text-yellow-600' },
-  off_track: { label: 'Off Track', icon: AlertTriangle, color: 'text-red-600' }
-};
+const projectStatuses = [
+  { value: 'planning', label: 'Planning', color: 'bg-blue-500', textColor: 'text-blue-400' },
+  { value: 'active', label: 'Active', color: 'bg-green-500', textColor: 'text-green-400' },
+  { value: 'on-hold', label: 'On Hold', color: 'bg-yellow-500', textColor: 'text-yellow-400' },
+  { value: 'completed', label: 'Completed', color: 'bg-purple-500', textColor: 'text-purple-400' },
+  { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500', textColor: 'text-red-400' },
+];
+
+const projectPriorities = [
+  { value: 'low', label: 'Low', color: 'bg-gray-500', textColor: 'text-gray-400' },
+  { value: 'medium', label: 'Medium', color: 'bg-blue-500', textColor: 'text-blue-400' },
+  { value: 'high', label: 'High', color: 'bg-orange-500', textColor: 'text-orange-400' },
+  { value: 'critical', label: 'Critical', color: 'bg-red-500', textColor: 'text-red-400' },
+];
 
 export function Projects() {
-  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [formData, setFormData] = useState<Partial<ProjectInsert>>({
-    name: '',
-    description: '',
-    status: 'planning',
-    priority: 'medium',
-    budget: null,
-    progress_percentage: 0
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
   useEffect(() => {
     fetchProjects();
@@ -55,148 +93,317 @@ export function Projects() {
 
   const fetchProjects = async () => {
     try {
-      const { data, error } = await db.from('projects').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      setProjects(data || []);
+      setLoading(true);
+      setError(null);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      const response = await authorizedFetch(`${API_BASE}/getProjects`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        setProjects(result.data || []);
+      } else {
+        throw new Error('Failed to fetch projects');
+      }
     } catch (error) {
       console.error('Error fetching projects:', error);
+      setError('Failed to load projects. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateProject = () => {
+    setSelectedProject(null);
+    setDialogMode('create');
+    setDialogOpen(true);
+  };
+
+  const handleEditProject = (project: Project) => {
+    setSelectedProject(project);
+    setDialogMode('edit');
+    setDialogOpen(true);
+  };
+
+  const handleViewProject = (project: Project) => {
+    setSelectedProject(project);
+    setDialogMode('view');
+    setDialogOpen(true);
+  };
+
+  const handleSaveProject = async (projectData: Omit<Project, 'id' | 'type' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const dataToSubmit = { ...formData, project_manager: user?.id };
-      if (editingProject) {
-        const { error } = await db.from('projects').update(dataToSubmit).eq('id', editingProject.id);
-        if (error) throw error;
-      } else {
-        const { error } = await db.from('projects').insert([dataToSubmit as ProjectInsert]);
-        if (error) throw error;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      
+      if (dialogMode === 'create') {
+        const response = await authorizedFetch(`${API_BASE}/createProject`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(projectData)
+        });
+        
+        if (response.ok) {
+          await fetchProjects();
+        } else {
+          throw new Error('Failed to create project');
+        }
+      } else if (dialogMode === 'edit' && selectedProject) {
+        const response = await authorizedFetch(`${API_BASE}/updateProject/${selectedProject.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(projectData)
+        });
+        
+        if (response.ok) {
+          await fetchProjects();
+        } else {
+          throw new Error('Failed to update project');
+        }
       }
-      handleCloseDialog();
-      fetchProjects();
     } catch (error) {
       console.error('Error saving project:', error);
+      setError('Failed to save project. Please try again.');
     }
   };
 
-  const handleEdit = (project: Project) => {
-    setEditingProject(project);
-    setFormData({ name: project.name, description: project.description, status: project.status, priority: project.priority, budget: project.budget, start_date: project.start_date, end_date: project.end_date, progress_percentage: project.progress_percentage, health_status: project.health_status });
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure?')) return;
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return;
+    
     try {
-      const { error } = await db.from('projects').delete().eq('id', id);
-      if (error) throw error;
-      fetchProjects();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      const response = await authorizedFetch(`${API_BASE}/deleteProject/${projectToDelete.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        await fetchProjects();
+        setDeleteDialogOpen(false);
+        setProjectToDelete(null);
+      } else {
+        throw new Error('Failed to delete project');
+      }
     } catch (error) {
       console.error('Error deleting project:', error);
+      setError('Failed to delete project. Please try again.');
     }
   };
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setEditingProject(null);
-    setFormData({ name: '', description: '', status: 'planning', priority: 'medium', budget: null, progress_percentage: 0 });
+  const filteredProjects = projects.filter(project =>
+    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    project.manager?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = projectStatuses.find(s => s.value === status);
+    if (!statusConfig) return null;
+    
+    return (
+      <Badge className={cn("px-2 py-1 text-xs font-medium rounded-full", statusConfig.color)}>
+        {statusConfig.label}
+      </Badge>
+    );
   };
 
-  const filteredProjects = projects.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  const stats = { total: projects.length, active: projects.filter(p => p.status === 'active').length, completed: projects.filter(p => p.status === 'completed').length };
-
-  if (loading) return <div className="flex items-center justify-center h-96 bg-gray-900"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div></div>;
+  const getPriorityBadge = (priority: string) => {
+    const priorityConfig = projectPriorities.find(p => p.value === priority);
+    if (!priorityConfig) return null;
+    
+    return (
+      <Badge variant="outline" className={cn("px-2 py-1 text-xs font-medium", priorityConfig.textColor)}>
+        {priorityConfig.label}
+      </Badge>
+    );
+  };
 
   return (
-    <div className="space-y-6 p-6">
-      <div><h1 className="text-2xl font-semibold text-white">Projects</h1><p className="text-gray-400 mt-1">Manage client projects</p></div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <p className="text-sm font-medium text-gray-400">Total Projects</p>
-          <p className="text-3xl font-bold text-white mt-2">{stats.total}</p>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <p className="text-sm font-medium text-gray-400">Active</p>
+    <>
+      <PageLayout
+        title="Projects"
+        description="Manage project timelines, milestones, and team assignments"
+        searchPlaceholder="Search projects..."
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        primaryAction={{
+          label: 'Create Project',
+          onClick: handleCreateProject,
+          icon: <Plus className="h-4 w-4" />
+        }}
+        secondaryActions={[
+          {
+            label: 'Refresh',
+            onClick: fetchProjects,
+            icon: <RefreshCw className="h-4 w-4" />
+          }
+        ]}
+      >
+        {loading ? (
+          <div className="text-center py-12">
+            <RefreshCw className="h-8 w-8 animate-spin text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-400">Loading projects...</p>
           </div>
-          <p className="text-2xl font-bold text-white mt-2">{stats.active}</p>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-            <p className="text-sm font-medium text-gray-400">Completed</p>
+        ) : error ? (
+          <div className="text-center py-12">
+            <Target className="h-8 w-8 text-red-400 mx-auto mb-4" />
+            <p className="text-red-400 mb-4">{error}</p>
+            <Button onClick={fetchProjects} variant="outline">
+              Try Again
+            </Button>
           </div>
-          <p className="text-2xl font-bold text-white mt-2">{stats.completed}</p>
-        </div>
-      </div>
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search projects..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => setEditingProject(null)}><Plus className="w-4 h-4 mr-2" />New Project</Button></DialogTrigger><DialogContent className="sm:max-w-[600px]"><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>{editingProject ? 'Edit' : 'New'} Project</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Name *</Label><Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div><div className="space-y-2"><Label>Description</Label><Textarea value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Status</Label><Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v as Project['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusConfig).map(([k, c]) => <SelectItem key={k} value={k}>{c.label}</SelectItem>)}</SelectContent></Select></div><div className="space-y-2"><Label>Progress %</Label><Input type="number" min="0" max="100" value={formData.progress_percentage || 0} onChange={(e) => setFormData({ ...formData, progress_percentage: parseInt(e.target.value) || 0 })} /></div></div></div><DialogFooter><Button type="button" variant="outline" onClick={handleCloseDialog}>Cancel</Button><Button type="submit">{editingProject ? 'Update' : 'Create'}</Button></DialogFooter></form></DialogContent></Dialog>
-      </div>
-      <div className="bg-gray-800 rounded-lg border border-gray-700">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-800 border-gray-700">
-              <TableHead className="text-gray-200 font-medium">Project</TableHead>
-              <TableHead className="text-gray-200 font-medium">Status</TableHead>
-              <TableHead className="text-gray-200 font-medium">Progress</TableHead>
-              <TableHead className="text-gray-200 font-medium">Created</TableHead>
-              <TableHead className="text-right text-gray-200 font-medium">Actions</TableHead>
-            </TableRow>
-          </TableHeader>          <TableBody>
-            {filteredProjects.length === 0 ? (
-              <TableRow className="border-gray-600">
-                <TableCell colSpan={5} className="text-center text-gray-300 py-8">No projects yet</TableCell>
-              </TableRow>
-            ) : (
-              filteredProjects.map(p => (
-                <TableRow key={p.id} className="border-gray-600 hover:bg-gray-650">
-                  <TableCell className="text-white">
-                    <div className="font-medium">{p.name}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={statusConfig[p.status as keyof typeof statusConfig].color}>
-                      {statusConfig[p.status as keyof typeof statusConfig].label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1 min-w-[100px]">
-                      <div className="text-sm text-gray-300">{p.progress_percentage}%</div>
-                      <Progress value={p.progress_percentage || 0} className="h-2" />
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-gray-300">
-                    {format(new Date(p.created_at), 'MMM d, yyyy')}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(p)} className="text-gray-300 hover:text-white hover:bg-gray-600">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(p.id)} className="text-red-400 hover:text-red-300 hover:bg-gray-600">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        ) : (
+          <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700">
+                  <TableHead className="text-gray-300">Project</TableHead>
+                  <TableHead className="text-gray-300">Status</TableHead>
+                  <TableHead className="text-gray-300">Priority</TableHead>
+                  <TableHead className="text-gray-300">Progress</TableHead>
+                  <TableHead className="text-gray-300">Manager</TableHead>
+                  <TableHead className="text-gray-300">Timeline</TableHead>
+                  <TableHead className="text-gray-300">Budget</TableHead>
+                  <TableHead className="text-gray-300 w-[100px]">Actions</TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+              </TableHeader>
+              <TableBody>
+                {filteredProjects.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-12">
+                      <FolderKanban className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-400 text-lg mb-2">No projects found</p>
+                      <p className="text-gray-500 mb-4">
+                        {searchTerm ? 'Try adjusting your search criteria' : 'Get started by creating your first project'}
+                      </p>
+                      {!searchTerm && (
+                        <Button onClick={handleCreateProject} className="bg-blue-600 hover:bg-blue-700">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create Project
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredProjects.map((project) => {
+                    const isOverdue = project.endDate && new Date(project.endDate) < new Date() && project.status !== 'completed';
+                    
+                    return (
+                      <TableRow key={project.id} className="border-gray-700 hover:bg-gray-750">
+                        <TableCell>
+                          <div>
+                            <div className="font-medium text-white">{project.name}</div>
+                            {project.description && (
+                              <div className="text-sm text-gray-400 truncate max-w-xs">
+                                {project.description}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            {getStatusBadge(project.status)}
+                            {isOverdue && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {getPriorityBadge(project.priority)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <div className="flex-1 bg-gray-700 rounded-full h-2 w-16">
+                              <div 
+                                className="bg-blue-500 h-2 rounded-full transition-all" 
+                                style={{ width: `${project.progress}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-white text-sm font-medium">{project.progress}%</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-white">{project.manager || 'Unassigned'}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-gray-300 text-sm">
+                            {project.startDate && project.endDate ? (
+                              `${format(new Date(project.startDate), 'MMM dd')} - ${format(new Date(project.endDate), 'MMM dd')}`
+                            ) : (
+                              'Not set'
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-white">
+                            {project.budget ? `$${project.budget.toLocaleString()}` : 'Not set'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-gray-800 border-gray-600">
+                              <DropdownMenuItem onClick={() => handleViewProject(project)} className="text-gray-300 hover:bg-gray-700">
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEditProject(project)} className="text-gray-300 hover:bg-gray-700">
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit Project
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setProjectToDelete(project);
+                                  setDeleteDialogOpen(true);
+                                }}
+                                className="text-red-400 hover:bg-red-900/20"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </PageLayout>
+
+      {/* Project Dialog */}
+      <ProjectDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        project={selectedProject}
+        onSave={handleSaveProject}
+        mode={dialogMode}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-gray-900 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Delete Project</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Are you sure you want to delete "{projectToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteProject}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

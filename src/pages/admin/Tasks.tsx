@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/database';
-import { Database } from '@/lib/database.types';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { PageLayout } from '@/components/admin/PageLayout';
+import { TaskDialog, Task } from '@/components/admin/TaskDialog';
+import { authorizedFetch } from '@/lib/api-client';
 import { 
   Table,
   TableBody,
@@ -12,62 +10,77 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Search, Edit, Trash2, CheckCircle2, Circle, Clock, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { 
+  CheckSquare, 
+  Plus, 
+  RefreshCw, 
+  MoreHorizontal, 
+  Eye, 
+  Edit, 
+  Trash2, 
+  Flag, 
+  User, 
+  Calendar, 
+  Clock,
+  Target 
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-type Task = Database['public']['Tables']['tasks']['Row'];
-type TaskInsert = Database['public']['Tables']['tasks']['Insert'];
-
-const statusConfig = {
-  todo: { label: 'To Do', color: 'secondary', icon: Circle },
-  in_progress: { label: 'In Progress', color: 'default', icon: Clock },
-  blocked: { label: 'Blocked', color: 'secondary', icon: AlertCircle },
-  review: { label: 'Review', color: 'secondary', icon: Clock },
-  completed: { label: 'Completed', color: 'default', icon: CheckCircle2 },
-  cancelled: { label: 'Cancelled', color: 'secondary', icon: Circle }
+type TaskFormData = {
+  title: string;
+  description?: string;
+  assignedTo?: string;
+  priority: string;
+  status: string;
+  category?: string;
+  estimatedHours?: number;
+  dueDate?: Date;
+  tags?: string;
 };
 
-const priorityConfig = {
-  low: { label: 'Low', color: 'secondary' },
-  medium: { label: 'Medium', color: 'secondary' },
-  high: { label: 'High', color: 'default' },
-  urgent: { label: 'Urgent', color: 'default' }
-};
+const taskPriorities = [
+  { value: 'low', label: 'Low', color: 'bg-gray-500', textColor: 'text-gray-400' },
+  { value: 'medium', label: 'Medium', color: 'bg-blue-500', textColor: 'text-blue-400' },
+  { value: 'high', label: 'High', color: 'bg-orange-500', textColor: 'text-orange-400' },
+  { value: 'urgent', label: 'Urgent', color: 'bg-red-500', textColor: 'text-red-400' },
+];
+
+const taskStatuses = [
+  { value: 'todo', label: 'To Do', color: 'bg-gray-500' },
+  { value: 'in-progress', label: 'In Progress', color: 'bg-blue-500' },
+  { value: 'review', label: 'Review', color: 'bg-purple-500' },
+  { value: 'completed', label: 'Completed', color: 'bg-green-500' },
+  { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500' },
+];
 
 export function Tasks() {
-  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [formData, setFormData] = useState<Partial<TaskInsert>>({
-    title: '',
-    description: '',
-    status: 'todo',
-    priority: 'medium',
-    due_date: null,
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   useEffect(() => {
     fetchTasks();
@@ -75,411 +88,338 @@ export function Tasks() {
 
   const fetchTasks = async () => {
     try {
-      const { data, error } = await db
-        .from('tasks')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setTasks(data || []);
-    } catch (error) {
-      // Task fetch failed, display empty state
+      setLoading(true);
+      setError(null);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      const response = await authorizedFetch(`${API_BASE}/getTasks`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        setTasks(result.data || []);
+      } else {
+        throw new Error('Failed to fetch tasks');
+      }
+    } catch (err) {
+      console.error('Error fetching tasks:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load tasks');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveTask = async (taskData: TaskFormData) => {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
     
     try {
-      const dataToSubmit = {
-        ...formData,
-        created_by: user?.id
-      };
-
-      if (editingTask) {
-        const { error } = await db
-          .from('tasks')
-          .update(dataToSubmit as any)
-          .eq('id', editingTask.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await db
-          .from('tasks')
-          .insert([dataToSubmit as any]);
-
-        if (error) throw error;
+      if (dialogMode === 'create') {
+        const response = await authorizedFetch(`${API_BASE}/createTask`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...taskData,
+            dueDate: taskData.dueDate?.toISOString(),
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to create task');
+        }
+      } else if (dialogMode === 'edit' && selectedTask) {
+        const response = await authorizedFetch(`${API_BASE}/updateTask/${selectedTask.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...taskData,
+            dueDate: taskData.dueDate?.toISOString(),
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update task');
+        }
       }
-
-      handleCloseDialog();
-      fetchTasks();
+      
+      // Refresh tasks after save
+      await fetchTasks();
     } catch (error) {
       console.error('Error saving task:', error);
+      throw error;
     }
   };
 
-  const handleEdit = (task: Task) => {
-    setEditingTask(task);
-    setFormData({
-      title: task.title,
-      description: task.description,
-      status: task.status,
-      priority: task.priority,
-      due_date: task.due_date,
-      estimated_hours: task.estimated_hours
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this task?')) return;
-
+  const handleDeleteTask = async () => {
+    if (!taskToDelete) return;
+    
     try {
-      const { error } = await db
-        .from('tasks')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      fetchTasks();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7071/api';
+      const response = await authorizedFetch(`${API_BASE}/deleteTask/${taskToDelete.id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+      
+      // Refresh tasks after delete
+      await fetchTasks();
+      setDeleteDialogOpen(false);
+      setTaskToDelete(null);
     } catch (error) {
       console.error('Error deleting task:', error);
     }
   };
 
-  const handleStatusChange = async (taskId: string, newStatus: Task['status']) => {
-    try {
-      const updates: Partial<TaskInsert> = { status: newStatus };
-      if (newStatus === 'completed') {
-        updates.completed_at = new Date().toISOString();
-      }
-
-      const { error } = await db
-        .from('tasks')
-        .update(updates)
-        .eq('id', taskId);
-
-      if (error) throw error;
-      fetchTasks();
-    } catch (error) {
-      // Status update failed, revert will happen on next fetch
-    }
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setEditingTask(null);
-    setFormData({
-      title: '',
-      description: '',
-      status: 'todo',
-      priority: 'medium',
-      due_date: null,
-    });
-  };
-
   const filteredTasks = tasks.filter(task =>
-    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    task.assignedTo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    task.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    task.tags?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const taskStats = {
-    total: tasks.length,
-    todo: tasks.filter(t => t.status === 'todo').length,
-    inProgress: tasks.filter(t => t.status === 'in_progress').length,
-    completed: tasks.filter(t => t.status === 'completed').length,
-    overdue: tasks.filter(t => t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed').length
+  const handleViewTask = (task: Task) => {
+    setSelectedTask(task);
+    setDialogMode('view');
+    setDialogOpen(true);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96 bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-      </div>
-    );
-  }
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setDialogMode('edit');
+    setDialogOpen(true);
+  };
+
+  const handleCreateTask = () => {
+    setSelectedTask(null);
+    setDialogMode('create');
+    setDialogOpen(true);
+  };
+
+  const confirmDeleteTask = (task: Task) => {
+    setTaskToDelete(task);
+    setDeleteDialogOpen(true);
+  };
+
+  const getPriorityInfo = (priority: string) => {
+    return taskPriorities.find(p => p.value === priority) || taskPriorities[1];
+  };
+
+  const getStatusInfo = (status: string) => {
+    return taskStatuses.find(s => s.value === status) || taskStatuses[0];
+  };
+
+  const isOverdue = (task: Task) => {
+    return task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
+  };
+
+  // Calculate stats
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(task => task.status === 'completed').length;
+  const inProgressTasks = tasks.filter(task => task.status === 'in-progress').length;
+  const overdueTasks = tasks.filter(task => isOverdue(task)).length;
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header with Stats */}
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Tasks</h1>
-        <p className="text-gray-400 mt-1">Manage your tasks and to-dos</p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <p className="text-sm font-medium text-gray-400">Total Tasks</p>
-          <p className="text-3xl font-bold text-white mt-2">{taskStats.total}</p>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-            <p className="text-sm font-medium text-gray-400">To Do</p>
-          </div>
-          <p className="text-3xl font-bold text-white mt-2">{taskStats.todo}</p>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-            <p className="text-sm font-medium text-gray-400">In Progress</p>
-          </div>
-          <p className="text-3xl font-bold text-white mt-2">{taskStats.inProgress}</p>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <p className="text-sm font-medium text-gray-400">Completed</p>
-          </div>
-          <p className="text-3xl font-bold text-white mt-2">{taskStats.completed}</p>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-            <p className="text-sm font-medium text-gray-400">Overdue</p>
-          </div>
-          <p className="text-3xl font-bold text-white mt-2">{taskStats.overdue}</p>
-        </div>
-      </div>
-
-      {/* Toolbar */}
-      <div className="flex gap-4 items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Search tasks..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingTask(null)}>
-              <Plus className="w-4 h-4 mr-2" />
-              New Task
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <form onSubmit={handleSubmit}>
-              <DialogHeader>
-                <DialogTitle>{editingTask ? 'Edit Task' : 'Create New Task'}</DialogTitle>
-                <DialogDescription>
-                  {editingTask ? 'Update task details below.' : 'Add a new task to your list.'}
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    required
-                    placeholder="Task title"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description || ''}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Task description"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                      value={formData.status}
-                      onValueChange={(value) => setFormData({ ...formData, status: value as Task['status'] })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(statusConfig).map(([key, config]) => (
-                          <SelectItem key={key} value={key}>{config.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="priority">Priority</Label>
-                    <Select
-                      value={formData.priority}
-                      onValueChange={(value) => setFormData({ ...formData, priority: value as Task['priority'] })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(priorityConfig).map(([key, config]) => (
-                          <SelectItem key={key} value={key}>{config.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="due_date">Due Date</Label>
-                    <Input
-                      id="due_date"
-                      type="datetime-local"
-                      value={formData.due_date ? new Date(formData.due_date).toISOString().slice(0, 16) : ''}
-                      onChange={(e) => setFormData({ ...formData, due_date: e.target.value ? new Date(e.target.value).toISOString() : null })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="estimated_hours">Estimated Hours</Label>
-                    <Input
-                      id="estimated_hours"
-                      type="number"
-                      step="0.5"
-                      value={formData.estimated_hours || ''}
-                      onChange={(e) => setFormData({ ...formData, estimated_hours: parseFloat(e.target.value) || null })}
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={handleCloseDialog}>
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  {editingTask ? 'Update Task' : 'Create Task'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Tasks Table */}
-      <div className="bg-gray-800 border border-gray-700 rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-gray-700 bg-gray-800 hover:bg-gray-800">
-              <TableHead className="text-white font-semibold">Task</TableHead>
-              <TableHead className="text-white font-semibold">Status</TableHead>
-              <TableHead className="text-white font-semibold">Priority</TableHead>
-              <TableHead className="text-white font-semibold">Due Date</TableHead>
-              <TableHead className="text-white font-semibold">Estimated</TableHead>
-              <TableHead className="text-white font-semibold">Created</TableHead>
-              <TableHead className="text-right text-white font-semibold">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTasks.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                  {searchTerm ? 'No tasks found matching your search.' : 'No tasks yet. Create your first task to get started!'}
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredTasks.map((task) => {
-                const StatusIcon = statusConfig[task.status as keyof typeof statusConfig].icon;
-                const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed';
-
-                return (
-                  <TableRow key={task.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{task.title}</div>
-                        {task.description && (
-                          <div className="text-sm text-muted-foreground line-clamp-1">
-                            {task.description}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={task.status || 'todo'}
-                        onValueChange={(value) => handleStatusChange(task.id, value as Task['status'])}
-                      >
-                        <SelectTrigger className="w-32">
-                          <div className="flex items-center gap-2">
-                            <StatusIcon className="w-4 h-4" />
-                            <SelectValue />
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(statusConfig).map(([key, config]) => {
-                            const Icon = config.icon;
-                            return (
-                              <SelectItem key={key} value={key}>
-                                <div className="flex items-center gap-2">
-                                  <Icon className="w-4 h-4" />
-                                  {config.label}
-                                </div>
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={priorityConfig[task.priority as keyof typeof priorityConfig].color}>
-                        {priorityConfig[task.priority as keyof typeof priorityConfig].label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {task.due_date ? (
-                        <div className={isOverdue ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
-                          {format(new Date(task.due_date), 'MMM d, yyyy')}
-                          {isOverdue && <Badge variant="secondary" className="ml-2">Overdue</Badge>}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {task.estimated_hours ? `${task.estimated_hours}h` : '—'}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {format(new Date(task.created_at), 'MMM d, yyyy')}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(task)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(task.id)}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
-                      </div>
+    <>
+      <PageLayout
+        title="Tasks"
+        description="Task management and tracking"
+        searchPlaceholder="Search tasks..."
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        stats={[
+          { label: 'total tasks', value: totalTasks },
+          { label: 'completed', value: completedTasks },
+          { label: 'in progress', value: inProgressTasks },
+          { label: 'overdue', value: overdueTasks }
+        ]}
+        secondaryActions={[
+          {
+            label: 'Refresh',
+            onClick: fetchTasks,
+            variant: 'outline',
+            icon: <RefreshCw className="h-4 w-4" />
+          }
+        ]}
+        primaryAction={{
+          label: 'Create Task',
+          onClick: handleCreateTask,
+          icon: <Plus className="h-4 w-4" />
+        }}
+      >
+        {loading ? (
+          <div className="text-center py-8 text-gray-300">Loading tasks...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-400">Error: {error}</div>
+        ) : (
+          <div className="bg-gray-900 rounded-lg border border-gray-700">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700">
+                  <TableHead className="text-gray-300">Task</TableHead>
+                  <TableHead className="text-gray-300">Assigned</TableHead>
+                  <TableHead className="text-gray-300">Priority</TableHead>
+                  <TableHead className="text-gray-300">Status</TableHead>
+                  <TableHead className="text-gray-300">Category</TableHead>
+                  <TableHead className="text-gray-300">Due Date</TableHead>
+                  <TableHead className="text-gray-300">Time</TableHead>
+                  <TableHead className="text-gray-300">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredTasks.length === 0 ? (
+                  <TableRow className="border-gray-700">
+                    <TableCell colSpan={8} className="text-center py-8 text-gray-400">
+                      {searchTerm ? 'No tasks found matching your search' : 'No tasks found'}
                     </TableCell>
                   </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+                ) : (
+                  filteredTasks.map((task) => {
+                    const priorityInfo = getPriorityInfo(task.priority);
+                    const statusInfo = getStatusInfo(task.status);
+                    const overdueTask = isOverdue(task);
+                    
+                    return (
+                      <TableRow key={task.id} className="border-gray-700 hover:bg-gray-800">
+                        <TableCell>
+                          <div>
+                            <p className={cn("font-medium", overdueTask ? "text-red-400" : "text-gray-200")}>
+                              {task.title}
+                            </p>
+                            {task.description && (
+                              <p className="text-sm text-gray-400 truncate max-w-xs">
+                                {task.description}
+                              </p>
+                            )}
+                            {task.tags && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {task.tags.split(',').slice(0, 2).map((tag, index) => (
+                                  <Badge key={index} variant="secondary" className="text-xs">
+                                    {tag.trim()}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <User className="h-4 w-4 text-gray-400" />
+                            <span className="text-gray-300">{task.assignedTo || 'Unassigned'}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Flag className={`h-4 w-4 ${priorityInfo.textColor}`} />
+                            <Badge className={`${priorityInfo.color} text-white`}>
+                              {priorityInfo.label}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`${statusInfo.color} text-white`}>
+                            {statusInfo.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-gray-300">{task.category || 'General'}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            <span className={cn(
+                              "text-sm",
+                              overdueTask ? "text-red-400" : "text-gray-400"
+                            )}>
+                              {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '—'}
+                            </span>
+                            {overdueTask && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Clock className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm text-gray-400">
+                              {task.estimatedHours || 0}h
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                              <DropdownMenuItem 
+                                onClick={() => handleViewTask(task)}
+                                className="text-gray-300 hover:bg-gray-700"
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleEditTask(task)}
+                                className="text-gray-300 hover:bg-gray-700"
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Task
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => confirmDeleteTask(task)}
+                                className="text-red-400 hover:bg-gray-700"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Task
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </PageLayout>
+
+      {/* Task Dialog */}
+      <TaskDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        task={selectedTask}
+        onSave={handleSaveTask}
+        mode={dialogMode}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-gray-900 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Delete Task</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Are you sure you want to delete "{taskToDelete?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteTask}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Task
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

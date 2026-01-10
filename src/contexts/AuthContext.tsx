@@ -1,105 +1,101 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { db, User, Session, AuthError } from '@/lib/database'
+import { msalInstance, signInWithPopup, signOutInteractive, getActiveAccount, acquireIdToken } from '@/lib/auth'
+
+const isDevMode = import.meta.env.VITE_DEV_MODE === 'true'
+
+interface AuthUser {
+  id: string
+  email?: string
+  name?: string
+}
 
 interface AuthContextType {
-  user: User | null
-  session: Session | null
+  user: AuthUser | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: AuthError | null }>
+  signIn: () => Promise<{ error: Error | null }>
+  signUp: () => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
+  getToken: () => Promise<string | null>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
-    db.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = db.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const signIn = async (email: string, password: string) => {
-    // Validate email domain at auth context level
-    if (!email.endsWith('@creedava.com')) {
-      return { 
-        error: { 
-          message: 'Access restricted to @creedava.com email addresses only',
-          name: 'EmailDomainError'
-        } as AuthError 
+    if (isDevMode) {
+      // Dev mode: check localStorage
+      const devUser = localStorage.getItem('dev_user')
+      if (devUser) {
+        setUser(JSON.parse(devUser))
       }
-    }
-
-    const { error } = await db.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { error }
-  }
-
-  const signUp = async (email: string, password: string, fullName: string) => {
-    // Validate email domain at auth context level
-    if (!email.endsWith('@creedava.com')) {
-      return { 
-        error: { 
-          message: 'Access restricted to @creedava.com email addresses only',
-          name: 'EmailDomainError'
-        } as AuthError 
-      }
-    }
-
-    const { data, error } = await db.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
-    })
-
-    // Create user profile in users table
-    if (data.user && !error) {
-      await db.from('users').insert({
-        id: data.user.id,
-        email: data.user.email!,
-        full_name: fullName,
-        role: 'user',
+      setLoading(false)
+    } else {
+      // Production: use MSAL
+      msalInstance.initialize().then(() => {
+        const account = getActiveAccount()
+        if (account) {
+          setUser({
+            id: account.homeAccountId,
+            email: account.username,
+            name: account.name,
+          })
+        }
+        setLoading(false)
       })
     }
+  }, [])
 
-    return { error }
+  const signIn = async () => {
+    if (isDevMode) {
+      // Dev mode handled in Login component
+      return { error: null }
+    }
+    
+    try {
+      const result = await signInWithPopup()
+      setUser({
+        id: result.account.homeAccountId,
+        email: result.account.username,
+        name: result.account.name,
+      })
+      return { error: null }
+    } catch (error: any) {
+      return { error }
+    }
+  }
+
+  const signUp = async () => {
+    // For Entra ID, sign-up is the same interactive sign-in
+    return signIn()
   }
 
   const signOut = async () => {
-    await db.auth.signOut()
+    if (isDevMode) {
+      localStorage.removeItem('dev_user')
+      setUser(null)
+    } else {
+      await signOutInteractive()
+      setUser(null)
+    }
+  }
+
+  const getToken = async () => {
+    if (isDevMode) {
+      return 'dev-token'
+    }
+    return acquireIdToken()
   }
 
   const value = {
     user,
-    session,
     loading,
     signIn,
     signUp,
     signOut,
+    getToken,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

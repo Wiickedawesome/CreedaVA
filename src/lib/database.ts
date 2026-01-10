@@ -1,5 +1,7 @@
 // Azure Cosmos DB API Client
-// Uses Azure Functions as backend API
+// Uses Azure Functions as backend API secured with Entra ID
+
+import { acquireIdToken } from '@/lib/auth'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -19,105 +21,33 @@ interface AuthError {
   name: string
 }
 
-// Simple in-memory auth store (replace with proper JWT implementation)
+// Entra ID auth bridge
 class AuthClient {
-  private session: AuthSession | null = null
   private listeners: ((session: AuthSession | null) => void)[] = []
+  private session: AuthSession | null = null
 
-  async signInWithPassword({ email, password }: { email: string; password: string }) {
-    try {
-      // Mock authentication - in production, call Azure Function for auth
-      // For now, accept @creedava.com emails
-      if (!email.endsWith('@creedava.com')) {
-        return {
-          data: { user: null, session: null },
-          error: { message: 'Access restricted to @creedava.com email addresses only', name: 'EmailDomainError' } as AuthError
-        }
-      }
-
-      // Create mock session
-      const user: AuthUser = {
-        id: btoa(email),
-        email,
-        user_metadata: { full_name: email.split('@')[0] }
-      }
-      
-      const session: AuthSession = {
-        user,
-        access_token: btoa(JSON.stringify({ email, timestamp: Date.now() }))
-      }
-
-      this.session = session
-      localStorage.setItem('auth_session', JSON.stringify(session))
-      this.notifyListeners()
-
-      return { data: { user, session }, error: null }
-    } catch (error: any) {
-      return {
-        data: { user: null, session: null },
-        error: { message: error.message, name: 'AuthError' } as AuthError
-      }
-    }
+  async signInWithPassword() {
+    // Not used with Entra; keep signature for compatibility
+    return { data: { user: null, session: null }, error: { message: 'Password auth disabled; use Entra ID', name: 'AuthError' } as AuthError }
   }
 
-  async signUp({ email, password, options }: { email: string; password: string; options?: any }) {
-    try {
-      if (!email.endsWith('@creedava.com')) {
-        return {
-          data: { user: null, session: null },
-          error: { message: 'Access restricted to @creedava.com email addresses only', name: 'EmailDomainError' } as AuthError
-        }
-      }
-
-      const user: AuthUser = {
-        id: btoa(email),
-        email,
-        user_metadata: options?.data
-      }
-      
-      const session: AuthSession = {
-        user,
-        access_token: btoa(JSON.stringify({ email, timestamp: Date.now() }))
-      }
-
-      this.session = session
-      localStorage.setItem('auth_session', JSON.stringify(session))
-      this.notifyListeners()
-
-      return { data: { user, session }, error: null }
-    } catch (error: any) {
-      return {
-        data: { user: null, session: null },
-        error: { message: error.message, name: 'AuthError' } as AuthError
-      }
-    }
+  async signUp() {
+    return this.signInWithPassword()
   }
 
   async signOut() {
     this.session = null
-    localStorage.removeItem('auth_session')
     this.notifyListeners()
     return { error: null }
   }
 
   async getSession() {
-    if (!this.session) {
-      const stored = localStorage.getItem('auth_session')
-      if (stored) {
-        try {
-          this.session = JSON.parse(stored)
-        } catch {
-          localStorage.removeItem('auth_session')
-        }
-      }
-    }
     return { data: { session: this.session }, error: null }
   }
 
   onAuthStateChange(callback: (event: string, session: AuthSession | null) => void) {
     const listener = (session: AuthSession | null) => callback('SIGNED_IN', session)
     this.listeners.push(listener)
-    
     return {
       data: {
         subscription: {
@@ -170,6 +100,8 @@ class QueryBuilder {
 
   async execute() {
     try {
+      const token = await acquireIdToken()
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
       const params = new URLSearchParams({
         table: this.table,
         columns: this.columns,
@@ -182,7 +114,7 @@ class QueryBuilder {
         params.append(`filter${index}`, JSON.stringify(filter))
       })
 
-      const response = await fetch(`${API_BASE}/getAnalytics?${params}`)
+      const response = await fetch(`${API_BASE}/getAnalytics?${params}`, { headers })
       if (!response.ok) {
         const errorText = await response.text()
         throw new Error(`API Error: ${response.status} - ${errorText}`)
@@ -206,9 +138,14 @@ class QueryBuilder {
     return {
       eq: async (column: string, value: any) => {
         try {
+          const token = await acquireIdToken()
+          const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          }
           const response = await fetch(`${API_BASE}/submitContact`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ 
               table: this.table, 
               data, 
@@ -228,9 +165,14 @@ class QueryBuilder {
   // Insert method
   async insert(data: any[]) {
     try {
+      const token = await acquireIdToken()
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      }
       const response = await fetch(`${API_BASE}/submitContact`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ table: this.table, data: data[0] })
       })
       if (!response.ok) throw new Error('Failed to insert data')
@@ -246,9 +188,14 @@ class QueryBuilder {
     return {
       eq: async (column: string, value: any) => {
         try {
+          const token = await acquireIdToken()
+          const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          }
           const response = await fetch(`${API_BASE}/submitContact`, {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ 
               table: this.table, 
               filter: { column, value } 

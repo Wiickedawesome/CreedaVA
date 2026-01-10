@@ -110,6 +110,15 @@ export default defineConfig(({ mode }) => {
       overlay: false, // Disable error overlay for better performance
       port: 24678 // Custom HMR port to avoid conflicts
     },
+    // Proxy API requests to Azure Functions backend
+    proxy: {
+      '/api': {
+        target: 'http://localhost:7071',
+        changeOrigin: true,
+        secure: false,
+        ws: true
+      }
+    },
     // Enable compression for dev server
     middlewareMode: false,
     // Optimize file watching

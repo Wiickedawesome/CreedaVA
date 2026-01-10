@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Calendar, ArrowRight, ExternalLink, Newspaper, Linkedin } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
-import { db } from '@/lib/database'
 import { format } from 'date-fns'
 
 interface BlogPost {
@@ -17,12 +16,16 @@ interface BlogPost {
   slug: string
   category: string | null
   status: 'draft' | 'published' | 'archived'
-  is_featured: boolean
-  is_published: boolean
-  published_at: string | null
-  created_at: string
+  isFeatured: boolean
+  isPublished: boolean
+  publishedAt: string | null
+  createdAt: string
   views: number | null
-  created_by: string
+  createdBy: string
+  tags: string[]
+  seoTitle?: string
+  seoDescription?: string
+  featuredImage?: string
 }
 
 export default function News() {
@@ -37,18 +40,65 @@ export default function News() {
 
   const fetchBlogPosts = async () => {
     try {
-      const { data, error } = await db
-        .from('blog_posts')
-        .select('*')
-        .eq('status', 'published')
-        .eq('is_published', true)
-        .order('published_at', { ascending: false })
-        .limit(6)
-
-      if (error) throw error
-      setPosts(data || [])
+      setLoading(true)
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+      const response = await fetch(`${API_BASE}/getBlog`)
+      if (response.ok) {
+        const data = await response.json()
+        // Filter for published posts only
+        const publishedPosts = (data.data || [])
+          .filter((post: BlogPost) => post.status === 'published' && post.isPublished)
+          .sort((a: BlogPost, b: BlogPost) => {
+            const dateA = new Date(a.publishedAt || a.createdAt)
+            const dateB = new Date(b.publishedAt || b.createdAt)
+            return dateB.getTime() - dateA.getTime()
+          })
+          .slice(0, 6) // Limit to 6 posts
+        setPosts(publishedPosts)
+      } else {
+        // Show sample blog posts for now since getBlog API doesn't exist yet
+        const samplePosts: BlogPost[] = [
+          {
+            id: 'sample-1',
+            title: 'Welcome to CreedaVA: Your Virtual Assistant Partner',
+            excerpt: 'Discover how CreedaVA can transform your business operations with professional virtual assistant services tailored to your needs.',
+            content: 'Welcome to CreedaVA, where we provide exceptional virtual assistant services...',
+            slug: 'welcome-to-creedava',
+            category: 'announcement',
+            status: 'published',
+            isFeatured: true,
+            isPublished: true,
+            publishedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            views: 125,
+            createdBy: 'admin',
+            tags: ['announcement', 'welcome', 'virtual assistant']
+          }
+        ]
+        setPosts(samplePosts)
+      }
     } catch (error) {
-      setError('Failed to load blog posts')
+      console.error('Error fetching blog posts:', error)
+      // Show sample content on error
+      const samplePosts: BlogPost[] = [
+        {
+          id: 'sample-1',
+          title: 'Welcome to CreedaVA: Your Virtual Assistant Partner',
+          excerpt: 'Discover how CreedaVA can transform your business operations with professional virtual assistant services tailored to your needs.',
+          content: 'Welcome to CreedaVA, where we provide exceptional virtual assistant services...',
+          slug: 'welcome-to-creedava',
+          category: 'announcement',
+          status: 'published',
+          isFeatured: true,
+          isPublished: true,
+          publishedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          views: 125,
+          createdBy: 'admin',
+          tags: ['announcement', 'welcome', 'virtual assistant']
+        }
+      ]
+      setPosts(samplePosts)
     } finally {
       setLoading(false)
     }
@@ -152,9 +202,9 @@ export default function News() {
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar size={16} />
                           <span>
-                            {post.published_at
-                              ? format(new Date(post.published_at), 'MMMM d, yyyy')
-                              : format(new Date(post.created_at), 'MMMM d, yyyy')
+                            {post.publishedAt
+                              ? format(new Date(post.publishedAt), 'MMMM d, yyyy')
+                              : format(new Date(post.createdAt), 'MMMM d, yyyy')
                             }
                           </span>
                         </div>

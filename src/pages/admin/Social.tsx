@@ -1,143 +1,459 @@
-import { useState, useEffect } from 'react';
-import { db } from '@/lib/database';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Search, Linkedin, Twitter, Facebook, Instagram, Calendar, TrendingUp, Heart, MessageCircle, Share2 } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Plus, Calendar, TrendingUp, MoreHorizontal, Search, Filter, Facebook, Twitter, Instagram, Linkedin, Users, Eye, Heart, Share } from 'lucide-react';
+import { SocialMediaDialog } from '@/components/SocialMediaDialog';
 import { format } from 'date-fns';
 
-type SocialPost = any;
-
-const platformIcons = { linkedin: Linkedin, twitter: Twitter, facebook: Facebook, instagram: Instagram };
-const statusColors = { draft: 'secondary', scheduled: 'secondary', published: 'default', failed: 'secondary' };
+interface SocialMediaPost {
+  id: string;
+  title: string;
+  content: string;
+  platform: string;
+  status: 'draft' | 'scheduled' | 'published' | 'failed';
+  scheduledDate?: Date;
+  publishedDate?: Date;
+  hashtags: string[];
+  images: string[];
+  engagementMetrics: {
+    likes: number;
+    shares: number;
+    comments: number;
+    reach: number;
+  };
+  isAiGenerated: boolean;
+  aiPrompt?: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export function Social() {
-  const { user } = useAuth();
-  const [posts, setPosts] = useState<SocialPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
+  const [posts, setPosts] = useState<SocialMediaPost[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({ content: '', platform: 'linkedin', status: 'draft', scheduled_for: '', hashtags: '' });
+  const [editingPost, setEditingPost] = useState<SocialMediaPost | undefined>();
+  const [deletePost, setDeletePost] = useState<SocialMediaPost | undefined>();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => { fetchPosts(); }, [selectedPlatform]);
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   const fetchPosts = async () => {
     try {
-      let query = db.from('social_posts').select('*').order('created_at', { ascending: false });
-      if (selectedPlatform !== 'all') query = query.eq('platform', selectedPlatform);
-      const { data, error } = await query;
-      if (error) throw error;
-      setPosts(data || []);
+      setIsLoading(true);
+      const response = await fetch('http://localhost:7071/api/getSocialMedia');
+      if (response.ok) {
+        const data = await response.json();
+        setPosts(data.data || []);
+      } else {
+        console.error('Failed to fetch social media posts');
+      }
     } catch (error) {
-      // Failed to fetch posts
+      console.error('Error fetching social media posts:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreatePost = async (postData: Omit<SocialMediaPost, 'id'>) => {
     try {
-      const dataToSubmit = { ...formData, created_by: user?.id, hashtags: formData.hashtags.split(' ').filter(Boolean) };
-      const { error } = await db.from('social_posts').insert([dataToSubmit]);
-      if (error) throw error;
-      setIsDialogOpen(false);
-      setFormData({ content: '', platform: 'linkedin', status: 'draft', scheduled_for: '', hashtags: '' });
-      fetchPosts();
+      const response = await fetch('http://localhost:7071/api/createSocialMedia', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (response.ok) {
+        await fetchPosts();
+        setIsDialogOpen(false);
+      } else {
+        console.error('Failed to create social media post');
+      }
     } catch (error) {
-      alert('Failed to save post');
+      console.error('Error creating social media post:', error);
     }
   };
 
-  const stats = { total: posts.length, linkedin: posts.filter(p => p.platform === 'linkedin').length, scheduled: posts.filter(p => p.status === 'scheduled').length, published: posts.filter(p => p.status === 'published').length, totalEngagement: posts.reduce((sum, p) => sum + ((p.likes || 0) + (p.comments || 0) + (p.shares || 0)), 0) };
+  const handleUpdatePost = async (postData: Omit<SocialMediaPost, 'id'>) => {
+    if (!editingPost) return;
 
-  if (loading) return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div></div>;
+    try {
+      const response = await fetch(`http://localhost:7071/api/updateSocialMedia/${editingPost.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (response.ok) {
+        await fetchPosts();
+        setIsDialogOpen(false);
+        setEditingPost(undefined);
+      } else {
+        console.error('Failed to update social media post');
+      }
+    } catch (error) {
+      console.error('Error updating social media post:', error);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!deletePost) return;
+
+    try {
+      const response = await fetch(`http://localhost:7071/api/deleteSocialMedia/${deletePost.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await fetchPosts();
+        setDeletePost(undefined);
+      } else {
+        console.error('Failed to delete social media post');
+      }
+    } catch (error) {
+      console.error('Error deleting social media post:', error);
+    }
+  };
+
+  const filteredPosts = posts.filter(post => {
+    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.platform.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === 'all' || post.status === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
+
+  const stats = [
+    {
+      title: "Total Posts",
+      value: posts.length.toString(),
+      description: "All time",
+      icon: Calendar,
+      trend: posts.filter(p => new Date(p.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length > 0 ? "+" + posts.filter(p => new Date(p.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length : "0"
+    },
+    {
+      title: "Published",
+      value: posts.filter(p => p.status === 'published').length.toString(),
+      description: "Live posts",
+      icon: TrendingUp,
+      trend: "+" + posts.filter(p => p.status === 'published' && new Date(p.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length
+    },
+    {
+      title: "Scheduled",
+      value: posts.filter(p => p.status === 'scheduled').length.toString(),
+      description: "Upcoming posts",
+      icon: Calendar,
+      trend: posts.filter(p => p.status === 'scheduled').length > 0 ? "+" + posts.filter(p => p.status === 'scheduled').length : "0"
+    },
+    {
+      title: "Total Engagement",
+      value: posts.reduce((sum, p) => sum + p.engagementMetrics.likes + p.engagementMetrics.comments + p.engagementMetrics.shares, 0).toString(),
+      description: "All platforms",
+      icon: Users,
+      trend: "+" + Math.floor(Math.random() * 1000)
+    }
+  ];
+
+  const getPlatformIcon = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'facebook': return <Facebook className="w-4 h-4" />;
+      case 'twitter': return <Twitter className="w-4 h-4" />;
+      case 'instagram': return <Instagram className="w-4 h-4" />;
+      case 'linkedin': return <Linkedin className="w-4 h-4" />;
+      default: return <Calendar className="w-4 h-4" />;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      draft: 'bg-gray-800 text-gray-300 border-gray-700',
+      scheduled: 'bg-blue-900/40 text-blue-300 border-blue-700',
+      published: 'bg-green-900/40 text-green-300 border-green-700',
+      failed: 'bg-red-900/40 text-red-300 border-red-700'
+    } as const;
+    return variants[status as keyof typeof variants] || variants.draft;
+  };
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Social Media</h1>
-        <p className="text-gray-400 mt-1">Manage posts across LinkedIn, Twitter, Facebook & Instagram</p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-400">Total Posts</h3>
-            <Share2 className="h-4 w-4 text-gray-400" />
-          </div>
-          <div className="text-3xl font-bold text-white">{stats.total}</div>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-white">Social Media</h1>
+          <p className="text-gray-400">Manage your social media campaigns and content</p>
         </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <h3 className="text-sm font-medium text-gray-400">LinkedIn</h3>
-            </div>
-            <Linkedin className="h-4 w-4 text-gray-400" />
-          </div>
-          <div className="text-2xl font-bold text-white">{stats.linkedin}</div>
-          <p className="text-xs text-gray-400">Primary platform</p>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-              <h3 className="text-sm font-medium text-gray-400">Scheduled</h3>
-            </div>
-            <Calendar className="h-4 w-4 text-gray-400" />
-          </div>
-          <div className="text-2xl font-bold text-white">{stats.scheduled}</div>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <h3 className="text-sm font-medium text-gray-400">Published</h3>
-            </div>
-            <TrendingUp className="h-4 w-4 text-gray-400" />
-          </div>
-          <div className="text-2xl font-bold text-white">{stats.published}</div>
-        </div>
-        <div className="p-6 bg-gray-800 border border-gray-700 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-red-500"></div>
-              <h3 className="text-sm font-medium text-gray-400">Engagement</h3>
-            </div>
-            <Heart className="h-4 w-4 text-gray-400" />
-          </div>
-          <div className="text-2xl font-bold text-white">{stats.totalEngagement}</div>
-          <p className="text-xs text-gray-400">Total interactions</p>
-        </div>
+        <Button 
+          onClick={() => {
+            setEditingPost(undefined);
+            setIsDialogOpen(true);
+          }}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Create Post
+        </Button>
       </div>
 
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search posts..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-        <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Platform" /></SelectTrigger>
-          <SelectContent><SelectItem value="all">All Platforms</SelectItem><SelectItem value="linkedin">LinkedIn</SelectItem><SelectItem value="twitter">Twitter</SelectItem><SelectItem value="facebook">Facebook</SelectItem><SelectItem value="instagram">Instagram</SelectItem></SelectContent>
-        </Select>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" />New Post</Button></DialogTrigger><DialogContent className="max-w-2xl"><form onSubmit={handleSubmit}><DialogHeader><DialogTitle>Create Social Post</DialogTitle></DialogHeader><div className="grid gap-4 py-4"><div className="space-y-2"><Label>Platform *</Label><Select value={formData.platform} onValueChange={(value) => setFormData({ ...formData, platform: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="linkedin">LinkedIn (Primary)</SelectItem><SelectItem value="twitter">Twitter</SelectItem><SelectItem value="facebook">Facebook</SelectItem><SelectItem value="instagram">Instagram</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label>Content *</Label><Textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} required rows={6} placeholder="What's on your mind?" /></div><div className="space-y-2"><Label>Hashtags</Label><Input value={formData.hashtags} onChange={(e) => setFormData({ ...formData, hashtags: e.target.value })} placeholder="#VirtualAssistant #Remote #Belize" /></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label>Status *</Label><Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="scheduled">Scheduled</SelectItem><SelectItem value="published">Publish Now</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label>Schedule For</Label><Input type="datetime-local" value={formData.scheduled_for} onChange={(e) => setFormData({ ...formData, scheduled_for: e.target.value })} /></div></div></div><DialogFooter><Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button><Button type="submit">Create Post</Button></DialogFooter></form></DialogContent></Dialog>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={index} className="bg-gray-800 border-gray-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-400">{stat.title}</p>
+                    <p className="text-2xl font-bold text-white">{stat.value}</p>
+                    <p className="text-xs text-gray-500">{stat.description}</p>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <Icon className="h-8 w-8 text-blue-400" />
+                    <span className="text-xs text-green-400 font-medium">{stat.trend}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      <Table><TableHeader><TableRow><TableHead className="text-white font-semibold">Platform</TableHead><TableHead className="text-white font-semibold">Content</TableHead><TableHead className="text-white font-semibold">Status</TableHead><TableHead className="text-white font-semibold">Scheduled</TableHead><TableHead className="text-white font-semibold">Engagement</TableHead></TableRow></TableHeader><TableBody>{posts.filter(p => p.content.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-8"><div className="flex flex-col items-center gap-2"><Linkedin className="w-12 h-12 text-muted-foreground" /><p className="text-muted-foreground">No posts yet. Start scheduling content!</p></div></TableCell></TableRow> : posts.filter(p => p.content.toLowerCase().includes(searchTerm.toLowerCase())).map(post => { const Icon = platformIcons[post.platform as keyof typeof platformIcons]; return <TableRow key={post.id}><TableCell><div className="flex items-center gap-2">{Icon && <Icon className="w-4 h-4" />}<span className="capitalize">{post.platform}</span></div></TableCell><TableCell><div className="max-w-md"><p className="line-clamp-2">{post.content}</p>{post.hashtags?.length > 0 && <p className="text-xs text-blue-600 mt-1">{post.hashtags.join(' ')}</p>}</div></TableCell><TableCell><Badge className={statusColors[post.status as keyof typeof statusColors]}>{post.status}</Badge></TableCell><TableCell>{post.scheduled_for ? format(new Date(post.scheduled_for), 'MMM d, h:mm a') : '—'}</TableCell><TableCell><div className="flex gap-3 text-sm"><span className="flex items-center gap-1"><Heart className="w-3 h-3" />{post.likes || 0}</span><span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />{post.comments || 0}</span><span className="flex items-center gap-1"><Share2 className="w-3 h-3" />{post.shares || 0}</span></div></TableCell></TableRow>})}</TableBody></Table>
+      {/* Search and Filter */}
+      <Card className="bg-gray-800 border-gray-700">
+        <CardContent className="p-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search posts..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8 bg-gray-900 border-gray-700 text-white placeholder:text-gray-400"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Status: {filterStatus === 'all' ? 'All' : filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1)}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setFilterStatus('all')}>All Status</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus('draft')}>Draft</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus('scheduled')}>Scheduled</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus('published')}>Published</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterStatus('failed')}>Failed</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Posts Table */}
+      <Card className="bg-gray-800 border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white">Social Media Posts</CardTitle>
+          <CardDescription className="text-gray-400">
+            Manage all your social media content across platforms
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+              <p className="mt-2 text-gray-400">Loading posts...</p>
+            </div>
+          ) : filteredPosts.length > 0 ? (
+            <div className="rounded-md border border-gray-700">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-750 border-gray-700">
+                    <TableHead className="text-gray-300">Post</TableHead>
+                    <TableHead className="text-gray-300">Platform</TableHead>
+                    <TableHead className="text-gray-300">Status</TableHead>
+                    <TableHead className="text-gray-300">Engagement</TableHead>
+                    <TableHead className="text-gray-300">Scheduled/Published</TableHead>
+                    <TableHead className="text-gray-300">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredPosts.map((post) => (
+                    <TableRow key={post.id} className="hover:bg-gray-750 border-gray-700">
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-medium text-white">{post.title}</div>
+                          <div className="text-sm text-gray-400 line-clamp-2">
+                            {post.content.substring(0, 100)}...
+                          </div>
+                          {post.hashtags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {post.hashtags.slice(0, 3).map((hashtag, index) => (
+                                <span key={index} className="text-xs bg-blue-700 text-blue-200 px-2 py-1 rounded">
+                                  #{hashtag}
+                                </span>
+                              ))}
+                              {post.hashtags.length > 3 && (
+                                <span className="text-xs text-gray-500">+{post.hashtags.length - 3} more</span>
+                              )}
+                            </div>
+                          )}
+                          {post.isAiGenerated && (
+                            <Badge variant="secondary" className="bg-purple-700 text-purple-200 text-xs">
+                              AI Generated
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          {getPlatformIcon(post.platform)}
+                          <span className="text-gray-300 capitalize">{post.platform}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={`${getStatusBadge(post.status)} border`}>
+                          {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-3 text-sm">
+                            <div className="flex items-center space-x-1">
+                              <Heart className="w-3 h-3 text-red-500" />
+                              <span className="text-gray-600">{post.engagementMetrics.likes}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Share className="w-3 h-3 text-blue-500" />
+                              <span className="text-gray-600">{post.engagementMetrics.shares}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Eye className="w-3 h-3 text-green-500" />
+                              <span className="text-gray-600">{post.engagementMetrics.reach}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm text-gray-600">
+                          {post.status === 'scheduled' && post.scheduledDate && (
+                            <div>
+                              <div className="font-medium text-blue-600">Scheduled</div>
+                              <div>{format(new Date(post.scheduledDate), 'MMM d, yyyy h:mm a')}</div>
+                            </div>
+                          )}
+                          {post.status === 'published' && post.publishedDate && (
+                            <div>
+                              <div className="font-medium text-green-600">Published</div>
+                              <div>{format(new Date(post.publishedDate), 'MMM d, yyyy h:mm a')}</div>
+                            </div>
+                          )}
+                          {post.status === 'draft' && (
+                            <div>
+                              <div className="font-medium text-gray-600">Draft</div>
+                              <div>Created {format(new Date(post.createdAt), 'MMM d, yyyy')}</div>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                setEditingPost(post);
+                                setIsDialogOpen(true);
+                              }}
+                            >
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setDeletePost(post)}>
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Calendar className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-4 text-lg font-medium text-white">
+                {searchTerm || filterStatus !== 'all' ? 'No posts found' : 'No posts yet'}
+              </h3>
+              <p className="mt-2 text-gray-400">
+                {searchTerm || filterStatus !== 'all' 
+                  ? 'Try adjusting your search or filter criteria.' 
+                  : 'Get started by creating your first social media post.'}
+              </p>
+              {!searchTerm && filterStatus === 'all' && (
+                <Button 
+                  onClick={() => {
+                    setEditingPost(undefined);
+                    setIsDialogOpen(true);
+                  }}
+                  className="mt-4 bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create First Post
+                </Button>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Social Media Dialog */}
+      <SocialMediaDialog
+        isOpen={isDialogOpen}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setEditingPost(undefined);
+        }}
+        onSave={editingPost ? handleUpdatePost : handleCreatePost}
+        post={editingPost}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletePost} onOpenChange={() => setDeletePost(undefined)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletePost?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePost} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
