@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/admin/PageLayout';
 import { LeadDialog, Lead } from '@/components/admin/LeadDialog';
 import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { useAuth } from '@/contexts/AuthContext';
 import { ErrorPanel } from '@/components/ErrorPanel'
 import { 
   Table,

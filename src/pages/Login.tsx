@@ -155,10 +155,10 @@ export function Login() {
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <Button 
-            onClick={isDevMode ? () => handleSubmit() : handleSubmit} 
+            onClick={handleSubmit} 
             className="w-full" 
-            disabled={loading}
-            type={isDevMode ? 'submit' : 'button'}
+            disabled={loading || (isDevMode && (!email || !email.includes('@')))}
+            type="button"
           >
             {loading ? 'Signing in...' : (isDevMode ? 'Sign In' : 'Sign in with Microsoft')}
           </Button>

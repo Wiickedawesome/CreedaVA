@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/admin/PageLayout';
 import { SEODialog, SEOContent } from '@/components/admin/SEODialog';
 import { API_BASE, authorizedFetch } from '@/lib/api-client';
+import { useAuth } from '@/contexts/AuthContext';
 import { ErrorPanel } from '@/components/ErrorPanel'
 import { 
   Table,
