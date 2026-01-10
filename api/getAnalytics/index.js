@@ -4,6 +4,53 @@ const { validateBearer } = require('../shared/auth');
 const { corsHeaders } = require('../shared/cors');
 
 const useCosmosEmulator = process.env.USE_COSMOS_EMULATOR === 'true';
+const allowInMemoryFallback = process.env.ALLOW_INMEMORY_FALLBACK === 'true';
+
+// In-memory storage for development when Cosmos DB isn't available
+const inMemoryData = {
+  analytics: [
+    {
+      id: '1',
+      type: 'event',
+      eventType: 'page_view',
+      page: '/admin/dashboard',
+      timestamp: new Date().toISOString(),
+      sessionId: 'session_1'
+    },
+    {
+      id: '2', 
+      type: 'event',
+      eventType: 'click',
+      page: '/admin/tasks',
+      timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+      sessionId: 'session_2'
+    },
+    {
+      id: '3',
+      type: 'event', 
+      eventType: 'page_view',
+      page: '/admin/leads',
+      timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+      sessionId: 'session_3'
+    },
+    {
+      id: '4',
+      type: 'event',
+      eventType: 'form_submit',
+      page: '/admin/contacts',
+      timestamp: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+      sessionId: 'session_4'
+    },
+    {
+      id: '5',
+      type: 'event',
+      eventType: 'page_view',
+      page: '/admin/analytics',
+      timestamp: new Date(Date.now() - 300000).toISOString(), // 5 minutes ago
+      sessionId: 'session_5'
+    }
+  ]
+};
 
 function logDiagnostics(context, operation, startTime, headers = {}) {
   const durationMs = Date.now() - startTime;
@@ -56,12 +103,47 @@ app.http('getAnalytics', {
       }
 
       if (!endpoint || !key) {
+        if (!allowInMemoryFallback) {
+          return {
+            status: 503,
+            headers: corsHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ 
+              success: false, 
+              error: 'Database not configured and in-memory fallback disabled' 
+            })
+          };
+        }
+
+        // Use in-memory data
+        const url = new URL(request.url);
+        const days = url.searchParams.get('days');
+        let data = inMemoryData.analytics || [];
+
+        // Apply time filter if specified
+        if (days) {
+          const daysAgo = new Date();
+          daysAgo.setDate(daysAgo.getDate() - parseInt(days));
+          data = data.filter(item => new Date(item.timestamp) >= daysAgo);
+        }
+
+        // Build summary
+        const summary = {
+          totalEvents: data.length,
+          uniquePages: [...new Set(data.map(d => d.page))].length,
+          eventTypes: data.reduce((acc, item) => {
+            acc[item.eventType] = (acc[item.eventType] || 0) + 1;
+            return acc;
+          }, {})
+        };
+
         return {
-          status: 503,
+          status: 200,
           headers: corsHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ 
-            success: false, 
-            error: 'Database not configured' 
+          body: JSON.stringify({
+            success: true,
+            data: data,
+            summary: summary,
+            source: 'memory'
           })
         };
       }
