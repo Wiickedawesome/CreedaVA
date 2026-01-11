@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { msalInstance, signInWithPopup, signOutInteractive, getActiveAccount, acquireIdToken } from '@/lib/auth'
 
 const isDevMode = import.meta.env.VITE_DEV_MODE === 'true'
+const enableGoogleLogin = import.meta.env.VITE_ENABLE_GOOGLE_LOGIN === 'true'
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 interface AuthUser {
   id: string
@@ -27,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Handle local Google ID token stored by Login popup
     const googleToken = localStorage.getItem('google_id_token')
-    if (googleToken) {
+    if (googleToken && enableGoogleLogin && googleClientId) {
       try {
         const parts = googleToken.split('.')
         const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
@@ -37,6 +39,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         console.error('Failed to parse stored Google ID token', err)
       }
+    } else if (googleToken && (!enableGoogleLogin || !googleClientId)) {
+      // If Google login isn't enabled, ignore stale tokens so they don't hijack auth.
+      localStorage.removeItem('google_id_token')
     }
 
     if (isDevMode) {
@@ -115,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     try {
+      localStorage.removeItem('google_id_token')
       const result = await signInWithPopup()
       setUser({
         id: result.account.homeAccountId,
@@ -146,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const getToken = async () => {
     const googleToken = localStorage.getItem('google_id_token')
-    if (googleToken) return googleToken
+    if (googleToken && enableGoogleLogin && googleClientId) return googleToken
     if (isDevMode) {
       return 'dev-token'
     }

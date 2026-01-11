@@ -6,7 +6,8 @@ module.exports = {
   ...require('./getAnalytics'),
   ...require('./trackEvent'), 
   ...require('./submitContact'),
-  ...require('./adminApi')
+  ...require('./adminApi'),
+  ...require('./health')
 };
 
 console.log('✅ Azure Functions loaded successfully');

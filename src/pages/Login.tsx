@@ -16,10 +16,14 @@ export function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+  const enableGoogleLogin = import.meta.env.VITE_ENABLE_GOOGLE_LOGIN === 'true'
+  const googleClientId = enableGoogleLogin ? (import.meta.env.VITE_GOOGLE_CLIENT_ID || '') : ''
 
   const signInWithGooglePopup = () => {
-    if (!googleClientId) return
+    if (!enableGoogleLogin || !googleClientId) {
+      setError('Google sign-in is not configured for this environment.')
+      return
+    }
     const params = new URLSearchParams({
       client_id: googleClientId,
       response_type: 'id_token',

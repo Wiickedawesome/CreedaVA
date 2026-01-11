@@ -2,7 +2,11 @@ const { createRemoteJWKSet, jwtVerify } = require('jose')
 
 const tenantId = process.env.AAD_TENANT_ID || process.env.AUTH_TENANT_ID
 const clientId = process.env.AAD_CLIENT_ID || process.env.AUTH_CLIENT_ID
+
+// Expected token issuer for Microsoft identity platform v2 tokens.
+// Note: JWKS endpoint must NOT include the trailing `/v2.0` segment.
 const authority = process.env.AAD_AUTHORITY || (tenantId ? `https://login.microsoftonline.com/${tenantId}/v2.0` : null)
+const aadAllowedDomain = process.env.AAD_ALLOWED_DOMAIN || null
 
 if (!clientId) {
   console.warn('AUTH CLIENT ID not configured - token validation will reject requests')
@@ -10,7 +14,8 @@ if (!clientId) {
 
 let jwks
 if (authority) {
-  const jwksUrl = new URL(`${authority}/discovery/v2.0/keys`)
+  const base = authority.replace(/\/v2\.0\/?$/, '')
+  const jwksUrl = new URL(`${base}/discovery/v2.0/keys`)
   jwks = createRemoteJWKSet(jwksUrl)
 }
 
@@ -83,6 +88,14 @@ async function validateBearer(request) {
     issuer: authority,
     audience: clientId
   })
+
+  if (aadAllowedDomain) {
+    const username = payload.preferred_username || payload.email || payload.upn || ''
+    if (typeof username !== 'string' || !username.toLowerCase().endsWith(`@${aadAllowedDomain.toLowerCase()}`)) {
+      throw new Error('Not authorized')
+    }
+  }
+
   return payload
 }
 

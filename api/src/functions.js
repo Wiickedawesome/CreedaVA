@@ -8,5 +8,6 @@ require('../getAnalytics');
 require('../trackEvent');
 require('../submitContact');
 require('../adminApi');
+require('../health');
 
 console.log('✅ Azure Functions initialized and registered');

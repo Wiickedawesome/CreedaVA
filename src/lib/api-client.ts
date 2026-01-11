@@ -4,13 +4,17 @@ export const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
 export async function authorizedFetch(input: RequestInfo | URL, init?: RequestInit) {
   const isDevMode = import.meta.env.VITE_DEV_MODE === 'true'
+  const enableGoogleLogin = import.meta.env.VITE_ENABLE_GOOGLE_LOGIN === 'true'
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   const googleToken = typeof window !== 'undefined' ? localStorage.getItem('google_id_token') : null
 
-  // Try to use google token, then dev-token (dev only), then MSAL id token
+  // Prefer MSAL (Entra) for admin. Only use Google when explicitly enabled/configured.
   async function getToken() {
-    if (googleToken) return googleToken
     if (isDevMode) return 'dev-token'
-    return await acquireIdToken()
+    const msalToken = await acquireIdToken()
+    if (msalToken) return msalToken
+    if (enableGoogleLogin && googleClientId && googleToken) return googleToken
+    return null
   }
 
   let token = await getToken()
@@ -23,8 +27,8 @@ export async function authorizedFetch(input: RequestInfo | URL, init?: RequestIn
   async function doFetch(withHeaders: Record<string, string>) {
     const resp = await fetch(input, { ...init, headers: withHeaders })
     if (resp.status === 401) {
-      // Try token refresh once (silent MSAL) unless dev-mode or google token
-      if (!isDevMode && !googleToken) {
+      // Try token refresh once (silent MSAL) unless dev-mode
+      if (!isDevMode) {
         const refreshed = await acquireIdToken().catch(() => null)
         if (refreshed && refreshed !== token) {
           token = refreshed
