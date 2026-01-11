@@ -43,7 +43,7 @@ async function initializeCosmosDB() {
     try {
         let endpoint = process.env.COSMOS_ENDPOINT || process.env.COSMOS_DB_ENDPOINT;
         let key = process.env.COSMOS_KEY || process.env.COSMOS_DB_KEY;
-        const dbName = process.env.COSMOS_DATABASE || 'CreedaVA';
+        const dbName = process.env.COSMOS_DATABASE || 'creedava';
 
         if ((!endpoint || !key) && useCosmosEmulator) {
             endpoint = process.env.COSMOS_EMULATOR_ENDPOINT || 'https://localhost:8081';

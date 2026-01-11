@@ -45,7 +45,7 @@ jobs:
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
           COSMOS_ENDPOINT: ${{ secrets.COSMOS_ENDPOINT }}
           COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
-          COSMOS_DATABASE: website-data
+          COSMOS_DATABASE: creedava
           APP_ORIGIN: https://www.creedava.com
           CORS_ORIGIN: https://www.creedava.com
         with:
