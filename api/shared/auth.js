@@ -20,6 +20,13 @@ const googleJwksUrl = new URL('https://www.googleapis.com/oauth2/v3/certs')
 googleJwks = createRemoteJWKSet(googleJwksUrl)
 const googleClientId = process.env.GOOGLE_CLIENT_ID || null
 const googleAllowedDomain = process.env.GOOGLE_ALLOWED_DOMAIN || 'creedava.com'
+// Allow specific emails across domains for admin access
+const allowedEmails = [
+  'johnchuc@outlook.com',
+  'john@creedava.com', 
+  'admin@creedava.com',
+  'info@creedava.com'
+]
 
 async function validateBearer(request) {
   const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
@@ -50,8 +57,13 @@ async function validateBearer(request) {
         issuer: ['https://accounts.google.com', 'accounts.google.com'],
         audience: googleClientId
       })
-      // email and domain checks
-      if (payload.email && payload.email_verified && payload.email.endsWith(`@${googleAllowedDomain}`)) {
+      // Enhanced email validation - allow specific emails OR @creedava.com domain
+      const emailAllowed = payload.email_verified && (
+        allowedEmails.includes(payload.email) || 
+        payload.email.endsWith(`@${googleAllowedDomain}`)
+      )
+      
+      if (payload.email && emailAllowed) {
         // Note: successful Google validation
         // eslint-disable-next-line no-console
         console.info(`Google sign-in accepted for ${payload.email}`)
