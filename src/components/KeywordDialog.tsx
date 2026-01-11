@@ -77,7 +77,7 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
     isTracking: keyword?.isTracking ?? true,
     tags: keyword?.tags || [],
     rankHistory: keyword?.rankHistory || [],
-    userId: 'user_1' // TODO: Get from auth context
+    userId: 'admin' // Using admin as default for now
   });
   
   const [newCompetitor, setNewCompetitor] = useState('');

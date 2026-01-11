@@ -208,7 +208,7 @@ export function AdCampaignDialog({ isOpen, onClose, onSave, campaign }: AdCampai
       events: []
     },
     notes: campaign?.notes || '',
-    userId: 'user_1' // TODO: Get from auth context
+    userId: 'admin' // Using admin as default for now
   });
   
   const [newKeyword, setNewKeyword] = useState('');

@@ -1,0 +1,8 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Brand colors: warm background, C blue (Creeda), V green (VA) -->
+  <rect width="64" height="64" rx="12" fill="#fff5f5"/>
+
+  <path d="M 14 32 Q 14 14, 32 14 L 32 22 Q 22 22, 22 32 Q 22 42, 32 42 L 32 50 Q 14 50, 14 32 Z" fill="#075985"/>
+
+  <path d="M 34 14 L 41 44 L 48 14 L 54 14 L 44.5 50 L 37.5 50 L 28 14 Z" fill="#047857"/>
+</svg>

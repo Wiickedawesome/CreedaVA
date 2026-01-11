@@ -69,7 +69,7 @@ export function SocialMediaDialog({ isOpen, onClose, onSave, post }: SocialMedia
     images: post?.images || [],
     isAiGenerated: post?.isAiGenerated || false,
     aiPrompt: post?.aiPrompt || '',
-    userId: 'user_1' // TODO: Get from auth context
+    userId: 'admin' // Using admin as default for now
   });
   
   const [newHashtag, setNewHashtag] = useState('');

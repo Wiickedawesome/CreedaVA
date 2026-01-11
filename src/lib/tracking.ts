@@ -1,5 +1,5 @@
 // Azure Cosmos DB tracking via Azure Functions
-const API_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export interface TrackingEvent {
   eventType: string;
