@@ -13,7 +13,8 @@ export const msalInstance = new PublicClientApplication({
   auth: {
     clientId: clientId || '00000000-0000-0000-0000-000000000000',
     authority,
-    redirectUri: import.meta.env.VITE_APP_URL || window.location.origin,
+    // Always use the runtime origin to avoid www/apex redirect URI mismatches in production.
+    redirectUri: window.location.origin,
   },
   cache: {
     cacheLocation: 'localStorage',
