@@ -1,6 +1,6 @@
 const { app } = require('@azure/functions');
 const { CosmosClient } = require('@azure/cosmos');
-const { corsHeaders } = require('../shared/cors');
+const { corsHeaders, corsHeadersForOrigin } = require('../shared/cors');
 
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
@@ -23,7 +23,7 @@ app.http('trackEvent', {
     if (request.method === 'OPTIONS') {
       return {
         status: 200,
-        headers: corsHeaders({ 'Access-Control-Allow-Methods': 'POST, OPTIONS' })
+        headers: corsHeadersForOrigin(request.headers.origin)
       };
     }
 

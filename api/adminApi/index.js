@@ -1,7 +1,7 @@
 const { app } = require('@azure/functions');
 const { CosmosClient } = require('@azure/cosmos');
 const { validateBearer } = require('../shared/auth');
-const { corsHeaders } = require('../shared/cors');
+const { corsHeaders, corsHeadersForOrigin } = require('../shared/cors');
 
 const allowInMemoryFallback = process.env.ALLOW_INMEMORY_FALLBACK === 'true';
 const useCosmosEmulator = process.env.USE_COSMOS_EMULATOR === 'true';
@@ -123,7 +123,7 @@ function computeSeoScore(item) {
 // GET functions
 Object.keys(CONTAINERS).forEach(entityType => {
     app.http(`get${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`, {
-        methods: ['GET'],
+        methods: ['GET', 'OPTIONS'],
         route: `get${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
         authLevel: 'anonymous',
         handler: async (request, context) => {
@@ -204,7 +204,7 @@ Object.keys(CONTAINERS).forEach(entityType => {
 // CREATE functions
 Object.keys(CONTAINERS).forEach(entityType => {
     app.http(`create${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`, {
-        methods: ['POST'],
+        methods: ['POST', 'OPTIONS'],
         route: `create${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
         authLevel: 'anonymous',
         handler: async (request, context) => {
@@ -307,7 +307,7 @@ Object.keys(CONTAINERS).forEach(entityType => {
 // UPDATE functions  
 Object.keys(CONTAINERS).forEach(entityType => {
     app.http(`update${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`, {
-        methods: ['PUT'],
+        methods: ['PUT', 'OPTIONS'],
         route: `update${entityType.charAt(0).toUpperCase() + entityType.slice(1)}/{id}`,
         authLevel: 'anonymous',
         handler: async (request, context) => {
@@ -451,7 +451,7 @@ Object.keys(CONTAINERS).forEach(entityType => {
 // DELETE functions
 Object.keys(CONTAINERS).forEach(entityType => {
     app.http(`delete${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`, {
-        methods: ['DELETE'],
+        methods: ['DELETE', 'OPTIONS'],
         route: `delete${entityType.charAt(0).toUpperCase() + entityType.slice(1)}/{id}`,
         authLevel: 'anonymous',
         handler: async (request, context) => {

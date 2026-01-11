@@ -1,7 +1,7 @@
 const { app } = require('@azure/functions');
 const { CosmosClient } = require('@azure/cosmos');
 const { validateBearer } = require('../shared/auth');
-const { corsHeaders } = require('../shared/cors');
+const { corsHeaders, corsHeadersForOrigin } = require('../shared/cors');
 
 const useCosmosEmulator = process.env.USE_COSMOS_EMULATOR === 'true';
 const allowInMemoryFallback = process.env.ALLOW_INMEMORY_FALLBACK === 'true';
@@ -87,7 +87,7 @@ app.http('getAnalytics', {
     if (request.method === 'OPTIONS') {
       return {
         status: 200,
-        headers: corsHeaders({ 'Access-Control-Allow-Methods': 'GET, OPTIONS' })
+        headers: corsHeadersForOrigin(request.headers.origin)
       };
     }
 

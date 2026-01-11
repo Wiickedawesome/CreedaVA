@@ -5,7 +5,7 @@ const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
 const databaseId = process.env.COSMOS_DATABASE || 'creedava';
 const containerId = 'contacts';
-const { corsHeaders } = require('../shared/cors');
+const { corsHeaders, corsHeadersForOrigin } = require('../shared/cors');
 
 let client, database, container;
 
@@ -23,7 +23,7 @@ app.http('submitContact', {
     if (request.method === 'OPTIONS') {
       return {
         status: 200,
-        headers: corsHeaders({ 'Access-Control-Allow-Methods': 'POST, PUT, DELETE, OPTIONS' })
+        headers: corsHeadersForOrigin(request.headers.origin)
       };
     }
 

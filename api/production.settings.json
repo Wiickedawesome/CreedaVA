@@ -1,0 +1,17 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsStorage": "",
+    "APP_ORIGIN": "https://creedava.com",
+    "CORS_ORIGIN": "https://creedava.com",
+    "ALLOW_INMEMORY_FALLBACK": "false",
+    "ALLOW_DEV_TOKEN": "false",
+    "AAD_CLIENT_ID": "77207644-cbca-4d8f-b6f0-a9b077ba0f46",
+    "AAD_TENANT_ID": "9c523818-9203-4d2e-a5c6-d401fa753fd5",
+    "COSMOS_ENDPOINT": "REPLACE_WITH_YOUR_COSMOS_ENDPOINT",
+    "COSMOS_KEY": "REPLACE_WITH_YOUR_COSMOS_KEY",
+    "COSMOS_DATABASE": "CreedaVA",
+    "USE_COSMOS_EMULATOR": "false"
+  }
+}
