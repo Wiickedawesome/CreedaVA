@@ -88,14 +88,9 @@ export function Login() {
       window.location.href = '/admin'
       return
     } else {
-      // Production: use Entra ID
-      const { error } = await signIn()
-      if (error) {
-        setError(error.message || 'Sign-in failed')
-        setLoading(false)
-      } else {
-        navigate('/admin')
-      }
+      // Production: use Google
+      signInWithGooglePopup()
+      setLoading(false)
     }
   }
 
@@ -112,10 +107,7 @@ export function Login() {
               <>
                 Sign in to access your CRM dashboard
                 <br />
-                <span className="text-xs text-muted-foreground mt-1">@creedava.com emails only</span>
-                {googleClientId && (
-                  <div className="text-xs text-muted-foreground mt-1">Or sign in with Google if configured</div>
-                )}
+                <span className="text-xs text-muted-foreground mt-1">@creedava.com Google Workspace emails only</span>
               </>
             )}
           </CardDescription>
@@ -157,7 +149,7 @@ export function Login() {
             </form>
           ) : (
             <div className="text-sm text-muted-foreground text-center">
-              Use your Entra ID (Microsoft) account to access the admin dashboard.
+              Use your @creedava.com Google Workspace account to access the admin dashboard.
             </div>
           )}
         </CardContent>
@@ -168,18 +160,8 @@ export function Login() {
             disabled={loading || (isDevMode && (!email || !email.includes('@')))}
             type="submit"
           >
-            {loading ? 'Signing in...' : (isDevMode ? 'Sign In' : 'Sign in with Microsoft')}
+            {loading ? 'Signing in...' : (isDevMode ? 'Sign In' : 'Sign in with Google')}
           </Button>
-
-          {googleClientId && (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => signInWithGooglePopup()}
-            >
-              Sign in with Google
-            </Button>
-          )}
 
           <div className="text-sm text-center">
             <Link to="/" className="text-muted-foreground hover:text-primary">

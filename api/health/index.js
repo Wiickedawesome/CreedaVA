@@ -2,6 +2,11 @@ const { app } = require('@azure/functions');
 const { CosmosClient } = require('@azure/cosmos');
 const { corsHeadersForOrigin } = require('../shared/cors');
 
+// Polyfill crypto for Cosmos SDK
+if (typeof global.crypto === 'undefined') {
+  global.crypto = require('crypto').webcrypto;
+}
+
 function mask(value) {
   if (!value) return null;
   const s = String(value);

@@ -3,6 +3,11 @@ const { CosmosClient } = require('@azure/cosmos');
 const { validateBearer } = require('../shared/auth');
 const { corsHeaders, corsHeadersForOrigin } = require('../shared/cors');
 
+// Polyfill crypto for Cosmos SDK in Azure Functions v4 environment
+if (typeof global.crypto === 'undefined') {
+  global.crypto = require('crypto').webcrypto;
+}
+
 const allowInMemoryFallback = process.env.ALLOW_INMEMORY_FALLBACK === 'true';
 const useCosmosEmulator = process.env.USE_COSMOS_EMULATOR === 'true';
 
