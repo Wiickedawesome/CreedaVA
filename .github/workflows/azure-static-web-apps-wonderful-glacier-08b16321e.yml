@@ -37,7 +37,7 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         env:
           VITE_BASE_PATH: /
-          VITE_API_BASE_URL: https://creedava-api.azurewebsites.net/api
+          VITE_API_BASE_URL: https://creedava-api-etchhfrf5dpewfph3.westus2-01.azurewebsites.net/api
           VITE_APP_URL: https://www.creedava.com
           VITE_AAD_CLIENT_ID: 77207644-cbca-4d8f-b6f0-a9b077ba0f46
           VITE_AAD_TENANT_ID: 9c523818-9203-4d2e-a5c6-d401fa753fd5
