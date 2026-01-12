@@ -55,7 +55,7 @@ async function validateBearer(request) {
     }
   }
 
-  // Try Google token validation (optional, requires GOOGLE_CLIENT_ID)
+  // Try Google token validation (primary authentication method)
   if (googleClientId) {
     try {
       const { payload } = await jwtVerify(token, googleJwks, {
@@ -69,34 +69,46 @@ async function validateBearer(request) {
       )
       
       if (payload.email && emailAllowed) {
-        // Note: successful Google validation
         // eslint-disable-next-line no-console
-        console.info(`Google sign-in accepted for ${payload.email}`)
+        console.info(`✅ Google sign-in accepted for ${payload.email}`)
         payload.roles = payload.roles || ['admin']
         return payload
+      } else {
+        // Email not allowed
+        throw new Error(`Access denied: ${payload.email || 'unknown'} is not authorized. Use @${googleAllowedDomain} email.`)
       }
     } catch (err) {
-      // ignore and fall through to Entra validation
-      // console.debug('Google token validation failed', err)
+      // Log Google validation error and re-throw
+      console.error('Google token validation failed:', err.message)
+      throw new Error(`Authentication failed: ${err.message}`)
     }
   }
 
-  if (!authority || !clientId || !jwks) {
-    throw new Error('Identity configuration missing')
-  }
-  const { payload } = await jwtVerify(token, jwks, {
-    issuer: authority,
-    audience: clientId
-  })
+  // Fallback to Entra ID only if configured
+  if (authority && clientId && jwks) {
+    try {
+      const { payload } = await jwtVerify(token, jwks, {
+        issuer: authority,
+        audience: clientId
+      })
 
-  if (aadAllowedDomain) {
-    const username = payload.preferred_username || payload.email || payload.upn || ''
-    if (typeof username !== 'string' || !username.toLowerCase().endsWith(`@${aadAllowedDomain.toLowerCase()}`)) {
-      throw new Error('Not authorized')
+      if (aadAllowedDomain) {
+        const username = payload.preferred_username || payload.email || payload.upn || ''
+        if (typeof username !== 'string' || !username.toLowerCase().endsWith(`@${aadAllowedDomain.toLowerCase()}`)) {
+          throw new Error('Not authorized for Entra domain')
+        }
+      }
+
+      console.info(`✅ Entra ID sign-in accepted for ${payload.preferred_username || payload.email}`)
+      return payload
+    } catch (err) {
+      console.error('Entra ID token validation failed:', err.message)
+      throw new Error(`Entra authentication failed: ${err.message}`)
     }
   }
 
-  return payload
+  // No authentication method available
+  throw new Error('No authentication provider configured. Please configure GOOGLE_CLIENT_ID or Entra ID.')
 }
 
 module.exports = {
