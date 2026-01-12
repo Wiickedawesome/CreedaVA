@@ -45,9 +45,19 @@ app.http('trackEvent', {
       const body = await request.json();
       const { eventType, eventData, page, userAgent, referrer } = body;
 
+      // Extract geo data from headers (provided by Azure)
+      const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                       request.headers.get('x-client-ip') || 'unknown';
+      const country = request.headers.get('x-ms-client-principal-country') || 
+                      request.headers.get('cloudflare-ipcountry') || 'unknown';
+      const region = request.headers.get('x-ms-client-principal-region') || 'unknown';
+
       const item = {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: 'event',
+        clientIp,
+        country,
+        region,
         eventType,
         eventData,
         page,

@@ -32,10 +32,15 @@ export async function trackCosmosEvent(event: TrackingEvent) {
 }
 
 /**
- * Track page views
+ * Track page views (excludes admin pages)
  */
 export function trackPageView(pagePath?: string) {
   const path = pagePath || window.location.pathname;
+  
+  // Don't track admin pages
+  if (path.startsWith('/admin')) {
+    return;
+  }
   
   trackCosmosEvent({
     eventType: 'page_view',
