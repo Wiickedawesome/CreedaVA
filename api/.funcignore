@@ -1,0 +1,10 @@
+*.js.map
+*.ts
+.git*
+.vscode
+local.settings.json
+test
+.funcignore
+create-containers.js
+reset-containers.js
+README.md
