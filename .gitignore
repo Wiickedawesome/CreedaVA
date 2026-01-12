@@ -51,7 +51,6 @@ Thumbs.db
 .azure
 
 # Development scripts and temporary files
-scripts/
 start-dev.sh
 *.tmp
 azure.yaml
@@ -60,5 +59,3 @@ next-steps.md
 # Production settings
 api/production.settings.json
 api/check-partitions.js
-api/create-containers.js
-api/reset-containers.js
