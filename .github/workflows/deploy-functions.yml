@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_NAME: creedava-api-ecbhhrf5dpewfph3
+  AZURE_FUNCTIONAPP_NAME: creedava-api
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './api'
   NODE_VERSION: '20.x'
 
