@@ -34,9 +34,23 @@ export function Analytics() {
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [daysFilter, setDaysFilter] = useState(30);
+  const [showAdminPages, setShowAdminPages] = useState(false); // Toggle for admin pages
   const [error, setError] = useState<string | null>(null)
   const [errorStatus, setErrorStatus] = useState<number | null>(null)
   const { signIn } = useAuth()
+
+  // Filter function to exclude admin pages
+  const isAdminPage = (page: string) => {
+    return page.startsWith('/admin') || 
+           page === '/login' || 
+           page === '/signup' || 
+           page === '/env-check';
+  };
+
+  // Get filtered analytics based on toggle
+  const filteredAnalytics = showAdminPages 
+    ? analytics 
+    : analytics.filter(event => !isAdminPage(event.page));
 
   useEffect(() => { fetchAnalytics(); }, [daysFilter]);
 
@@ -59,11 +73,11 @@ export function Analytics() {
     }
   };
 
-  // Process data for charts
+  // Process data for charts (using filtered data)
   const processTimeSeriesData = () => {
     const dayBuckets: Record<string, number> = {};
     
-    analytics.forEach(event => {
+    filteredAnalytics.forEach(event => {
       const date = new Date(event.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       dayBuckets[date] = (dayBuckets[date] || 0) + 1;
     });
@@ -74,8 +88,13 @@ export function Analytics() {
   };
 
   const processEventTypeData = () => {
-    if (!summary) return [];
-    return Object.entries(summary.eventTypes).map(([name, value]) => ({
+    const eventCounts: Record<string, number> = {};
+    
+    filteredAnalytics.forEach(event => {
+      eventCounts[event.eventType] = (eventCounts[event.eventType] || 0) + 1;
+    });
+    
+    return Object.entries(eventCounts).map(([name, value]) => ({
       name: name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
       value
     }));
@@ -84,7 +103,7 @@ export function Analytics() {
   const processTopPages = () => {
     const pageCounts: Record<string, number> = {};
     
-    analytics.forEach(event => {
+    filteredAnalytics.forEach(event => {
       pageCounts[event.page] = (pageCounts[event.page] || 0) + 1;
     });
 
@@ -97,9 +116,10 @@ export function Analytics() {
   const processCountryData = () => {
     const countryCounts: Record<string, number> = {};
     
-    analytics.forEach(event => {
-      if (event.country && event.country !== 'unknown') {
-        countryCounts[event.country] = (countryCounts[event.country] || 0) + 1;
+    filteredAnalytics.forEach(event => {
+      const country = event.country || 'Unknown';
+      if (country && country !== '-') {
+        countryCounts[country] = (countryCounts[country] || 0) + 1;
       }
     });
 
@@ -115,12 +135,10 @@ export function Analytics() {
   const countryData = processCountryData();
 
   const stats = {
-    totalEvents: summary?.totalEvents || 0,
-    uniquePages: summary?.uniquePages || 0,
-    pageViews: summary?.eventTypes['page_view'] || 0,
-    interactions: Object.entries(summary?.eventTypes || {})
-      .filter(([key]) => key !== 'page_view')
-      .reduce((sum, [, val]) => sum + val, 0)
+    totalEvents: filteredAnalytics.length,
+    uniquePages: new Set(filteredAnalytics.map(e => e.page)).size,
+    pageViews: filteredAnalytics.filter(e => e.eventType === 'page_view').length,
+    interactions: filteredAnalytics.filter(e => e.eventType !== 'page_view').length
   };
 
   if (loading) {
@@ -140,9 +158,20 @@ export function Analytics() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-white">Analytics Dashboard</h1>
-          <p className="text-gray-400 mt-1">Website performance and user tracking metrics</p>
+          <p className="text-gray-400 mt-1">
+            {showAdminPages ? 'All traffic including admin pages' : 'Customer traffic only'}
+          </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant={showAdminPages ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setShowAdminPages(!showAdminPages)}
+            className={`text-xs ${showAdminPages ? 'bg-purple-600 text-white' : 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600'}`}
+          >
+            {showAdminPages ? '👥 All Traffic' : '🌐 Customers Only'}
+          </Button>
+          <div className="w-px h-6 bg-gray-600"></div>
           <Button
             variant={daysFilter === 7 ? 'default' : 'outline'}
             size="sm"
@@ -358,7 +387,7 @@ export function Analytics() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {analytics.slice(0, 10).map((event, index) => (
+                {filteredAnalytics.slice(0, 15).map((event, index) => (
                   <TableRow key={index} className="border-gray-700">
                     <TableCell>
                       <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
@@ -366,8 +395,10 @@ export function Analytics() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-gray-300 font-mono text-sm">{event.page}</TableCell>
-                    <TableCell className="text-gray-400 text-sm">
-                      {event.country && event.country !== 'unknown' ? event.country : '-'}
+                    <TableCell>
+                      <span className="text-gray-300">
+                        {event.country || 'Unknown'}
+                      </span>
                     </TableCell>
                     <TableCell className="text-gray-400 text-sm">
                       {new Date(event.timestamp).toLocaleString()}
