@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { BlogDialog } from '@/components/BlogDialog';
 import { Plus, Edit, Trash2, Eye, Calendar, User, Tag, TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
+import { authorizedFetch, API_BASE } from '@/lib/api-client';
 
 interface BlogPost {
   id: string;
@@ -69,161 +70,17 @@ export function Blog() {
   const loadPosts = async () => {
     try {
       setLoading(true);
+      const response = await authorizedFetch(`${API_BASE}/getBlog`);
+      const data = await response.json();
       
-      // For development, start with sample data
-      const samplePosts: BlogPost[] = [
-        {
-          id: '1',
-          title: 'Ultimate Guide to Digital Marketing Success',
-          slug: 'ultimate-guide-digital-marketing-success',
-          excerpt: 'Discover proven strategies to boost your online presence and drive meaningful results for your business.',
-          content: `# Introduction\n\nIn today's digital landscape, businesses face unprecedented challenges and opportunities...`,
-          author: {
-            name: 'John Doe',
-            email: 'john@creedava.com',
-            bio: 'Content creator and marketing specialist',
-            avatar: ''
-          },
-          category: 'Marketing',
-          tags: ['Digital Marketing', 'Strategy', 'Growth'],
-          status: 'published',
-          publishDate: new Date('2024-01-15'),
-          lastModified: new Date('2024-01-16'),
-          seo: {
-            metaTitle: 'Ultimate Guide to Digital Marketing Success | CreedaVA',
-            metaDescription: 'Discover proven strategies to boost your online presence and drive meaningful results for your business.',
-            keywords: ['digital marketing', 'online presence', 'business growth'],
-            canonicalUrl: 'https://creedava.com/blog/ultimate-guide-digital-marketing-success',
-            noIndex: false
-          },
-          featured: {
-            isFeatured: true,
-            image: '/images/digital-marketing-guide.jpg',
-            imageAlt: 'Digital marketing strategy illustration',
-            imageCaption: 'Comprehensive digital marketing strategies for modern businesses'
-          },
-          engagement: {
-            views: 2847,
-            likes: 152,
-            shares: 78,
-            comments: 24,
-            avgReadTime: 8
-          },
-          settings: {
-            allowComments: true,
-            showAuthor: true,
-            showSocialShare: true,
-            showRelatedPosts: true,
-            showToc: true
-          },
-          userId: 'current-user',
-          createdAt: '2024-01-15T10:00:00Z',
-          updatedAt: '2024-01-16T15:30:00Z'
-        },
-        {
-          id: '2',
-          title: 'Best Practices for SEO Optimization',
-          slug: 'best-practices-seo-optimization',
-          excerpt: 'Learn essential SEO techniques that will help your website rank higher in search engine results.',
-          content: `# SEO Best Practices\n\nSearch engine optimization is crucial for online visibility...`,
-          author: {
-            name: 'Jane Smith',
-            email: 'jane@creedava.com',
-            bio: 'SEO specialist and content strategist',
-            avatar: ''
-          },
-          category: 'SEO',
-          tags: ['SEO', 'Optimization', 'Search Rankings'],
-          status: 'draft',
-          lastModified: new Date('2024-01-20'),
-          seo: {
-            metaTitle: 'Best Practices for SEO Optimization | CreedaVA',
-            metaDescription: 'Learn essential SEO techniques that will help your website rank higher in search engine results.',
-            keywords: ['SEO', 'search engine optimization', 'ranking'],
-            canonicalUrl: 'https://creedava.com/blog/best-practices-seo-optimization',
-            noIndex: false
-          },
-          featured: {
-            isFeatured: false,
-            image: '/images/seo-optimization.jpg',
-            imageAlt: 'SEO optimization concept',
-            imageCaption: 'Modern SEO strategies for better search rankings'
-          },
-          engagement: {
-            views: 1203,
-            likes: 89,
-            shares: 45,
-            comments: 12,
-            avgReadTime: 6
-          },
-          settings: {
-            allowComments: true,
-            showAuthor: true,
-            showSocialShare: true,
-            showRelatedPosts: true,
-            showToc: false
-          },
-          userId: 'current-user',
-          createdAt: '2024-01-20T09:00:00Z',
-          updatedAt: '2024-01-20T14:20:00Z'
-        },
-        {
-          id: '3',
-          title: 'Social Media Marketing Trends 2024',
-          slug: 'social-media-marketing-trends-2024',
-          excerpt: 'Explore the latest social media trends that are shaping the marketing landscape in 2024.',
-          content: `# Social Media Trends 2024\n\nThe social media landscape continues to evolve rapidly...`,
-          author: {
-            name: 'Mike Johnson',
-            email: 'mike@creedava.com',
-            bio: 'Social media strategist and content creator',
-            avatar: ''
-          },
-          category: 'Social Media',
-          tags: ['Social Media', 'Trends', '2024', 'Marketing'],
-          status: 'scheduled',
-          publishDate: new Date('2024-02-01'),
-          lastModified: new Date('2024-01-25'),
-          seo: {
-            metaTitle: 'Social Media Marketing Trends 2024 | CreedaVA',
-            metaDescription: 'Explore the latest social media trends that are shaping the marketing landscape in 2024.',
-            keywords: ['social media', 'marketing trends', '2024'],
-            canonicalUrl: 'https://creedava.com/blog/social-media-marketing-trends-2024',
-            noIndex: false
-          },
-          featured: {
-            isFeatured: true,
-            image: '/images/social-media-trends.jpg',
-            imageAlt: 'Social media trends visualization',
-            imageCaption: 'Emerging social media trends for 2024'
-          },
-          engagement: {
-            views: 0,
-            likes: 0,
-            shares: 0,
-            comments: 0,
-            avgReadTime: 7
-          },
-          settings: {
-            allowComments: true,
-            showAuthor: true,
-            showSocialShare: true,
-            showRelatedPosts: true,
-            showToc: true
-          },
-          userId: 'current-user',
-          createdAt: '2024-01-25T11:00:00Z',
-          updatedAt: '2024-01-25T16:45:00Z'
-        }
-      ];
-
-      // In a real app, fetch from API
-      // const response = await fetch('/api/blog-posts');
-      // const data = await response.json();
-      
-      setPosts(samplePosts);
+      if (data.success && data.data) {
+        setPosts(data.data);
+      } else {
+        setPosts([]);
+      }
     } catch (error) {
       console.error('Error loading posts:', error);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
@@ -233,24 +90,26 @@ export function Blog() {
     try {
       if (selectedPost) {
         // Update existing post
-        const updatedPost = { ...selectedPost, ...postData };
-        setPosts(prev => prev.map(post => post.id === selectedPost.id ? updatedPost : post));
-        console.log('Updating post:', updatedPost);
-        // await fetch(`/api/blog-posts/${selectedPost.id}`, { method: 'PUT', body: JSON.stringify(updatedPost) });
+        await authorizedFetch(`${API_BASE}/updateBlog/${selectedPost.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(postData)
+        });
+        await loadPosts(); // Reload posts to get updated data
       } else {
         // Create new post
-        const newPost = {
-          id: `post-${Date.now()}`,
-          ...postData
-        };
-        setPosts(prev => [newPost, ...prev]);
-        console.log('Creating post:', newPost);
-        // await fetch('/api/blog-posts', { method: 'POST', body: JSON.stringify(newPost) });
+        await authorizedFetch(`${API_BASE}/createBlog`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(postData)
+        });
+        await loadPosts(); // Reload posts to get new data
       }
       setIsDialogOpen(false);
       setSelectedPost(undefined);
     } catch (error) {
       console.error('Error saving post:', error);
+      alert('Failed to save post. Please try again.');
     }
   };
 
@@ -261,9 +120,15 @@ export function Blog() {
 
   const handleDelete = async (postId: string) => {
     if (confirm('Are you sure you want to delete this post?')) {
-      setPosts(prev => prev.filter(post => post.id !== postId));
-      console.log('Deleting post:', postId);
-      // await fetch(`/api/blog-posts/${postId}`, { method: 'DELETE' });
+      try {
+        await authorizedFetch(`${API_BASE}/deleteBlog/${postId}`, {
+          method: 'DELETE'
+        });
+        await loadPosts(); // Reload posts after deletion
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete post. Please try again.');
+      }
     }
   };
 

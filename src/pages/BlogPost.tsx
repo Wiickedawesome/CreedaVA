@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Calendar, ArrowLeft, Eye, Linkedin, Share2 } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
-// Database removed - will use CosmosDB API when implemented
 import { format } from 'date-fns'
 
 interface BlogPost {
@@ -17,12 +16,13 @@ interface BlogPost {
   slug: string
   category: string | null
   status: 'draft' | 'published' | 'archived'
-  is_featured: boolean
-  is_published: boolean
-  published_at: string | null
-  created_at: string
+  isFeatured: boolean
+  isPublished: boolean
+  publishedAt: string | null
+  createdAt: string
   views: number | null
-  created_by: string
+  createdBy: string
+  type: string
 }
 
 export default function BlogPost() {
@@ -35,48 +35,58 @@ export default function BlogPost() {
   useEffect(() => {
     if (slug) {
       fetchPost()
-      // Increment view count
-      incrementViews()
     }
   }, [slug])
 
   const fetchPost = async () => {
     try {
-      const { data, error } = await db
-        .from('blog_posts')
-        .select('*')
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .eq('is_published', true)
-        .single()
-
-      if (error) throw error
-      setPost(data)
-    } catch (error) {
-      setError('Blog post not found')
+      setLoading(true)
+      setError(null)
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+      const response = await fetch(`${API_BASE}/getBlog`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch blog post')
+      }
+      
+      const data = await response.json()
+      
+      // Find post by slug
+      const foundPost = (data.data || []).find(
+        (p: BlogPost) => p.slug === slug && p.status === 'published' && p.isPublished
+      )
+      
+      if (foundPost) {
+        setPost(foundPost)
+        // Increment view count (fire and forget)
+        incrementViews(foundPost.id).catch(() => {})
+      } else {
+        setError('Blog post not found')
+      }
+    } catch (err) {
+      console.error('Error fetching blog post:', err)
+      setError('Failed to load blog post')
     } finally {
       setLoading(false)
     }
   }
 
-  const incrementViews = async () => {
+  const incrementViews = async (postId: string) => {
     try {
-      // First get current view count
-      const { data } = await db
-        .from('blog_posts')
-        .select('views')
-        .eq('slug', slug)
-        .single()
-
-      if (data) {
-        // Increment view count
-        await db
-          .from('blog_posts')
-          .update({ views: (data.views || 0) + 1 })
-          .eq('slug', slug)
-      }
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+      await fetch(`${API_BASE}/trackEvent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: 'blog_view',
+          postId,
+          slug,
+          timestamp: new Date().toISOString()
+        })
+      })
     } catch (error) {
       // Silently fail - view count is not critical
+      console.debug('View tracking failed:', error)
     }
   }
 
@@ -162,13 +172,13 @@ export default function BlogPost() {
                 </Badge>
               )}
             </div>
-
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
-              {post.title}
-            </h1>
-
-            <div className="flex items-center justify-between flex-wrap gap-4 mb-8 text-muted-foreground">
-              <div className="flex items-center gap-4">
+At
+                      ? format(new Date(post.publishedAt), 'MMMM d, yyyy')
+                      : format(new Date(post.createdAt), 'MMMM d, yyyy')
+                    }
+                  </span>
+                </div>
+                {post.views && post.views > 0e="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Calendar size={16} />
                   <span>

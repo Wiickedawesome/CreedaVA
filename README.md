@@ -141,24 +141,23 @@ VITE_BASE_PATH=/
 # - Set this only when pointing the frontend at a non-default API base (e.g. a deployed Functions URL).
 # VITE_API_BASE_URL=http://localhost:7071/api
 
-# Entra ID auth
+# Google OAuth (Primary Authentication Method)
+# Enable Google Sign-In for admin authentication
+VITE_ENABLE_GOOGLE_LOGIN=true
+VITE_GOOGLE_CLIENT_ID=848560364888-odta7t8v7e7s70rtjojn7fapm5pbukqu.apps.googleusercontent.com
+
+# Azure AD / Entra ID (Alternative Authentication - Optional)
+# Note: Currently using Google OAuth as primary method
 VITE_AAD_CLIENT_ID=77207644-cbca-4d8f-b6f0-a9b077ba0f46
 VITE_AAD_TENANT_ID=9c5238b8-3203-42de-a5c6-d401fa735fd5
 # Optional authority override (otherwise derived from tenant)
 # VITE_AAD_AUTHORITY=https://login.microsoftonline.com/9c5238b8-3203-42de-a5c6-d401fa735fd5/v2.0
 
-# Optional: Google OIDC (enable "Sign in with Google")
-# Create a Google OAuth Client ID (Web application) and set this value for local testing
-# VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-# (Functions host - api/local.settings.json)
-# "GOOGLE_CLIENT_ID": "your-google-client-id.apps.googleusercontent.com",
-# "GOOGLE_ALLOWED_DOMAIN": "creedava.com"  # optional - restrict sign-in to a domain
-
-# Application URL (used by MSAL redirect)
+# Application URL (used by OAuth redirect)
 VITE_APP_URL=http://localhost:5173
 
 # Dev mode (local testing)
-# Enable dev-mode on the frontend to bypass Entra during development and use a simple email-based login.
+# Enable dev-mode on the frontend to bypass OAuth during development and use a simple email-based login.
 # - Frontend: set VITE_DEV_MODE=true
 # - Functions (api/local.settings.json): set "ALLOW_DEV_TOKEN": "true"
 # In dev mode you can sign in via the UI using any email, and the frontend will send a placeholder token ("dev-token") to the Functions host which will accept it when ALLOW_DEV_TOKEN=true.
@@ -168,18 +167,32 @@ VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
 **Backend (api/local.settings.json)**
+
+⚠️ **IMPORTANT SECURITY NOTE**: Never commit `api/local.settings.json` to version control!
+This file is in `.gitignore` and should remain local. Use environment variables in production.
+
 ```json
 {
   "IsEncrypted": false,
   "Values": {
     "FUNCTIONS_WORKER_RUNTIME": "node",
-    "AzureWebJobsStorage": "",
-    "COSMOS_ENDPOINT": "https://localhost:8081",
-    "COSMOS_KEY": "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
-    "COSMOS_DATABASE": "CreedaVA",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    
     "APP_ORIGIN": "http://localhost:5173",
     "CORS_ORIGIN": "http://localhost:5173",
-    "ALLOW_INMEMORY_FALLBACK": "false"
+    "ALLOW_INMEMORY_FALLBACK": "false",
+    "ALLOW_DEV_TOKEN": "true",
+    
+    "AAD_CLIENT_ID": "77207644-cbca-4d8f-b6f0-a9b077ba0f46",
+    "AAD_TENANT_ID": "9c5238b8-3203-42de-a5c6-d401fa735fd5",
+    
+    "GOOGLE_CLIENT_ID": "848560364888-odta7t8v7e7s70rtjojn7fapm5pbukqu.apps.googleusercontent.com",
+    "GOOGLE_ALLOWED_DOMAIN": "creedava.com",
+    
+    "COSMOS_ENDPOINT": "https://localhost:8081",
+    "COSMOS_KEY": "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+    "COSMOS_DATABASE": "creedava",
+    "USE_COSMOS_EMULATOR": "true"
   },
   "Host": {
     "CORS": "http://localhost:5173",
@@ -187,6 +200,13 @@ VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
   }
 }
 ```
+
+**Production Environment Variables (Azure Portal / GitHub Secrets)**
+- Never use emulator credentials in production
+- Rotate Cosmos DB keys regularly
+- Use managed identities when possible
+- Set `ALLOW_DEV_TOKEN=false` in production
+- Configure proper CORS origins
 
 ## 📦 Build & Deploy
 
@@ -429,7 +449,57 @@ CreedaVA/
 - 📦 IIFE bundle for WordPress/Squarespace
 - 🎨 Self-contained styles
 
-## 📚 Documentation
+## � Security Best Practices
+
+### Authentication
+- **Primary Method**: Google OAuth for admin authentication
+- **Backend Validation**: JWT token verification on all protected endpoints
+- **Dev Mode**: Only enable `ALLOW_DEV_TOKEN` in local development, never in production
+- **Token Storage**: ID tokens stored in memory, not localStorage (except dev mode)
+
+### Data Protection
+- **Never commit credentials**: Keep `api/local.settings.json` in `.gitignore`
+- **Rotate keys regularly**: Change Cosmos DB keys and OAuth secrets periodically
+- **Use environment variables**: Store secrets in Azure App Settings or GitHub Secrets
+- **Validate all inputs**: Server-side validation using `api/shared/validation.js`
+- **Sanitize user data**: Prevent XSS and injection attacks
+
+### API Security
+- **CORS configuration**: Properly configured in `api/shared/cors.js`
+- **Rate limiting**: Basic rate limiting implemented for public endpoints
+- **Request validation**: Body size limits and input sanitization
+- **Error handling**: Don't expose sensitive information in error messages
+- **Logging**: Structured logging with correlation IDs for audit trails
+
+### Cosmos DB Security
+- **Partition key**: All containers use `/type` partition key
+- **Query limits**: Implement pagination and result limits
+- **Request units**: Monitor RU consumption to prevent abuse
+- **Connection security**: Use TLS, disable SSL verification only for local emulator
+- **Least privilege**: Use read-only keys where possible
+
+### Production Checklist
+- [ ] Set `ALLOW_DEV_TOKEN=false`
+- [ ] Configure production Cosmos DB credentials
+- [ ] Set proper CORS origins (no wildcards)
+- [ ] Enable Application Insights for monitoring
+- [ ] Review and rotate all API keys and secrets
+- [ ] Test authentication flow end-to-end
+- [ ] Verify rate limiting is active
+- [ ] Check error messages don't leak sensitive data
+- [ ] Enable HTTPS only
+- [ ] Configure Content Security Policy headers
+
+### Monitoring & Alerts
+- **Structured logging**: All operations logged with correlation IDs
+- **Slow queries**: Logged when operations exceed 500ms
+- **Security events**: Failed auth attempts and suspicious activity logged
+- **Cosmos DB diagnostics**: Request units and activity IDs tracked
+- **Error tracking**: All exceptions logged with context
+
+For detailed security guidelines, see [docs/OPERATIONS.md](docs/OPERATIONS.md).
+
+## �📚 Documentation
 
 - [LinkedIn Integration Guide](./LINKEDIN_INTEGRATION.md) - Complete API setup and usage
 - [Azure Deployment](https://learn.microsoft.com/azure/static-web-apps/) - Official Azure docs

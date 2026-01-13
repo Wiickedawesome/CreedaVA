@@ -41,64 +41,30 @@ export default function News() {
   const fetchBlogPosts = async () => {
     try {
       setLoading(true)
+      setError(null)
       const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
       const response = await fetch(`${API_BASE}/getBlog`)
-      if (response.ok) {
-        const data = await response.json()
-        // Filter for published posts only
-        const publishedPosts = (data.data || [])
-          .filter((post: BlogPost) => post.status === 'published' && post.isPublished)
-          .sort((a: BlogPost, b: BlogPost) => {
-            const dateA = new Date(a.publishedAt || a.createdAt)
-            const dateB = new Date(b.publishedAt || b.createdAt)
-            return dateB.getTime() - dateA.getTime()
-          })
-          .slice(0, 6) // Limit to 6 posts
-        setPosts(publishedPosts)
-      } else {
-        // Show sample blog posts for now since getBlog API doesn't exist yet
-        const samplePosts: BlogPost[] = [
-          {
-            id: 'sample-1',
-            title: 'Welcome to CreedaVA: Your Virtual Assistant Partner',
-            excerpt: 'Discover how CreedaVA can transform your business operations with professional virtual assistant services tailored to your needs.',
-            content: 'Welcome to CreedaVA, where we provide exceptional virtual assistant services...',
-            slug: 'welcome-to-creedava',
-            category: 'announcement',
-            status: 'published',
-            isFeatured: true,
-            isPublished: true,
-            publishedAt: new Date().toISOString(),
-            createdAt: new Date().toISOString(),
-            views: 125,
-            createdBy: 'admin',
-            tags: ['announcement', 'welcome', 'virtual assistant']
-          }
-        ]
-        setPosts(samplePosts)
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch blog posts: ${response.statusText}`)
       }
+      
+      const data = await response.json()
+      // Filter for published posts only and sort by date
+      const publishedPosts = (data.data || [])
+        .filter((post: BlogPost) => post.status === 'published' && post.isPublished)
+        .sort((a: BlogPost, b: BlogPost) => {
+          const dateA = new Date(a.publishedAt || a.createdAt)
+          const dateB = new Date(b.publishedAt || b.createdAt)
+          return dateB.getTime() - dateA.getTime()
+        })
+        .slice(0, 6) // Limit to 6 most recent posts
+      
+      setPosts(publishedPosts)
     } catch (error) {
       console.error('Error fetching blog posts:', error)
-      // Show sample content on error
-      const samplePosts: BlogPost[] = [
-        {
-          id: 'sample-1',
-          title: 'Welcome to CreedaVA: Your Virtual Assistant Partner',
-          excerpt: 'Discover how CreedaVA can transform your business operations with professional virtual assistant services tailored to your needs.',
-          content: 'Welcome to CreedaVA, where we provide exceptional virtual assistant services...',
-          slug: 'welcome-to-creedava',
-          category: 'announcement',
-          status: 'published',
-          isFeatured: true,
-          isPublished: true,
-          publishedAt: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-          views: 125,
-          createdBy: 'admin',
-          tags: ['announcement', 'welcome', 'virtual assistant']
-        }
-      ]
-      setPosts(samplePosts)
+      setError(error instanceof Error ? error.message : 'Failed to load blog posts')
+      setPosts([]) // Clear posts on error
     } finally {
       setLoading(false)
     }
