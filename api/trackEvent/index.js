@@ -45,24 +45,55 @@ app.http('trackEvent', {
       const body = await request.json();
       const { eventType, eventData, page, userAgent, referrer } = body;
 
-      // Extract geo data from headers (provided by Azure)
-      const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+      // Filter out admin pages - don't track internal pages
+      if (page && page.startsWith('/admin')) {
+        return {
+          status: 200,
+          headers: corsHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ success: true, message: 'Admin page not tracked' })
+        };
+      }
+
+      // Extract geo data from headers (provided by Azure/CDN)
+      const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                       request.headers.get('x-real-ip') ||
                        request.headers.get('x-client-ip') || 'unknown';
-      const country = request.headers.get('x-ms-client-principal-country') || 
-                      request.headers.get('cloudflare-ipcountry') || 'unknown';
-      const region = request.headers.get('x-ms-client-principal-region') || 'unknown';
+      
+      // Try multiple header sources for country detection
+      let country = request.headers.get('cloudflare-ipcountry') ||
+                    request.headers.get('x-vercel-ip-country') ||
+                    request.headers.get('x-country-code') || null;
+      
+      // If still no country and we have an IP, use a simple geolocation lookup
+      if (!country && clientIp && clientIp !== 'unknown' && !clientIp.startsWith('127.') && !clientIp.startsWith('192.168.')) {
+        try {
+          // Use free ipapi.co service for geolocation
+          const geoResponse = await fetch(`https://ipapi.co/${clientIp}/country_code/`, {
+            headers: { 'User-Agent': 'CreedaVA/1.0' },
+            signal: AbortSignal.timeout(2000) // 2 second timeout
+          });
+          if (geoResponse.ok) {
+            country = await geoResponse.text();
+          }
+        } catch (geoError) {
+          context.log('Geolocation lookup failed:', geoError.message);
+        }
+      }
+      
+      const region = request.headers.get('x-vercel-ip-city') ||
+                     request.headers.get('x-region') || null;
 
       const item = {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: 'event',
-        clientIp,
-        country,
-        region,
+        clientIp: clientIp || null,
+        country: country || 'Unknown',
+        region: region || null,
         eventType,
-        eventData,
+        eventData: eventData || {},
         page,
-        userAgent,
-        referrer,
+        userAgent: userAgent || null,
+        referrer: referrer || null,
         timestamp: new Date().toISOString(),
         ttl: 7776000 // 90 days
       };

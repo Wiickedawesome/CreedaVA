@@ -37,8 +37,8 @@ export async function trackCosmosEvent(event: TrackingEvent) {
 export function trackPageView(pagePath?: string) {
   const path = pagePath || window.location.pathname;
   
-  // Don't track admin pages
-  if (path.startsWith('/admin')) {
+  // Don't track admin pages, login, or internal routes
+  if (path.startsWith('/admin') || path.startsWith('/login') || path.startsWith('/signup') || path === '/env-check') {
     return;
   }
   
@@ -47,6 +47,7 @@ export function trackPageView(pagePath?: string) {
     page: path,
     eventData: {
       title: document.title,
+      url: window.location.href,
     },
   });
 }
