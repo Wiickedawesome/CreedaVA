@@ -39,8 +39,6 @@ jobs:
           VITE_BASE_PATH: /
           VITE_API_BASE_URL: https://creedava-api-ecbhhrf5dpewfph3.westus2-01.azurewebsites.net/api
           VITE_APP_URL: https://www.creedava.com
-          VITE_AAD_CLIENT_ID: 77207644-cbca-4d8f-b6f0-a9b077ba0f46
-          VITE_AAD_TENANT_ID: 9c5238b8-3203-42de-a5c6-d401fa735fd5
           VITE_ENABLE_GOOGLE_LOGIN: "true"
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           VITE_GOOGLE_SEARCH_CONSOLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_SEARCH_CONSOLE_CLIENT_ID }}
