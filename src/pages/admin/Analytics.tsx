@@ -280,34 +280,7 @@ export function Analytics() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                Country Distribution */}
-            <Card className="p-6 bg-gray-800 border-gray-700">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white">Visitors by Country</h3>
-                <p className="text-gray-400 text-sm">Geographic distribution</p>
-              </div>
-              {countryData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={countryData.slice(0, 5)} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis type="number" stroke="#9ca3af" />
-                    <YAxis dataKey="country" type="category" stroke="#9ca3af" width={60} />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
-                    />
-                    <Bar dataKey="count" fill="#8b5cf6" radius={[0, 8, 8, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-[300px] flex items-center justify-center text-gray-500">
-                  Country data will appear as visitors access your site
-                </div>
-              )}
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-            {/*     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
@@ -327,7 +300,59 @@ export function Analytics() {
             <Card className="p-6 bg-gray-800 border-gray-700">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-white">Top Pages</h3>
-                <p className="text-gray-400 text-sm">MoCountry</TableHead>
+                <p className="text-gray-400 text-sm">Most visited pages</p>
+              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={topPagesData.slice(0, 5)} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis type="number" stroke="#9ca3af" />
+                  <YAxis dataKey="page" type="category" stroke="#9ca3af" width={120} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
+                  />
+                  <Bar dataKey="views" fill="#10b981" radius={[0, 8, 8, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+          </div>
+
+          {/* Country Distribution Chart */}
+          <Card className="p-6 bg-gray-800 border-gray-700">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-white">Visitors by Country</h3>
+              <p className="text-gray-400 text-sm">Geographic distribution</p>
+            </div>
+            {countryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={countryData.slice(0, 10)} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis type="number" stroke="#9ca3af" />
+                  <YAxis dataKey="country" type="category" stroke="#9ca3af" width={80} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
+                  />
+                  <Bar dataKey="count" fill="#8b5cf6" radius={[0, 8, 8, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center text-gray-500">
+                Country data will appear as visitors access your site
+              </div>
+            )}
+          </Card>
+
+          {/* Recent Events Table */}
+          <Card className="bg-gray-800 border-gray-700">
+            <div className="p-6 border-b border-gray-700">
+              <h3 className="text-lg font-semibold text-white">Recent Events</h3>
+              <p className="text-gray-400 text-sm">Latest tracked activity</p>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-700">
+                  <TableHead className="text-gray-400">Event Type</TableHead>
+                  <TableHead className="text-gray-400">Page</TableHead>
+                  <TableHead className="text-gray-400">Country</TableHead>
                   <TableHead className="text-gray-400">Timestamp</TableHead>
                   <TableHead className="text-gray-400">Session ID</TableHead>
                 </TableRow>
@@ -343,34 +368,7 @@ export function Analytics() {
                     <TableCell className="text-gray-300 font-mono text-sm">{event.page}</TableCell>
                     <TableCell className="text-gray-400 text-sm">
                       {event.country && event.country !== 'unknown' ? event.country : '-'}
-                    
-            </Card>
-          </div>
-
-          {/* Recent Events Table */}
-          <Card className="bg-gray-800 border-gray-700">
-            <div className="p-6 border-b border-gray-700">
-              <h3 className="text-lg font-semibold text-white">Recent Events</h3>
-              <p className="text-gray-400 text-sm">Latest tracked activity</p>
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow className="border-gray-700">
-                  <TableHead className="text-gray-400">Event Type</TableHead>
-                  <TableHead className="text-gray-400">Page</TableHead>
-                  <TableHead className="text-gray-400">Timestamp</TableHead>
-                  <TableHead className="text-gray-400">Session ID</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {analytics.slice(0, 10).map((event, index) => (
-                  <TableRow key={index} className="border-gray-700">
-                    <TableCell>
-                      <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
-                        {event.eventType.replace(/_/g, ' ')}
-                      </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-300 font-mono text-sm">{event.page}</TableCell>
                     <TableCell className="text-gray-400 text-sm">
                       {new Date(event.timestamp).toLocaleString()}
                     </TableCell>
