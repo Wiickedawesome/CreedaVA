@@ -191,12 +191,34 @@ export function Analytics() {
     });
   };
 
+  // Peak hours analysis
+  const processPeakHours = () => {
+    const hourCounts: Record<number, number> = {};
+    
+    filteredAnalytics.forEach(event => {
+      if (event.timestamp) {
+        const date = new Date(event.timestamp);
+        const hour = date.getHours();
+        hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+      }
+    });
+
+    const maxCount = Math.max(...Object.values(hourCounts), 1);
+    
+    return Array.from({ length: 24 }, (_, hour) => ({
+      hour: `${hour.toString().padStart(2, '0')}:00`,
+      count: hourCounts[hour] || 0,
+      intensity: hourCounts[hour] ? (hourCounts[hour] / maxCount) * 100 : 0
+    }));
+  };
+
   const timeSeriesData = processTimeSeriesData();
   const eventTypeData = processEventTypeData();
   const topPagesData = processTopPages();
   const countryData = processCountryData();
   const funnelData = processFunnelData();
   const eventInsights = processEventInsights();
+  const peakHours = processPeakHours();
 
   const stats = {
     totalEvents: filteredAnalytics.length,
@@ -530,6 +552,44 @@ export function Analytics() {
               </ResponsiveContainer>
             </Card>
           </div>
+
+          {/* Peak Hours Heatmap */}
+          <Card className="p-6 bg-gray-800 border-gray-700">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-white">Peak Activity Hours</h3>
+              <p className="text-gray-400 text-sm">When your visitors are most active (24-hour format)</p>
+            </div>
+            <div className="grid grid-cols-12 gap-2">
+              {peakHours.map((hourData) => {
+                const intensity = hourData.intensity;
+                const bgColor = intensity === 0 ? 'bg-gray-700/20' :
+                               intensity < 25 ? 'bg-blue-500/20' :
+                               intensity < 50 ? 'bg-blue-500/40' :
+                               intensity < 75 ? 'bg-blue-500/60' :
+                               'bg-blue-500/80';
+                
+                return (
+                  <div
+                    key={hourData.hour}
+                    className={`${bgColor} rounded-lg p-3 text-center transition-all hover:scale-105 cursor-pointer relative group`}
+                    title={`${hourData.hour}: ${hourData.count} events`}
+                  >
+                    <p className="text-xs text-gray-400 font-medium">{hourData.hour.split(':')[0]}</p>
+                    <p className="text-sm text-white font-semibold mt-1">{hourData.count}</p>
+                    {/* Tooltip on hover */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                      {hourData.count} events
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
+              <span>Midnight</span>
+              <span>Noon</span>
+              <span>Midnight</span>
+            </div>
+          </Card>
 
           {/* Country Distribution Chart */}
           <Card className="p-6 bg-gray-800 border-gray-700">
