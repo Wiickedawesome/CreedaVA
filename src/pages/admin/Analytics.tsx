@@ -129,10 +129,74 @@ export function Analytics() {
       .slice(0, 10);
   };
 
+  // Event insights breakdown
+  const processEventInsights = () => {
+    const pageViews = filteredAnalytics.filter(e => e.eventType === 'page_view');
+    const buttonClicks = filteredAnalytics.filter(e => e.eventType === 'button_click');
+    const formSubmits = filteredAnalytics.filter(e => e.eventType === 'form_submit');
+    
+    // Top pages
+    const pageViewCounts = pageViews.reduce((acc, e) => {
+      const page = e.eventData?.page || e.page || 'Unknown';
+      acc[page] = (acc[page] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const topPages = Object.entries(pageViewCounts)
+      .map(([page, count]) => ({ page, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    
+    // Top interactions
+    const interactionCounts = [...buttonClicks, ...formSubmits].reduce((acc, e) => {
+      const action = e.eventData?.action || e.eventData?.label || e.eventType || 'Unknown';
+      acc[action] = (acc[action] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const topInteractions = Object.entries(interactionCounts)
+      .map(([action, count]) => ({ action, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    
+    return { topPages, topInteractions };
+  };
+
+  // Conversion Funnel Analysis
+  const processFunnelData = () => {
+    const funnelSteps = [
+      { step: 'Home', page: '/', name: 'Homepage Visits' },
+      { step: 'Services', page: '/services', name: 'Viewed Services' },
+      { step: 'Pricing', page: '/pricing', name: 'Checked Pricing' },
+      { step: 'Contact', page: '/contact', name: 'Reached Contact' }
+    ];
+
+    const sessions = new Set(filteredAnalytics.map(e => e.sessionId).filter(Boolean));
+    const totalSessions = sessions.size || filteredAnalytics.length;
+
+    return funnelSteps.map((step, index) => {
+      const count = filteredAnalytics.filter(e => e.page === step.page).length;
+      const percentage = totalSessions > 0 ? (count / totalSessions) * 100 : 0;
+      const dropoff = index > 0 ? funnelSteps[index - 1] : null;
+      const previousCount = dropoff ? filteredAnalytics.filter(e => e.page === dropoff.page).length : totalSessions;
+      const conversionRate = previousCount > 0 ? (count / previousCount) * 100 : 0;
+
+      return {
+        ...step,
+        count,
+        percentage: Math.round(percentage),
+        conversionRate: Math.round(conversionRate),
+        dropoff: previousCount > 0 ? Math.round(((previousCount - count) / previousCount) * 100) : 0
+      };
+    });
+  };
+
   const timeSeriesData = processTimeSeriesData();
   const eventTypeData = processEventTypeData();
   const topPagesData = processTopPages();
   const countryData = processCountryData();
+  const funnelData = processFunnelData();
+  const eventInsights = processEventInsights();
 
   const stats = {
     totalEvents: filteredAnalytics.length,
@@ -243,6 +307,128 @@ export function Analytics() {
           </div>
           <div className="text-3xl font-bold text-white">{stats.uniquePages}</div>
           <p className="text-xs text-gray-500 mt-1">Pages tracked</p>
+        </Card>
+      </div>
+
+      {/* Conversion Funnel */}
+      <Card className="p-6 bg-gray-800 border-gray-700">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-white">Customer Journey Funnel</h3>
+          <p className="text-gray-400 text-sm">Track how visitors navigate through your site</p>
+        </div>
+        <div className="space-y-4">
+          {funnelData.map((step, index) => {
+            const width = step.percentage;
+            const isLast = index === funnelData.length - 1;
+            
+            return (
+              <div key={step.step} className="relative">
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-white font-medium">{step.name}</span>
+                      <span className="text-gray-400 text-sm">{step.count} visits</span>
+                    </div>
+                    <div className="h-8 bg-gray-700 rounded-lg overflow-hidden relative">
+                      <div 
+                        className={`h-full ${isLast ? 'bg-green-500' : 'bg-blue-500'} transition-all duration-500`}
+                        style={{ width: `${width}%` }}
+                      >
+                        <div className="flex items-center justify-between h-full px-3">
+                          <span className="text-white text-sm font-semibold">{step.percentage}%</span>
+                          {index > 0 && (
+                            <span className="text-white/80 text-xs">
+                              {step.conversionRate}% conversion
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {index > 0 && step.dropoff > 0 && (
+                      <p className="text-xs text-red-400 mt-1">
+                        ↓ {step.dropoff}% drop-off from previous step
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-6 p-4 bg-gray-700/50 rounded-lg">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-400">Overall Conversion Rate:</span>
+            <span className="text-green-400 font-semibold text-lg">
+              {funnelData.length > 0 && funnelData[0].count > 0 
+                ? Math.round((funnelData[funnelData.length - 1].count / funnelData[0].count) * 100) 
+                : 0}%
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Visitors who complete the full journey from homepage to contact
+          </p>
+        </div>
+      </Card>
+
+      {/* Event Insights - Top Pages & Interactions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6 bg-gray-800 border-gray-700">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-white">Top Pages</h3>
+            <p className="text-gray-400 text-sm">Most visited customer pages</p>
+          </div>
+          <div className="space-y-3">
+            {eventInsights.topPages.map((page, index) => (
+              <div key={page.page} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <span className="text-blue-400 font-semibold text-sm">{index + 1}</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">{page.page}</p>
+                    <p className="text-gray-400 text-xs">{page.count} views</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-white font-semibold">{page.count}</p>
+                  <p className="text-gray-500 text-xs">
+                    {stats.pageViews > 0 ? Math.round((page.count / stats.pageViews) * 100) : 0}%
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-gray-800 border-gray-700">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-white">Top Interactions</h3>
+            <p className="text-gray-400 text-sm">Most common user actions</p>
+          </div>
+          <div className="space-y-3">
+            {eventInsights.topInteractions.map((interaction, index) => (
+              <div key={interaction.action} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <span className="text-green-400 font-semibold text-sm">{index + 1}</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">{interaction.action}</p>
+                    <p className="text-gray-400 text-xs">{interaction.count} clicks</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-white font-semibold">{interaction.count}</p>
+                  <p className="text-gray-500 text-xs">
+                    {stats.interactions > 0 ? Math.round((interaction.count / stats.interactions) * 100) : 0}%
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
       </div>
 
