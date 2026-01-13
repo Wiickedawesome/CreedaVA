@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Calendar, ArrowLeft, Eye, Linkedin, Share2 } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { format } from 'date-fns'
+import { trackCosmosEvent } from '@/lib/tracking'
 
 interface BlogPost {
   id: string
@@ -22,7 +23,10 @@ interface BlogPost {
   createdAt: string
   views: number | null
   createdBy: string
-  type: string
+  tags?: string[]
+  seoTitle?: string
+  seoDescription?: string
+  featuredImage?: string
 }
 
 export default function BlogPost() {
@@ -35,6 +39,8 @@ export default function BlogPost() {
   useEffect(() => {
     if (slug) {
       fetchPost()
+      // Increment view count
+      incrementViews()
     }
   }, [slug])
 
@@ -46,47 +52,35 @@ export default function BlogPost() {
       const response = await fetch(`${API_BASE}/getBlog`)
       
       if (!response.ok) {
-        throw new Error('Failed to fetch blog post')
+        throw new Error(`Failed to fetch blog post: ${response.statusText}`)
       }
       
-      const data = await response.json()
-      
-      // Find post by slug
-      const foundPost = (data.data || []).find(
-        (p: BlogPost) => p.slug === slug && p.status === 'published' && p.isPublished
-      )
+      const result = await response.json()
+      const posts = result.data || []
+      const foundPost = posts.find((p: BlogPost) => p.slug === slug && p.status === 'published' && p.isPublished)
       
       if (foundPost) {
         setPost(foundPost)
-        // Increment view count (fire and forget)
-        incrementViews(foundPost.id).catch(() => {})
       } else {
         setError('Blog post not found')
       }
-    } catch (err) {
-      console.error('Error fetching blog post:', err)
-      setError('Failed to load blog post')
+    } catch (error) {
+      setError('Blog post not found')
     } finally {
       setLoading(false)
     }
   }
 
-  const incrementViews = async (postId: string) => {
+  const incrementViews = async () => {
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
-      await fetch(`${API_BASE}/trackEvent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          eventType: 'blog_view',
-          postId,
-          slug,
-          timestamp: new Date().toISOString()
-        })
+      // Track view event
+      await trackCosmosEvent({
+        eventType: 'page_view',
+        page: `/blog/${slug}`,
+        metadata: { type: 'blog_post' }
       })
     } catch (error) {
       // Silently fail - view count is not critical
-      console.debug('View tracking failed:', error)
     }
   }
 
@@ -172,19 +166,19 @@ export default function BlogPost() {
                 </Badge>
               )}
             </div>
-At
-                      ? format(new Date(post.publishedAt), 'MMMM d, yyyy')
-                      : format(new Date(post.createdAt), 'MMMM d, yyyy')
-                    }
-                  </span>
-                </div>
-                {post.views && post.views > 0e="flex items-center gap-4">
+
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
+              {post.title}
+            </h1>
+
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-8 text-muted-foreground">
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Calendar size={16} />
                   <span>
-                    {post.published_at
-                      ? format(new Date(post.published_at), 'MMMM d, yyyy')
-                      : format(new Date(post.created_at), 'MMMM d, yyyy')
+                    {post.publishedAt
+                      ? format(new Date(post.publishedAt), 'MMMM d, yyyy')
+                      : format(new Date(post.createdAt), 'MMMM d, yyyy')
                     }
                   </span>
                 </div>

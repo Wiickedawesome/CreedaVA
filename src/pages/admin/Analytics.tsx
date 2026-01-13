@@ -34,9 +34,6 @@ export function Analytics() {
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [daysFilter, setDaysFilter] = useState(30);
-  const [selectedPage, setSelectedPage] = useState<string | null>(null);
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  const [selectedEventType, setSelectedEventType] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null)
   const [errorStatus, setErrorStatus] = useState<number | null>(null)
   const { signIn } = useAuth()
@@ -101,7 +98,7 @@ export function Analytics() {
     const countryCounts: Record<string, number> = {};
     
     analytics.forEach(event => {
-      if (event.country && event.country !== 'unknown' && event.country !== 'Unknown') {
+      if (event.country && event.country !== 'unknown') {
         countryCounts[event.country] = (countryCounts[event.country] || 0) + 1;
       }
     });
@@ -112,51 +109,12 @@ export function Analytics() {
       .slice(0, 10);
   };
 
-  // Filter analytics based on selections
-  const getFilteredAnalytics = () => {
-    let filtered = [...analytics];
-    
-    if (selectedPage) {
-      filtered = filtered.filter(e => e.page === selectedPage);
-    }
-    if (selectedCountry) {
-      filtered = filtered.filter(e => e.country === selectedCountry);
-    }
-    if (selectedEventType) {
-      filtered = filtered.filter(e => e.eventType === selectedEventType);
-    }
-    
-    return filtered;
-  };
-
-  const filteredAnalytics = getFilteredAnalytics();
-  const hasFilters = selectedPage || selectedCountry || selectedEventType;
-
-  const clearFilters = () => {
-    setSelectedPage(null);
-    setSelectedCountry(null);
-    setSelectedEventType(null);
-  };
-
   const timeSeriesData = processTimeSeriesData();
   const eventTypeData = processEventTypeData();
   const topPagesData = processTopPages();
   const countryData = processCountryData();
 
-  const stats = {Customer traffic and engagement metrics</p>
-          {hasFilters && (
-            <div className="flex items-center gap-2 mt-2">
-              <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
-                Filtered View
-              </Badge>
-              {selectedPage && <Badge variant="secondary">Page: {selectedPage}</Badge>}
-              {selectedCountry && <Badge variant="secondary">Country: {selectedCountry}</Badge>}
-              {selectedEventType && <Badge variant="secondary">Event: {selectedEventType}</Badge>}
-              <Button size="sm" variant="ghost" onClick={clearFilters} className="text-xs text-gray-400 hover:text-white">
-                Clear Filters
-              </Button>
-            </div>
-          )}
+  const stats = {
     totalEvents: summary?.totalEvents || 0,
     uniquePages: summary?.uniquePages || 0,
     pageViews: summary?.eventTypes['page_view'] || 0,
@@ -329,27 +287,40 @@ export function Analytics() {
                   >
                     {eventTypeData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}customer pages (click to filter)</p>
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
+
+            {/* Top Pages Bar Chart */}
+            <Card className="p-6 bg-gray-800 border-gray-700">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white">Top Pages</h3>
+                <p className="text-gray-400 text-sm">Most visited pages</p>
               </div>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={topPagesData.slice(0, 5)} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                   <XAxis type="number" stroke="#9ca3af" />
-                  <YAxis 
-                    dataKey="page" 
-                    type="category" 
-                    stroke="#9ca3af" 
-                    width={120}
-                  />
+                  <YAxis dataKey="page" type="category" stroke="#9ca3af" width={120} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
-                    cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
                   />
-                  <Bar 
-                    dataKey="views" 
-                    fill="#10b981" 
-                    radius={[0, 8, 8, 0]}
-                    onClick={(data) => setSelectedPage(data.page)} (click to filter)</p>
+                  <Bar dataKey="views" fill="#10b981" radius={[0, 8, 8, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+          </div>
+
+          {/* Country Distribution Chart */}
+          <Card className="p-6 bg-gray-800 border-gray-700">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-white">Visitors by Country</h3>
+              <p className="text-gray-400 text-sm">Geographic distribution</p>
             </div>
             {countryData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
@@ -359,15 +330,8 @@ export function Analytics() {
                   <YAxis dataKey="country" type="category" stroke="#9ca3af" width={80} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
-                    cursor={{ fill: 'rgba(139, 92, 246, 0.1)' }}
                   />
-                  <Bar 
-                    dataKey="count" 
-                    fill="#8b5cf6" 
-                    radius={[0, 8, 8, 0]}
-                    onClick={(data) => setSelectedCountry(data.country)}
-                    className="cursor-pointer hover:opacity-80"
-                  />
+                  <Bar dataKey="count" fill="#8b5cf6" radius={[0, 8, 8, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -379,50 +343,6 @@ export function Analytics() {
 
           {/* Recent Events Table */}
           <Card className="bg-gray-800 border-gray-700">
-            <div className="p-6 border-b border-gray-700">
-              <h3 className="text-lg font-semibold text-white">
-                {hasFilters ? 'Filtered Events' : 'Recent Events'}
-              </h3>
-              <p className="text-gray-400 text-sm">
-                {hasFilters 
-                  ? `Showing ${filteredAnalytics.length} filtered event${filteredAnalytics.length !== 1 ? 's' : ''}`
-                  : 'Latest customer activity (excludes admin pages)'
-                }
-              </p>
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow className="border-gray-700">
-                  <TableHead className="text-gray-400">Event Type</TableHead>
-                  <TableHead className="text-gray-400">Page</TableHead>
-                  <TableHead className="text-gray-400">Country</TableHead>
-                  <TableHead className="text-gray-400">Timestamp</TableHead>
-                  <TableHead className="text-gray-400">Session ID</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAnalytics.slice(0, 20).map((event, index) => (
-                  <TableRow key={index} className="border-gray-700 hover:bg-gray-750">
-                    <TableCell>
-                      <Badge 
-                        variant="outline" 
-                        className="bg-blue-500/10 text-blue-400 border-blue-500/30 cursor-pointer hover:bg-blue-500/20"
-                        onClick={() => setSelectedEventType(event.eventType)}
-                      >
-                        {event.eventType.replace(/_/g, ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell 
-                      className="text-gray-300 font-mono text-sm cursor-pointer hover:text-blue-400"
-                      onClick={() => setSelectedPage(event.page)}
-                    >
-                      {event.page}
-                    </TableCell>
-                    <TableCell 
-                      className="text-gray-400 text-sm cursor-pointer hover:text-purple-400"
-                      onClick={() => event.country && event.country !== 'Unknown' && setSelectedCountry(event.country)}
-                    >
-                      {event.country && event.country !== 'unknown' && event.country !== 'U
             <div className="p-6 border-b border-gray-700">
               <h3 className="text-lg font-semibold text-white">Recent Events</h3>
               <p className="text-gray-400 text-sm">Latest tracked activity</p>
