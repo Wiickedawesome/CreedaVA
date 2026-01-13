@@ -43,7 +43,8 @@ export default function News() {
       setLoading(true)
       setError(null)
       const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
-      const response = await fetch(`${API_BASE}/getBlog`)
+      // Use public endpoint - no authentication required
+      const response = await fetch(`${API_BASE}/public/blog`)
       
       if (!response.ok) {
         throw new Error(`Failed to fetch blog posts: ${response.statusText}`)
