@@ -34,11 +34,11 @@ This repo is a single deployment unit (frontend + API) but split into two codeba
 - `vite.config.ts` sets `base` from `VITE_BASE_PATH` (defaults to `/CreedaVA/` for GitHub Pages, use `/` for Azure/custom domain).
 
 ## Auth model (admin)
-- Frontend uses MSAL (`src/lib/auth.ts`) and sends an Entra ID **ID token** (not access token) as `Authorization: Bearer <id_token>`.
-- Backend validates via JWKS in `api/shared/auth.js` using:
-  - `AAD_TENANT_ID`, `AAD_CLIENT_ID`, optional `AAD_AUTHORITY`.
+- Frontend uses **Google OAuth** popup (`src/lib/auth.ts`) and sends a Google **ID token** as `Authorization: Bearer <id_token>`.
+- Backend validates via Google's JWKS in `api/shared/auth.js` using:
+  - `GOOGLE_CLIENT_ID`, `GOOGLE_ALLOWED_DOMAIN`.
 - Dev-mode UI: `VITE_DEV_MODE=true` uses localStorage `dev_user` and returns a placeholder token (`dev-token`).
-  - Important: backend still enforces JWT verification; admin APIs will 401 unless Entra config is present.
+  - Important: backend still enforces JWT verification; admin APIs will 401 unless Google config is present.
 
 ## Cosmos DB data model (important)
 - Cosmos DB is the system of record. Containers are created with partition key **`/type`** (see `api/create-containers.js`).
