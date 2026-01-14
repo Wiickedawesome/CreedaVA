@@ -43,40 +43,122 @@
     <!-- Add twitter:image when you have a social sharing image (1200x630px recommended) -->
     <!-- <meta property="twitter:image" content="https://creedava.com/og-image.jpg"> -->
     
-    <!-- Add your Google Search Console verification code here when ready -->
-    <!-- <meta name="google-site-verification" content="YOUR_GOOGLE_VERIFICATION_CODE_HERE" /> -->
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="q1jzHXj1zBVr0aaSJCxbDF3_W6nXgMjPoATx7YtvhJ0" />
     
     <!-- Structured Data for Rich Search Results -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "ProfessionalService",
+      "@type": "Organization",
       "name": "CreedaVA",
-      "image": "https://creedava.com/logo.png",
-      "description": "Belize-based bilingual virtual assistants fluent in English & Spanish. Professional remote support for executive tasks, administration, customer service, and more.",
+      "alternateName": "CreedaVA - Bilingual Virtual Assistants",
       "url": "https://creedava.com",
+      "logo": "https://creedava.com/logo.png",
+      "description": "Belize-based bilingual virtual assistants fluent in English & Spanish. Professional remote support for executive tasks, administration, customer service, and more.",
+      "foundingDate": "2023",
       "telephone": "+1-844-702-2202",
       "email": "info@creedava.com",
       "address": {
         "@type": "PostalAddress",
-        "addressCountry": "BZ",
-        "addressLocality": "Belize"
+        "addressLocality": "Knoxville",
+        "addressRegion": "TN",
+        "postalCode": "37914",
+        "addressCountry": "US"
       },
       "geo": {
         "@type": "GeoCoordinates",
-        "latitude": "17.2510",
-        "longitude": "-88.7590"
+        "latitude": "35.9606",
+        "longitude": "-83.9207"
       },
-      "priceRange": "$$",
+      "areaServed": [
+        {
+          "@type": "Country",
+          "name": "United States"
+        },
+        {
+          "@type": "Country",
+          "name": "Canada"
+        }
+      ],
+      "sameAs": [
+        "https://www.linkedin.com/company/creedava",
+        "https://twitter.com/creedava",
+        "https://www.facebook.com/creedava"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+1-844-702-2202",
+        "contactType": "customer service",
+        "email": "info@creedava.com",
+        "areaServed": ["US", "CA"],
+        "availableLanguage": ["English", "Spanish"]
+      }
+    }
+    </script>
+    
+    <!-- Website Schema for Sitelinks Search Box -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "CreedaVA",
+      "url": "https://creedava.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://creedava.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
+    <!-- Service Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "serviceType": "Virtual Assistant Services",
+      "provider": {
+        "@type": "Organization",
+        "name": "CreedaVA"
+      },
       "areaServed": {
         "@type": "Country",
         "name": "United States"
       },
-      "serviceType": ["Virtual Assistant Services", "Executive Support", "Administrative Services", "Customer Service", "Bilingual Support"],
-      "foundingDate": "2023",
-      "sameAs": [
-        "https://www.linkedin.com/company/creedava"
-      ]
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Virtual Assistant Services",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Executive Support",
+              "description": "Professional executive assistance including calendar management, email handling, and administrative support"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Customer Service",
+              "description": "Bilingual customer service support in English and Spanish"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Administrative Services",
+              "description": "General administrative tasks, data entry, and business support"
+            }
+          }
+        ]
+      }
     }
     </script>
     

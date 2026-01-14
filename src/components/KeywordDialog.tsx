@@ -143,7 +143,7 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
     } else if (formData.currentRank > formData.previousRank) {
       return { icon: TrendingDown, color: 'text-red-600', text: 'Declined' };
     } else {
-      return { icon: Minus, color: 'text-gray-600', text: 'No change' };
+      return { icon: Minus, color: 'text-gray-400', text: 'No change' };
     }
   };
 
@@ -170,7 +170,7 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
           <DialogTitle className="text-white">
             {keyword ? 'Edit Keyword' : 'Add New Keyword'}
           </DialogTitle>
-          <DialogDescription className="text-gray-600">
+          <DialogDescription className="text-gray-400">
             Track keyword rankings, analyze competition, and monitor SEO performance.
           </DialogDescription>
         </DialogHeader>
@@ -180,21 +180,21 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
             {/* Left Column */}
             <div className="space-y-4">
               <div>
-                <Label htmlFor="keyword" className="text-gray-700">Keyword</Label>
+                <Label htmlFor="keyword" className="text-gray-300">Keyword</Label>
                 <Input
                   id="keyword"
                   value={formData.keyword}
                   onChange={(e) => setFormData(prev => ({ ...prev, keyword: e.target.value }))}
                   placeholder="Enter keyword or phrase..."
-                  className="border-gray-300"
+                  className="border-gray-600"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="category" className="text-gray-700">Category</Label>
+                <Label htmlFor="category" className="text-gray-300">Category</Label>
                 <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-                  <SelectTrigger className="border-gray-300">
+                  <SelectTrigger className="border-gray-600">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -208,21 +208,21 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
               </div>
 
               <div>
-                <Label htmlFor="targetUrl" className="text-gray-700">Target URL</Label>
+                <Label htmlFor="targetUrl" className="text-gray-300">Target URL</Label>
                 <Input
                   id="targetUrl"
                   value={formData.targetUrl}
                   onChange={(e) => setFormData(prev => ({ ...prev, targetUrl: e.target.value }))}
                   placeholder="https://example.com/target-page"
-                  className="border-gray-300"
+                  className="border-gray-600"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="intent" className="text-gray-700">Search Intent</Label>
+                <Label htmlFor="intent" className="text-gray-300">Search Intent</Label>
                 <Select value={formData.intent} onValueChange={(value: any) => setFormData(prev => ({ ...prev, intent: value }))}>
-                  <SelectTrigger className="border-gray-300">
+                  <SelectTrigger className="border-gray-600">
                     <SelectValue placeholder="Select search intent" />
                   </SelectTrigger>
                   <SelectContent>
@@ -241,7 +241,7 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
               {/* Ranking Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="currentRank" className="text-gray-700">Current Rank</Label>
+                  <Label htmlFor="currentRank" className="text-gray-300">Current Rank</Label>
                   <Input
                     id="currentRank"
                     type="number"
@@ -250,11 +250,11 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
                     value={formData.currentRank || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, currentRank: e.target.value ? parseInt(e.target.value) : undefined }))}
                     placeholder="e.g., 15"
-                    className="border-gray-300"
+                    className="border-gray-600"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="previousRank" className="text-gray-700">Previous Rank</Label>
+                  <Label htmlFor="previousRank" className="text-gray-300">Previous Rank</Label>
                   <Input
                     id="previousRank"
                     type="number"
@@ -263,7 +263,7 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
                     value={formData.previousRank || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, previousRank: e.target.value ? parseInt(e.target.value) : undefined }))}
                     placeholder="e.g., 20"
-                    className="border-gray-300"
+                    className="border-gray-600"
                   />
                 </div>
               </div>
@@ -275,7 +275,7 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
                     {rankTrend.text}
                   </span>
                   {formData.currentRank && formData.previousRank && (
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-400">
                       ({Math.abs(formData.currentRank - formData.previousRank)} positions)
                     </span>
                   )}
@@ -287,7 +287,7 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
                   checked={formData.isTracking}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isTracking: checked }))}
                 />
-                <Label className="text-gray-700">Active Tracking</Label>
+                <Label className="text-gray-300">Active Tracking</Label>
               </div>
             </div>
 
@@ -296,7 +296,7 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
               {/* SEO Metrics */}
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="searchVolume" className="text-gray-700">Monthly Volume</Label>
+                  <Label htmlFor="searchVolume" className="text-gray-300">Monthly Volume</Label>
                   <Input
                     id="searchVolume"
                     type="number"
@@ -304,11 +304,11 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
                     value={formData.searchVolume}
                     onChange={(e) => setFormData(prev => ({ ...prev, searchVolume: parseInt(e.target.value) || 0 }))}
                     placeholder="1000"
-                    className="border-gray-300"
+                    className="border-gray-600"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="difficulty" className="text-gray-700">Difficulty</Label>
+                  <Label htmlFor="difficulty" className="text-gray-300">Difficulty</Label>
                   <Input
                     id="difficulty"
                     type="number"
@@ -317,11 +317,11 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
                     value={formData.difficulty}
                     onChange={(e) => setFormData(prev => ({ ...prev, difficulty: parseInt(e.target.value) || 0 }))}
                     placeholder="65"
-                    className="border-gray-300"
+                    className="border-gray-600"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="cpc" className="text-gray-700">CPC ($)</Label>
+                  <Label htmlFor="cpc" className="text-gray-300">CPC ($)</Label>
                   <Input
                     id="cpc"
                     type="number"
@@ -330,7 +330,7 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
                     value={formData.cpc}
                     onChange={(e) => setFormData(prev => ({ ...prev, cpc: parseFloat(e.target.value) || 0 }))}
                     placeholder="2.50"
-                    className="border-gray-300"
+                    className="border-gray-600"
                   />
                 </div>
               </div>
@@ -338,7 +338,7 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
               {/* Difficulty Visualization */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">Keyword Difficulty</span>
+                  <span className="text-sm font-medium text-gray-300">Keyword Difficulty</span>
                   <span className={`text-sm font-medium ${getDifficultyColor(formData.difficulty ?? 0)}`}>
                     {getDifficultyLabel(formData.difficulty ?? 0)} ({formData.difficulty ?? 0}/100)
                   </span>
@@ -348,20 +348,20 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
 
               {/* Competitors */}
               <div>
-                <Label className="text-gray-700">Top Competitors</Label>
+                <Label className="text-gray-300">Top Competitors</Label>
                 <div className="flex space-x-2 mt-2">
                   <Input
                     value={newCompetitor}
                     onChange={(e) => setNewCompetitor(e.target.value)}
                     placeholder="competitor-domain.com"
-                    className="flex-1 border-gray-300"
+                    className="flex-1 border-gray-600"
                   />
                   <Button type="button" onClick={addCompetitor}>Add</Button>
                 </div>
                 <div className="space-y-2 mt-2">
                   {formData.competitors?.map((competitor, index) => (
                     <div key={index} className="flex items-center justify-between p-2 bg-gray-800 border border-gray-700 rounded">
-                      <span className="text-sm text-gray-700">{competitor}</span>
+                      <span className="text-sm text-gray-300">{competitor}</span>
                       <Button
                         type="button"
                         variant="ghost"
@@ -378,13 +378,13 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
 
               {/* Tags */}
               <div>
-                <Label className="text-gray-700">Tags</Label>
+                <Label className="text-gray-300">Tags</Label>
                 <div className="flex space-x-2 mt-2">
                   <Input
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value.replace(/[^a-zA-Z0-9\s]/g, ''))}
                     placeholder="tag name"
-                    className="flex-1 border-gray-300"
+                    className="flex-1 border-gray-600"
                   />
                   <Button type="button" onClick={addTag}>Add</Button>
                 </div>
@@ -406,13 +406,13 @@ export function KeywordDialog({ isOpen, onClose, onSave, keyword }: KeywordDialo
 
               {/* Notes */}
               <div>
-                <Label htmlFor="notes" className="text-gray-700">Notes & Strategy</Label>
+                <Label htmlFor="notes" className="text-gray-300">Notes & Strategy</Label>
                 <Textarea
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                   placeholder="Add notes about optimization strategy, content plans, etc..."
-                  className="min-h-[100px] border-gray-300"
+                  className="min-h-[100px] border-gray-600"
                 />
               </div>
             </div>
