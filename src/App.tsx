@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
@@ -14,33 +14,44 @@ import { AdminLayout } from '@/layouts/AdminLayout'
 import { AdminDashboard } from '@/pages/admin/Dashboard'
 import { useInView } from '@/hooks/useInView'
 import { trackPageView } from '@/lib/tracking'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { lazyWithRetry, lazyWithRetryAndTransform } from '@/utils/lazyWithRetry'
 
-// Lazy load route components for better performance
-const Services = lazy(() => import('@/pages/Services').then(module => ({ default: module.Services })))
-const About = lazy(() => import('@/pages/About').then(module => ({ default: module.About })))
-const Pricing = lazy(() => import('@/pages/Pricing').then(module => ({ default: module.Pricing })))
-const News = lazy(() => import('@/pages/News'))
-const BlogPost = lazy(() => import('@/pages/BlogPost'))
-const Contact = lazy(() => import('@/pages/Contact'))
+// Lazy load route components with retry logic for better resilience
+const Services = lazyWithRetryAndTransform(
+  () => import('@/pages/Services'),
+  (m) => m.Services
+)
+const About = lazyWithRetryAndTransform(
+  () => import('@/pages/About'),
+  (m) => m.About
+)
+const Pricing = lazyWithRetryAndTransform(
+  () => import('@/pages/Pricing'),
+  (m) => m.Pricing
+)
+const News = lazyWithRetry(() => import('@/pages/News'))
+const BlogPost = lazyWithRetry(() => import('@/pages/BlogPost'))
+const Contact = lazyWithRetry(() => import('@/pages/Contact'))
 
-// Lazy load admin pages
-const Leads = lazy(() => import('@/pages/admin/Leads').then(m => ({ default: m.Leads })))
-const Contacts = lazy(() => import('@/pages/admin/Contacts').then(m => ({ default: m.Contacts })))
-const Tasks = lazy(() => import('@/pages/admin/Tasks').then(m => ({ default: m.Tasks })))
-const Projects = lazy(() => import('@/pages/admin/Projects').then(m => ({ default: m.Projects })))
-const Emails = lazy(() => import('@/pages/admin/Emails').then(m => ({ default: m.Emails })))
-const SEO = lazy(() => import('@/pages/admin/SEO').then(m => ({ default: m.SEO })))
-const Keywords = lazy(() => import('@/pages/admin/Keywords').then(m => ({ default: m.Keywords })))
-const Analytics = lazy(() => import('@/pages/admin/Analytics').then(m => ({ default: m.Analytics })))
-const Settings = lazy(() => import('@/pages/admin/Settings').then(m => ({ default: m.Settings })))
+// Lazy load admin pages with retry
+const Leads = lazyWithRetryAndTransform(() => import('@/pages/admin/Leads'), m => m.Leads)
+const Contacts = lazyWithRetryAndTransform(() => import('@/pages/admin/Contacts'), m => m.Contacts)
+const Tasks = lazyWithRetryAndTransform(() => import('@/pages/admin/Tasks'), m => m.Tasks)
+const Projects = lazyWithRetryAndTransform(() => import('@/pages/admin/Projects'), m => m.Projects)
+const Emails = lazyWithRetryAndTransform(() => import('@/pages/admin/Emails'), m => m.Emails)
+const SEO = lazyWithRetryAndTransform(() => import('@/pages/admin/SEO'), m => m.SEO)
+const Keywords = lazyWithRetryAndTransform(() => import('@/pages/admin/Keywords'), m => m.Keywords)
+const Analytics = lazyWithRetryAndTransform(() => import('@/pages/admin/Analytics'), m => m.Analytics)
+const Settings = lazyWithRetryAndTransform(() => import('@/pages/admin/Settings'), m => m.Settings)
 
-// Marketing pages
-const Social = lazy(() => import('@/pages/admin/Social').then(m => ({ default: m.Social })))
-const Blog = lazy(() => import('@/pages/admin/Blog').then(m => ({ default: m.Blog })))
-const AdCampaigns = lazy(() => import('@/pages/admin/AdCampaigns').then(m => ({ default: m.AdCampaigns })))
-const LandingPages = lazy(() => import('@/pages/admin/LandingPages').then(m => ({ default: m.LandingPages })))
-const CustomerJourney = lazy(() => import('@/pages/admin/CustomerJourney').then(m => ({ default: m.CustomerJourney })))
-const Reports = lazy(() => import('@/pages/admin/Reports').then(m => ({ default: m.Reports })))
+// Marketing pages with retry
+const Social = lazyWithRetryAndTransform(() => import('@/pages/admin/Social'), m => m.Social)
+const Blog = lazyWithRetryAndTransform(() => import('@/pages/admin/Blog'), m => m.Blog)
+const AdCampaigns = lazyWithRetryAndTransform(() => import('@/pages/admin/AdCampaigns'), m => m.AdCampaigns)
+const LandingPages = lazyWithRetryAndTransform(() => import('@/pages/admin/LandingPages'), m => m.LandingPages)
+const CustomerJourney = lazyWithRetryAndTransform(() => import('@/pages/admin/CustomerJourney'), m => m.CustomerJourney)
+const Reports = lazyWithRetryAndTransform(() => import('@/pages/admin/Reports'), m => m.Reports)
 
 // Loading fallback component
 const PageLoader = () => (
@@ -54,11 +65,12 @@ function App() {
   const basename = import.meta.env.BASE_URL
   
   return (
-    <Router basename={basename}>
-      <AuthProvider>
-        <PerformanceMonitor />
-        <PageViewTracker />
-        <Routes>
+    <ErrorBoundary>
+      <Router basename={basename}>
+        <AuthProvider>
+          <PerformanceMonitor />
+          <PageViewTracker />
+          <Routes>
           {/* Diagnostic route */}
           <Route path="/env-check" element={<EnvCheck />} />
           
@@ -174,6 +186,7 @@ function App() {
         </Routes>
       </AuthProvider>
     </Router>
+    </ErrorBoundary>
   )
 }
 
