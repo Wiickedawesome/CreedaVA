@@ -513,7 +513,7 @@ ${bookingData.notes || 'None'}
                         value={bookingData.service}
                         onChange={handleBookingChange}
                         required
-                        className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background focus:border-primary focus:ring-primary"
+                        className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:border-primary focus:ring-primary"
                       >
                         <option value="">Select a service</option>
                         <option value="Executive Assistance">Executive Assistance</option>
@@ -534,7 +534,7 @@ ${bookingData.notes || 'None'}
                         value={bookingData.hasProvider}
                         onChange={handleBookingChange}
                         required
-                        className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background focus:border-primary focus:ring-primary"
+                        className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:border-primary focus:ring-primary"
                       >
                         <option value="">Select an option</option>
                         <option value="Yes">Yes</option>
@@ -584,7 +584,7 @@ ${bookingData.notes || 'None'}
                             value={bookingData.time}
                             onChange={handleBookingChange}
                             required
-                            className="w-full pl-10 pr-3 py-2 border border-input rounded-md bg-background focus:border-primary focus:ring-primary"
+                            className="w-full pl-10 pr-3 py-2 border border-input rounded-md bg-background text-foreground focus:border-primary focus:ring-primary"
                           >
                             <option value="">Select time</option>
                             {timeSlots.map(slot => (

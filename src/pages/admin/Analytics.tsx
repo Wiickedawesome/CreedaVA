@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { TrendingUp, Eye, MousePointer, Users, Globe, Calendar, RefreshCw, Info, MapPin, Clock, ArrowRight } from 'lucide-react';
+import { TrendingUp, Eye, MousePointer, Users, Globe, Globe2, Calendar, RefreshCw, Info, MapPin, Clock, ArrowRight } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { API_BASE, authorizedFetch } from '@/lib/api-client';
 import { useAuth } from '@/contexts/AuthContext';
