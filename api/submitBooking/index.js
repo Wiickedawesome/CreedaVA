@@ -158,6 +158,36 @@ app.http('submitBookingOptions', {
         }
       }
 
+      // Auto-create lead from booking
+      try {
+        const leadsContainer = database?.container('leads');
+        if (leadsContainer) {
+          const leadId = `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          await leadsContainer.items.create({
+            id: leadId,
+            type: 'leads',
+            name: booking.name,
+            email: booking.email,
+            phone: booking.phone,
+            company: booking.company,
+            service: booking.service,
+            status: 'new',
+            source: 'booking-form',
+            notes: `Booking scheduled for ${booking.date} at ${booking.time}\n\nService: ${booking.service}\nHas Provider: ${booking.hasProvider}${booking.currentProvider ? `\nCurrent Provider: ${booking.currentProvider}` : ''}\n\n${booking.notes || ''}`,
+            bookingId: bookingId,
+            scheduledDate: booking.date,
+            scheduledTime: booking.time,
+            createdAt: timestamp,
+            updatedAt: timestamp
+          });
+          context.log('Lead auto-created from booking:', leadId);
+          bookingRecord.leadId = leadId;
+        }
+      } catch (leadError) {
+        context.error('Lead creation failed:', leadError);
+        // Continue even if lead creation fails
+      }
+
       // Also save to contacts container for notification
       try {
         const contactsContainer = database?.container('contacts');
