@@ -3,11 +3,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Eye, MousePointer, Users, Globe, Calendar, RefreshCw } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { TrendingUp, Eye, MousePointer, Users, Globe, Calendar, RefreshCw, Info, MapPin, Clock, ArrowRight } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { API_BASE, authorizedFetch } from '@/lib/api-client';
-import { useAuth } from '@/contexts/AuthContext'
-import { ErrorPanel } from '@/components/ErrorPanel'
+import { useAuth } from '@/contexts/AuthContext';
+import { ErrorPanel } from '@/components/ErrorPanel';
+import { CountryMap } from '@/components/CountryMap';
 
 interface AnalyticsEvent {
   id: string;
@@ -29,6 +31,48 @@ interface AnalyticsSummary {
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
+// Event type descriptions for better UX
+const EVENT_TYPE_INFO: Record<string, { label: string; description: string; icon: string }> = {
+  'page_view': { label: 'Page View', description: 'User visited a page on your site', icon: '👁️' },
+  'form_submission': { label: 'Form Submission', description: 'User submitted a contact or lead form', icon: '📝' },
+  'button_click': { label: 'Button Click', description: 'User clicked an interactive element', icon: '🖱️' },
+  'chat_interaction': { label: 'Chat Interaction', description: 'User engaged with the chatbot', icon: '💬' },
+  'download': { label: 'Download', description: 'User downloaded a file or resource', icon: '⬇️' },
+  'video_play': { label: 'Video Play', description: 'User played a video', icon: '▶️' },
+  'scroll_depth': { label: 'Scroll Depth', description: 'User scrolled through content', icon: '📜' },
+};
+
+// Country code to name mapping (subset - add more as needed)
+const COUNTRY_NAMES: Record<string, string> = {
+  'US': '🇺🇸 United States',
+  'GB': '🇬🇧 United Kingdom',
+  'CA': '🇨🇦 Canada',
+  'AU': '🇦🇺 Australia',
+  'DE': '🇩🇪 Germany',
+  'FR': '🇫🇷 France',
+  'ES': '🇪🇸 Spain',
+  'IT': '🇮🇹 Italy',
+  'BR': '🇧🇷 Brazil',
+  'MX': '🇲🇽 Mexico',
+  'IN': '🇮🇳 India',
+  'CN': '🇨🇳 China',
+  'JP': '🇯🇵 Japan',
+  'KR': '🇰🇷 South Korea',
+};
+
+const getEventTypeInfo = (eventType: string) => {
+  return EVENT_TYPE_INFO[eventType] || { 
+    label: eventType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+    description: 'User interaction event',
+    icon: '📊'
+  };
+};
+
+const getCountryName = (code?: string) => {
+  if (!code || code === 'Unknown' || code === 'N/A') return '🌐 Location Unknown';
+  return COUNTRY_NAMES[code] || `🌍 ${code}`;
+};
+
 export function Analytics() {
   const [analytics, setAnalytics] = useState<AnalyticsEvent[]>([]);
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
@@ -37,6 +81,8 @@ export function Analytics() {
   const [showAdminPages, setShowAdminPages] = useState(false); // Toggle for admin pages
   const [error, setError] = useState<string | null>(null)
   const [errorStatus, setErrorStatus] = useState<number | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<AnalyticsEvent | null>(null);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const { signIn } = useAuth()
 
   // Filter function to exclude admin pages
@@ -94,9 +140,10 @@ export function Analytics() {
       eventCounts[event.eventType] = (eventCounts[event.eventType] || 0) + 1;
     });
     
-    return Object.entries(eventCounts).map(([name, value]) => ({
-      name: name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-      value
+    return Object.entries(eventCounts).map(([eventType, value]) => ({
+      name: getEventTypeInfo(eventType).label,
+      value,
+      eventType // Keep original for reference
     }));
   };
 
@@ -124,7 +171,11 @@ export function Analytics() {
     });
 
     return Object.entries(countryCounts)
-      .map(([country, count]) => ({ country, count }))
+      .map(([countryCode, count]) => ({ 
+        country: getCountryName(countryCode),
+        countryCode,
+        count 
+      }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
   };
@@ -346,7 +397,7 @@ export function Analytics() {
             return (
               <div key={step.step} className="relative">
                 <div className="flex items-center gap-4 mb-2">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+                  <div className="shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
                     {index + 1}
                   </div>
                   <div className="flex-1">
@@ -477,6 +528,15 @@ export function Analytics() {
         </Card>
       ) : (
         <>
+          {/* SECTION: OVERVIEW TRENDS */}
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <TrendingUp className="h-6 w-6 text-blue-400" />
+              Trends & Activity
+            </h2>
+            <p className="text-gray-400 text-sm mt-1">Monitor visitor behavior over time</p>
+          </div>
+
           {/* Time Series Chart */}
           <Card className="p-6 bg-gray-800 border-gray-700">
             <div className="mb-4">
@@ -502,6 +562,15 @@ export function Analytics() {
               </AreaChart>
             </ResponsiveContainer>
           </Card>
+
+          {/* SECTION: EVENT BREAKDOWN */}
+          <div className="my-8">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Eye className="h-6 w-6 text-green-400" />
+              Event Breakdown
+            </h2>
+            <p className="text-gray-400 text-sm mt-1">What visitors are doing on your site</p>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Event Types Pie Chart */}
@@ -591,72 +660,197 @@ export function Analytics() {
             </div>
           </Card>
 
-          {/* Country Distribution Chart */}
-          <Card className="p-6 bg-gray-800 border-gray-700">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white">Visitors by Country</h3>
-              <p className="text-gray-400 text-sm">Geographic distribution</p>
-            </div>
-            {countryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={countryData.slice(0, 10)} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis type="number" stroke="#9ca3af" />
-                  <YAxis dataKey="country" type="category" stroke="#9ca3af" width={80} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
-                  />
-                  <Bar dataKey="count" fill="#8b5cf6" radius={[0, 8, 8, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-[300px] flex items-center justify-center text-gray-500">
-                Country data will appear as visitors access your site
-              </div>
-            )}
-          </Card>
+          {/* SECTION: GEOGRAPHIC INSIGHTS */}
+          <div className="my-8">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Globe className="h-6 w-6 text-purple-400" />
+              Geographic Insights
+            </h2>
+            <p className="text-gray-400 text-sm mt-1">Where your visitors are coming from</p>
+          </div>
+
+          {/* Country Distribution Map - NEW ENHANCED VERSION */}
+          <CountryMap countryData={countryData} />
+
+          {/* SECTION: RECENT ACTIVITY */}
+          <div className="my-8">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Clock className="h-6 w-6 text-orange-400" />
+              Recent Activity
+            </h2>
+            <p className="text-gray-400 text-sm mt-1">Live feed of user interactions</p>
+          </div>
 
           {/* Recent Events Table */}
           <Card className="bg-gray-800 border-gray-700">
             <div className="p-6 border-b border-gray-700">
-              <h3 className="text-lg font-semibold text-white">Recent Events</h3>
-              <p className="text-gray-400 text-sm">Latest tracked activity</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-blue-400" />
+                    Recent Events
+                  </h3>
+                  <p className="text-gray-400 text-sm">Click any event to see full details</p>
+                </div>
+              </div>
             </div>
             <Table>
               <TableHeader>
                 <TableRow className="border-gray-700">
                   <TableHead className="text-gray-400">Event Type</TableHead>
                   <TableHead className="text-gray-400">Page</TableHead>
-                  <TableHead className="text-gray-400">Country</TableHead>
+                  <TableHead className="text-gray-400">Location</TableHead>
                   <TableHead className="text-gray-400">Timestamp</TableHead>
-                  <TableHead className="text-gray-400">Session ID</TableHead>
+                  <TableHead className="text-gray-400">Details</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAnalytics.slice(0, 15).map((event, index) => (
-                  <TableRow key={index} className="border-gray-700">
-                    <TableCell>
-                      <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
-                        {event.eventType.replace(/_/g, ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-gray-300 font-mono text-sm">{event.page}</TableCell>
-                    <TableCell>
-                      <span className="text-gray-300">
-                        {event.country || 'Unknown'}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-gray-400 text-sm">
-                      {new Date(event.timestamp).toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-gray-500 text-xs font-mono">
-                      {event.sessionId?.substring(0, 8) || 'N/A'}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredAnalytics.slice(0, 15).map((event, index) => {
+                  const eventInfo = getEventTypeInfo(event.eventType);
+                  return (
+                    <TableRow 
+                      key={index} 
+                      className="border-gray-700 hover:bg-gray-700/50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setSelectedEvent(event);
+                        setIsEventModalOpen(true);
+                      }}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{eventInfo.icon}</span>
+                          <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
+                            {eventInfo.label}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-300 font-mono text-sm">{event.page || '/'}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1 text-gray-300">
+                          <MapPin className="h-3 w-3" />
+                          {getCountryName(event.country)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-400 text-sm">
+                        {new Date(event.timestamp).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-blue-400 hover:text-blue-300"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedEvent(event);
+                            setIsEventModalOpen(true);
+                          }}
+                        >
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </Card>
+
+          {/* Event Details Modal */}
+          <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
+            <DialogContent className="bg-gray-800 border-gray-700 text-white max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  {selectedEvent && (
+                    <>
+                      <span className="text-2xl">{getEventTypeInfo(selectedEvent.eventType).icon}</span>
+                      Event Details
+                    </>
+                  )}
+                </DialogTitle>
+                <DialogDescription className="text-gray-400">
+                  {selectedEvent && getEventTypeInfo(selectedEvent.eventType).description}
+                </DialogDescription>
+              </DialogHeader>
+              
+              {selectedEvent && (
+                <div className="space-y-4 mt-4">
+                  {/* Event Type */}
+                  <div className="grid grid-cols-3 gap-4 p-4 bg-gray-900/50 rounded-lg">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Event Type</p>
+                      <Badge className="bg-blue-500/20 text-blue-400">
+                        {getEventTypeInfo(selectedEvent.eventType).label}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Page</p>
+                      <p className="text-sm font-mono text-gray-300">{selectedEvent.page || '/'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Timestamp</p>
+                      <p className="text-sm text-gray-300">
+                        {new Date(selectedEvent.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Location Info */}
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-gray-900/50 rounded-lg">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                        <Globe2 className="h-3 w-3" />
+                        Country
+                      </p>
+                      <p className="text-sm text-gray-300">{getCountryName(selectedEvent.country)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        Region
+                      </p>
+                      <p className="text-sm text-gray-300">{selectedEvent.region || 'Not Available'}</p>
+                    </div>
+                  </div>
+
+                  {/* Session Info */}
+                  <div className="p-4 bg-gray-900/50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-2">Session ID</p>
+                    <code className="text-xs font-mono bg-gray-950 px-3 py-2 rounded block text-green-400">
+                      {selectedEvent.sessionId || 'No session ID'}
+                    </code>
+                  </div>
+
+                  {/* IP Address (if available) */}
+                  {selectedEvent.clientIp && (
+                    <div className="p-4 bg-gray-900/50 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-2">Client IP</p>
+                      <code className="text-xs font-mono bg-gray-950 px-3 py-2 rounded block text-blue-400">
+                        {selectedEvent.clientIp}
+                      </code>
+                    </div>
+                  )}
+
+                  {/* Additional Metadata */}
+                  {selectedEvent.metadata && Object.keys(selectedEvent.metadata).length > 0 && (
+                    <div className="p-4 bg-gray-900/50 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-2">Additional Data</p>
+                      <pre className="text-xs font-mono bg-gray-950 px-3 py-2 rounded overflow-x-auto text-purple-400">
+                        {JSON.stringify(selectedEvent.metadata, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+
+                  {/* Event ID */}
+                  <div className="p-4 bg-gray-900/50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-2">Event ID</p>
+                    <code className="text-xs font-mono bg-gray-950 px-3 py-2 rounded block text-gray-400">
+                      {selectedEvent.id}
+                    </code>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </div>
