@@ -1,12 +1,10 @@
 // Google Analytics 4 integration
-// Only loads when VITE_GA_MEASUREMENT_ID is set
+// ALWAYS ENABLED - Syncs with Cosmos DB tracking
 
 export function initializeGA() {
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-0EPSFYFWZQ';
   
-  if (!measurementId) {
-    return;
-  }
+  // Always load GA
 
   // Load gtag.js script
   const script = document.createElement('script');
