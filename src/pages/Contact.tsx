@@ -123,62 +123,37 @@ export default function Contact() {
     }
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Parse the selected date and time
-    const [year, month, day] = bookingData.date.split('-');
-    const [hour, minute] = bookingData.time.split(':');
-    
-    // Create start time
-    const startDateTime = new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(hour),
-      parseInt(minute)
-    );
-    
-    // Create end time (30 minutes later)
-    const endDateTime = new Date(startDateTime.getTime() + 30 * 60000);
-    
-    // Format for Google Calendar URL
-    const formatGoogleDate = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    };
-    
-    // Build description with all details
-    const description = `
-Consultation Call Details:
-------------------------
-Name: ${bookingData.name}
-Email: ${bookingData.email}
-Phone: ${bookingData.phone}
-Company: ${bookingData.company}
-Service Interested: ${bookingData.service}
-Has Current Provider: ${bookingData.hasProvider}
-${bookingData.currentProvider ? `Current Provider: ${bookingData.currentProvider}` : ''}
+    try {
+      // Submit booking to API
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/submitBooking`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData)
+      });
 
-Additional Notes:
-${bookingData.notes || 'None'}
-    `.trim();
+      const result = await response.json();
 
-    // Create Google Calendar event URL
-    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Consultation Call - ' + bookingData.name)}&dates=${formatGoogleDate(startDateTime)}/${formatGoogleDate(endDateTime)}&details=${encodeURIComponent(description)}&location=Phone Call&add=${encodeURIComponent('hello@creedava.com')}&add=${encodeURIComponent(bookingData.email)}`;
-
-    // Store booking data
-    localStorage.setItem('bookingSubmission', JSON.stringify({
-      ...bookingData,
-      timestamp: new Date().toISOString()
-    }));
-
-    // Open Google Calendar in new tab
-    window.open(calendarUrl, '_blank');
-
-    // Send email notification to hello@creedava.com
-    const mailtoLink = `mailto:hello@creedava.com?subject=New Consultation Booking - ${bookingData.name}&body=Name: ${bookingData.name}%0D%0AEmail: ${bookingData.email}%0D%0APhone: ${bookingData.phone}%0D%0ACompany: ${bookingData.company}%0D%0AService: ${bookingData.service}%0D%0AHas Provider: ${bookingData.hasProvider}%0D%0ACurrent Provider: ${bookingData.currentProvider}%0D%0ADate: ${bookingData.date}%0D%0ATime: ${bookingData.time} ${bookingData.timezone}%0D%0ANotes: ${bookingData.notes}`;
-    
-    window.location.href = mailtoLink;
+      if (response.ok && result.success) {
+        // Success - show confirmation
+        alert(result.message + '\n\nBooking ID: ' + result.bookingId);
+        
+        // Store booking ID locally
+        localStorage.setItem('lastBookingId', result.bookingId);
+      } else {
+        // Error from API
+        alert('Booking submission failed: ' + (result.message || result.error || 'Unknown error'));
+        return;
+      }
+    } catch (error) {
+      console.error('Booking submission error:', error);
+      alert('Failed to submit booking. Please try again or contact us directly at hello@creedava.com');
+      return;
+    }
 
     // Reset form
     setBookingData({
