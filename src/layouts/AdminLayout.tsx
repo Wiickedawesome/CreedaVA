@@ -1,4 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -55,6 +56,18 @@ export function AdminLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
+
+  // Add noindex meta tag for admin pages
+  useEffect(() => {
+    const metaRobots = document.createElement('meta')
+    metaRobots.name = 'robots'
+    metaRobots.content = 'noindex, nofollow'
+    document.head.appendChild(metaRobots)
+
+    return () => {
+      document.head.removeChild(metaRobots)
+    }
+  }, [])
 
   const handleSignOut = async () => {
     await signOut()

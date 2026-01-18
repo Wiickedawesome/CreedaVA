@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,6 +19,18 @@ export function Login() {
   const [email, setEmail] = useState('')
   const enableGoogleLogin = import.meta.env.VITE_ENABLE_GOOGLE_LOGIN === 'true'
   const googleClientId = enableGoogleLogin ? (import.meta.env.VITE_GOOGLE_CLIENT_ID || '') : ''
+
+  // Add noindex meta tag for login page
+  useEffect(() => {
+    const metaRobots = document.createElement('meta')
+    metaRobots.name = 'robots'
+    metaRobots.content = 'noindex, nofollow'
+    document.head.appendChild(metaRobots)
+
+    return () => {
+      document.head.removeChild(metaRobots)
+    }
+  }, [])
 
   const signInWithGooglePopup = () => {
     if (!enableGoogleLogin || !googleClientId) {

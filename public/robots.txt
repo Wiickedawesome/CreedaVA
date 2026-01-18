@@ -1,9 +1,21 @@
 User-agent: *
-Allow: /
 
-# Disallow admin pages from search engines
+# Disallow admin and auth pages from search engines
+Disallow: /admin/*
 Disallow: /admin
 Disallow: /login
+Disallow: /signup
+Disallow: /env-check
+
+# Allow public pages
+Allow: /
+Allow: /services
+Allow: /about
+Allow: /pricing
+Allow: /news
+Allow: /blog/
+Allow: /contact
 
 # Sitemap location
+Sitemap: https://creedava.com/sitemap.xml
 Sitemap: https://www.creedava.com/sitemap.xml
