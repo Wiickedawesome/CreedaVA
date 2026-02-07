@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +20,7 @@ import {
   Article,
   UserCircle,
   Quotes,
+  Calendar,
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 import { LazyAnimatedBackground } from '@/components/LazyAnimatedBackground'
@@ -26,65 +28,67 @@ import { CreedaLogo } from '@/components/CreedaLogo'
 import { SEO, seoData } from '@/components/SEO'
 
 export function Home() {
+  const { t } = useTranslation();
+  
   const services = [
     {
       icon: <Briefcase className="text-accent" size={32} />,
-      title: 'Executive Support',
-      description: 'Calendar management, travel coordination, meeting scheduling, and inbox organization for busy executives.',
+      title: t('home.servicesPreview.executive.title'),
+      description: t('home.servicesPreview.executive.description'),
     },
     {
       icon: <ClipboardText className="text-accent" size={32} />,
-      title: 'Administrative Tasks',
-      description: 'Data entry, document preparation, file management, and general administrative support.',
+      title: t('home.servicesPreview.administrative.title'),
+      description: t('home.servicesPreview.administrative.description'),
     },
     {
       icon: <ChatCircle className="text-accent" size={32} />,
-      title: 'Customer Service',
-      description: 'Email and chat support, customer inquiries, order processing, and client communication.',
+      title: t('home.servicesPreview.customerService.title'),
+      description: t('home.servicesPreview.customerService.description'),
     },
     {
       icon: <ShoppingCart className="text-accent" size={32} />,
-      title: 'E-commerce Support',
-      description: 'Product listing, inventory management, order fulfillment, and marketplace optimization.',
+      title: t('home.servicesPreview.ecommerce.title'),
+      description: t('home.servicesPreview.ecommerce.description'),
     },
     {
       icon: <Article className="text-accent" size={32} />,
-      title: 'Content & Social Media',
-      description: 'Content scheduling, social media management, blog posting, and community engagement.',
+      title: t('home.servicesPreview.content.title'),
+      description: t('home.servicesPreview.content.description'),
     },
     {
       icon: <ChartLineUp className="text-accent" size={32} />,
-      title: 'Insurance Support',
-      description: 'Policy administration, claims assistance, client communications, and documentation management.',
+      title: t('home.servicesPreview.insurance.title'),
+      description: t('home.servicesPreview.insurance.description'),
     },
   ]
 
   const testimonials = [
     {
-      quote: "CreedaVA has been instrumental in helping us scale our operations. Their VAs are professional, proactive, and feel like true members of our team.",
-      author: "Sarah Johnson",
-      role: "CEO, TechStart Inc",
+      quote: t('home.testimonials.testimonial1.quote'),
+      author: t('home.testimonials.testimonial1.author'),
+      role: t('home.testimonials.testimonial1.role'),
       rating: 5,
     },
     {
-      quote: "The quality of work and attention to detail is outstanding. We've been able to focus on growing our business while CreedaVA handles the day-to-day operations.",
-      author: "Michael Chen",
-      role: "Founder, GrowthLabs",
+      quote: t('home.testimonials.testimonial2.quote'),
+      author: t('home.testimonials.testimonial2.author'),
+      role: t('home.testimonials.testimonial2.role'),
       rating: 5,
     },
     {
-      quote: "Best decision we made this year. Our CreedaVA assistant has saved us countless hours and brought organization to our chaos.",
-      author: "Emily Rodriguez",
-      role: "COO, Marketplace Pro",
+      quote: t('home.testimonials.testimonial3.quote'),
+      author: t('home.testimonials.testimonial3.author'),
+      role: t('home.testimonials.testimonial3.role'),
       rating: 5,
     },
   ]
 
   const stats = [
-    { value: '5+', label: 'Years Experience' },
-    { value: '98%', label: 'Client Satisfaction' },
-    { value: '<24h', label: 'Response Time' },
-    { value: '24/7', label: 'Support Available' },
+    { value: '5+', label: t('home.stats.experience') },
+    { value: '98%', label: t('home.stats.satisfaction') },
+    { value: '<24h', label: t('home.stats.response') },
+    { value: '24/7', label: t('home.stats.support') },
   ]
 
   return (
@@ -102,16 +106,16 @@ export function Home() {
               className="text-center lg:text-left"
             >
               <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
-                Your Trusted Virtual Assistant Partner
+                {t('home.hero.badge')}
               </Badge>
               <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
-                Scale Your Business with
+                {t('home.hero.title')}
                 <br />
-                <span className="text-accent">Elite Virtual Assistants</span>
+                <span className="text-accent">{t('home.hero.titleAccent')}</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl lg:max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Professional remote support tailored to your needs. Bilingual assistants available.
-                From executive assistance to specialized tasks, we help ambitious teams achieve more.
+                {t('home.hero.subtitle')}
+                {' '}{t('home.hero.description')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center lg:items-start">
                 <Button
@@ -120,7 +124,7 @@ export function Home() {
                   className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <Link to="/contact">
-                    Start Your Free Consultation
+                    {t('home.hero.ctaPrimary')}
                     <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
                   </Link>
                 </Button>
@@ -130,7 +134,7 @@ export function Home() {
                   variant="outline"
                   className="px-8 transition-all duration-300 border-2 border-accent text-accent hover:text-accent-foreground hover:bg-accent"
                 >
-                  <Link to="/services">Explore Services</Link>
+                  <Link to="/services">{t('home.hero.ctaSecondary')}</Link>
                 </Button>
               </div>
             </motion.div>
@@ -180,9 +184,9 @@ export function Home() {
               viewport={{ once: true }}
               className="text-center lg:text-left"
             >
-              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">Our Services</h2>
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">{t('home.servicesPreview.title')}</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto lg:mx-0">
-                Comprehensive virtual assistant services designed to free up your time and accelerate growth
+                {t('home.servicesPreview.subtitle')}
               </p>
             </motion.div>
             <motion.div
@@ -223,7 +227,7 @@ export function Home() {
 
           <div className="text-center mt-12">
             <Button asChild size="lg" variant="outline" className="hover:bg-accent/10 hover:border-accent transition-all duration-300">
-              <Link to="/services">View All Services</Link>
+              <Link to="/services">{t('home.servicesPreview.viewAll')}</Link>
             </Button>
           </div>
         </div>
@@ -242,11 +246,11 @@ export function Home() {
             className="text-center mb-16"
           >
             <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
-              Simple Process
+              {t('home.howItWorks.badge')}
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">How It Works</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">{t('home.howItWorks.title')}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get started with your dedicated virtual assistant in just a few simple steps
+              {t('home.howItWorks.subtitle')}
             </p>
           </motion.div>
 
@@ -257,18 +261,18 @@ export function Home() {
             {[
               {
                 step: '01',
-                title: 'Free Consultation',
-                description: 'Schedule a discovery call to discuss your needs, goals, and the type of support that would benefit your business most.',
+                title: t('home.howItWorks.step1.title'),
+                description: t('home.howItWorks.step1.description'),
               },
               {
                 step: '02',
-                title: 'Perfect Match',
-                description: 'We carefully match you with a virtual assistant whose skills, experience, and personality align with your requirements.',
+                title: t('home.howItWorks.step2.title'),
+                description: t('home.howItWorks.step2.description'),
               },
               {
                 step: '03',
-                title: 'Start Growing',
-                description: 'Your VA hits the ground running. We provide onboarding support and ongoing management to ensure success.',
+                title: t('home.howItWorks.step3.title'),
+                description: t('home.howItWorks.step3.description'),
               },
             ].map((item, index) => (
               <motion.div
@@ -299,7 +303,7 @@ export function Home() {
 
           <div className="text-center mt-12">
             <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <Link to="/contact">Get Started Today</Link>
+              <Link to="/contact">{t('home.howItWorks.cta')}</Link>
             </Button>
           </div>
         </div>
@@ -321,9 +325,9 @@ export function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">What Our Clients Say</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">{t('home.testimonials.title')}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              See what our satisfied clients have to say about working with CreedaVA
+              {t('home.testimonials.subtitle')}
             </p>
           </motion.div>
 
@@ -375,10 +379,10 @@ export function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
-              Frequently Asked Questions
+              {t('home.faq.title')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to know about working with CreedaVA
+              {t('home.faq.subtitle')}
             </p>
           </motion.div>
 
@@ -392,64 +396,55 @@ export function Home() {
             <Accordion type="single" collapsible className="space-y-4">
               <AccordionItem value="item-1" className="bg-background border rounded-lg px-6">
                 <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
-                  What services do CreedaVA virtual assistants provide?
+                  {t('home.faq.question1.q')}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
-                  Our virtual assistants provide a wide range of services including executive support, administrative tasks, 
-                  customer service, e-commerce support, content and social media management, and insurance support. We tailor 
-                  our services to match your specific business needs.
+                  {t('home.faq.question1.a')}
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-2" className="bg-background border rounded-lg px-6">
                 <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
-                  Why choose Belizean virtual assistants?
+                  {t('home.faq.question2.q')}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
-                  Belize is the only English-speaking country in Central America, offering the perfect combination of native English 
-                  proficiency, Spanish fluency, and cultural adaptability. Our team operates in Central Standard Time (CST), making 
-                  real-time collaboration with North American businesses seamless. You get world-class talent at competitive rates.
+                  {t('home.faq.question2.a')}
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-3" className="bg-background border rounded-lg px-6">
                 <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
-                  How quickly can I get started?
+                  {t('home.faq.question3.q')}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
-                  After your initial consultation, we typically match you with a virtual assistant within 3-5 business days. 
-                  We then facilitate an onboarding session to ensure a smooth transition and optimal workflow from day one.
+                  {t('home.faq.question3.a')}
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-4" className="bg-background border rounded-lg px-6">
                 <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
-                  What if I'm not satisfied with my virtual assistant?
+                  {t('home.faq.question4.q')}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
-                  Client satisfaction is our top priority. If you're not completely satisfied, we'll work with you to address concerns 
-                  or match you with a different assistant at no additional cost. We stand behind our 98% client satisfaction rate.
+                  {t('home.faq.question4.a')}
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-5" className="bg-background border rounded-lg px-6">
                 <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
-                  Are your virtual assistants bilingual?
+                  {t('home.faq.question5.q')}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
-                  Yes! Most of our virtual assistants are fluent in both English and Spanish, allowing them to serve diverse markets 
-                  and handle multilingual customer support, content creation, and business operations.
+                  {t('home.faq.question5.a')}
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="item-6" className="bg-background border rounded-lg px-6">
                 <AccordionTrigger className="text-left hover:text-accent transition-colors text-base md:text-lg py-4">
-                  How do you ensure data security and confidentiality?
+                  {t('home.faq.question6.q')}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
-                  We take security seriously. All our virtual assistants sign comprehensive NDAs, and we implement industry-standard 
-                  security protocols including secure file sharing, encrypted communications, and regular security training. Your 
-                  business information remains completely confidential.
+                  {t('home.faq.question6.a')}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -471,10 +466,10 @@ export function Home() {
               className="text-center lg:text-left"
             >
               <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-                Ready to Scale Your Business?
+                {t('home.finalCta.title')}
               </h2>
               <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
-                Let's discuss how our virtual assistants can help you focus on what matters most.
+                {t('home.finalCta.subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
                 <Button 
@@ -482,7 +477,7 @@ export function Home() {
                   size="lg" 
                   className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                 >
-                  <Link to="/contact">Schedule Free Consultation</Link>
+                  <Link to="/contact">{t('home.finalCta.ctaPrimary')}</Link>
                 </Button>
                 <Button 
                   asChild 
@@ -492,7 +487,7 @@ export function Home() {
                 >
                   <a href="https://calendly.com/john-creedava" target="_blank" rel="noopener noreferrer">
                     <Calendar className="mr-2" size={20} />
-                    Book a Call Now
+                    {t('home.finalCta.ctaSecondary')}
                   </a>
                 </Button>
               </div>

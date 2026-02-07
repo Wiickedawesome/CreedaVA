@@ -16,6 +16,123 @@
     "learnMore": "Más Información",
     "trustedBy": "Confiado por empresas en todo el mundo"
   },
+  "home": {
+    "hero": {
+      "badge": "Tu Socio de Confianza en Asistencia Virtual",
+      "title": "Escala Tu Negocio con",
+      "titleAccent": "Asistentes Virtuales Elite",
+      "subtitle": "Soporte remoto profesional adaptado a tus necesidades. Asistentes bilingües disponibles.",
+      "description": "Desde asistencia ejecutiva hasta tareas especializadas, ayudamos a equipos ambiciosos a lograr más.",
+      "ctaPrimary": "Inicia Tu Consulta Gratuita",
+      "ctaSecondary": "Explorar Servicios"
+    },
+    "stats": {
+      "experience": "Años de Experiencia",
+      "satisfaction": "Satisfacción del Cliente",
+      "response": "Tiempo de Respuesta",
+      "support": "Soporte Disponible"
+    },
+    "servicesPreview": {
+      "title": "Nuestros Servicios",
+      "subtitle": "Servicios integrales de asistencia virtual diseñados para liberar tu tiempo y acelerar el crecimiento",
+      "executive": {
+        "title": "Soporte Ejecutivo",
+        "description": "Gestión de calendario, coordinación de viajes, programación de reuniones y organización de correo para ejecutivos ocupados."
+      },
+      "administrative": {
+        "title": "Tareas Administrativas",
+        "description": "Entrada de datos, preparación de documentos, gestión de archivos y soporte administrativo general."
+      },
+      "customerService": {
+        "title": "Servicio al Cliente",
+        "description": "Soporte por correo y chat, consultas de clientes, procesamiento de pedidos y comunicación con clientes."
+      },
+      "ecommerce": {
+        "title": "Soporte de E-commerce",
+        "description": "Listado de productos, gestión de inventario, cumplimiento de pedidos y optimización de marketplaces."
+      },
+      "content": {
+        "title": "Contenido y Redes Sociales",
+        "description": "Programación de contenido, gestión de redes sociales, publicación de blogs y participación comunitaria."
+      },
+      "insurance": {
+        "title": "Soporte de Seguros",
+        "description": "Administración de pólizas, asistencia con reclamos, comunicaciones con clientes y gestión de documentación."
+      },
+      "viewAll": "Ver Todos los Servicios"
+    },
+    "howItWorks": {
+      "badge": "Proceso Simple",
+      "title": "Cómo Funciona",
+      "subtitle": "Comienza con tu asistente virtual dedicado en solo unos simples pasos",
+      "step1": {
+        "title": "Consulta Gratuita",
+        "description": "Agenda una llamada de descubrimiento para discutir tus necesidades, objetivos y el tipo de soporte que más beneficiaría a tu negocio."
+      },
+      "step2": {
+        "title": "Coincidencia Perfecta",
+        "description": "Te emparejamos cuidadosamente con un asistente virtual cuyas habilidades, experiencia y personalidad se alinean con tus requisitos."
+      },
+      "step3": {
+        "title": "Comienza a Crecer",
+        "description": "Tu VA comienza de inmediato. Brindamos soporte de incorporación y gestión continua para garantizar el éxito."
+      },
+      "cta": "Comienza Hoy"
+    },
+    "testimonials": {
+      "title": "Lo Que Dicen Nuestros Clientes",
+      "subtitle": "Mira lo que nuestros clientes satisfechos tienen que decir sobre trabajar con CreedaVA",
+      "testimonial1": {
+        "quote": "CreedaVA ha sido fundamental para ayudarnos a escalar nuestras operaciones. Sus VAs son profesionales, proactivos y se sienten como verdaderos miembros de nuestro equipo.",
+        "author": "Sarah Johnson",
+        "role": "CEO, TechStart Inc"
+      },
+      "testimonial2": {
+        "quote": "La calidad del trabajo y atención al detalle es excepcional. Hemos podido enfocarnos en hacer crecer nuestro negocio mientras CreedaVA maneja las operaciones del día a día.",
+        "author": "Michael Chen",
+        "role": "Fundador, GrowthLabs"
+      },
+      "testimonial3": {
+        "quote": "La mejor decisión que tomamos este año. Nuestro asistente de CreedaVA nos ha ahorrado innumerables horas y ha traído organización a nuestro caos.",
+        "author": "Emily Rodriguez",
+        "role": "COO, Marketplace Pro"
+      }
+    },
+    "faq": {
+      "title": "Preguntas Frecuentes",
+      "subtitle": "Todo lo que necesitas saber sobre trabajar con CreedaVA",
+      "question1": {
+        "q": "¿Qué servicios ofrecen los asistentes virtuales de CreedaVA?",
+        "a": "Nuestros asistentes virtuales ofrecen una amplia gama de servicios que incluyen soporte ejecutivo, tareas administrativas, servicio al cliente, soporte de e-commerce, gestión de contenido y redes sociales, y soporte de seguros. Adaptamos nuestros servicios para satisfacer tus necesidades comerciales específicas."
+      },
+      "question2": {
+        "q": "¿Por qué elegir asistentes virtuales beliceños?",
+        "a": "Belice es el único país de habla inglesa en América Central, ofreciendo la combinación perfecta de competencia nativa en inglés, fluidez en español y adaptabilidad cultural. Nuestro equipo opera en Hora Estándar Central (CST), haciendo que la colaboración en tiempo real con empresas norteamericanas sea fluida. Obtienes talento de clase mundial a tarifas competitivas."
+      },
+      "question3": {
+        "q": "¿Qué tan rápido puedo comenzar?",
+        "a": "Después de tu consulta inicial, típicamente te emparejamos con un asistente virtual dentro de 3-5 días hábiles. Luego facilitamos una sesión de incorporación para garantizar una transición fluida y un flujo de trabajo óptimo desde el primer día."
+      },
+      "question4": {
+        "q": "¿Qué pasa si no estoy satisfecho con mi asistente virtual?",
+        "a": "La satisfacción del cliente es nuestra máxima prioridad. Si no estás completamente satisfecho, trabajaremos contigo para abordar las preocupaciones o emparejarte con un asistente diferente sin costo adicional. Respaldamos nuestra tasa de satisfacción del cliente del 98%."
+      },
+      "question5": {
+        "q": "¿Sus asistentes virtuales son bilingües?",
+        "a": "¡Sí! La mayoría de nuestros asistentes virtuales hablan inglés y español con fluidez, lo que les permite atender mercados diversos y manejar soporte al cliente multilingüe, creación de contenido y operaciones comerciales."
+      },
+      "question6": {
+        "q": "¿Cómo garantizan la seguridad de datos y confidencialidad?",
+        "a": "Tomamos la seguridad en serio. Todos nuestros asistentes virtuales firman acuerdos de confidencialidad integrales, e implementamos protocolos de seguridad estándar de la industria que incluyen compartición segura de archivos, comunicaciones encriptadas y capacitación regular en seguridad. Tu información comercial permanece completamente confidencial."
+      }
+    },
+    "finalCta": {
+      "title": "¿Listo para Escalar Tu Negocio?",
+      "subtitle": "Hablemos sobre cómo nuestros asistentes virtuales pueden ayudarte a enfocarte en lo que más importa.",
+      "ctaPrimary": "Agenda Consulta Gratuita",
+      "ctaSecondary": "Reserva una Llamada Ahora"
+    }
+  },
   "services": {
     "badge": "Soluciones de Soporte Integral",
     "title": "Nuestros Servicios",

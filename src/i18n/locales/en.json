@@ -15,8 +15,123 @@
     "cta": "Get Started Today",
     "learnMore": "Learn More",
     "trustedBy": "Trusted by businesses worldwide"
-  },
-  "services": {
+  },  "home": {
+    "hero": {
+      "badge": "Your Trusted Virtual Assistant Partner",
+      "title": "Scale Your Business with",
+      "titleAccent": "Elite Virtual Assistants",
+      "subtitle": "Professional remote support tailored to your needs. Bilingual assistants available.",
+      "description": "From executive assistance to specialized tasks, we help ambitious teams achieve more.",
+      "ctaPrimary": "Start Your Free Consultation",
+      "ctaSecondary": "Explore Services"
+    },
+    "stats": {
+      "experience": "Years Experience",
+      "satisfaction": "Client Satisfaction",
+      "response": "Response Time",
+      "support": "Support Available"
+    },
+    "servicesPreview": {
+      "title": "Our Services",
+      "subtitle": "Comprehensive virtual assistant services designed to free up your time and accelerate growth",
+      "executive": {
+        "title": "Executive Support",
+        "description": "Calendar management, travel coordination, meeting scheduling, and inbox organization for busy executives."
+      },
+      "administrative": {
+        "title": "Administrative Tasks",
+        "description": "Data entry, document preparation, file management, and general administrative support."
+      },
+      "customerService": {
+        "title": "Customer Service",
+        "description": "Email and chat support, customer inquiries, order processing, and client communication."
+      },
+      "ecommerce": {
+        "title": "E-commerce Support",
+        "description": "Product listing, inventory management, order fulfillment, and marketplace optimization."
+      },
+      "content": {
+        "title": "Content & Social Media",
+        "description": "Content scheduling, social media management, blog posting, and community engagement."
+      },
+      "insurance": {
+        "title": "Insurance Support",
+        "description": "Policy administration, claims assistance, client communications, and documentation management."
+      },
+      "viewAll": "View All Services"
+    },
+    "howItWorks": {
+      "badge": "Simple Process",
+      "title": "How It Works",
+      "subtitle": "Get started with your dedicated virtual assistant in just a few simple steps",
+      "step1": {
+        "title": "Free Consultation",
+        "description": "Schedule a discovery call to discuss your needs, goals, and the type of support that would benefit your business most."
+      },
+      "step2": {
+        "title": "Perfect Match",
+        "description": "We carefully match you with a virtual assistant whose skills, experience, and personality align with your requirements."
+      },
+      "step3": {
+        "title": "Start Growing",
+        "description": "Your VA hits the ground running. We provide onboarding support and ongoing management to ensure success."
+      },
+      "cta": "Get Started Today"
+    },
+    "testimonials": {
+      "title": "What Our Clients Say",
+      "subtitle": "See what our satisfied clients have to say about working with CreedaVA",
+      "testimonial1": {
+        "quote": "CreedaVA has been instrumental in helping us scale our operations. Their VAs are professional, proactive, and feel like true members of our team.",
+        "author": "Sarah Johnson",
+        "role": "CEO, TechStart Inc"
+      },
+      "testimonial2": {
+        "quote": "The quality of work and attention to detail is outstanding. We've been able to focus on growing our business while CreedaVA handles the day-to-day operations.",
+        "author": "Michael Chen",
+        "role": "Founder, GrowthLabs"
+      },
+      "testimonial3": {
+        "quote": "Best decision we made this year. Our CreedaVA assistant has saved us countless hours and brought organization to our chaos.",
+        "author": "Emily Rodriguez",
+        "role": "COO, Marketplace Pro"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know about working with CreedaVA",
+      "question1": {
+        "q": "What services do CreedaVA virtual assistants provide?",
+        "a": "Our virtual assistants provide a wide range of services including executive support, administrative tasks, customer service, e-commerce support, content and social media management, and insurance support. We tailor our services to match your specific business needs."
+      },
+      "question2": {
+        "q": "Why choose Belizean virtual assistants?",
+        "a": "Belize is the only English-speaking country in Central America, offering the perfect combination of native English proficiency, Spanish fluency, and cultural adaptability. Our team operates in Central Standard Time (CST), making real-time collaboration with North American businesses seamless. You get world-class talent at competitive rates."
+      },
+      "question3": {
+        "q": "How quickly can I get started?",
+        "a": "After your initial consultation, we typically match you with a virtual assistant within 3-5 business days. We then facilitate an onboarding session to ensure a smooth transition and optimal workflow from day one."
+      },
+      "question4": {
+        "q": "What if I'm not satisfied with my virtual assistant?",
+        "a": "Client satisfaction is our top priority. If you're not completely satisfied, we'll work with you to address concerns or match you with a different assistant at no additional cost. We stand behind our 98% client satisfaction rate."
+      },
+      "question5": {
+        "q": "Are your virtual assistants bilingual?",
+        "a": "Yes! Most of our virtual assistants are fluent in both English and Spanish, allowing them to serve diverse markets and handle multilingual customer support, content creation, and business operations."
+      },
+      "question6": {
+        "q": "How do you ensure data security and confidentiality?",
+        "a": "We take security seriously. All our virtual assistants sign comprehensive NDAs, and we implement industry-standard security protocols including secure file sharing, encrypted communications, and regular security training. Your business information remains completely confidential."
+      }
+    },
+    "finalCta": {
+      "title": "Ready to Scale Your Business?",
+      "subtitle": "Let's discuss how our virtual assistants can help you focus on what matters most.",
+      "ctaPrimary": "Schedule Free Consultation",
+      "ctaSecondary": "Book a Call Now"
+    }
+  },  "services": {
     "badge": "Comprehensive Support Solutions",
     "title": "Our Services",
     "subtitle": "From administrative tasks to specialized support, our virtual assistants are trained to handle your unique business needs with professionalism and expertise. Bilingual support available.",
