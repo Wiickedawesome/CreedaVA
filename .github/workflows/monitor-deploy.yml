@@ -1,0 +1,66 @@
+name: Scheduled Deployment Monitor
+
+on:
+  schedule:
+    # every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Run verification (continue on error to handle reporting)
+        id: run-verify
+        continue-on-error: true
+        run: |
+          chmod +x ./scripts/verify-deploy.sh
+          set +e
+          ./scripts/verify-deploy.sh --remote https://creedava.com > verification.out 2>&1
+          status=$?
+          echo "verify_status=$status" >> $GITHUB_OUTPUT
+          echo "--- verification output start ---"
+          sed -n '1,200p' verification.out
+          echo "--- verification output end ---"
+
+      - name: Create issue on failure
+        if: steps.run-verify.outputs.verify_status != '0'
+        uses: actions/github-script@v6
+        env:
+          VERIFY_STATUS: ${{ steps.run-verify.outputs.verify_status }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const status = parseInt(process.env.VERIFY_STATUS || '0');
+            const fs = require('fs');
+            let body = 'no output';
+            try { body = fs.readFileSync('verification.out', 'utf8') } catch (e) { /* ignore */ }
+            const title = `Deployment monitor alert: verification failed (code ${status})`;
+            // don't open duplicate issues - search for recent open issue with same title
+            const issues = await github.rest.issues.listForRepo({owner: context.repo.owner, repo: context.repo.repo, state: 'open'});
+            const exists = issues.data.find(i => i.title && i.title.startsWith('Deployment monitor alert: verification failed'));
+            if (exists) {
+              await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: exists.number, body: `Verification failed again (code ${status}).\n\n\`verification.out\`:\n\n${body.slice(0, 12000)}`});
+              console.log('Posted comment to existing issue #' + exists.number);
+            } else {
+              await github.rest.issues.create({owner: context.repo.owner, repo: context.repo.repo, title, body: `Automated verification failed with exit code ${status}.\n\nVerification output:\n\n${body}`});
+            }
+
+      - name: Post Slack alert (optional)
+        if: steps.run-verify.outputs.verify_status != '0' && secrets.SLACK_WEBHOOK_URL
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          PAYLOAD=$(jq -n --arg t "Deployment verification failed" --arg b "$(sed -n '1,100p' verification.out | sed 's/"/\\\"/g')" '{text: ($t + "\n\n" + $b)}')
+          curl -sS -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
