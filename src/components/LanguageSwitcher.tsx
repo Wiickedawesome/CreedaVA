@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Globe } from 'lucide-react'
+import { Globe, Languages } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,8 +9,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 const languages = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' }
+  { code: 'en', name: 'English', shortCode: 'EN' },
+  { code: 'es', name: 'Español', shortCode: 'ES' }
 ]
 
 export function LanguageSwitcher() {
@@ -28,9 +28,8 @@ export function LanguageSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2">
-          <Globe size={16} />
-          <span className="hidden sm:inline">{currentLanguage.flag} {currentLanguage.name}</span>
-          <span className="sm:hidden">{currentLanguage.flag}</span>
+          <Languages size={16} />
+          <span className="hidden sm:inline font-medium">{currentLanguage.shortCode}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -40,7 +39,9 @@ export function LanguageSwitcher() {
             onClick={() => changeLanguage(language.code)}
             className={i18n.language === language.code ? 'bg-accent' : ''}
           >
-            <span className="mr-2">{language.flag}</span>
+            <span className="inline-flex items-center justify-center w-8 h-5 mr-2 text-xs font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              {language.shortCode}
+            </span>
             {language.name}
           </DropdownMenuItem>
         ))}
