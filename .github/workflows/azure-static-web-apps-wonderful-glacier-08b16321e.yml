@@ -58,8 +58,8 @@ jobs:
       - name: Post-deploy verification (preview/production)
         if: success()
         run: |
-          chmod +x ./scripts/verify-deploy.sh
-          # Try to obtain preview URL from action outputs, fall back to production
+          # Try to obtain preview URL from action outputs; fail if unavailable to avoid
+          # accidental verification against production
           PREVIEW_URL="${{ steps.builddeploy.outputs.deployment_url }}"
           PREVIEW_URL_FALLBACK="${{ steps.builddeploy.outputs.deployment_uri }}"
           if [ -n "$PREVIEW_URL" ]; then
