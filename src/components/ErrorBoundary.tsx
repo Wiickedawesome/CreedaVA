@@ -33,6 +33,20 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: any) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
+    
+    // Auto-reload for chunk loading errors
+    const isChunkError = error?.message?.includes('Failed to fetch dynamically imported module') ||
+                        error?.message?.includes('Importing a module script failed') ||
+                        error?.message?.includes('Failed to fetch')
+    
+    if (isChunkError) {
+      console.warn('Chunk loading error detected, reloading page...')
+      // Small delay to show error briefly, then reload
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    }
+    
     this.setState({
       error,
       errorInfo
@@ -60,10 +74,16 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="max-w-md w-full bg-gray-800 border border-gray-700 rounded-lg p-8 text-center">
             <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-white mb-2">
-              Something went wrong
+              {this.state.error?.message?.includes('Failed to fetch') || 
+               this.state.error?.message?.includes('dynamically imported') 
+                ? 'Loading Page...' 
+                : 'Something went wrong'}
             </h2>
             <p className="text-gray-400 mb-6">
-              {this.state.error?.message || 'An unexpected error occurred'}
+              {this.state.error?.message?.includes('Failed to fetch') || 
+               this.state.error?.message?.includes('dynamically imported')
+                ? 'Refreshing the page to load latest updates...'
+                : this.state.error?.message || 'An unexpected error occurred'}
             </p>
             <Button 
               onClick={this.handleReset}
