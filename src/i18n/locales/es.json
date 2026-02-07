@@ -17,31 +17,121 @@
     "trustedBy": "Confiado por empresas en todo el mundo"
   },
   "services": {
+    "badge": "Soluciones de Soporte Integral",
     "title": "Nuestros Servicios",
-    "subtitle": "Soluciones Integrales de Asistencia Virtual",
+    "subtitle": "Desde tareas administrativas hasta soporte especializado, nuestros asistentes virtuales están capacitados para manejar las necesidades únicas de su negocio con profesionalismo y experiencia. Soporte bilingüe disponible.",
     "executive": {
       "title": "Soporte Ejecutivo",
-      "description": "Gestión de calendario, manejo de correo, coordinación de viajes, preparación de reuniones"
+      "description": "Soporte integral para ejecutivos y empresarios ocupados",
+      "features": {
+        "calendar": "Gestión de calendario y programación",
+        "travel": "Planificación y coordinación de viajes",
+        "meetings": "Preparación y seguimiento de reuniones",
+        "inbox": "Organización de bandeja de entrada y gestión de correo",
+        "documents": "Preparación y formato de documentos",
+        "expenses": "Seguimiento e informes de gastos"
+      }
     },
     "admin": {
       "title": "Tareas Administrativas",
-      "description": "Entrada de datos, gestión de documentos, investigación, generación de informes"
+      "description": "Soporte administrativo general para mantener su negocio funcionando sin problemas",
+      "features": {
+        "dataEntry": "Entrada de datos y gestión de bases de datos",
+        "documents": "Organización y archivo de documentos",
+        "spreadsheets": "Creación y mantenimiento de hojas de cálculo",
+        "research": "Investigación y recopilación de datos",
+        "reports": "Generación de informes",
+        "correspondence": "Manejo de correspondencia general"
+      }
     },
     "customer": {
       "title": "Servicio al Cliente",
-      "description": "Soporte por correo, gestión de chat, respuesta telefónica, resolución de quejas"
+      "description": "Soporte profesional al cliente para deleitar a sus clientes",
+      "features": {
+        "support": "Soporte por correo electrónico y chat en vivo",
+        "inquiries": "Gestión de consultas de clientes",
+        "orders": "Procesamiento y seguimiento de pedidos",
+        "returns": "Manejo de devoluciones y reembolsos",
+        "onboarding": "Incorporación de clientes",
+        "feedback": "Recopilación y análisis de comentarios"
+      }
     },
     "ecommerce": {
       "title": "Soporte E-commerce",
-      "description": "Listado de productos, procesamiento de pedidos, gestión de inventario, consultas de clientes"
+      "description": "Gestión completa de operaciones de comercio electrónico",
+      "features": {
+        "listing": "Listado y descripciones de productos",
+        "inventory": "Gestión de inventario",
+        "fulfillment": "Coordinación de cumplimiento de pedidos",
+        "optimization": "Optimización de marketplace",
+        "reviews": "Gestión de reseñas de clientes",
+        "analysis": "Análisis de competencia"
+      }
     },
     "content": {
       "title": "Contenido y Redes Sociales",
-      "description": "Gestión de redes sociales, creación de contenido, programación de publicaciones, interacción"
+      "description": "Involucre a su audiencia con contenido consistente y de calidad",
+      "features": {
+        "scheduling": "Programación y publicación en redes sociales",
+        "calendar": "Gestión de calendario de contenido",
+        "blog": "Preparación de publicaciones de blog",
+        "engagement": "Interacción con la comunidad",
+        "graphics": "Coordinación básica de diseño gráfico",
+        "analytics": "Monitoreo de analíticas"
+      }
     },
     "insurance": {
       "title": "Soporte de Seguros",
-      "description": "Gestión de pólizas, procesamiento de reclamos, comunicaciones con clientes, documentación"
+      "description": "Asistencia profesional para operaciones de seguros",
+      "features": {
+        "documentation": "Documentación y archivo de pólizas",
+        "claims": "Asistencia en procesamiento de reclamos",
+        "communication": "Gestión de comunicación con clientes",
+        "quotes": "Preparación y seguimiento de cotizaciones",
+        "renewals": "Seguimiento y recordatorios de renovaciones",
+        "database": "Gestión y actualizaciones de bases de datos"
+      }
+    },
+    "bookkeeping": {
+      "title": "Soporte de Contabilidad",
+      "description": "Soporte administrativo financiero para su negocio",
+      "features": {
+        "invoices": "Preparación y seguimiento de facturas",
+        "expenses": "Categorización de gastos",
+        "receipts": "Organización de recibos",
+        "payments": "Seguimiento de pagos",
+        "dataEntry": "Entrada de datos financieros",
+        "reporting": "Asistencia en informes básicos"
+      }
+    },
+    "realEstate": {
+      "title": "Soporte Inmobiliario",
+      "description": "Soporte administrativo integral para profesionales inmobiliarios",
+      "features": {
+        "commission": "Reconciliación y seguimiento de comisiones",
+        "leads": "Calificación y gestión de prospectos",
+        "pipeline": "Gestión de pipeline de transacciones",
+        "outreach": "Coordinación de alcance y seguimiento de ventas",
+        "servicing": "Servicio y mantenimiento de cartera de negocios",
+        "clientDatabase": "Gestión y actualizaciones de base de datos de clientes"
+      }
+    },
+    "technology": {
+      "title": "Soporte Tecnológico",
+      "description": "Soporte técnico integral y soluciones de TI para su negocio",
+      "features": {
+        "technical": "Soporte técnico de Nivel 1 y Nivel 2",
+        "scrum": "Desarrollo de productos ágil y Scrum",
+        "projectManagement": "Gestión y coordinación de proyectos de TI",
+        "webDev": "Desarrollo y mantenimiento de sitios web",
+        "database": "Gestión y optimización de bases de datos",
+        "qa": "Pruebas de productos y aseguramiento de calidad"
+      }
+    },
+    "cta": {
+      "title": "¿Listo para Transformar Su Negocio?",
+      "subtitle": "Hablemos sobre cómo nuestros asistentes virtuales pueden ayudarle a concentrarse en lo que más importa.",
+      "button": "Comience Hoy"
     },
     "viewAll": "Ver Todos los Servicios",
     "getStarted": "Comenzar"

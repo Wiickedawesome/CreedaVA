@@ -17,31 +17,121 @@
     "trustedBy": "Trusted by businesses worldwide"
   },
   "services": {
+    "badge": "Comprehensive Support Solutions",
     "title": "Our Services",
-    "subtitle": "Comprehensive Virtual Assistant Solutions",
+    "subtitle": "From administrative tasks to specialized support, our virtual assistants are trained to handle your unique business needs with professionalism and expertise. Bilingual support available.",
     "executive": {
       "title": "Executive Support",
-      "description": "Calendar management, email handling, travel coordination, meeting preparation"
+      "description": "Comprehensive support for busy executives and entrepreneurs",
+      "features": {
+        "calendar": "Calendar management and scheduling",
+        "travel": "Travel planning and coordination",
+        "meetings": "Meeting preparation and follow-up",
+        "inbox": "Inbox organization and email management",
+        "documents": "Document preparation and formatting",
+        "expenses": "Expense tracking and reporting"
+      }
     },
     "admin": {
       "title": "Administrative Tasks",
-      "description": "Data entry, document management, research, report generation"
+      "description": "General administrative support to keep your business running smoothly",
+      "features": {
+        "dataEntry": "Data entry and database management",
+        "documents": "Document organization and filing",
+        "spreadsheets": "Spreadsheet creation and maintenance",
+        "research": "Research and data compilation",
+        "reports": "Report generation",
+        "correspondence": "General correspondence handling"
+      }
     },
     "customer": {
       "title": "Customer Service",
-      "description": "Email support, chat management, phone answering, complaint resolution"
+      "description": "Professional customer support to delight your clients",
+      "features": {
+        "support": "Email and live chat support",
+        "inquiries": "Customer inquiry management",
+        "orders": "Order processing and tracking",
+        "returns": "Returns and refunds handling",
+        "onboarding": "Client onboarding",
+        "feedback": "Feedback collection and analysis"
+      }
     },
     "ecommerce": {
       "title": "E-commerce Support",
-      "description": "Product listing, order processing, inventory management, customer inquiries"
+      "description": "Complete e-commerce operations management",
+      "features": {
+        "listing": "Product listing and descriptions",
+        "inventory": "Inventory management",
+        "fulfillment": "Order fulfillment coordination",
+        "optimization": "Marketplace optimization",
+        "reviews": "Customer review management",
+        "analysis": "Competitor analysis"
+      }
     },
     "content": {
       "title": "Content & Social Media",
-      "description": "Social media management, content creation, posting schedules, engagement"
+      "description": "Engage your audience with consistent, quality content",
+      "features": {
+        "scheduling": "Social media scheduling and posting",
+        "calendar": "Content calendar management",
+        "blog": "Blog post preparation",
+        "engagement": "Community engagement",
+        "graphics": "Basic graphic design coordination",
+        "analytics": "Analytics monitoring"
+      }
     },
     "insurance": {
       "title": "Insurance Support",
-      "description": "Policy management, claims processing, client communications, documentation"
+      "description": "Professional assistance for insurance operations",
+      "features": {
+        "documentation": "Policy documentation and filing",
+        "claims": "Claims processing assistance",
+        "communication": "Client communication management",
+        "quotes": "Quote preparation and follow-up",
+        "renewals": "Renewal tracking and reminders",
+        "database": "Database management and updates"
+      }
+    },
+    "bookkeeping": {
+      "title": "Bookkeeping Support",
+      "description": "Financial administrative support for your business",
+      "features": {
+        "invoices": "Invoice preparation and tracking",
+        "expenses": "Expense categorization",
+        "receipts": "Receipt organization",
+        "payments": "Payment follow-ups",
+        "dataEntry": "Financial data entry",
+        "reporting": "Basic reporting assistance"
+      }
+    },
+    "realEstate": {
+      "title": "Real Estate Support",
+      "description": "Comprehensive administrative support for real estate professionals",
+      "features": {
+        "commission": "Commission reconciliation and tracking",
+        "leads": "Qualify and manage leads",
+        "pipeline": "Transaction pipeline management",
+        "outreach": "Sales outreach and follow-up coordination",
+        "servicing": "Servicing and maintaining book of business",
+        "clientDatabase": "Client database management and updates"
+      }
+    },
+    "technology": {
+      "title": "Technology Support",
+      "description": "Comprehensive technical support and IT solutions for your business",
+      "features": {
+        "technical": "Tier 1 and Tier 2 technical support",
+        "scrum": "Scrum and agile product development",
+        "projectManagement": "IT project management and coordination",
+        "webDev": "Website development and maintenance",
+        "database": "Database management and optimization",
+        "qa": "Product testing and quality assurance"
+      }
+    },
+    "cta": {
+      "title": "Ready to Transform Your Business?",
+      "subtitle": "Let's discuss how our virtual assistants can help you focus on what matters most.",
+      "button": "Get Started Today"
     },
     "viewAll": "View All Services",
     "getStarted": "Get Started"
