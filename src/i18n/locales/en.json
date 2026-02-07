@@ -459,6 +459,25 @@
       "cta": "Get Started Today"
     }
   },
+  "news": {
+    "hero": {
+      "badge": "Latest Updates",
+      "title": "News &",
+      "titleAccent": "Updates",
+      "subtitle": "Stay informed about the latest from CreedaVA - new services, insights, success stories, and company updates."
+    },
+    "loading": "Loading Articles...",
+    "latestArticles": "Latest Articles & Updates",
+    "noPostsMessage": "No blog posts published yet. Check back soon for updates!",
+    "readFullArticle": "Read Full Article",
+    "shareOnLinkedIn": "Share on LinkedIn",
+    "categoryLabel": "Article",
+    "stayConnected": {
+      "title": "Stay Connected",
+      "subtitle": "Follow us on LinkedIn for real-time updates, insights, and success stories from the CreedaVA community.",
+      "cta": "Follow on LinkedIn"
+    }
+  },
   "contact": {
     "title": "Let's Connect",
     "subtitle": "Have questions about our services? Want to discuss your specific needs? Our team is ready to help you achieve your goals.",

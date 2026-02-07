@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,6 +31,7 @@ interface BlogPost {
 }
 
 export default function News() {
+  const { t } = useTranslation();
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -94,7 +96,7 @@ export default function News() {
   }
 
   const getCategoryLabel = (category: string | null) => {
-    return category || 'Article'
+    return category || t('news.categoryLabel')
   }
 
   return (
@@ -112,14 +114,13 @@ export default function News() {
               className="text-center lg:text-left"
             >
               <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
-                Latest Updates
+                {t('news.hero.badge')}
               </Badge>
               <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
-                News & <span className="text-accent">Updates</span>
+                {t('news.hero.title')} <span className="text-accent">{t('news.hero.titleAccent')}</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                Stay informed about the latest from CreedaVA - new services, insights, success stories, 
-                and company updates.
+                {t('news.hero.subtitle')}
               </p>
             </motion.div>
             <motion.div
@@ -139,7 +140,7 @@ export default function News() {
           {/* Featured Posts Grid */}
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-foreground mb-8">
-              {loading ? 'Loading Articles...' : 'Latest Articles & Updates'}
+              {loading ? t('news.loading') : t('news.latestArticles')}
             </h2>
             {error && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -152,7 +153,7 @@ export default function News() {
             {posts.length === 0 && !loading ? (
               <div className="col-span-2 text-center py-12">
                 <Newspaper size={48} className="text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No blog posts published yet. Check back soon for updates!</p>
+                <p className="text-muted-foreground">{t('news.noPostsMessage')}</p>
               </div>
             ) : (
               posts.map((post, index) => (
@@ -193,7 +194,7 @@ export default function News() {
                           className="border-accent/30 text-accent hover:bg-accent hover:text-accent-foreground transition-all"
                           onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
                         >
-                          Read Full Article
+                          {t('news.readFullArticle')}
                           <ArrowRight size={16} className="ml-2" />
                         </Button>
                         <Button
@@ -208,7 +209,7 @@ export default function News() {
                             className="flex items-center gap-2"
                           >
                             <Linkedin size={16} />
-                            Share on LinkedIn
+                            {t('news.shareOnLinkedIn')}
                           </a>
                         </Button>
                       </div>
@@ -230,10 +231,10 @@ export default function News() {
           >
             <Newspaper size={64} className="text-accent mx-auto mb-6" />
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-              Stay Connected
+              {t('news.stayConnected.title')}
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Follow us on LinkedIn for real-time updates, insights, and success stories from the CreedaVA community.
+              {t('news.stayConnected.subtitle')}
             </p>
             <Button
               asChild
@@ -247,7 +248,7 @@ export default function News() {
                 className="flex items-center gap-2"
               >
                 <Linkedin size={24} />
-                Follow on LinkedIn
+                {t('news.stayConnected.cta')}
               </a>
             </Button>
           </motion.div>
