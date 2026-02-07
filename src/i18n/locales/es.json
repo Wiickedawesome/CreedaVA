@@ -1,0 +1,143 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "about": "Nosotros",
+    "services": "Servicios",
+    "pricing": "Precios",
+    "news": "Noticias",
+    "contact": "Contacto",
+    "login": "Acceso Admin"
+  },
+  "hero": {
+    "title": "Asistentes Virtuales Profesionales",
+    "subtitle": "desde Belice",
+    "description": "Soporte bilingüe en inglés y español. Escale su negocio con profesionales remotos dedicados que manejan tareas ejecutivas, administración, servicio al cliente y más.",
+    "cta": "Comience Hoy",
+    "learnMore": "Más Información",
+    "trustedBy": "Confiado por empresas en todo el mundo"
+  },
+  "services": {
+    "title": "Nuestros Servicios",
+    "subtitle": "Soluciones Integrales de Asistencia Virtual",
+    "executive": {
+      "title": "Soporte Ejecutivo",
+      "description": "Gestión de calendario, manejo de correo, coordinación de viajes, preparación de reuniones"
+    },
+    "admin": {
+      "title": "Tareas Administrativas",
+      "description": "Entrada de datos, gestión de documentos, investigación, generación de informes"
+    },
+    "customer": {
+      "title": "Servicio al Cliente",
+      "description": "Soporte por correo, gestión de chat, respuesta telefónica, resolución de quejas"
+    },
+    "ecommerce": {
+      "title": "Soporte E-commerce",
+      "description": "Listado de productos, procesamiento de pedidos, gestión de inventario, consultas de clientes"
+    },
+    "content": {
+      "title": "Contenido y Redes Sociales",
+      "description": "Gestión de redes sociales, creación de contenido, programación de publicaciones, interacción"
+    },
+    "insurance": {
+      "title": "Soporte de Seguros",
+      "description": "Gestión de pólizas, procesamiento de reclamos, comunicaciones con clientes, documentación"
+    },
+    "viewAll": "Ver Todos los Servicios",
+    "getStarted": "Comenzar"
+  },
+  "pricing": {
+    "title": "Precios Transparentes",
+    "subtitle": "Elija el plan que se ajuste a sus necesidades",
+    "starter": {
+      "name": "Inicial",
+      "price": "$1,699/mes",
+      "description": "Perfecto para pequeñas empresas"
+    },
+    "professional": {
+      "name": "Profesional",
+      "price": "$1,899/mes",
+      "description": "Opción más popular"
+    },
+    "enterprise": {
+      "name": "Empresarial",
+      "price": "Personalizado",
+      "description": "Para grandes organizaciones"
+    },
+    "getStarted": "Comenzar",
+    "contactUs": "Contáctenos"
+  },
+  "about": {
+    "title": "Acerca de CreedaVA",
+    "subtitle": "Su Socio de Confianza en Asistencia Virtual",
+    "founded": "Fundada en 2023",
+    "mission": "Nuestra misión es proporcionar servicios excepcionales de asistencia virtual bilingüe que ayuden a las empresas a escalar eficientemente.",
+    "why": {
+      "title": "Por Qué Elegirnos",
+      "bilingual": "Soporte Bilingüe",
+      "bilingualDesc": "Fluido en inglés y español",
+      "professional": "Equipo Profesional",
+      "professionalDesc": "Experimentado y dedicado",
+      "timezone": "Zona Horaria Conveniente",
+      "timezoneDesc": "Alineación CST (UTC-6)",
+      "reliable": "Servicio Confiable",
+      "reliableDesc": "Garantía del 99.9% de disponibilidad"
+    }
+  },
+  "contact": {
+    "title": "Conectemos",
+    "subtitle": "Póngase en contacto con nuestro equipo",
+    "form": {
+      "name": "Nombre Completo",
+      "email": "Correo Electrónico",
+      "phone": "Número de Teléfono",
+      "company": "Nombre de la Empresa",
+      "service": "Servicio Necesario",
+      "message": "Mensaje",
+      "submit": "Enviar Mensaje"
+    },
+    "info": {
+      "email": "Correo",
+      "phone": "Teléfono",
+      "location": "Ubicación",
+      "hours": "Horario de Atención"
+    },
+    "booking": {
+      "title": "Agende una Consulta",
+      "preferredDate": "Fecha Preferida",
+      "preferredTime": "Hora Preferida",
+      "timezone": "Su Zona Horaria",
+      "notes": "Notas Adicionales",
+      "submit": "Reservar Consulta"
+    }
+  },
+  "footer": {
+    "tagline": "Asistentes virtuales bilingües profesionales desde Belice",
+    "services": "Servicios",
+    "company": "Empresa",
+    "legal": "Legal",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio",
+    "rights": "Todos los derechos reservados"
+  },
+  "common": {
+    "readMore": "Leer Más",
+    "learnMore": "Más Información",
+    "getStarted": "Comenzar",
+    "contactUs": "Contáctenos",
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "success": "¡Éxito!",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "export": "Exportar",
+    "import": "Importar"
+  }
+}

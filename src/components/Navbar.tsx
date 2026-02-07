@@ -1,13 +1,16 @@
 import { useState, useEffect, memo, useCallback, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { List } from '@phosphor-icons/react'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export const Navbar = memo(() => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
+  const { t } = useTranslation()
 
   useEffect(() => {
     let ticking = false
@@ -27,13 +30,13 @@ export const Navbar = memo(() => {
   }, [])
 
   const navLinks = useMemo(() => [
-    { label: 'Home', path: '/' },
-    { label: 'Services', path: '/services' },
-    { label: 'About', path: '/about' },
-    { label: 'Pricing', path: '/pricing' },
-    { label: 'News', path: '/news' },
-    { label: 'Contact', path: '/contact' },
-  ], [])
+    { label: t('nav.home'), path: '/' },
+    { label: t('nav.services'), path: '/services' },
+    { label: t('nav.about'), path: '/about' },
+    { label: t('nav.pricing'), path: '/pricing' },
+    { label: t('nav.news'), path: '/news' },
+    { label: t('nav.contact'), path: '/contact' },
+  ], [t])
 
   const isActive = useCallback((path: string) => location.pathname === path, [location.pathname])
   
@@ -68,12 +71,15 @@ export const Navbar = memo(() => {
                 {link.label}
               </Link>
             ))}
+            <LanguageSwitcher />
             <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Link to="/contact">Get Started</Link>
+              <Link to="/contact">{t('hero.cta')}</Link>
             </Button>
           </nav>
 
-          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+          <div className="flex items-center gap-2 md:hidden">
+            <LanguageSwitcher />
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
                 <List size={24} />
@@ -97,7 +103,7 @@ export const Navbar = memo(() => {
                 ))}
                 <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
                   <Link to="/contact" onClick={handleMenuClose}>
-                    Get Started
+                    {t('hero.cta')}
                   </Link>
                 </Button>
               </nav>

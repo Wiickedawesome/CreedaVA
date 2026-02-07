@@ -1,0 +1,143 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "pricing": "Pricing",
+    "news": "News",
+    "contact": "Contact",
+    "login": "Admin Login"
+  },
+  "hero": {
+    "title": "Professional Virtual Assistants",
+    "subtitle": "from Belize",
+    "description": "Bilingual support in English & Spanish. Scale your business with dedicated remote professionals who handle executive tasks, administration, customer service, and more.",
+    "cta": "Get Started Today",
+    "learnMore": "Learn More",
+    "trustedBy": "Trusted by businesses worldwide"
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "Comprehensive Virtual Assistant Solutions",
+    "executive": {
+      "title": "Executive Support",
+      "description": "Calendar management, email handling, travel coordination, meeting preparation"
+    },
+    "admin": {
+      "title": "Administrative Tasks",
+      "description": "Data entry, document management, research, report generation"
+    },
+    "customer": {
+      "title": "Customer Service",
+      "description": "Email support, chat management, phone answering, complaint resolution"
+    },
+    "ecommerce": {
+      "title": "E-commerce Support",
+      "description": "Product listing, order processing, inventory management, customer inquiries"
+    },
+    "content": {
+      "title": "Content & Social Media",
+      "description": "Social media management, content creation, posting schedules, engagement"
+    },
+    "insurance": {
+      "title": "Insurance Support",
+      "description": "Policy management, claims processing, client communications, documentation"
+    },
+    "viewAll": "View All Services",
+    "getStarted": "Get Started"
+  },
+  "pricing": {
+    "title": "Transparent Pricing",
+    "subtitle": "Choose the plan that fits your needs",
+    "starter": {
+      "name": "Starter",
+      "price": "$1,699/mo",
+      "description": "Perfect for small businesses"
+    },
+    "professional": {
+      "name": "Professional",
+      "price": "$1,899/mo",
+      "description": "Most popular choice"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "Custom",
+      "description": "For large organizations"
+    },
+    "getStarted": "Get Started",
+    "contactUs": "Contact Us"
+  },
+  "about": {
+    "title": "About CreedaVA",
+    "subtitle": "Your Trusted Virtual Assistant Partner",
+    "founded": "Founded in 2023",
+    "mission": "Our mission is to provide exceptional bilingual virtual assistant services that help businesses scale efficiently.",
+    "why": {
+      "title": "Why Choose Us",
+      "bilingual": "Bilingual Support",
+      "bilingualDesc": "Fluent in English & Spanish",
+      "professional": "Professional Team",
+      "professionalDesc": "Experienced and dedicated",
+      "timezone": "Convenient Timezone",
+      "timezoneDesc": "CST (UTC-6) alignment",
+      "reliable": "Reliable Service",
+      "reliableDesc": "99.9% uptime guarantee"
+    }
+  },
+  "contact": {
+    "title": "Let's Connect",
+    "subtitle": "Get in touch with our team",
+    "form": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "company": "Company Name",
+      "service": "Service Needed",
+      "message": "Message",
+      "submit": "Send Message"
+    },
+    "info": {
+      "email": "Email",
+      "phone": "Phone",
+      "location": "Location",
+      "hours": "Business Hours"
+    },
+    "booking": {
+      "title": "Schedule a Consultation",
+      "preferredDate": "Preferred Date",
+      "preferredTime": "Preferred Time",
+      "timezone": "Your Timezone",
+      "notes": "Additional Notes",
+      "submit": "Book Consultation"
+    }
+  },
+  "footer": {
+    "tagline": "Professional bilingual virtual assistants from Belize",
+    "services": "Services",
+    "company": "Company",
+    "legal": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "rights": "All rights reserved"
+  },
+  "common": {
+    "readMore": "Read More",
+    "learnMore": "Learn More",
+    "getStarted": "Get Started",
+    "contactUs": "Contact Us",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success!",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "export": "Export",
+    "import": "Import"
+  }
+}
