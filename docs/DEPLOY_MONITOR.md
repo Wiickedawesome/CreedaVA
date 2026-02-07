@@ -4,7 +4,7 @@ This project includes an automated deployment monitor that runs on a schedule an
 
 - Verifies that the production `index.html` references the same `index-<hash>.js` file as a local build of the `reapply/safe-chunk-minify` branch (or whichever branch you build locally).
 - Confirms JS assets return a `Content-Type` including `javascript`.
-- If verification fails, the monitor will create or comment on an issue with the verification output and (optionally) post a Slack message.
+- If verification fails, the monitor will create or comment on a GitHub issue with the verification output.
 
 Workflows & scripts
 - `.github/workflows/monitor-deploy.yml` runs every 15 minutes and on-demand via `workflow_dispatch`.
@@ -12,7 +12,6 @@ Workflows & scripts
 
 Secrets
 - `GITHUB_TOKEN` (provided automatically in Actions) is used to create issues/comments.
-- Optional: add `SLACK_WEBHOOK_URL` to the repository secrets to enable Slack alerts.
 
 How to test locally
 1. Build the site locally: `npm run build` (creates `dist/`).

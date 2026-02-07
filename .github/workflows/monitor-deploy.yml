@@ -12,8 +12,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,7 +19,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
+        run: npm run build:app
+        env:
+          VITE_BASE_PATH: /
 
       - name: Run verification (continue on error to handle reporting)
         id: run-verify
@@ -58,8 +64,4 @@ jobs:
               await github.rest.issues.create({owner: context.repo.owner, repo: context.repo.repo, title, body: `Automated verification failed with exit code ${status}.\n\nVerification output:\n\n${body}`});
             }
 
-      - name: Post Slack alert (optional)
-        if: steps.run-verify.outputs.verify_status != '0' && env.SLACK_WEBHOOK_URL != ''
-        run: |
-          PAYLOAD=$(jq -n --arg t "Deployment verification failed" --arg b "$(sed -n '1,100p' verification.out | sed 's/"/\\\"/g')" '{text: ($t + "\n\n" + $b)}')
-          curl -sS -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
+
