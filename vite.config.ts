@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   // Use repository name for GitHub Pages, root for Azure/custom domain
-  // Set VITE_BASE_PATH=/ for Azure deployment or use default for GitHub Pages
-  const base = env.VITE_BASE_PATH || process.env.VITE_BASE_PATH || '/CreedaVA/'
+  // Default to root (/) for production unless explicitly set to /CreedaVA/ for GitHub Pages
+  const base = env.VITE_BASE_PATH || process.env.VITE_BASE_PATH || '/'
 
   return {
     base,
@@ -89,7 +89,9 @@ export default defineConfig(({ mode }) => {
       polyfill: true
     },
     // Asset inlining threshold - increased for better caching
-    assetsInlineLimit: 8192 // 8kb - inline smaller assets as base64
+    assetsInlineLimit: 8192, // 8kb - inline smaller assets as base64
+    // Generate manifest for better module resolution
+    manifest: true
     },
     // Performance optimizations
     optimizeDeps: {
