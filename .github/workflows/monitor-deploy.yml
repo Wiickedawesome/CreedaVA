@@ -41,7 +41,7 @@ jobs:
           sed -n '1,200p' verification.out
           echo "--- verification output end ---"
 
-      - name: Create issue on failure
+      - name: Report failure
         if: steps.run-verify.outputs.verify_status != '0'
         uses: actions/github-script@v6
         env:
@@ -54,14 +54,23 @@ jobs:
             let body = 'no output';
             try { body = fs.readFileSync('verification.out', 'utf8') } catch (e) { /* ignore */ }
             const title = `Deployment monitor alert: verification failed (code ${status})`;
-            // don't open duplicate issues - search for recent open issue with same title
-            const issues = await github.rest.issues.listForRepo({owner: context.repo.owner, repo: context.repo.repo, state: 'open'});
-            const exists = issues.data.find(i => i.title && i.title.startsWith('Deployment monitor alert: verification failed'));
-            if (exists) {
-              await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: exists.number, body: `Verification failed again (code ${status}).\n\n\`verification.out\`:\n\n${body.slice(0, 12000)}`});
-              console.log('Posted comment to existing issue #' + exists.number);
-            } else {
-              await github.rest.issues.create({owner: context.repo.owner, repo: context.repo.repo, title, body: `Automated verification failed with exit code ${status}.\n\nVerification output:\n\n${body}`});
+
+            // Try to create/comment on an issue; skip gracefully if Issues is disabled
+            try {
+              const issues = await github.rest.issues.listForRepo({owner: context.repo.owner, repo: context.repo.repo, state: 'open'});
+              const exists = issues.data.find(i => i.title && i.title.startsWith('Deployment monitor alert: verification failed'));
+              if (exists) {
+                await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: exists.number, body: `Verification failed again (code ${status}).\n\n\`verification.out\`:\n\n${body.slice(0, 12000)}`});
+                core.info('Posted comment to existing issue #' + exists.number);
+              } else {
+                const created = await github.rest.issues.create({owner: context.repo.owner, repo: context.repo.repo, title, body: `Automated verification failed with exit code ${status}.\n\nVerification output:\n\n${body.slice(0, 60000)}`});
+                core.info('Created issue #' + created.data.number);
+              }
+            } catch (err) {
+              core.warning('Could not create issue (Issues may be disabled): ' + err.message);
             }
+
+            // Always fail the workflow so it shows red in Actions
+            core.setFailed(`Verification failed with exit code ${status}`);
 
 
