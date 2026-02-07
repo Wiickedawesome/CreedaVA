@@ -16,29 +16,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build site
-        run: npm run build:app
-        env:
-          VITE_BASE_PATH: /
-
-      - name: Run verification (continue on error to handle reporting)
+      - name: Run health check (continue on error to handle reporting)
         id: run-verify
         continue-on-error: true
         run: |
           set +e
-          ./scripts/verify-deploy.sh --remote https://creedava.com > verification.out 2>&1
+          ./scripts/verify-deploy.sh --health https://creedava.com > verification.out 2>&1
           status=$?
           echo "verify_status=$status" >> $GITHUB_OUTPUT
           echo "--- verification output start ---"
-          sed -n '1,200p' verification.out
+          cat verification.out
           echo "--- verification output end ---"
 
       - name: Report failure

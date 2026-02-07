@@ -2,13 +2,17 @@
 
 This project includes an automated deployment monitor that runs on a schedule and performs these checks:
 
-- Verifies that the production `index.html` references the same `index-<hash>.js` file as a local build of the `reapply/safe-chunk-minify` branch (or whichever branch you build locally).
-- Confirms JS assets return a `Content-Type` including `javascript`.
-- If verification fails, the monitor will create or comment on a GitHub issue with the verification output.
+- Verifies that https://creedava.com is reachable and returns a valid SPA page.
+- Confirms all JS/CSS asset bundles referenced in the production HTML return HTTP 200 with correct `Content-Type` headers.
+- Optionally checks that `/api/health` responds.
+- If verification fails, the monitor will attempt to create or comment on a GitHub issue (if Issues is enabled) and mark the workflow as failed.
 
 Workflows & scripts
 - `.github/workflows/monitor-deploy.yml` runs every 15 minutes and on-demand via `workflow_dispatch`.
-- `scripts/verify-deploy.sh` performs the verification. It supports `--remote <url>` to check a remote site.
+- `scripts/verify-deploy.sh` performs the verification:
+  - `--health <url>` — remote-only health check (no local build needed, used by the scheduled monitor).
+  - `--remote <url>` — builds locally and compares hashes against production (for post-deploy validation).
+  - `--local` (default) — checks that `dist/` exists and is well-formed.
 
 Secrets
 - `GITHUB_TOKEN` (provided automatically in Actions) is used to create issues/comments.
