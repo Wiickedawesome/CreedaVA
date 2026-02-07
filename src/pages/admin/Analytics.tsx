@@ -19,7 +19,12 @@ interface AnalyticsEvent {
   sessionId?: string;
   country?: string;
   region?: string;
+  city?: string;
+  timezone?: string;
+  latitude?: string;
+  longitude?: string;
   clientIp?: string;
+  eventData?: any;
   metadata?: any;
 }
 
@@ -42,7 +47,7 @@ const EVENT_TYPE_INFO: Record<string, { label: string; description: string; icon
   'scroll_depth': { label: 'Scroll Depth', description: 'User scrolled through content', icon: '📜' },
 };
 
-// Country code to name mapping (subset - add more as needed)
+// Country code to name mapping (expanded list)
 const COUNTRY_NAMES: Record<string, string> = {
   'US': '🇺🇸 United States',
   'GB': '🇬🇧 United Kingdom',
@@ -58,6 +63,45 @@ const COUNTRY_NAMES: Record<string, string> = {
   'CN': '🇨🇳 China',
   'JP': '🇯🇵 Japan',
   'KR': '🇰🇷 South Korea',
+  'NL': '🇳🇱 Netherlands',
+  'SE': '🇸🇪 Sweden',
+  'NO': '🇳🇴 Norway',
+  'DK': '🇩🇰 Denmark',
+  'FI': '🇫🇮 Finland',
+  'PL': '🇵🇱 Poland',
+  'BE': '🇧🇪 Belgium',
+  'CH': '🇨🇭 Switzerland',
+  'AT': '🇦🇹 Austria',
+  'IE': '🇮🇪 Ireland',
+  'PT': '🇵🇹 Portugal',
+  'GR': '🇬🇷 Greece',
+  'CZ': '🇨🇿 Czech Republic',
+  'RO': '🇷🇴 Romania',
+  'HU': '🇭🇺 Hungary',
+  'RU': '🇷🇺 Russia',
+  'TR': '🇹🇷 Turkey',
+  'ZA': '🇿🇦 South Africa',
+  'NG': '🇳🇬 Nigeria',
+  'EG': '🇪🇬 Egypt',
+  'KE': '🇰🇪 Kenya',
+  'SG': '🇸🇬 Singapore',
+  'MY': '🇲🇾 Malaysia',
+  'TH': '🇹🇭 Thailand',
+  'ID': '🇮🇩 Indonesia',
+  'PH': '🇵🇭 Philippines',
+  'VN': '🇻🇳 Vietnam',
+  'NZ': '🇳🇿 New Zealand',
+  'AR': '🇦🇷 Argentina',
+  'CL': '🇨🇱 Chile',
+  'CO': '🇨🇴 Colombia',
+  'PE': '🇵🇪 Peru',
+  'VE': '🇻🇪 Venezuela',
+  'IL': '🇮🇱 Israel',
+  'AE': '🇦🇪 UAE',
+  'SA': '🇸🇦 Saudi Arabia',
+  'PK': '🇵🇰 Pakistan',
+  'BD': '🇧🇩 Bangladesh',
+  'UA': '🇺🇦 Ukraine',
 };
 
 const getEventTypeInfo = (eventType: string) => {
@@ -726,9 +770,14 @@ export function Analytics() {
                       </TableCell>
                       <TableCell className="text-gray-300 font-mono text-sm">{event.page || '/'}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1 text-gray-300">
+                        <div className="flex items-center gap-1 text-gray-300 text-sm">
                           <MapPin className="h-3 w-3" />
-                          {getCountryName(event.country)}
+                          <span>
+                            {event.city && event.city !== 'Unknown' 
+                              ? `${event.city}, ${getCountryName(event.country)}`
+                              : getCountryName(event.country)
+                            }
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell className="text-gray-400 text-sm">
@@ -810,6 +859,35 @@ export function Analytics() {
                       </p>
                       <p className="text-sm text-gray-300">{selectedEvent.region || 'Not Available'}</p>
                     </div>
+                    {selectedEvent.city && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          City
+                        </p>
+                        <p className="text-sm text-gray-300">{selectedEvent.city}</p>
+                      </div>
+                    )}
+                    {selectedEvent.timezone && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Timezone
+                        </p>
+                        <p className="text-sm text-gray-300">{selectedEvent.timezone}</p>
+                      </div>
+                    )}
+                    {selectedEvent.latitude && selectedEvent.longitude && (
+                      <div className="col-span-2">
+                        <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                          <Globe className="h-3 w-3" />
+                          Coordinates
+                        </p>
+                        <p className="text-sm font-mono text-gray-300">
+                          {selectedEvent.latitude}, {selectedEvent.longitude}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Session Info */}
