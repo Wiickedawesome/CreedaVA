@@ -47,25 +47,93 @@
     "getStarted": "Comenzar"
   },
   "pricing": {
-    "title": "Precios Transparentes",
-    "subtitle": "Elija el plan que se ajuste a sus necesidades",
+    "badge": "Precios Transparentes",
+    "title": "Planes de Precios Flexibles",
+    "subtitle": "Elija el plan que se ajuste a sus necesidades. Todos los planes incluyen un asistente virtual dedicado y pueden personalizarse para satisfacer sus requisitos específicos.",
     "starter": {
       "name": "Inicial",
+      "hours": "160 horas/mes",
       "price": "$1,699/mes",
-      "description": "Perfecto para pequeñas empresas"
+      "description": "Soporte dedicado de tiempo completo para empresas que necesitan asistencia consistente",
+      "features": {
+        "va": "Asistente virtual dedicado de tiempo completo",
+        "bilingual": "Soporte bilingüe disponible",
+        "priority": "Respuesta prioritaria",
+        "taskManagement": "Gestión avanzada de tareas",
+        "reports": "Informes de progreso semanales",
+        "documentation": "Documentación de procesos",
+        "collaboration": "Herramientas de colaboración en equipo"
+      }
     },
     "professional": {
       "name": "Profesional",
+      "hours": "160 horas/mes",
       "price": "$1,899/mes",
-      "description": "Opción más popular"
+      "description": "Soporte premium de tiempo completo con asistentes virtuales senior y experiencia especializada",
+      "popular": "Más Popular",
+      "features": {
+        "seniorVa": "Asistente virtual senior dedicado",
+        "bilingual": "Soporte bilingüe disponible",
+        "support247": "Soporte prioritario 24/7",
+        "meetings": "Reuniones de sincronización semanales",
+        "analytics": "Informes y analíticas avanzadas",
+        "optimization": "Optimización de procesos",
+        "skills": "Habilidades y capacitación especializadas",
+        "manager": "Gerente de cuenta"
+      }
     },
     "enterprise": {
       "name": "Empresarial",
-      "price": "Personalizado",
-      "description": "Para grandes organizaciones"
+      "hours": "Horas personalizadas",
+      "price": "Precios personalizados",
+      "description": "Soluciones a medida para organizaciones con necesidades complejas",
+      "features": {
+        "multipleVas": "Múltiples asistentes virtuales y especialistas",
+        "multilingual": "Soporte bilingüe y multilingüe",
+        "support247": "Soporte prioritario 24/7",
+        "accountManager": "Gerente de cuenta dedicado",
+        "customWorkflows": "Flujos de trabajo e integraciones personalizadas",
+        "teamLead": "Coordinación de líder de equipo",
+        "sla": "Garantías de SLA",
+        "onboarding": "Soporte de incorporación y capacitación"
+      }
     },
     "getStarted": "Comenzar",
-    "contactUs": "Contáctenos"
+    "howItWorks": {
+      "title": "Cómo Funciona",
+      "subtitle": "Comience con su asistente virtual dedicado en tres sencillos pasos",
+      "step1": {
+        "number": "01",
+        "title": "Llamada de Descubrimiento",
+        "description": "Discutimos sus necesidades, desafíos y objetivos para encontrar la combinación perfecta para su negocio."
+      },
+      "step2": {
+        "number": "02",
+        "title": "Conozca a Su Asistente Virtual",
+        "description": "Le presentamos a su asistente virtual cuidadosamente seleccionado y establecemos flujos de trabajo."
+      },
+      "step3": {
+        "number": "03",
+        "title": "Escale y Tenga Éxito",
+        "description": "Concéntrese en el trabajo de alto valor mientras su asistente virtual maneja las tareas de manera eficiente y profesional."
+      }
+    },
+    "faq": {
+      "title": "Preguntas Frecuentes",
+      "question1": "¿Qué tipos de tareas puede manejar un asistente virtual?",
+      "answer1": "Nuestros asistentes virtuales manejan una amplia gama de tareas que incluyen trabajo administrativo, servicio al cliente, programación, gestión de correo electrónico, entrada de datos, redes sociales, soporte de comercio electrónico y mucho más.",
+      "question2": "¿Puedo actualizar o rebajar mi plan?",
+      "answer2": "¡Absolutamente! Ofrecemos planes flexibles que se pueden ajustar según sus necesidades cambiantes. Puede escalar hacia arriba o hacia abajo en cualquier momento.",
+      "question3": "¿Cómo garantizan la calidad y la seguridad?",
+      "answer3": "Todos nuestros asistentes virtuales pasan por una rigurosa selección y capacitación. Utilizamos canales de comunicación seguros y firmamos acuerdos de confidencialidad para proteger su información sensible.",
+      "question4": "¿Qué pasa si necesito habilidades especializadas?",
+      "answer4": "Tenemos asistentes virtuales con habilidades especializadas en diversas industrias y funciones. Durante nuestra llamada de descubrimiento, lo emparejaremos con la mejor opción para sus necesidades específicas."
+    },
+    "cta": {
+      "title": "¿Listo para Comenzar?",
+      "subtitle": "Programe su consulta gratuita hoy y descubra cómo CreedaVA puede transformar su negocio.",
+      "button": "Programar Consulta Gratuita"
+    }
   },
   "about": {
     "title": "Acerca de CreedaVA",

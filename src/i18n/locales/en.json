@@ -47,25 +47,93 @@
     "getStarted": "Get Started"
   },
   "pricing": {
-    "title": "Transparent Pricing",
-    "subtitle": "Choose the plan that fits your needs",
+    "badge": "Transparent Pricing",
+    "title": "Flexible Pricing Plans",
+    "subtitle": "Choose the plan that fits your needs. All plans include a dedicated VA and can be customized to match your specific requirements.",
     "starter": {
       "name": "Starter",
-      "price": "$1,699/mo",
-      "description": "Perfect for small businesses"
+      "hours": "160 hours/month",
+      "price": "$1,699/month",
+      "description": "Full-time dedicated support for businesses that need consistent assistance",
+      "features": {
+        "va": "Dedicated full-time VA",
+        "bilingual": "Bilingual support available",
+        "priority": "Priority response",
+        "taskManagement": "Advanced task management",
+        "reports": "Weekly progress reports",
+        "documentation": "Process documentation",
+        "collaboration": "Team collaboration tools"
+      }
     },
     "professional": {
       "name": "Professional",
-      "price": "$1,899/mo",
-      "description": "Most popular choice"
+      "hours": "160 hours/month",
+      "price": "$1,899/month",
+      "description": "Premium full-time support with senior VAs and specialized expertise",
+      "popular": "Most Popular",
+      "features": {
+        "seniorVa": "Dedicated senior VA",
+        "bilingual": "Bilingual support available",
+        "support247": "Priority support 24/7",
+        "meetings": "Weekly sync meetings",
+        "analytics": "Advanced reporting & analytics",
+        "optimization": "Process optimization",
+        "skills": "Specialized skills & training",
+        "manager": "Account manager"
+      }
     },
     "enterprise": {
       "name": "Enterprise",
-      "price": "Custom",
-      "description": "For large organizations"
+      "hours": "Custom hours",
+      "price": "Custom pricing",
+      "description": "Tailored solutions for organizations with complex needs",
+      "features": {
+        "multipleVas": "Multiple VAs & specialists",
+        "multilingual": "Bilingual & multilingual support",
+        "support247": "24/7 priority support",
+        "accountManager": "Dedicated account manager",
+        "customWorkflows": "Custom workflows & integrations",
+        "teamLead": "Team lead coordination",
+        "sla": "SLA guarantees",
+        "onboarding": "Onboarding & training support"
+      }
     },
     "getStarted": "Get Started",
-    "contactUs": "Contact Us"
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Get started with your dedicated virtual assistant in three simple steps",
+      "step1": {
+        "number": "01",
+        "title": "Discovery Call",
+        "description": "We discuss your needs, challenges, and goals to find the perfect match for your business."
+      },
+      "step2": {
+        "number": "02",
+        "title": "Meet Your VA",
+        "description": "Get introduced to your carefully selected virtual assistant and establish workflows."
+      },
+      "step3": {
+        "number": "03",
+        "title": "Scale & Succeed",
+        "description": "Focus on high-value work while your VA handles tasks efficiently and professionally."
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "question1": "What types of tasks can a virtual assistant handle?",
+      "answer1": "Our VAs handle a wide range of tasks including administrative work, customer service, scheduling, email management, data entry, social media, e-commerce support, and much more.",
+      "question2": "Can I upgrade or downgrade my plan?",
+      "answer2": "Absolutely! We offer flexible plans that can be adjusted based on your changing needs. You can scale up or down at any time.",
+      "question3": "How do you ensure quality and security?",
+      "answer3": "All our VAs undergo rigorous vetting and training. We use secure communication channels and sign NDAs to protect your sensitive information.",
+      "question4": "What if I need specialized skills?",
+      "answer4": "We have VAs with specialized skills across various industries and functions. During our discovery call, we'll match you with the best fit for your specific needs."
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "subtitle": "Schedule your free consultation today and discover how CreedaVA can transform your business.",
+      "button": "Schedule Free Consultation"
+    }
   },
   "about": {
     "title": "About CreedaVA",
