@@ -224,5 +224,5 @@ app.http('submitBookingOptions', {
           success: true,
           bookingId: bookingId,
           saved: dbSaved,
-          message: 'Booking received! We will contact you shortly at ' + booking.email + ' to confirm your appointment.',
-          scheduledFor: `${booking.date} at ${booking.time}`
+          message: `Booking confirmed! We will send you a calendar invite at ${booking.email} and contact you to confirm your ${booking.service} consultation.`,
+          scheduledFor: `${booking.date} at ${booking.time} ${booking.timezone}`

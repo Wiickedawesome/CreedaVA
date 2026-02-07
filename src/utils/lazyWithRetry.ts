@@ -26,15 +26,25 @@ export function lazyWithRetry<T extends ComponentType<any>>(
                                   error?.message?.includes('Importing a module script failed')
               
               if (isChunkError) {
-                console.warn('Chunk loading failed after retries, clearing cache and reloading...')
-                // Clear any service worker cache and reload
+                console.warn('❌ Chunk loading failed after retries')
+                console.warn('🔄 Clearing cache and reloading page to fetch fresh files...')
+                
+                // Clear any service worker cache
                 if ('caches' in window) {
                   caches.keys().then(keys => {
-                    keys.forEach(key => caches.delete(key))
+                    keys.forEach(key => {
+                      console.log('Deleting cache:', key)
+                      caches.delete(key)
+                    })
                   })
                 }
-                // Force full page reload to get fresh chunks
-                window.location.reload()
+                
+                // Add timestamp to force cache bypass
+                const url = new URL(window.location.href)
+                url.searchParams.set('_reload', Date.now().toString())
+                
+                // Force full page reload with cache bypass
+                window.location.href = url.toString()
                 return
               }
               
@@ -78,11 +88,22 @@ export function lazyWithRetryAndTransform<T extends ComponentType<any>>(
           .catch((error) => {
             if (attemptsLeft === 1) {
               const isChunkError = error?.message?.includes('Failed to fetch') ||
-                                  error?.message?.includes('dynamically imported module')
+                                  error?.message?.includes('dynamically imported module') ||
+                                  error?.message?.includes('Importing a module script failed')
               
               if (isChunkError) {
-                console.warn('Chunk loading failed, forcing reload...')
-                window.location.reload()
+                console.warn('❌ Component chunk loading failed:', error?.message)
+                console.warn('🔄 Forcing page reload to fetch fresh files...')
+                
+                // Clear caches
+                if ('caches' in window) {
+                  caches.keys().then(keys => keys.forEach(key => caches.delete(key)))
+                }
+                
+                // Force reload with cache bypass
+                const url = new URL(window.location.href)
+                url.searchParams.set('_reload', Date.now().toString())
+                window.location.href = url.toString()
                 return
               }
               

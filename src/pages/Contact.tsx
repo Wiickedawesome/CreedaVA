@@ -129,9 +129,21 @@ export default function Contact() {
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate required fields
+    const requiredFields = ['name', 'email', 'phone', 'company', 'service', 'date', 'time'];
+    const missing = requiredFields.filter(field => !bookingData[field as keyof BookingData]);
+    
+    if (missing.length > 0) {
+      alert(`Please fill in all required fields: ${missing.join(', ')}`);
+      return;
+    }
+    
     try {
       // Submit booking to API
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '/api'}/submitBooking`, {
+      const apiUrl = `${import.meta.env.VITE_API_BASE_URL || '/api'}/submitBooking`;
+      console.log('Submitting booking to:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,22 +151,40 @@ export default function Contact() {
         body: JSON.stringify(bookingData)
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = 'Unknown error';
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorJson.error || errorText;
+        } catch {
+          errorMessage = errorText || `Server error (${response.status})`;
+        }
+        
+        console.error('Booking API error:', errorMessage);
+        alert(`Failed to submit booking: ${errorMessage}\n\nPlease contact us directly at hello@creedava.com`);
+        return;
+      }
+
       const result = await response.json();
 
-      if (response.ok && result.success) {
+      if (result.success) {
         // Success - show confirmation
-        alert(result.message + '\n\nBooking ID: ' + result.bookingId);
+        alert(`✅ ${result.message}\n\nBooking ID: ${result.bookingId}\nScheduled: ${result.scheduledFor}`);
         
         // Store booking ID locally
         localStorage.setItem('lastBookingId', result.bookingId);
       } else {
         // Error from API
-        alert(t('contact.booking.errorMessage').replace('hello@creedava.com', result.message || result.error || 'Unknown error'));
+        console.error('Booking failed:', result);
+        alert(`Failed to submit booking: ${result.message || result.error || 'Unknown error'}\n\nPlease contact us directly at hello@creedava.com`);
         return;
       }
-    } catch (_error) {
-      console.error('Booking submission error:', _error);
-      alert(t('contact.booking.errorMessage'));
+    } catch (error) {
+      console.error('Booking submission error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Network error';
+      alert(`Failed to submit booking: ${errorMessage}\n\nPlease try again or contact us directly at hello@creedava.com`);
       return;
     }
 
