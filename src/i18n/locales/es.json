@@ -359,6 +359,108 @@
       "reliableDesc": "Garantía del 99.9% de disponibilidad"
     }
   },
+  "footer": {
+    "tagline": "Soporte remoto profesional para negocios ambiciosos en todo el mundo. Tu éxito es nuestra misión.",
+    "servicesTitle": "Servicios",
+    "services": {
+      "executive": "Soporte Ejecutivo",
+      "administrative": "Tareas Administrativas",
+      "customerService": "Servicio al Cliente",
+      "realEstate": "Soporte Inmobiliario",
+      "technology": "Soporte Tecnológico"
+    },
+    "companyTitle": "Empresa",
+    "company": {
+      "ourServices": "Nuestros Servicios",
+      "about": "Nosotros",
+      "pricing": "Planes de Precios",
+      "news": "Noticias y Actualizaciones",
+      "contact": "Contáctanos"
+    },
+    "contactTitle": "Ponte en Contacto",
+    "callUs": "Llámanos",
+    "emailUs": "Escríbenos",
+    "copyright": "CreedaVA. Todos los derechos reservados.",
+    "location": "Con sede en Belice 🇧🇿 • Sirviendo a todo el mundo 🌎"
+  },
+  "about": {
+    "hero": {
+      "badge": "Nuestra Historia",
+      "title": "Acerca de",
+      "titleAccent": "CreedaVA",
+      "subtitle": "Somos más que un servicio de asistencia virtual: somos tu socio estratégico en el crecimiento, dedicados a ayudar a empresas ambiciosas a lograr más."
+    },
+    "stats": {
+      "founded": "Fundada",
+      "speaking": "Habla Inglés",
+      "based": "Con Sede",
+      "satisfaction": "Satisfacción del Cliente"
+    },
+    "storyTitle": "Nuestra Historia",
+    "storyParagraph1": "Fundada en 2023, CreedaVA es una agencia de asistentes virtuales con sede en Belice con la misión de unir oportunidad y talento. En una nación donde la educación continúa en aumento pero el empleo sigue siendo escaso, CreedaVA actúa como un puente digital, conectando a los profesionales altamente capacitados y de habla inglesa de Belice con empresas globales que necesitan asistentes virtuales dedicados, confiables y orientados al crecimiento.",
+    "storyParagraph2": "Belice, el único país de habla inglesa en América Central, está únicamente posicionado en el cruce de culturas, lo que hace que los beliceños dominen inglés y español, y sean ricos en adaptabilidad, comunicación y profesionalismo. CreedaVA aprovecha esa versatilidad cultural para ofrecer soporte virtual de clase mundial en todas las industrias, desde administración y marketing hasta éxito del cliente y asistencia ejecutiva.",
+    "storyParagraph3": "En su esencia, CreedaVA es más que un servicio; es un movimiento para empoderar a la fuerza laboral de Belice, fomentar el crecimiento profesional remoto y crear vías sostenibles para la colaboración global. Al contratar a través de CreedaVA, las empresas no solo obtienen talento excepcional, sino que invierten en una visión de progreso, propósito y asociación.",
+    "missionTitle": "Nuestra Misión",
+    "missionText": "Unir oportunidad y talento conectando la fuerza laboral altamente capacitada de Belice con empresas globales, creando vías profesionales remotas sostenibles mientras ofrecemos servicios excepcionales de asistencia virtual que empoderan a las empresas a lograr más.",
+    "approachTitle": "Nuestro Enfoque",
+    "approachText": "Adoptamos un enfoque de asociación con cada cliente. Desde nuestra llamada de descubrimiento inicial hasta el soporte continuo, invertimos tiempo en comprender tu negocio, tus desafíos y tus objetivos. Esto nos permite emparejarte con el asistente virtual perfecto y crear flujos de trabajo que realmente mejoren tu productividad. No solo completamos tareas, te ayudamos a construir sistemas que escalan.",
+    "belizeAdvantage": {
+      "badge": "La Ventaja de Belice",
+      "title": "¿Por Qué Belice?",
+      "subtitle": "Descubre qué hace que los asistentes virtuales beliceños estén únicamente posicionados para servir a empresas globales",
+      "bilingual": {
+        "title": "Excelencia Bilingüe",
+        "description": "Único país de habla inglesa en América Central. Nuestro equipo domina tanto inglés como español, sirviendo a diversos mercados globales."
+      },
+      "cultural": {
+        "title": "Adaptabilidad Cultural",
+        "description": "En el cruce de culturas, los beliceños aportan versatilidad única, adaptabilidad y habilidades de comunicación intercultural."
+      },
+      "timezone": {
+        "title": "Ventaja de Zona Horaria",
+        "description": "Hora Estándar Central (CST) se alinea perfectamente con el horario comercial de América del Norte para colaboración en tiempo real."
+      },
+      "workforce": {
+        "title": "Fuerza Laboral Profesional",
+        "description": "Estándares educativos en aumento combinados con oportunidades locales limitadas crean un grupo de profesionales altamente motivados y capacitados."
+      }
+    },
+    "valuesTitle": "Nuestros Valores",
+    "valuesSubtitle": "Los principios que guían todo lo que hacemos en CreedaVA",
+    "values": {
+      "reliability": {
+        "title": "Confiabilidad",
+        "description": "Ofrecemos soporte consistente y confiable en el que puedes contar todos los días."
+      },
+      "excellence": {
+        "title": "Excelencia",
+        "description": "Mantenemos los más altos estándares en cada tarea, tratando tu negocio como si fuera nuestro."
+      },
+      "partnership": {
+        "title": "Asociación",
+        "description": "Trabajamos a tu lado como una extensión de tu equipo, no solo como un proveedor de servicios."
+      },
+      "growth": {
+        "title": "Crecimiento",
+        "description": "Mejoramos continuamente nuestras habilidades y procesos para apoyar tus necesidades en evolución."
+      }
+    },
+    "whyChoose": {
+      "title": "¿Por Qué Elegir CreedaVA?",
+      "item1": "Asistentes virtuales rigurosamente evaluados y capacitados",
+      "item2": "Soporte bilingüe disponible",
+      "item3": "Gestión de cuentas dedicada y soporte",
+      "item4": "Soluciones flexibles y escalables que crecen contigo",
+      "item5": "Comunicación transparente e informes regulares",
+      "item6": "Experiencia y especializaciones específicas de la industria",
+      "item7": "Manejo seguro y confidencial de toda la información"
+    },
+    "finalCta": {
+      "title": "¿Listo para Trabajar Juntos?",
+      "subtitle": "Hablemos sobre cómo CreedaVA puede convertirse en tu socio de confianza en el crecimiento.",
+      "cta": "Comienza Hoy"
+    }
+  },
   "contact": {
     "title": "Conectemos",
     "subtitle": "¿Tiene preguntas sobre nuestros servicios? ¿Quiere discutir sus necesidades específicas? Nuestro equipo está listo para ayudarle a alcanzar sus objetivos.",

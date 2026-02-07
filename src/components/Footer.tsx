@@ -1,9 +1,12 @@
 import { memo } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Separator } from '@/components/ui/separator'
 import { EnvelopeSimple, Phone, LinkedinLogo } from '@phosphor-icons/react'
 
 export const Footer = memo(() => {
+  const { t } = useTranslation();
+  
   return (
     <footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 px-4 overflow-hidden">
       {/* Decorative Elements */}
@@ -19,7 +22,7 @@ export const Footer = memo(() => {
               <span className="text-accent">VA</span>
             </h3>
             <p className="text-gray-300 text-sm leading-relaxed mb-6">
-              Professional remote support for ambitious businesses worldwide. Your success is our mission.
+              {t('footer.tagline')}
             </p>
             <div className="flex gap-3">
               <a 
@@ -35,43 +38,43 @@ export const Footer = memo(() => {
 
           {/* Services Section */}
           <div>
-            <h4 className="font-bold text-lg mb-4 text-white">Services</h4>
+            <h4 className="font-bold text-lg mb-4 text-white">{t('footer.servicesTitle')}</h4>
             <ul className="space-y-3 text-sm">
-              <li className="text-gray-300 hover:text-emerald-400 transition-colors cursor-pointer">Executive Support</li>
-              <li className="text-gray-300 hover:text-emerald-400 transition-colors cursor-pointer">Administrative Tasks</li>
-              <li className="text-gray-300 hover:text-emerald-400 transition-colors cursor-pointer">Customer Service</li>
-              <li className="text-gray-300 hover:text-emerald-400 transition-colors cursor-pointer">Real Estate Support</li>
-              <li className="text-gray-300 hover:text-emerald-400 transition-colors cursor-pointer">Technology Support</li>
+              <li className="text-gray-300 hover:text-emerald-400 transition-colors cursor-pointer">{t('footer.services.executive')}</li>
+              <li className="text-gray-300 hover:text-emerald-400 transition-colors cursor-pointer">{t('footer.services.administrative')}</li>
+              <li className="text-gray-300 hover:text-emerald-400 transition-colors cursor-pointer">{t('footer.services.customerService')}</li>
+              <li className="text-gray-300 hover:text-emerald-400 transition-colors cursor-pointer">{t('footer.services.realEstate')}</li>
+              <li className="text-gray-300 hover:text-emerald-400 transition-colors cursor-pointer">{t('footer.services.technology')}</li>
             </ul>
           </div>
 
           {/* Company Section */}
           <div>
-            <h4 className="font-bold text-lg mb-4 text-white">Company</h4>
+            <h4 className="font-bold text-lg mb-4 text-white">{t('footer.companyTitle')}</h4>
             <ul className="space-y-3 text-sm">
               <li>
                 <Link to="/services" className="text-primary-foreground/70 hover:text-accent transition-colors block">
-                  Our Services
+                  {t('footer.company.ourServices')}
                 </Link>
               </li>
               <li>
                 <Link to="/about" className="text-primary-foreground/70 hover:text-accent transition-colors block">
-                  About Us
+                  {t('footer.company.about')}
                 </Link>
               </li>
               <li>
                 <Link to="/pricing" className="text-primary-foreground/70 hover:text-accent transition-colors block">
-                  Pricing Plans
+                  {t('footer.company.pricing')}
                 </Link>
               </li>
               <li>
                 <Link to="/news" className="text-primary-foreground/70 hover:text-accent transition-colors block">
-                  News & Updates
+                  {t('footer.company.news')}
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-primary-foreground/70 hover:text-accent transition-colors block">
-                  Contact Us
+                  {t('footer.company.contact')}
                 </Link>
               </li>
             </ul>
@@ -79,14 +82,14 @@ export const Footer = memo(() => {
 
           {/* Contact Section */}
           <div>
-            <h4 className="font-bold text-lg mb-4 text-white">Get in Touch</h4>
+            <h4 className="font-bold text-lg mb-4 text-white">{t('footer.contactTitle')}</h4>
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3 group">
                 <div className="bg-emerald-600/20 p-2 rounded-lg group-hover:bg-emerald-600 transition-colors">
                   <Phone size={16} weight="bold" />
                 </div>
                 <div>
-                  <p className="text-gray-400 text-xs mb-1">Call Us</p>
+                  <p className="text-gray-400 text-xs mb-1">{t('footer.callUs')}</p>
                   <a href="tel:+18447022202" className="text-gray-200 hover:text-emerald-400 transition-colors font-medium">
                     +1 844-702-2202
                   </a>
@@ -97,7 +100,7 @@ export const Footer = memo(() => {
                   <EnvelopeSimple size={16} weight="bold" />
                 </div>
                 <div>
-                  <p className="text-gray-400 text-xs mb-1">Email Us</p>
+                  <p className="text-gray-400 text-xs mb-1">{t('footer.emailUs')}</p>
                   <a href="mailto:hello@creedava.com" className="text-gray-200 hover:text-emerald-400 transition-colors font-medium">
                     hello@creedava.com
                   </a>
@@ -111,10 +114,10 @@ export const Footer = memo(() => {
         
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-gray-400">
-            © {new Date().getFullYear()} CreedaVA. All rights reserved.
+            © {new Date().getFullYear()} {t('footer.copyright')}
           </p>
           <p className="text-xs text-gray-500">
-            Based in Belize 🇧🇿 • Serving Worldwide 🌎
+            {t('footer.location')}
           </p>
         </div>
       </div>

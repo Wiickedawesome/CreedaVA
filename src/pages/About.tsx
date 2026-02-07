@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -17,62 +18,64 @@ import { CreedaLogo } from '@/components/CreedaLogo'
 import { SEO, seoData } from '@/components/SEO'
 
 export function About() {
+  const { t } = useTranslation();
+  
   const values = [
     {
       icon: <ShieldCheck className="text-accent" size={32} />,
-      title: 'Reliability',
-      description: 'We deliver consistent, dependable support you can count on every single day.',
+      title: t('about.values.reliability.title'),
+      description: t('about.values.reliability.description'),
     },
     {
       icon: <Heart className="text-accent" size={32} />,
-      title: 'Excellence',
-      description: 'We maintain the highest standards in every task, treating your business as our own.',
+      title: t('about.values.excellence.title'),
+      description: t('about.values.excellence.description'),
     },
     {
       icon: <Users className="text-accent" size={32} />,
-      title: 'Partnership',
-      description: 'We work alongside you as an extension of your team, not just a service provider.',
+      title: t('about.values.partnership.title'),
+      description: t('about.values.partnership.description'),
     },
     {
       icon: <TrendUp className="text-accent" size={32} />,
-      title: 'Growth',
-      description: 'We continuously improve our skills and processes to support your evolving needs.',
+      title: t('about.values.growth.title'),
+      description: t('about.values.growth.description'),
     },
   ]
 
   const differentiators = [
-    'Rigorously vetted and trained virtual assistants',
-    'Bilingual support available',
-    'Dedicated account management and support',
-    'Flexible, scalable solutions that grow with you',
-    'Transparent communication and regular reporting',
-    'Industry-specific expertise and specializations',
-    'Secure, confidential handling of all information',
+    t('about.whyChoose.item1'),
+    t('about.whyChoose.item2'),
+    t('about.whyChoose.item3'),
+    t('about.whyChoose.item4'),
+    t('about.whyChoose.item5'),
+    t('about.whyChoose.item6'),
+    t('about.whyChoose.item7'),
   ]
 
   const stats = [
-    { value: '2023', label: 'Founded' },
-    { value: '100%', label: 'English-Speaking' },
-    { value: 'Belize', label: 'Based' },
-    { value: '98%', label: 'Client Satisfaction' },
+    { value: '2023', label: t('about.stats.founded') },
+    { value: '100%', label: t('about.stats.speaking') },
+    { value: 'Belize', label: t('about.stats.based') },
+    { value: '98%', label: t('about.stats.satisfaction') },
   ]
 
   const belizeAdvantages = [
     {
-      title: 'Bilingual Excellence',
-      description: 'Only English-speaking country in Central America. Our team is fluent in both English and Spanish, serving diverse global markets.',
+      title: t('about.belizeAdvantage.bilingual.title'),
+      description: t('about.belizeAdvantage.bilingual.description'),
     },
     {
-      title: 'Cultural Adaptability',
-      description: 'At the crossroads of cultures, Belizeans bring unique versatility, adaptability, and cross-cultural communication skills.',
+      title: t('about.belizeAdvantage.cultural.title'),
+      description: t('about.belizeAdvantage.cultural.description'),
     },
     {
-      title: 'Time Zone Advantage',
-      description: 'Central Standard Time (CST) aligns perfectly with North American business hours for real-time collaboration.',
+      title: t('about.belizeAdvantage.timezone.title'),
+      description: t('about.belizeAdvantage.timezone.description'),
     },
     {
-      title: 'Professional Workforce',
-      description: 'Rising education standards combined with limited local opportunities create a pool of highly motivated, skilled professionals.',
+      title: t('about.belizeAdvantage.workforce.title'),
+      description: t('about.belizeAdvantage.workforce.description'),
     },
   ]
 
@@ -91,14 +94,13 @@ export function About() {
               className="text-center lg:text-left"
             >
               <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
-                Our Story
+                {t('about.hero.badge')}
               </Badge>
               <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
-                About <span className="text-accent">CreedaVA</span>
+                {t('about.hero.title')} <span className="text-accent">{t('about.hero.titleAccent')}</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                We're more than a virtual assistant service—we're your strategic partner in growth,
-                dedicated to helping ambitious businesses achieve more.
+                {t('about.hero.subtitle')}
               </p>
             </motion.div>
             <motion.div
@@ -142,37 +144,20 @@ export function About() {
             className="space-y-12"
           >
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">Our Story</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">{t('about.storyTitle')}</h2>
               <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
-                <p>
-                  Founded in 2023, <span className="text-accent font-semibold">CreedaVA</span> is a Belize-based virtual assistant 
-                  agency with a mission to bridge opportunity and talent. In a nation where education continues to rise but employment 
-                  remains scarce, CreedaVA stands as a digital bridge — connecting Belize's highly skilled, English-speaking professionals 
-                  with global businesses in need of dedicated, reliable, and growth-minded virtual assistants.
-                </p>
-                <p>
-                  Belize, the only English-speaking country in Central America, is uniquely positioned at the crossroads of cultures, 
-                  making Belizeans fluent in English and Spanish, and rich in adaptability, communication, and professionalism. CreedaVA 
-                  harnesses that cultural versatility to deliver world-class virtual support across industries, from administration and 
-                  marketing to customer success and executive assistance.
-                </p>
-                <p>
-                  At its core, <span className="text-accent font-semibold">CreedaVA is more than a service; it's a movement</span> to 
-                  empower Belize's workforce, foster remote career growth, and create sustainable pathways for global collaboration. 
-                  By hiring through CreedaVA, companies don't just get exceptional talent — they invest in a vision of progress, purpose, 
-                  and partnership.
-                </p>
+                <p dangerouslySetInnerHTML={{ __html: t('about.storyParagraph1').replace('CreedaVA', '<span class="text-accent font-semibold">CreedaVA</span>') }} />
+                <p dangerouslySetInnerHTML={{ __html: t('about.storyParagraph2').replace(/CreedaVA/g, '<span class="text-accent font-semibold">CreedaVA</span>') }} />
+                <p dangerouslySetInnerHTML={{ __html: t('about.storyParagraph3').replace('CreedaVA is more than a service; it\'s a movement', '<span class="text-accent font-semibold">CreedaVA is more than a service; it\'s a movement</span>').replace('CreedaVA', '<span class="text-accent font-semibold">CreedaVA</span>') }} />
               </div>
             </div>
 
             <div className="flex items-start gap-4 pt-8">
               <Target className="text-accent flex-shrink-0 mt-1" size={32} />
               <div>
-                <h2 className="text-2xl font-bold text-foreground mb-4">Our Mission</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-4">{t('about.missionTitle')}</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  To bridge opportunity and talent by connecting Belize's highly skilled workforce with global businesses, 
-                  creating sustainable remote career pathways while delivering exceptional virtual assistant services that 
-                  empower companies to achieve more.
+                  {t('about.missionText')}
                 </p>
               </div>
             </div>
@@ -180,13 +165,9 @@ export function About() {
             <div className="flex items-start gap-4">
               <Handshake className="text-accent flex-shrink-0 mt-1" size={32} />
               <div>
-                <h2 className="text-2xl font-bold text-foreground mb-4">Our Approach</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-4">{t('about.approachTitle')}</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  We take a partnership approach with every client. From our initial discovery call through
-                  ongoing support, we invest time in understanding your business, your challenges, and your goals.
-                  This allows us to match you with the perfect virtual assistant and create workflows that
-                  truly enhance your productivity. We're not just completing tasks—we're helping you build
-                  systems that scale.
+                  {t('about.approachText')}
                 </p>
               </div>
             </div>
@@ -203,11 +184,11 @@ export function About() {
             className="text-center mb-16"
           >
             <Badge className="mb-6 bg-accent/10 text-accent border-accent/20" variant="outline">
-              The Belize Advantage
+              {t('about.belizeAdvantage.badge')}
             </Badge>
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">Why Belize?</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">{t('about.belizeAdvantage.title')}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Discover what makes Belizean virtual assistants uniquely positioned to serve global businesses
+              {t('about.belizeAdvantage.subtitle')}
             </p>
           </motion.div>
 
@@ -244,9 +225,9 @@ export function About() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">Our Values</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">{t('about.valuesTitle')}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              The principles that guide everything we do at CreedaVA
+              {t('about.valuesSubtitle')}
             </p>
           </motion.div>
 
@@ -284,7 +265,7 @@ export function About() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8 text-center">
-              Why Choose CreedaVA?
+              {t('about.whyChoose.title')}
             </h2>
             <Card className="border-border/50">
               <CardContent className="pt-8">
@@ -317,13 +298,13 @@ export function About() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
-              Ready to Work Together?
+              {t('about.finalCta.title')}
             </h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Let's discuss how CreedaVA can become your trusted partner in growth.
+              {t('about.finalCta.subtitle')}
             </p>
             <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8">
-              <Link to="/contact">Get Started Today</Link>
+              <Link to="/contact">{t('about.finalCta.cta')}</Link>
             </Button>
           </motion.div>
         </div>

@@ -357,6 +357,108 @@
       "reliableDesc": "99.9% uptime guarantee"
     }
   },
+  "footer": {
+    "tagline": "Professional remote support for ambitious businesses worldwide. Your success is our mission.",
+    "servicesTitle": "Services",
+    "services": {
+      "executive": "Executive Support",
+      "administrative": "Administrative Tasks",
+      "customerService": "Customer Service",
+      "realEstate": "Real Estate Support",
+      "technology": "Technology Support"
+    },
+    "companyTitle": "Company",
+    "company": {
+      "ourServices": "Our Services",
+      "about": "About Us",
+      "pricing": "Pricing Plans",
+      "news": "News & Updates",
+      "contact": "Contact Us"
+    },
+    "contactTitle": "Get in Touch",
+    "callUs": "Call Us",
+    "emailUs": "Email Us",
+    "copyright": "CreedaVA. All rights reserved.",
+    "location": "Based in Belize 🇧🇿 • Serving Worldwide 🌎"
+  },
+  "about": {
+    "hero": {
+      "badge": "Our Story",
+      "title": "About",
+      "titleAccent": "CreedaVA",
+      "subtitle": "We're more than a virtual assistant service—we're your strategic partner in growth, dedicated to helping ambitious businesses achieve more."
+    },
+    "stats": {
+      "founded": "Founded",
+      "speaking": "English-Speaking",
+      "based": "Based",
+      "satisfaction": "Client Satisfaction"
+    },
+    "storyTitle": "Our Story",
+    "storyParagraph1": "Founded in 2023, CreedaVA is a Belize-based virtual assistant agency with a mission to bridge opportunity and talent. In a nation where education continues to rise but employment remains scarce, CreedaVA stands as a digital bridge — connecting Belize's highly skilled, English-speaking professionals with global businesses in need of dedicated, reliable, and growth-minded virtual assistants.",
+    "storyParagraph2": "Belize, the only English-speaking country in Central America, is uniquely positioned at the crossroads of cultures, making Belizeans fluent in English and Spanish, and rich in adaptability, communication, and professionalism. CreedaVA harnesses that cultural versatility to deliver world-class virtual support across industries, from administration and marketing to customer success and executive assistance.",
+    "storyParagraph3": "At its core, CreedaVA is more than a service; it's a movement to empower Belize's workforce, foster remote career growth, and create sustainable pathways for global collaboration. By hiring through CreedaVA, companies don't just get exceptional talent — they invest in a vision of progress, purpose, and partnership.",
+    "missionTitle": "Our Mission",
+    "missionText": "To bridge opportunity and talent by connecting Belize's highly skilled workforce with global businesses, creating sustainable remote career pathways while delivering exceptional virtual assistant services that empower companies to achieve more.",
+    "approachTitle": "Our Approach",
+    "approachText": "We take a partnership approach with every client. From our initial discovery call through ongoing support, we invest time in understanding your business, your challenges, and your goals. This allows us to match you with the perfect virtual assistant and create workflows that truly enhance your productivity. We're not just completing tasks—we're helping you build systems that scale.",
+    "belizeAdvantage": {
+      "badge": "The Belize Advantage",
+      "title": "Why Belize?",
+      "subtitle": "Discover what makes Belizean virtual assistants uniquely positioned to serve global businesses",
+      "bilingual": {
+        "title": "Bilingual Excellence",
+        "description": "Only English-speaking country in Central America. Our team is fluent in both English and Spanish, serving diverse global markets."
+      },
+      "cultural": {
+        "title": "Cultural Adaptability",
+        "description": "At the crossroads of cultures, Belizeans bring unique versatility, adaptability, and cross-cultural communication skills."
+      },
+      "timezone": {
+        "title": "Time Zone Advantage",
+        "description": "Central Standard Time (CST) aligns perfectly with North American business hours for real-time collaboration."
+      },
+      "workforce": {
+        "title": "Professional Workforce",
+        "description": "Rising education standards combined with limited local opportunities create a pool of highly motivated, skilled professionals."
+      }
+    },
+    "valuesTitle": "Our Values",
+    "valuesSubtitle": "The principles that guide everything we do at CreedaVA",
+    "values": {
+      "reliability": {
+        "title": "Reliability",
+        "description": "We deliver consistent, dependable support you can count on every single day."
+      },
+      "excellence": {
+        "title": "Excellence",
+        "description": "We maintain the highest standards in every task, treating your business as our own."
+      },
+      "partnership": {
+        "title": "Partnership",
+        "description": "We work alongside you as an extension of your team, not just a service provider."
+      },
+      "growth": {
+        "title": "Growth",
+        "description": "We continuously improve our skills and processes to support your evolving needs."
+      }
+    },
+    "whyChoose": {
+      "title": "Why Choose CreedaVA?",
+      "item1": "Rigorously vetted and trained virtual assistants",
+      "item2": "Bilingual support available",
+      "item3": "Dedicated account management and support",
+      "item4": "Flexible, scalable solutions that grow with you",
+      "item5": "Transparent communication and regular reporting",
+      "item6": "Industry-specific expertise and specializations",
+      "item7": "Secure, confidential handling of all information"
+    },
+    "finalCta": {
+      "title": "Ready to Work Together?",
+      "subtitle": "Let's discuss how CreedaVA can become your trusted partner in growth.",
+      "cta": "Get Started Today"
+    }
+  },
   "contact": {
     "title": "Let's Connect",
     "subtitle": "Have questions about our services? Want to discuss your specific needs? Our team is ready to help you achieve your goals.",
