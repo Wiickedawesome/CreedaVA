@@ -14,6 +14,7 @@ import {
 import { motion } from 'framer-motion'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
+import { SEO, seoData } from '@/components/SEO'
 
 export function About() {
   const values = [
@@ -76,7 +77,9 @@ export function About() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO {...seoData.about} />
+      <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <AnimatedBackground />
         <div className="container mx-auto max-w-6xl">
@@ -326,5 +329,6 @@ export function About() {
         </div>
       </section>
     </div>
+    </>
   )
 }

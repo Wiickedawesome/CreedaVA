@@ -20,6 +20,7 @@ import {
 import { motion } from 'framer-motion'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
+import { SEO, seoData } from '@/components/SEO'
 
 export function Services() {
   const serviceCategories = [
@@ -143,7 +144,9 @@ export function Services() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO {...seoData.services} />
+      <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <AnimatedBackground />
         <div className="container mx-auto max-w-6xl">
@@ -200,7 +203,7 @@ export function Services() {
                     <ul className="space-y-2">
                       {service.features.map((feature) => (
                         <li key={feature} className="flex items-start gap-2">
-                          <CheckCircle className="text-accent flex-shrink-0 mt-0.5" size={18} weight="fill" />
+                          <CheckCircle className="text-accent shrink-0 mt-0.5" size={18} weight="fill" />
                           <span className="text-sm text-muted-foreground">{feature}</span>
                         </li>
                       ))}
@@ -240,5 +243,6 @@ export function Services() {
         </div>
       </section>
     </div>
+    </>
   )
 }

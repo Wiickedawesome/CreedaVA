@@ -7,6 +7,7 @@ import { CheckCircle, Phone, UsersThree, ChartLineUp } from '@phosphor-icons/rea
 import { motion } from 'framer-motion'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
+import { SEO, seoData } from '@/components/SEO'
 
 export function Pricing() {
   const plans = [
@@ -103,7 +104,9 @@ export function Pricing() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO {...seoData.pricing} />
+      <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <AnimatedBackground />
         <div className="container mx-auto max-w-6xl">
@@ -167,7 +170,7 @@ export function Pricing() {
                     <ul className="space-y-3">
                       {plan.features.map((feature) => (
                         <li key={feature} className="flex items-start gap-3">
-                          <CheckCircle className="text-accent flex-shrink-0 mt-0.5" size={20} weight="fill" />
+                          <CheckCircle className="text-accent shrink-0 mt-0.5" size={20} weight="fill" />
                           <span className="text-sm">{feature}</span>
                         </li>
                       ))}
@@ -284,5 +287,6 @@ export function Pricing() {
         </div>
       </section>
     </div>
+    </>
   )
 }

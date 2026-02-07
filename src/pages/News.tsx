@@ -3,9 +3,10 @@ import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar, ArrowRight, ExternalLink, Newspaper, Linkedin } from 'lucide-react'
+import { Calendar, ArrowRight, Newspaper, Linkedin } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
+import { SEO, seoData } from '@/components/SEO'
 import { format } from 'date-fns'
 
 interface BlogPost {
@@ -62,9 +63,9 @@ export default function News() {
         .slice(0, 6) // Limit to 6 most recent posts
       
       setPosts(publishedPosts)
-    } catch (error) {
-      console.error('Error fetching blog posts:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load blog posts')
+    } catch (_error) {
+      console.error('Error fetching blog posts:', _error)
+      setError(_error instanceof Error ? _error.message : 'Failed to load blog posts')
       setPosts([]) // Clear posts on error
     } finally {
       setLoading(false)
@@ -97,7 +98,9 @@ export default function News() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO {...seoData.news} />
+      <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <AnimatedBackground />
         <div className="container mx-auto max-w-6xl">
@@ -251,5 +254,6 @@ export default function News() {
         </div>
       </section>
     </div>
+    </>
   )
 }

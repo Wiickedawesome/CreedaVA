@@ -19,11 +19,11 @@ import {
   Article,
   UserCircle,
   Quotes,
-  Calendar,
 } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 import { LazyAnimatedBackground } from '@/components/LazyAnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
+import { SEO, seoData } from '@/components/SEO'
 
 export function Home() {
   const services = [
@@ -88,7 +88,9 @@ export function Home() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO {...seoData.home} />
+      <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <LazyAnimatedBackground />
         <div className="container mx-auto max-w-6xl">
@@ -509,5 +511,6 @@ export function Home() {
         </div>
       </section>
     </div>
+    </>
   )
 }

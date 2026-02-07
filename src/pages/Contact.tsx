@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Envelope, MapPin, Calendar, Phone, EnvelopeSimple, Clock, User } from '@phosphor-icons/react';
+import { MapPin, Calendar, Phone, EnvelopeSimple, Clock, User } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { CreedaLogo } from '@/components/CreedaLogo';
 import { submitContactForm, trackButtonClick } from '@/lib/tracking';
+import { SEO, seoData } from '@/components/SEO';
 import {
   Dialog,
   DialogContent,
@@ -117,8 +118,8 @@ export default function Contact() {
       } else {
         alert('There was an error submitting your message. Please try again.');
       }
-    } catch (error) {
-      console.error('Error submitting form:', error);
+    } catch (_error) {
+      console.error('Error submitting form:', _error);
       alert('There was an error submitting your message. Please try again.');
     }
   };
@@ -149,8 +150,8 @@ export default function Contact() {
         alert('Booking submission failed: ' + (result.message || result.error || 'Unknown error'));
         return;
       }
-    } catch (error) {
-      console.error('Booking submission error:', error);
+    } catch (_error) {
+      console.error('Booking submission error:', _error);
       alert('Failed to submit booking. Please try again or contact us directly at hello@creedava.com');
       return;
     }
@@ -180,7 +181,7 @@ export default function Contact() {
   // Generate available time slots (8 AM - 6 PM CST in 30-min intervals)
   const timeSlots: { value: string; label: string }[] = [];
   for (let hour = 8; hour < 18; hour++) {
-    for (let min of [0, 30]) {
+    for (const min of [0, 30]) {
       const time = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
       const displayTime = new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', { 
         hour: 'numeric', 
@@ -197,9 +198,11 @@ export default function Contact() {
   const contactFieldClass = "bg-background text-foreground placeholder:text-muted-foreground border-input focus-visible:border-primary focus-visible:ring-primary/20";
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO {...seoData.contact} />
+      <div className="min-h-screen bg-background">
       <section className="relative py-32 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-navy-50 via-white to-green-50 -z-10" />
+        <div className="absolute inset-0 bg-linear-to-br from-navy-50 via-white to-green-50 -z-10" />
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -334,7 +337,7 @@ export default function Contact() {
                 <h3 className="text-xl font-semibold text-foreground mb-6">Get in Touch</h3>
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <div className="shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                       <EnvelopeSimple size={24} className="text-primary" />
                     </div>
                     <div>
@@ -346,7 +349,7 @@ export default function Contact() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <div className="shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                       <Phone size={24} className="text-primary" />
                     </div>
                     <div>
@@ -358,7 +361,7 @@ export default function Contact() {
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <div className="shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                       <MapPin size={24} className="text-primary" />
                     </div>
                     <div>
@@ -671,5 +674,6 @@ export default function Contact() {
         </div>
       </section>
     </div>
+    </>
   );
 }
