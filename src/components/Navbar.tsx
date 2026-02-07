@@ -80,35 +80,36 @@ export const Navbar = memo(() => {
           <div className="flex items-center gap-2 md:hidden">
             <LanguageSwitcher />
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <List size={24} />
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <nav className="flex flex-col gap-6 mt-8 px-6">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    onClick={handleMenuClose}
-                    className={`text-center text-lg font-medium transition-colors py-2 ${
-                      isActive(link.path)
-                        ? 'text-accent'
-                        : 'text-foreground hover:text-accent'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
-                  <Link to="/contact" onClick={handleMenuClose}>
-                    {t('hero.cta')}
-                  </Link>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <List size={24} />
                 </Button>
-              </nav>
-            </SheetContent>
-          </Sheet>
+              </SheetTrigger>
+              <SheetContent>
+                <nav className="flex flex-col gap-6 mt-8 px-6">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.path}
+                      to={link.path}
+                      onClick={handleMenuClose}
+                      className={`text-center text-lg font-medium transition-colors py-2 ${
+                        isActive(link.path)
+                          ? 'text-accent'
+                          : 'text-foreground hover:text-accent'
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
+                    <Link to="/contact" onClick={handleMenuClose}>
+                      {t('hero.cta')}
+                    </Link>
+                  </Button>
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>

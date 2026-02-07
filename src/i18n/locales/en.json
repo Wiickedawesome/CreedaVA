@@ -86,29 +86,107 @@
   },
   "contact": {
     "title": "Let's Connect",
-    "subtitle": "Get in touch with our team",
+    "subtitle": "Have questions about our services? Want to discuss your specific needs? Our team is ready to help you achieve your goals.",
+    "formTitle": "Send us a message",
     "form": {
       "name": "Full Name",
-      "email": "Email Address",
-      "phone": "Phone Number",
-      "company": "Company Name",
-      "service": "Service Needed",
+      "namePlaceholder": "John Smith",
+      "email": "Email",
+      "emailPlaceholder": "john@company.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+1 (555) 000-0000",
+      "company": "Company",
+      "companyPlaceholder": "Your company name",
+      "service": "What services are you interested in?",
+      "servicePlaceholder": "Select a service",
+      "serviceOptions": {
+        "executiveAssistance": "Executive Assistance",
+        "administrativeTasks": "Administrative Tasks",
+        "customerService": "Customer Service",
+        "realEstateSupport": "Real Estate Support",
+        "technologySupport": "Technology Support",
+        "other": "Other"
+      },
       "message": "Message",
-      "submit": "Send Message"
+      "messagePlaceholder": "Tell us about your project or requirements...",
+      "submit": "Send Message",
+      "successMessage": "Thank you! Your message has been received.",
+      "errorMessage": "There was an error submitting your message. Please try again."
     },
     "info": {
+      "title": "Get in Touch",
       "email": "Email",
       "phone": "Phone",
       "location": "Location",
-      "hours": "Business Hours"
+      "locationText": "Remote Services Worldwide",
+      "timezone": "Operating from CST (UTC-6)",
+      "hours": "Business Hours",
+      "mondayFriday": "Monday - Friday",
+      "mondayFridayTime": "8:00 AM - 6:00 PM CST",
+      "saturday": "Saturday",
+      "saturdayTime": "9:00 AM - 2:00 PM CST",
+      "sunday": "Sunday",
+      "sundayTime": "Closed"
     },
     "booking": {
+      "buttonText": "Book a Call Directly",
       "title": "Schedule a Consultation",
-      "preferredDate": "Preferred Date",
-      "preferredTime": "Preferred Time",
-      "timezone": "Your Timezone",
+      "description": "Book a call with our team. We'll add it to our calendar and send you confirmation.",
+      "name": "Full Name",
+      "namePlaceholder": "John Smith",
+      "company": "Company Name",
+      "companyPlaceholder": "Your Company",
+      "email": "Email",
+      "emailPlaceholder": "john@company.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+1 (555) 000-0000",
+      "service": "Service Interested In",
+      "servicePlaceholder": "Select a service",
+      "serviceOptions": {
+        "executiveAssistance": "Executive Assistance",
+        "administrativeTasks": "Administrative Tasks",
+        "customerService": "Customer Service",
+        "realEstateSupport": "Real Estate Support",
+        "technologySupport": "Technology Support",
+        "multipleServices": "Multiple Services",
+        "notSureYet": "Not Sure Yet"
+      },
+      "hasProvider": "Do you currently have a VA provider?",
+      "hasProviderPlaceholder": "Select an option",
+      "yes": "Yes",
+      "no": "No",
+      "currentProvider": "Current Provider Name",
+      "currentProviderPlaceholder": "Provider name",
+      "date": "Preferred Date",
+      "time": "Preferred Time",
+      "timePlaceholder": "Select time",
+      "timezone": "Timezone",
+      "timezonePlaceholder": "America/Chicago",
+      "timezoneDetected": "Detected",
       "notes": "Additional Notes",
-      "submit": "Book Consultation"
+      "notesPlaceholder": "Anything specific you'd like to discuss?",
+      "cancel": "Cancel",
+      "submit": "Schedule Call",
+      "successMessage": "Booking request sent! The calendar event has been created. Please check your email for confirmation.",
+      "errorMessage": "Failed to submit booking. Please try again or contact us directly at hello@creedava.com"
+    },
+    "process": {
+      "title": "How We Work Together",
+      "step1": {
+        "number": "1",
+        "title": "Initial Consultation",
+        "description": "We'll review your inquiry within 24 hours and schedule a consultation to understand your needs."
+      },
+      "step2": {
+        "number": "2",
+        "title": "Custom Proposal",
+        "description": "Based on our discussion, we create a tailored service plan that fits your requirements and budget."
+      },
+      "step3": {
+        "number": "3",
+        "title": "Get Started",
+        "description": "Once approved, we begin working together to streamline your operations and achieve your goals."
+      }
     }
   },
   "footer": {

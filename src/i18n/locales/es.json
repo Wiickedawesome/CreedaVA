@@ -86,29 +86,107 @@
   },
   "contact": {
     "title": "Conectemos",
-    "subtitle": "Póngase en contacto con nuestro equipo",
+    "subtitle": "¿Tiene preguntas sobre nuestros servicios? ¿Quiere discutir sus necesidades específicas? Nuestro equipo está listo para ayudarle a alcanzar sus objetivos.",
+    "formTitle": "Envíenos un mensaje",
     "form": {
       "name": "Nombre Completo",
+      "namePlaceholder": "Juan Pérez",
       "email": "Correo Electrónico",
-      "phone": "Número de Teléfono",
-      "company": "Nombre de la Empresa",
-      "service": "Servicio Necesario",
+      "emailPlaceholder": "juan@empresa.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+1 (555) 000-0000",
+      "company": "Empresa",
+      "companyPlaceholder": "Nombre de su empresa",
+      "service": "¿Qué servicios le interesan?",
+      "servicePlaceholder": "Seleccione un servicio",
+      "serviceOptions": {
+        "executiveAssistance": "Asistencia Ejecutiva",
+        "administrativeTasks": "Tareas Administrativas",
+        "customerService": "Servicio al Cliente",
+        "realEstateSupport": "Soporte Inmobiliario",
+        "technologySupport": "Soporte Tecnológico",
+        "other": "Otro"
+      },
       "message": "Mensaje",
-      "submit": "Enviar Mensaje"
+      "messagePlaceholder": "Cuéntenos sobre su proyecto o requisitos...",
+      "submit": "Enviar Mensaje",
+      "successMessage": "¡Gracias! Su mensaje ha sido recibido.",
+      "errorMessage": "Hubo un error al enviar su mensaje. Por favor, inténtelo de nuevo."
     },
     "info": {
+      "title": "Póngase en Contacto",
       "email": "Correo",
       "phone": "Teléfono",
       "location": "Ubicación",
-      "hours": "Horario de Atención"
+      "locationText": "Servicios Remotos en Todo el Mundo",
+      "timezone": "Operando desde CST (UTC-6)",
+      "hours": "Horario de Atención",
+      "mondayFriday": "Lunes - Viernes",
+      "mondayFridayTime": "8:00 AM - 6:00 PM CST",
+      "saturday": "Sábado",
+      "saturdayTime": "9:00 AM - 2:00 PM CST",
+      "sunday": "Domingo",
+      "sundayTime": "Cerrado"
     },
     "booking": {
+      "buttonText": "Reservar una Llamada Directamente",
       "title": "Agende una Consulta",
-      "preferredDate": "Fecha Preferida",
-      "preferredTime": "Hora Preferida",
-      "timezone": "Su Zona Horaria",
+      "description": "Reserve una llamada con nuestro equipo. Lo agregaremos a nuestro calendario y le enviaremos una confirmación.",
+      "name": "Nombre Completo",
+      "namePlaceholder": "Juan Pérez",
+      "company": "Nombre de la Empresa",
+      "companyPlaceholder": "Su Empresa",
+      "email": "Correo Electrónico",
+      "emailPlaceholder": "juan@empresa.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+1 (555) 000-0000",
+      "service": "Servicio de Interés",
+      "servicePlaceholder": "Seleccione un servicio",
+      "serviceOptions": {
+        "executiveAssistance": "Asistencia Ejecutiva",
+        "administrativeTasks": "Tareas Administrativas",
+        "customerService": "Servicio al Cliente",
+        "realEstateSupport": "Soporte Inmobiliario",
+        "technologySupport": "Soporte Tecnológico",
+        "multipleServices": "Múltiples Servicios",
+        "notSureYet": "Aún No Estoy Seguro"
+      },
+      "hasProvider": "¿Actualmente tiene un proveedor de asistencia virtual?",
+      "hasProviderPlaceholder": "Seleccione una opción",
+      "yes": "Sí",
+      "no": "No",
+      "currentProvider": "Nombre del Proveedor Actual",
+      "currentProviderPlaceholder": "Nombre del proveedor",
+      "date": "Fecha Preferida",
+      "time": "Hora Preferida",
+      "timePlaceholder": "Seleccione la hora",
+      "timezone": "Zona Horaria",
+      "timezonePlaceholder": "America/Chicago",
+      "timezoneDetected": "Detectada",
       "notes": "Notas Adicionales",
-      "submit": "Reservar Consulta"
+      "notesPlaceholder": "¿Algo específico que le gustaría discutir?",
+      "cancel": "Cancelar",
+      "submit": "Agendar Llamada",
+      "successMessage": "¡Solicitud de reserva enviada! El evento de calendario ha sido creado. Por favor, revise su correo electrónico para la confirmación.",
+      "errorMessage": "No se pudo enviar la reserva. Por favor, inténtelo de nuevo o contáctenos directamente en hello@creedava.com"
+    },
+    "process": {
+      "title": "Cómo Trabajamos Juntos",
+      "step1": {
+        "number": "1",
+        "title": "Consulta Inicial",
+        "description": "Revisaremos su consulta en un plazo de 24 horas y programaremos una consulta para comprender sus necesidades."
+      },
+      "step2": {
+        "number": "2",
+        "title": "Propuesta Personalizada",
+        "description": "Basándonos en nuestra conversación, creamos un plan de servicio a medida que se ajusta a sus requisitos y presupuesto."
+      },
+      "step3": {
+        "number": "3",
+        "title": "Comenzar",
+        "description": "Una vez aprobado, comenzamos a trabajar juntos para optimizar sus operaciones y alcanzar sus objetivos."
+      }
     }
   },
   "footer": {

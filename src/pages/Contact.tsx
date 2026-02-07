@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { MapPin, Calendar, Phone, EnvelopeSimple, Clock, User } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ interface BookingData {
 }
 
 export default function Contact() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -114,13 +116,13 @@ export default function Contact() {
           message: ''
         });
         
-        alert(result.message || 'Thank you! Your message has been received.');
+        alert(result.message || t('contact.form.successMessage'));
       } else {
-        alert('There was an error submitting your message. Please try again.');
+        alert(t('contact.form.errorMessage'));
       }
     } catch (_error) {
       console.error('Error submitting form:', _error);
-      alert('There was an error submitting your message. Please try again.');
+      alert(t('contact.form.errorMessage'));
     }
   };
 
@@ -147,12 +149,12 @@ export default function Contact() {
         localStorage.setItem('lastBookingId', result.bookingId);
       } else {
         // Error from API
-        alert('Booking submission failed: ' + (result.message || result.error || 'Unknown error'));
+        alert(t('contact.booking.errorMessage').replace('hello@creedava.com', result.message || result.error || 'Unknown error'));
         return;
       }
     } catch (_error) {
       console.error('Booking submission error:', _error);
-      alert('Failed to submit booking. Please try again or contact us directly at hello@creedava.com');
+      alert(t('contact.booking.errorMessage'));
       return;
     }
 
@@ -174,7 +176,7 @@ export default function Contact() {
     setIsBookingOpen(false);
     
     setTimeout(() => {
-      alert('Booking request sent! The calendar event has been created. Please check your email for confirmation.');
+      alert(t('contact.booking.successMessage'));
     }, 500);
   };
 
@@ -211,11 +213,10 @@ export default function Contact() {
             className="text-center mb-16"
           >
             <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
-              Let's <span className="text-primary">Connect</span>
+              {t('contact.title').split(' ')[0]} <span className="text-primary">{t('contact.title').split(' ')[1]}</span>
             </h1>
             <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed text-muted-foreground">
-              Have questions about our services? Want to discuss your specific needs? 
-              Our team is ready to help you achieve your goals.
+              {t('contact.subtitle')}
             </p>
           </motion.div>
 
@@ -224,12 +225,12 @@ export default function Contact() {
             <div className="lg:col-span-2">
               <Card className="border-border shadow-lg">
                 <CardContent className="p-8">
-                  <h2 className="text-2xl font-bold mb-6 text-foreground">Send us a message</h2>
+                  <h2 className="text-2xl font-bold mb-6 text-foreground">{t('contact.formTitle')}</h2>
                   
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <Label htmlFor="name" className="text-foreground">Full Name *</Label>
+                        <Label htmlFor="name" className="text-foreground">{t('contact.form.name')} *</Label>
                         <Input
                           id="name"
                           name="name"
@@ -237,12 +238,12 @@ export default function Contact() {
                           onChange={handleInputChange}
                           required
                           className={`mt-2 ${contactFieldClass}`}
-                          placeholder="John Smith"
+                          placeholder={t('contact.form.namePlaceholder')}
                         />
                       </div>
                       
                       <div>
-                        <Label htmlFor="email" className="text-foreground">Email *</Label>
+                        <Label htmlFor="email" className="text-foreground">{t('contact.form.email')} *</Label>
                         <Input
                           id="email"
                           name="email"
@@ -251,39 +252,39 @@ export default function Contact() {
                           onChange={handleInputChange}
                           required
                           className={`mt-2 ${contactFieldClass}`}
-                          placeholder="john@company.com"
+                          placeholder={t('contact.form.emailPlaceholder')}
                         />
                       </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <Label htmlFor="phone" className="text-foreground">Phone</Label>
+                        <Label htmlFor="phone" className="text-foreground">{t('contact.form.phone')}</Label>
                         <Input
                           id="phone"
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
                           className={`mt-2 ${contactFieldClass}`}
-                          placeholder="+1 (555) 000-0000"
+                          placeholder={t('contact.form.phonePlaceholder')}
                         />
                       </div>
                       
                       <div>
-                        <Label htmlFor="company" className="text-foreground">Company</Label>
+                        <Label htmlFor="company" className="text-foreground">{t('contact.form.company')}</Label>
                         <Input
                           id="company"
                           name="company"
                           value={formData.company}
                           onChange={handleInputChange}
                           className={`mt-2 ${contactFieldClass}`}
-                          placeholder="Your company name"
+                          placeholder={t('contact.form.companyPlaceholder')}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="service" className="text-foreground">What services are you interested in?</Label>
+                      <Label htmlFor="service" className="text-foreground">{t('contact.form.service')}</Label>
                       <select
                         id="service"
                         name="service"
@@ -291,18 +292,18 @@ export default function Contact() {
                         onChange={handleInputChange}
                         className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background focus:border-primary focus:ring-primary"
                       >
-                        <option value="">Select a service</option>
-                        <option value="executive-assistance">Executive Assistance</option>
-                        <option value="administrative-tasks">Administrative Tasks</option>
-                        <option value="customer-service">Customer Service</option>
-                        <option value="real-estate-support">Real Estate Support</option>
-                        <option value="technology-support">Technology Support</option>
-                        <option value="other">Other</option>
+                        <option value="">{t('contact.form.servicePlaceholder')}</option>
+                        <option value="executive-assistance">{t('contact.form.serviceOptions.executiveAssistance')}</option>
+                        <option value="administrative-tasks">{t('contact.form.serviceOptions.administrativeTasks')}</option>
+                        <option value="customer-service">{t('contact.form.serviceOptions.customerService')}</option>
+                        <option value="real-estate-support">{t('contact.form.serviceOptions.realEstateSupport')}</option>
+                        <option value="technology-support">{t('contact.form.serviceOptions.technologySupport')}</option>
+                        <option value="other">{t('contact.form.serviceOptions.other')}</option>
                       </select>
                     </div>
 
                     <div>
-                      <Label htmlFor="message" className="text-foreground">Message *</Label>
+                      <Label htmlFor="message" className="text-foreground">{t('contact.form.message')} *</Label>
                       <Textarea
                         id="message"
                         name="message"
@@ -311,7 +312,7 @@ export default function Contact() {
                         required
                         rows={6}
                         className={`mt-2 ${contactFieldClass}`}
-                        placeholder="Tell us about your project or requirements..."
+                        placeholder={t('contact.form.messagePlaceholder')}
                       />
                     </div>
 
@@ -320,7 +321,7 @@ export default function Contact() {
                       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
                       size="lg"
                     >
-                      Send Message
+                      {t('contact.form.submit')}
                     </Button>
                   </form>
                 </CardContent>
@@ -334,14 +335,14 @@ export default function Contact() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <h3 className="text-xl font-semibold text-foreground mb-6">Get in Touch</h3>
+                <h3 className="text-xl font-semibold text-foreground mb-6">{t('contact.info.title')}</h3>
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
                     <div className="shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                       <EnvelopeSimple size={24} className="text-primary" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-foreground">Email</h4>
+                      <h4 className="font-semibold text-foreground">{t('contact.info.email')}</h4>
                       <a href="mailto:hello@creedava.com" className="text-primary hover:text-primary/80 transition-colors">
                         hello@creedava.com
                       </a>
@@ -353,7 +354,7 @@ export default function Contact() {
                       <Phone size={24} className="text-primary" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-foreground">Phone</h4>
+                      <h4 className="font-semibold text-foreground">{t('contact.info.phone')}</h4>
                       <a href="tel:+18447022202" className="text-primary hover:text-primary/80 transition-colors">
                         +1 (844) 702-2202
                       </a>
@@ -365,9 +366,9 @@ export default function Contact() {
                       <MapPin size={24} className="text-primary" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-foreground">Location</h4>
-                      <p className="text-muted-foreground">Remote Services Worldwide</p>
-                      <p className="text-sm text-muted-foreground mt-1">Operating from CST (UTC-6)</p>
+                      <h4 className="font-semibold text-foreground">{t('contact.info.location')}</h4>
+                      <p className="text-muted-foreground">{t('contact.info.locationText')}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{t('contact.info.timezone')}</p>
                     </div>
                   </div>
                 </div>
@@ -378,19 +379,19 @@ export default function Contact() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <h3 className="text-xl font-semibold text-foreground mb-6">Business Hours</h3>
+                <h3 className="text-xl font-semibold text-foreground mb-6">{t('contact.info.hours')}</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Monday - Friday</span>
-                    <span className="text-foreground">8:00 AM - 6:00 PM CST</span>
+                    <span className="text-muted-foreground">{t('contact.info.mondayFriday')}</span>
+                    <span className="text-foreground">{t('contact.info.mondayFridayTime')}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Saturday</span>
-                    <span className="text-foreground">9:00 AM - 2:00 PM CST</span>
+                    <span className="text-muted-foreground">{t('contact.info.saturday')}</span>
+                    <span className="text-foreground">{t('contact.info.saturdayTime')}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Sunday</span>
-                    <span className="text-foreground">Closed</span>
+                    <span className="text-muted-foreground">{t('contact.info.sunday')}</span>
+                    <span className="text-foreground">{t('contact.info.sundayTime')}</span>
                   </div>
                 </div>
               </motion.div>
@@ -404,21 +405,21 @@ export default function Contact() {
                     size="lg"
                   >
                     <Calendar className="mr-2" size={20} />
-                    Book a Call Directly
+                    {t('contact.booking.buttonText')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[500px]">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl">Schedule a Consultation</DialogTitle>
+                    <DialogTitle className="text-2xl">{t('contact.booking.title')}</DialogTitle>
                     <DialogDescription>
-                      Book a call with our team. We'll add it to our calendar and send you confirmation.
+                      {t('contact.booking.description')}
                     </DialogDescription>
                   </DialogHeader>
                   
                   <form onSubmit={handleBookingSubmit} className="space-y-4 mt-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="booking-name">Full Name *</Label>
+                        <Label htmlFor="booking-name">{t('contact.booking.name')} *</Label>
                         <div className="relative mt-2">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                           <Input
@@ -428,13 +429,13 @@ export default function Contact() {
                             onChange={handleBookingChange}
                             required
                             className={`pl-10 ${contactFieldClass}`}
-                            placeholder="John Smith"
+                            placeholder={t('contact.booking.namePlaceholder')}
                           />
                         </div>
                       </div>
 
                       <div>
-                        <Label htmlFor="booking-company">Company Name *</Label>
+                        <Label htmlFor="booking-company">{t('contact.booking.company')} *</Label>
                         <Input
                           id="booking-company"
                           name="company"
@@ -442,14 +443,14 @@ export default function Contact() {
                           onChange={handleBookingChange}
                           required
                           className={`mt-2 ${contactFieldClass}`}
-                          placeholder="Your Company"
+                          placeholder={t('contact.booking.companyPlaceholder')}
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="booking-email">Email *</Label>
+                        <Label htmlFor="booking-email">{t('contact.booking.email')} *</Label>
                         <div className="relative mt-2">
                           <EnvelopeSimple className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                           <Input
@@ -460,13 +461,13 @@ export default function Contact() {
                             onChange={handleBookingChange}
                             required
                             className={`pl-10 ${contactFieldClass}`}
-                            placeholder="john@company.com"
+                            placeholder={t('contact.booking.emailPlaceholder')}
                           />
                         </div>
                       </div>
 
                       <div>
-                        <Label htmlFor="booking-phone">Phone *</Label>
+                        <Label htmlFor="booking-phone">{t('contact.booking.phone')} *</Label>
                         <div className="relative mt-2">
                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                           <Input
@@ -477,14 +478,14 @@ export default function Contact() {
                             onChange={handleBookingChange}
                             required
                             className={`pl-10 ${contactFieldClass}`}
-                            placeholder="+1 (555) 000-0000"
+                            placeholder={t('contact.booking.phonePlaceholder')}
                           />
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="booking-service">Service Interested In *</Label>
+                      <Label htmlFor="booking-service">{t('contact.booking.service')} *</Label>
                       <select
                         id="booking-service"
                         name="service"
@@ -493,19 +494,19 @@ export default function Contact() {
                         required
                         className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:border-primary focus:ring-primary"
                       >
-                        <option value="">Select a service</option>
-                        <option value="Executive Assistance">Executive Assistance</option>
-                        <option value="Administrative Tasks">Administrative Tasks</option>
-                        <option value="Customer Service">Customer Service</option>
-                        <option value="Real Estate Support">Real Estate Support</option>
-                        <option value="Technology Support">Technology Support</option>
-                        <option value="Multiple Services">Multiple Services</option>
-                        <option value="Not Sure Yet">Not Sure Yet</option>
+                        <option value="">{t('contact.booking.servicePlaceholder')}</option>
+                        <option value="Executive Assistance">{t('contact.booking.serviceOptions.executiveAssistance')}</option>
+                        <option value="Administrative Tasks">{t('contact.booking.serviceOptions.administrativeTasks')}</option>
+                        <option value="Customer Service">{t('contact.booking.serviceOptions.customerService')}</option>
+                        <option value="Real Estate Support">{t('contact.booking.serviceOptions.realEstateSupport')}</option>
+                        <option value="Technology Support">{t('contact.booking.serviceOptions.technologySupport')}</option>
+                        <option value="Multiple Services">{t('contact.booking.serviceOptions.multipleServices')}</option>
+                        <option value="Not Sure Yet">{t('contact.booking.serviceOptions.notSureYet')}</option>
                       </select>
                     </div>
 
                     <div>
-                      <Label htmlFor="booking-hasProvider">Do you currently have a VA provider? *</Label>
+                      <Label htmlFor="booking-hasProvider">{t('contact.booking.hasProvider')} *</Label>
                       <select
                         id="booking-hasProvider"
                         name="hasProvider"
@@ -514,29 +515,29 @@ export default function Contact() {
                         required
                         className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:border-primary focus:ring-primary"
                       >
-                        <option value="">Select an option</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
+                        <option value="">{t('contact.booking.hasProviderPlaceholder')}</option>
+                        <option value="Yes">{t('contact.booking.yes')}</option>
+                        <option value="No">{t('contact.booking.no')}</option>
                       </select>
                     </div>
 
                     {bookingData.hasProvider === 'Yes' && (
                       <div>
-                        <Label htmlFor="booking-currentProvider">Current Provider Name</Label>
+                        <Label htmlFor="booking-currentProvider">{t('contact.booking.currentProvider')}</Label>
                         <Input
                           id="booking-currentProvider"
                           name="currentProvider"
                           value={bookingData.currentProvider}
                           onChange={handleBookingChange}
                           className={`mt-2 ${contactFieldClass}`}
-                          placeholder="Provider name"
+                          placeholder={t('contact.booking.currentProviderPlaceholder')}
                         />
                       </div>
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="booking-date">Preferred Date *</Label>
+                        <Label htmlFor="booking-date">{t('contact.booking.date')} *</Label>
                         <div className="relative mt-2">
                           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                           <Input
@@ -553,7 +554,7 @@ export default function Contact() {
                       </div>
 
                       <div>
-                        <Label htmlFor="booking-time">Preferred Time *</Label>
+                        <Label htmlFor="booking-time">{t('contact.booking.time')} *</Label>
                         <div className="relative mt-2">
                           <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" size={18} />
                           <select
@@ -564,7 +565,7 @@ export default function Contact() {
                             required
                             className="w-full pl-10 pr-3 py-2 border border-input rounded-md bg-background text-foreground focus:border-primary focus:ring-primary"
                           >
-                            <option value="">Select time</option>
+                            <option value="">{t('contact.booking.timePlaceholder')}</option>
                             {timeSlots.map(slot => (
                               <option key={slot.value} value={slot.value}>
                                 {slot.label}
@@ -576,20 +577,20 @@ export default function Contact() {
                     </div>
 
                     <div>
-                      <Label htmlFor="booking-timezone">Timezone</Label>
+                      <Label htmlFor="booking-timezone">{t('contact.booking.timezone')}</Label>
                       <Input
                         id="booking-timezone"
                         name="timezone"
                         value={bookingData.timezone}
                         onChange={handleBookingChange}
                         className={`mt-2 ${contactFieldClass}`}
-                        placeholder="America/Chicago"
+                        placeholder={t('contact.booking.timezonePlaceholder')}
                       />
-                      <p className="text-xs text-muted-foreground mt-1">Detected: {Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t('contact.booking.timezoneDetected')}: {Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
                     </div>
 
                     <div>
-                      <Label htmlFor="booking-notes">Additional Notes</Label>
+                      <Label htmlFor="booking-notes">{t('contact.booking.notes')}</Label>
                       <Textarea
                         id="booking-notes"
                         name="notes"
@@ -597,7 +598,7 @@ export default function Contact() {
                         onChange={handleBookingChange}
                         rows={3}
                         className={`mt-2 ${contactFieldClass}`}
-                        placeholder="Anything specific you'd like to discuss?"
+                        placeholder={t('contact.booking.notesPlaceholder')}
                       />
                     </div>
 
@@ -608,13 +609,13 @@ export default function Contact() {
                         onClick={() => setIsBookingOpen(false)}
                         className="flex-1"
                       >
-                        Cancel
+                        {t('contact.booking.cancel')}
                       </Button>
                       <Button 
                         type="submit" 
                         className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                       >
-                        Schedule Call
+                        {t('contact.booking.submit')}
                       </Button>
                     </div>
                   </form>
@@ -634,25 +635,25 @@ export default function Contact() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-3xl font-bold text-foreground mb-12">
-              How We <span className="text-primary">Work Together</span>
+              {t('contact.process.title').split(' ').slice(0, -2).join(' ')} <span className="text-primary">{t('contact.process.title').split(' ').slice(-2).join(' ')}</span>
             </h2>
             
             <div className="grid md:grid-cols-3 gap-8">
               {[
                 {
-                  step: '1',
-                  title: 'Initial Consultation',
-                  description: "We'll review your inquiry within 24 hours and schedule a consultation to understand your needs."
+                  step: t('contact.process.step1.number'),
+                  title: t('contact.process.step1.title'),
+                  description: t('contact.process.step1.description')
                 },
                 {
-                  step: '2', 
-                  title: 'Custom Proposal',
-                  description: 'Based on our discussion, we create a tailored service plan that fits your requirements and budget.'
+                  step: t('contact.process.step2.number'), 
+                  title: t('contact.process.step2.title'),
+                  description: t('contact.process.step2.description')
                 },
                 {
-                  step: '3',
-                  title: 'Get Started',
-                  description: 'Once approved, we begin working together to streamline your operations and achieve your goals.'
+                  step: t('contact.process.step3.number'),
+                  title: t('contact.process.step3.title'),
+                  description: t('contact.process.step3.description')
                 }
               ].map((item) => (
                 <motion.div
