@@ -153,7 +153,7 @@ export function About() {
             </div>
 
             <div className="flex items-start gap-4 pt-8">
-              <Target className="text-accent flex-shrink-0 mt-1" size={32} />
+              <Target className="text-accent shrink-0 mt-1" size={32} />
               <div>
                 <h2 className="text-2xl font-bold text-foreground mb-4">{t('about.missionTitle')}</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
@@ -163,7 +163,7 @@ export function About() {
             </div>
 
             <div className="flex items-start gap-4">
-              <Handshake className="text-accent flex-shrink-0 mt-1" size={32} />
+              <Handshake className="text-accent shrink-0 mt-1" size={32} />
               <div>
                 <h2 className="text-2xl font-bold text-foreground mb-4">{t('about.approachTitle')}</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
@@ -279,7 +279,7 @@ export function About() {
                       transition={{ delay: index * 0.1 }}
                       className="flex items-start gap-3"
                     >
-                      <CheckCircle className="text-accent flex-shrink-0 mt-0.5" size={24} weight="fill" />
+                      <CheckCircle className="text-accent shrink-0 mt-0.5" size={24} weight="fill" />
                       <span className="text-foreground">{item}</span>
                     </motion.div>
                   ))}
