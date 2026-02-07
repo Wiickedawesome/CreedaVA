@@ -7,6 +7,7 @@ const { app } = require('@azure/functions');
 require('../getAnalytics');
 require('../trackEvent');
 require('../submitContact');
+require('../submitBooking');
 require('../adminApi');
 require('../health');
 

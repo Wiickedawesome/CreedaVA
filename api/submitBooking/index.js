@@ -49,19 +49,6 @@ app.http('submitBooking', {
       const timestamp = new Date().toISOString();
       const bookingId = `booking_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      // Create booking record
-      // Create detailed booking record
-      const bookingRecord = {
-        id: bookingId,
-        type: 'booking',
-        ...booking,
-        status: 'pending',
-        source: 'website',
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        emailSent: false
-      };
-
       // Format the booking details for email
       const bookingDetails = `
 New Consultation Booking Received
@@ -92,61 +79,20 @@ Submitted: ${new Date(timestamp).toLocaleString()}
 Please add this to your calendar and send a confirmation email to ${booking.email}
       `.trim();
 
+      // Create detailed booking record
+      const bookingRecord = {
+        id: bookingId,
+        type: 'booking',
+        ...booking,
+        status: 'pending',
+        source: 'website',
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        emailSent: false
+      };
+
       // Save to Cosmos DB if configured
-      if (bookingsContainer) {
-        try {
-          await bookingsContainer.items.create(bookingRecord);
-          context.log('Booking saved to database:', bookingId);
-        } catch (dbError) {
-          context.error('Database save failed:', dbError);
-          // Continue even if DB save fails
-        }
-      }
-
-      // Return success response
-      return {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': process.env.APP_ORIGIN || '*',
-          'Access-Control-Allow-Credentials': 'true'
-        },
-        body: JSON.stringify({
-          success: true,
-          bookingId: bookingId,
-          calendarEventId: calendarEventId,
-          calendarCreated: !!calendarEventId,
-          message: calendarEventId 
-            ? 'Booking confirmed! Calendar invite sent to your email.'
-            : 'Booking received! We will send calendar invite shortly.',
-          calendarError: calendarError || undefined
-        })
-      };
-
-    } catch (error) {
-      context.error('Booking submission error:', error);
-      return {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': process.env.APP_ORIGIN || '*',
-          'Access-Control-Allow-Credentials': 'true'
-        },
-        body: JSON.stringify({
-          error: 'Internal server error',
-          message: error.message
-        })
-      };
-    }
-  }
-});
-
-// Handle CORS preflight
-app.http('submitBookingOptions', {
-  methods: ['OPTIONS'],
-  authLevel: 'anonymous',
-  route: 'submitBooking',
-  handlet dbSaved = false;
+      let dbSaved = false;
       if (bookingsContainer) {
         try {
           await bookingsContainer.items.create(bookingRecord);
@@ -225,4 +171,42 @@ app.http('submitBookingOptions', {
           bookingId: bookingId,
           saved: dbSaved,
           message: `Booking confirmed! We will send you a calendar invite at ${booking.email} and contact you to confirm your ${booking.service} consultation.`,
-          scheduledFor: `${booking.date} at ${booking.time} ${booking.timezone}`
+          scheduledFor: `${booking.date} at ${booking.time} ${booking.timezone || 'America/Belize'}`
+        })
+      };
+
+    } catch (error) {
+      context.error('Booking submission error:', error);
+      return {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': process.env.APP_ORIGIN || '*',
+          'Access-Control-Allow-Credentials': 'true'
+        },
+        body: JSON.stringify({
+          error: 'Internal server error',
+          message: error.message
+        })
+      };
+    }
+  }
+});
+
+// Handle CORS preflight
+app.http('submitBookingOptions', {
+  methods: ['OPTIONS'],
+  authLevel: 'anonymous',
+  route: 'submitBooking',
+  handler: async (request, context) => {
+    return {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': process.env.APP_ORIGIN || '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Credentials': 'true'
+      }
+    };
+  }
+});

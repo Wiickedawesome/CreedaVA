@@ -6,6 +6,7 @@ module.exports = {
   ...require('./getAnalytics'),
   ...require('./trackEvent'), 
   ...require('./submitContact'),
+  ...require('./submitBooking'),
   ...require('./adminApi'),
   ...require('./health')
 };
