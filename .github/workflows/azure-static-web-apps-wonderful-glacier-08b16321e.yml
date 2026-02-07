@@ -69,8 +69,8 @@ jobs:
             echo "Using preview URL fallback: $PREVIEW_URL_FALLBACK"
             ./scripts/verify-deploy.sh --remote "$PREVIEW_URL_FALLBACK"
           else
-            echo "No preview URL available from action outputs; running production verification"
-            ./scripts/verify-deploy.sh --remote https://www.creedava.com
+            echo "No preview URL available from action outputs; failing to avoid accidental verification against production"
+            exit 1
           fi
 
   close_pull_request_job:
