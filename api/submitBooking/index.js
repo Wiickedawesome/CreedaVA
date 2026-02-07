@@ -8,13 +8,11 @@ const databaseId = process.env.COSMOS_DATABASE || 'creedava';
 
 let cosmosClient;
 let database;
-let bookingsContainer;
 
 // Only initialize if Cosmos is configured
 if (endpoint && key) {
   cosmosClient = new CosmosClient({ endpoint, key });
   database = cosmosClient.database(databaseId);
-  bookingsContainer = database.container('bookings');
 }
 
 app.http('submitBooking', {
@@ -79,36 +77,13 @@ Submitted: ${new Date(timestamp).toLocaleString()}
 Please add this to your calendar and send a confirmation email to ${booking.email}
       `.trim();
 
-      // Create detailed booking record
-      const bookingRecord = {
-        id: bookingId,
-        type: 'booking',
-        ...booking,
-        status: 'pending',
-        source: 'website',
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        emailSent: false
-      };
-
-      // Save to Cosmos DB if configured
+      // Auto-create lead from booking (primary storage)
+      let leadId = null;
       let dbSaved = false;
-      if (bookingsContainer) {
-        try {
-          await bookingsContainer.items.create(bookingRecord);
-          dbSaved = true;
-          context.log('Booking saved to database:', bookingId);
-        } catch (dbError) {
-          context.error('Database save failed:', dbError);
-          // Continue even if DB save fails
-        }
-      }
-
-      // Auto-create lead from booking
       try {
         const leadsContainer = database?.container('leads');
         if (leadsContainer) {
-          const leadId = `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          leadId = `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           await leadsContainer.items.create({
             id: leadId,
             type: 'leads',
@@ -123,11 +98,12 @@ Please add this to your calendar and send a confirmation email to ${booking.emai
             bookingId: bookingId,
             scheduledDate: booking.date,
             scheduledTime: booking.time,
+            timezone: booking.timezone || 'America/Belize',
             createdAt: timestamp,
             updatedAt: timestamp
           });
-          context.log('Lead auto-created from booking:', leadId);
-          bookingRecord.leadId = leadId;
+          dbSaved = true;
+          context.log('Lead created from booking:', leadId);
         }
       } catch (leadError) {
         context.error('Lead creation failed:', leadError);
@@ -149,9 +125,9 @@ Please add this to your calendar and send a confirmation email to ${booking.emai
             subject: `New Booking: ${booking.name} - ${booking.date} ${booking.time}`,
             timestamp: timestamp,
             source: 'booking-form',
-            bookingId: bookingId
+            bookingId: bookingId,
+            leadId: leadId
           });
-          bookingRecord.emailSent = true;
           context.log('Booking notification sent to contacts');
         }
       } catch (contactError) {
