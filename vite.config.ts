@@ -27,9 +27,24 @@ export default defineConfig(({ mode }) => {
       }
     },
     build: {
-    // Optimize bundle - TEMPORARILY DISABLE MINIFICATION FOR PRODUCTION FIX
+    // Optimize bundle
     target: 'esnext',
-    minify: false, // Disabled to fix production error
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.logs in production
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 2,
+        dead_code: true
+      },
+      mangle: {
+        safari10: true
+      },
+      format: {
+        comments: false // Remove all comments
+      }
+    },
     // Code splitting optimization
     rollupOptions: {
       output: {
