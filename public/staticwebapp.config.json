@@ -49,6 +49,20 @@
       }
     },
     {
+      "route": "/assets/js/*.js",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Type": "application/javascript; charset=utf-8"
+      }
+    },
+    {
+      "route": "/assets/css/*.css",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Type": "text/css; charset=utf-8"
+      }
+    },
+    {
       "route": "/assets/*",
       "headers": {
         "Cache-Control": "public, max-age=31536000, immutable"
@@ -58,7 +72,7 @@
       "route": "*.js",
       "headers": {
         "Cache-Control": "public, max-age=31536000, immutable",
-        "Content-Type": "text/javascript; charset=utf-8"
+        "Content-Type": "application/javascript; charset=utf-8"
       }
     },
     {
@@ -84,10 +98,13 @@
   },
   "mimeTypes": {
     ".webp": "image/webp",
-    ".js": "text/javascript; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".mjs": "application/javascript; charset=utf-8",
     ".css": "text/css; charset=utf-8",
-    ".json": "application/json",
+    ".json": "application/json; charset=utf-8",
     ".xml": "application/xml; charset=utf-8",
-    ".txt": "text/plain; charset=utf-8"
+    ".txt": "text/plain; charset=utf-8",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2"
   }
 }
