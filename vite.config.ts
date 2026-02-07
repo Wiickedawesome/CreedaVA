@@ -51,44 +51,16 @@ export default defineConfig(({ mode }) => {
     // Code splitting optimization
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          // Core React libraries
-          if (id.includes('node_modules/react') || 
-              id.includes('node_modules/react-dom') || 
-              id.includes('node_modules/react-router')) {
-            return 'react-vendor'
-          }
-          
-          // UI libraries
-          if (id.includes('node_modules/framer-motion')) {
-            return 'framer-motion'
-          }
-          
-          if (id.includes('node_modules/@phosphor-icons')) {
-            return 'icons'
-          }
-          
-          // Radix UI components (grouped together)
-          if (id.includes('node_modules/@radix-ui')) {
-            return 'radix-ui'
-          }
-          
-          // i18n
-          if (id.includes('node_modules/i18next') || 
-              id.includes('node_modules/react-i18next')) {
-            return 'i18n'
-          }
-          
-          // Admin-only dependencies
-          if (id.includes('/admin/') || 
-              id.includes('node_modules/@tanstack/react-table')) {
-            return 'admin'
-          }
-          
-          // Other large node_modules
-          if (id.includes('node_modules')) {
-            return 'vendor'
-          }
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion', '@phosphor-icons/react'],
+          'radix-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-slot'
+          ]
         },
         // Optimize asset file names for better caching
         assetFileNames: (assetInfo) => {
@@ -132,13 +104,7 @@ export default defineConfig(({ mode }) => {
       '@phosphor-icons/react',
       'date-fns'
     ],
-    exclude: ['@azure/cosmos'], // Don't optimize backend dependency
-    esbuildOptions: {
-      target: 'esnext',
-      supported: {
-        'top-level-await': true
-      }
-    }
+    exclude: ['sharp'] // Don't optimize dev dependency
     },
     // Enhanced server configuration for development
     server: {
