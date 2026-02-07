@@ -35,11 +35,14 @@ export default defineConfig(({ mode }) => {
         drop_console: true, // Remove console.logs in production
         drop_debugger: true,
         pure_funcs: ['console.log', 'console.info', 'console.debug'],
-        passes: 2,
-        dead_code: true
+        passes: 3, // Increased compression passes
+        dead_code: true,
+        unsafe_arrows: true,
+        unsafe_methods: true
       },
       mangle: {
-        safari10: true
+        safari10: true,
+        toplevel: true
       },
       format: {
         comments: false // Remove all comments
