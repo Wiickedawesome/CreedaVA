@@ -27,56 +27,50 @@ export default defineConfig(({ mode }) => {
       }
     },
     build: {
-    // Optimize bundle
+    // Optimize bundle - TEMPORARILY DISABLE MINIFICATION FOR PRODUCTION FIX
     target: 'esnext',
-    minify: 'terser', // Re-enable minification with safe settings
-    terserOptions: {
-      compress: {
-        drop_console: false,
-        drop_debugger: true,
-      },
-      mangle: {
-        safari10: true,
-      },
-    },
-    // Code splitting optimization - FIXED CHUNK DEPENDENCY ORDER
+    minify: false, // Disabled to fix production error
+    // Code splitting optimization
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // CRITICAL: React must be first - no other chunks should import it
+          // Core React libraries
           if (id.includes('node_modules/react') || 
               id.includes('node_modules/react-dom') || 
-              id.includes('node_modules/react-router') ||
-              id.includes('node_modules/scheduler')) {
+              id.includes('node_modules/react-router')) {
             return 'react-vendor'
           }
           
-          // i18n - independent of React rendering
-          if (id.includes('node_modules/i18next')) {
-            return 'i18n'
-          }
-          
-          // React-based UI libraries (depend on react-vendor)
+          // UI libraries
           if (id.includes('node_modules/framer-motion')) {
             return 'framer-motion'
           }
           
-          if (id.includes('node_modules/@phosphor-icons/react')) {
+          if (id.includes('node_modules/@phosphor-icons')) {
             return 'icons'
           }
           
+          // Radix UI components (grouped together)
           if (id.includes('node_modules/@radix-ui')) {
             return 'radix-ui'
           }
           
-          // Admin pages bundle (React-based)
+          // i18n
+          if (id.includes('node_modules/i18next') || 
+              id.includes('node_modules/react-i18next')) {
+            return 'i18n'
+          }
+          
+          // Admin-only dependencies
           if (id.includes('/admin/') || 
               id.includes('node_modules/@tanstack/react-table')) {
             return 'admin'
           }
           
-          // REMOVED catch-all vendor chunk to prevent circular dependencies
-          // Small utilities will inline into main bundle
+          // Other large node_modules
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
         },
         // Optimize asset file names for better caching
         assetFileNames: (assetInfo) => {
