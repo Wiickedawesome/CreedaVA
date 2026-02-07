@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { CreedaLogo } from '@/components/CreedaLogo'
 
 const isDevMode = import.meta.env.VITE_DEV_MODE === 'true'
 

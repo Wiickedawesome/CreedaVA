@@ -71,7 +71,10 @@ export function AdminLayout() {
 
   const handleSignOut = async () => {
     await signOut()
-    navigate('/login')
+    // Force navigate to login with replace to prevent back button issues
+    navigate('/login', { replace: true })
+    // Force reload to ensure auth state is completely cleared
+    window.location.href = '/login'
   }
 
   const userInitials = user?.email?.substring(0, 2).toUpperCase() || 'U'
