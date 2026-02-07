@@ -45,14 +45,7 @@ app.http('trackEvent', {
       const body = await request.json();
       const { eventType, eventData, page, userAgent, referrer } = body;
 
-      // Filter out admin pages - don't track internal pages
-      if (page && page.startsWith('/admin')) {
-        return {
-          status: 200,
-          headers: corsHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ success: true, message: 'Admin page not tracked' })
-        };
-      }
+      // Track all pages including admin (like Google Analytics)
 
       // Extract geo data from headers (provided by Azure/CDN/hosting platform)
       // Try multiple header sources for IP address

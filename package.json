@@ -41,7 +41,10 @@
         "setup:db": "cd api && NODE_TLS_REJECT_UNAUTHORIZED=0 node create-containers.js",
         "start:cosmos": "bash scripts/start-cosmos-emulator.sh",
         "stop:cosmos": "bash scripts/stop-cosmos-emulator.sh",
-        "smoke:auto": "bash scripts/run-smoke-with-emulator.sh"
+        "smoke:auto": "bash scripts/run-smoke-with-emulator.sh",
+        "audit": "node scripts/deep-audit.cjs",
+        "audit:config": "bash scripts/audit-config.sh",
+        "audit:all": "npm run audit:config && npm run audit"
     },
     "dependencies": {
         "@azure/cosmos": "^4.2.1",

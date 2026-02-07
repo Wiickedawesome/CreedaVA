@@ -130,6 +130,73 @@ function trackScrollDepth() {
 // Track scroll depth every 500ms
 if (typeof window !== 'undefined') {
   setInterval(trackScrollDepth, 500);
+  
+  // Track scroll milestones (like GA4)
+  const scrollMilestones = [25, 50, 75, 90];
+  const trackedScrollMilestones = new Set<number>();
+  
+  const checkScrollMilestones = () => {
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollTop = window.scrollY || window.pageYOffset;
+    const scrollPercent = Math.round(((scrollTop + windowHeight) / documentHeight) * 100);
+    
+    scrollMilestones.forEach(milestone => {
+      if (scrollPercent >= milestone && !trackedScrollMilestones.has(milestone)) {
+        trackedScrollMilestones.add(milestone);
+        trackCosmosEvent({
+          eventType: 'scroll',
+          eventData: {
+            percent_scrolled: milestone,
+          },
+        });
+      }
+    });
+  };
+  
+  window.addEventListener('scroll', checkScrollMilestones, { passive: true });
+  
+  // Track user engagement after 10 seconds (like GA4)
+  let engagementTracked = false;
+  setTimeout(() => {
+    if (!engagementTracked) {
+      engagementTracked = true;
+      trackCosmosEvent({
+        eventType: 'user_engagement',
+        eventData: {
+          engagement_time_msec: 10000,
+        },
+      });
+    }
+  }, 10000);
+}
+
+// Initialize session tracking on load
+if (typeof window !== 'undefined') {
+  // Track session_start on new sessions
+  const sessionId = getOrCreateSessionId();
+  const sessionStart = sessionStorage.getItem('sessionStartTracked');
+  
+  if (!sessionStart) {
+    sessionStorage.setItem('sessionStartTracked', 'true');
+    trackCosmosEvent({
+      eventType: 'session_start',
+      eventData: {
+        session_id: sessionId,
+      },
+    });
+  }
+  
+  // Track first_visit for new visitors
+  const hasVisited = localStorage.getItem('hasVisited');
+  if (!hasVisited) {
+    trackCosmosEvent({
+      eventType: 'first_visit',
+      eventData: {
+        first_visit_time: new Date().toISOString(),
+      },
+    });
+  }
 }
 
 /**
@@ -156,11 +223,7 @@ export function trackPageView(pagePath?: string) {
   pageStartTime = Date.now();
   maxScrollDepth = 0;
   
-  // Don't track admin pages, login, or internal routes
-  if (path.startsWith('/admin') || path.startsWith('/login') || path.startsWith('/signup') || path === '/env-check') {
-    return;
-  }
-  
+  // Track all pages (like Google Analytics)
   trackCosmosEvent({
     eventType: 'page_view',
     page: path,
@@ -199,11 +262,30 @@ export function trackButtonClick(buttonName: string, context?: Record<string, an
 }
 
 /**
+ * Track form start (when user first interacts with form)
+ */
+export function trackFormStart(formName: string, context?: Record<string, any>) {
+  trackCosmosEvent({
+    eventType: 'form_start',
+    eventData: {
+      formName,
+      ...context,
+    },
+  });
+  
+  // Send to GA
+  sendToGA('form_start', {
+    form_name: formName,
+    ...context,
+  });
+}
+
+/**
  * Track form submissions
  */
 export function trackFormSubmission(formName: string, success: boolean, context?: Record<string, any>) {
   trackCosmosEvent({
-    eventType: 'form_submission',
+    eventType: 'form_submit',
     eventData: {
       formName,
       success,
