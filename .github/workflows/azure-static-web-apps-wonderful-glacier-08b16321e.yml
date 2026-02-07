@@ -51,9 +51,27 @@ jobs:
           app_location: "/" # App source code path
           api_location: "" # No API - deployed separately
           output_location: "dist" # Built app content directory (Vite builds to dist/)
-          skip_api_build: true
+          skip_api_build: false
           github_id_token: ${{ steps.idtoken.outputs.result }}
           ###### End of Repository/Build Configurations ######
+
+      - name: Post-deploy verification (preview/production)
+        if: success()
+        run: |
+          chmod +x ./scripts/verify-deploy.sh
+          # Try to obtain preview URL from action outputs, fall back to production
+          PREVIEW_URL="${{ steps.builddeploy.outputs.deployment_url }}"
+          PREVIEW_URL_FALLBACK="${{ steps.builddeploy.outputs.deployment_uri }}"
+          if [ -n "$PREVIEW_URL" ]; then
+            echo "Using preview URL: $PREVIEW_URL"
+            ./scripts/verify-deploy.sh --remote "$PREVIEW_URL"
+          elif [ -n "$PREVIEW_URL_FALLBACK" ]; then
+            echo "Using preview URL fallback: $PREVIEW_URL_FALLBACK"
+            ./scripts/verify-deploy.sh --remote "$PREVIEW_URL_FALLBACK"
+          else
+            echo "No preview URL available from action outputs; running production verification"
+            ./scripts/verify-deploy.sh --remote https://www.creedava.com
+          fi
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

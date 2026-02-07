@@ -31,18 +31,18 @@ export default defineConfig(({ mode }) => {
     target: 'esnext',
     minify: 'terser',
     terserOptions: {
+      // Use conservative terser options to avoid unsafe scope transformations
       compress: {
         drop_console: true, // Remove console.logs in production
         drop_debugger: true,
         pure_funcs: ['console.log', 'console.info', 'console.debug'],
-        passes: 3, // Increased compression passes
-        dead_code: true,
-        unsafe_arrows: true,
-        unsafe_methods: true
+        passes: 2, // Moderate compression passes
+        dead_code: true
+        // NOTE: avoid unsafe_arrows/unsafe_methods which can break scope
       },
       mangle: {
         safari10: true,
-        toplevel: true
+        toplevel: false // avoid toplevel mangling to prevent variable scope issues
       },
       format: {
         comments: false // Remove all comments
@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'react-vendor': ['react', 'react-dom', 'scheduler', 'react-router-dom'],
           'ui-vendor': ['framer-motion', '@phosphor-icons/react'],
           'radix-ui': [
             '@radix-ui/react-dialog',
