@@ -11,6 +11,7 @@ import { initializeGA } from './lib/analytics'
 
 import "./main.css"
 import "./styles/theme.css"
+import "./styles/mobile-performance.css"
 import "./index.css"
 
 // Initialize Google Analytics if configured
