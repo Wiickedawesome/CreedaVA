@@ -16,13 +16,16 @@ const languages = [
 export function LanguageSwitcher() {
   const { i18n } = useTranslation()
 
+  // i18n.language can be a full locale like "en-US"; extract the base code
+  const resolvedLang = (i18n.language || 'en').split('-')[0]
+
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng)
     // Update HTML lang attribute for SEO
     document.documentElement.lang = lng
   }
 
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0]
+  const currentLanguage = languages.find(lang => lang.code === resolvedLang) || languages[0]
 
   return (
     <DropdownMenu>
@@ -37,11 +40,11 @@ export function LanguageSwitcher() {
           <DropdownMenuItem
             key={language.code}
             onClick={() => changeLanguage(language.code)}
-            className={`cursor-pointer ${i18n.language === language.code ? 'bg-accent font-medium' : ''}`}
+            className={`cursor-pointer ${resolvedLang === language.code ? 'bg-accent font-medium' : ''}`}
           >
             <span className="flex items-center justify-between w-full">
               <span>{language.nativeName}</span>
-              {i18n.language === language.code && (
+              {resolvedLang === language.code && (
                 <span className="ml-2 text-xs">✓</span>
               )}
             </span>
