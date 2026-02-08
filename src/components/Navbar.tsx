@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { List } from '@phosphor-icons/react'
+import { Globe } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export const Navbar = memo(() => {
@@ -101,6 +102,10 @@ export const Navbar = memo(() => {
                       {link.label}
                     </Link>
                   ))}
+                  <div className="flex items-center justify-center gap-2 mt-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <LanguageSwitcher />
+                  </div>
                   <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
                     <Link to="/contact" onClick={handleMenuClose}>
                       {t('hero.cta')}
