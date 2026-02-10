@@ -1,5 +1,5 @@
 // Optimized service worker for caching static assets
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_NAME = `creedava-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `creedava-runtime-${CACHE_VERSION}`;
 
@@ -49,21 +49,42 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
+  // Navigation requests (HTML pages) use network-first strategy
+  // to ensure users always get the latest deployment
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Cache the fresh HTML for offline fallback
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Offline: fall back to cached HTML
+          return caches.match(event.request).then((cached) => {
+            return cached || caches.match('/');
+          });
+        })
+    );
+    return;
+  }
+
+  // Static assets (JS, CSS, images, fonts) use cache-first strategy
+  // Vite hashes filenames, so cached versions are always valid
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // Return cached version if available
       if (cachedResponse) {
         return cachedResponse;
       }
 
-      // Otherwise fetch from network
       return fetch(event.request).then((response) => {
-        // Don't cache if not successful
         if (!response || response.status !== 200 || response.type === 'error') {
           return response;
         }
 
-        // Cache static assets (JS, CSS, images, fonts)
         if (
           event.request.url.match(/\.(js|css|webp|png|jpg|jpeg|svg|woff|woff2)$/) ||
           event.request.url.includes('/assets/')

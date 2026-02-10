@@ -12,6 +12,7 @@ i18n
       en: { translation: en },
       es: { translation: es }
     },
+    supportedLngs: ['en', 'es'],
     fallbackLng: 'en',
     debug: false,
     interpolation: {
@@ -22,5 +23,14 @@ i18n
       caches: ['localStorage']
     }
   })
+
+// Sync HTML lang attribute with the resolved language
+i18n.on('languageChanged', (lng) => {
+  document.documentElement.lang = lng
+})
+// Set initial lang attribute
+if (i18n.language) {
+  document.documentElement.lang = i18n.language
+}
 
 export default i18n
