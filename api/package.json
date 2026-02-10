@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@azure/cosmos": "^4.0.0",
-    "@azure/functions": "^4.0.0",
+    "@azure/functions": "^4.11.2",
     "jose": "^5.10.0",
     "node-fetch": "^2.7.0"
   }
