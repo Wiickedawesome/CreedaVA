@@ -30,7 +30,7 @@ jobs:
 
       - name: Report failure
         if: steps.run-verify.outputs.verify_status != '0'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           VERIFY_STATUS: ${{ steps.run-verify.outputs.verify_status }}
         with:
