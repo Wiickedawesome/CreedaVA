@@ -4,13 +4,28 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+    groups:
+      frontend-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 5
 
   - package-ecosystem: "npm"
     directory: "/api"
     schedule:
       interval: "weekly"
+      day: "monday"
+    groups:
+      api-deps:
+        patterns: ["*"]
+    open-pull-requests-limit: 5
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+    groups:
+      actions:
+        patterns: ["*"]
+    open-pull-requests-limit: 3
