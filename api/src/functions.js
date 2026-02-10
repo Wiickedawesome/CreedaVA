@@ -10,5 +10,7 @@ require('../submitContact');
 require('../submitBooking');
 require('../adminApi');
 require('../health');
+require('../getPublicBlog');
+require('../diagnose');
 
 console.log('✅ Azure Functions initialized and registered');

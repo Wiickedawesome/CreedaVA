@@ -4,7 +4,6 @@ User-agent: *
 Disallow: /admin/*
 Disallow: /admin
 Disallow: /login
-Disallow: /signup
 Disallow: /env-check
 
 # Allow public pages

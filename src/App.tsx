@@ -8,7 +8,6 @@ import PerformanceMonitor from '@/components/PerformanceMonitor'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Login } from '@/pages/Login'
-import { SignUp } from '@/pages/SignUp'
 import { EnvCheck } from '@/pages/EnvCheck'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AdminDashboard } from '@/pages/admin/Dashboard'
@@ -76,7 +75,6 @@ function App() {
           
           {/* Public auth routes */}
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
 
           {/* Protected admin routes */}
           <Route element={<ProtectedRoute />}>

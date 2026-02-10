@@ -1,5 +1,6 @@
 const { app } = require('@azure/functions');
 const { CosmosClient } = require('@azure/cosmos');
+const { corsHeaders } = require('../shared/cors');
 
 // Initialize Cosmos DB client
 const endpoint = process.env.COSMOS_ENDPOINT;
@@ -31,11 +32,7 @@ app.http('submitBooking', {
         if (!booking[field]) {
           return {
             status: 400,
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': process.env.APP_ORIGIN || '*',
-              'Access-Control-Allow-Credentials': 'true'
-            },
+            headers: corsHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ 
               error: 'Missing required fields',
               message: `${field} is required`
@@ -137,11 +134,7 @@ Please add this to your calendar and send a confirmation email to ${booking.emai
       // Return success response
       return {
         status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': process.env.APP_ORIGIN || '*',
-          'Access-Control-Allow-Credentials': 'true'
-        },
+        headers: corsHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           success: true,
           bookingId: bookingId,
@@ -155,11 +148,7 @@ Please add this to your calendar and send a confirmation email to ${booking.emai
       context.error('Booking submission error:', error);
       return {
         status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': process.env.APP_ORIGIN || '*',
-          'Access-Control-Allow-Credentials': 'true'
-        },
+        headers: corsHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           error: 'Internal server error',
           message: error.message
@@ -177,12 +166,10 @@ app.http('submitBookingOptions', {
   handler: async (request, context) => {
     return {
       status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': process.env.APP_ORIGIN || '*',
+      headers: corsHeaders({
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Credentials': 'true'
-      }
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      })
     };
   }
 });

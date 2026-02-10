@@ -8,7 +8,9 @@ module.exports = {
   ...require('./submitContact'),
   ...require('./submitBooking'),
   ...require('./adminApi'),
-  ...require('./health')
+  ...require('./health'),
+  ...require('./getPublicBlog'),
+  ...require('./diagnose')
 };
 
 console.log('✅ Azure Functions loaded successfully');

@@ -2,20 +2,17 @@
 	"IsEncrypted": false,
 	"Values": {
 		"FUNCTIONS_WORKER_RUNTIME": "node",
-		"AzureWebJobsStorage": "",
+		"AzureWebJobsStorage": "UseDevelopmentStorage=true",
 		"COSMOS_ENDPOINT": "https://creedava-db.documents.azure.com:443/",
 		"COSMOS_KEY": "your-cosmos-primary-key-here",
-		"COSMOS_DATABASE": "website-data",
-		"AAD_CLIENT_ID": "77207644-cbca-4d8f-b6f0-a9b077ba0f46",
-		"AAD_TENANT_ID": "9c523818-9203-4d2e-a5c6-d401fa753fd5",
+		"COSMOS_DATABASE": "creedava",
+		"GOOGLE_CLIENT_ID": "your-google-oauth-client-id",
+		"GOOGLE_ALLOWED_DOMAIN": "creedava.com",
 		"APP_ORIGIN": "http://localhost:5173",
 		"CORS_ORIGIN": "http://localhost:5173",
 		"ALLOW_INMEMORY_FALLBACK": "false",
 		"ALLOW_DEV_TOKEN": "false",
-		"USE_COSMOS_EMULATOR": "false",
-		"LINKEDIN_CLIENT_ID": "your-linkedin-client-id",
-		"LINKEDIN_CLIENT_SECRET": "your-linkedin-client-secret",
-		"LINKEDIN_REDIRECT_URI": "http://localhost:4280/api/linkedin-auth"
+		"USE_COSMOS_EMULATOR": "false"
 	},
 	"Host": {
 		"CORS": "http://localhost:5173",

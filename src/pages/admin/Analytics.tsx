@@ -133,7 +133,7 @@ export function Analytics() {
   const isAdminPage = (page: string) => {
     return page.startsWith('/admin') || 
            page === '/login' || 
-           page === '/signup' || 
+           page === '/login' || 
            page === '/env-check';
   };
 

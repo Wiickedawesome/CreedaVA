@@ -1,5 +1,21 @@
-// Temporary diagnostic page to check environment variables
+// Diagnostic page to check environment variables — admin only
+// Blocked from indexing by robots.txt, protected by admin route guard
 export function EnvCheck() {
+  // In production (non-dev-mode), redirect non-admins
+  const isDevMode = import.meta.env.VITE_DEV_MODE === 'true'
+  if (!isDevMode && typeof window !== 'undefined') {
+    const token = localStorage.getItem('google_id_token') || localStorage.getItem('msal_id_token')
+    if (!token) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-2">Access Restricted</h1>
+            <p className="text-slate-600 dark:text-slate-400">This page is available in dev mode only.</p>
+          </div>
+        </div>
+      )
+    }
+  }
   const hasDbUrl = !!import.meta.env.VITE_COSMOS_ENDPOINT
   const hasDbKey = !!import.meta.env.VITE_COSMOS_KEY
   const hasGoogleClient = !!(import.meta.env.VITE_GOOGLE_SEARCH_CONSOLE_CLIENT_ID || import.meta.env.VITE_GOOGLE_CLIENT_ID)

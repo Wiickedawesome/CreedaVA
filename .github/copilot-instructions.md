@@ -1,135 +1,138 @@
-# Copilot instructions (CreedaVA)
+# Copilot Instructions (CreedaVA)
 
-This repo is a single deployment unit (frontend + API) but split into two codebases:
-- `src/`: Vite + React + TypeScript (public marketing site + `/admin` dashboard)
-- `api/`: Azure Functions v4 (Node.js) + Cosmos DB (admin CRUD + analytics + contact)
+> **Last audited:** 2026-02-10 — All containers, endpoints, routes, and dependencies verified.
 
-## Architecture & data flow
-- Public site pages live under React Router `*` route and render `<Navbar/>` + `<Footer/>` + deferred `<ChatBot/>` (see `src/App.tsx`).
-- Admin is a nested router under `/admin/*` behind `<ProtectedRoute/>` and `<AdminLayout/>`.
-- Frontend ↔ API:
-  - Local dev: Vite proxies `/api/*` to Functions at `http://localhost:7071` (see `vite.config.ts` `server.proxy`).
-  - Prod: frontend typically points to a deployed Functions base via `VITE_API_BASE_URL` (see `.github/workflows/azure-static-web-apps-*.yml`).
+This repo is a single deployment unit (frontend + API) split into two codebases:
+- `src/`: Vite + React + TypeScript — public marketing site + `/admin` CRM dashboard
+- `api/`: Azure Functions v4 (Node.js) + Cosmos DB — admin CRUD, analytics, contact, booking, public blog
 
-## Local dev (known-good)
-- Install deps:
-  - `npm install`
-  - `cd api && npm install`
-- Run:
-  - Frontend only: `npm run dev` (Vite on `http://localhost:5173`)
-  - API only: `cd api && npm start` (Functions host on `http://localhost:7071`)
-  - Both: `./start-dev.sh` (logs: `/tmp/vite.log`, `/tmp/azure-functions.log`)
-- Cosmos emulator + containers:
-  - Start emulator (Docker command in `README.md`).
-  - Create containers: `npm run setup:db` (runs `api/create-containers.js`; uses `NODE_TLS_REJECT_UNAUTHORIZED=0`).
-  - Reset containers (destructive): `NODE_TLS_REJECT_UNAUTHORIZED=0 node api/reset-containers.js`.
+## Architecture & Data Flow
 
-## Build outputs
-- App build: `npm run build:app` (TypeScript build + Vite build).
-- Widget build: `npm run build:widget` builds `src/embed.tsx` as an IIFE bundle named `creedava-widget.iife.js` (see `vite.widget.config.ts`).
-- Combined: `npm run build` runs both.
+```
+Public visitors → Vite SPA (/, /services, /about, /pricing, /news, /blog/:slug, /contact)
+                  ├─ <Navbar/> + <Footer/> + deferred <ChatBot/> (keyword-matching, no AI)
+                  ├─ POST /api/trackEvent (anonymous analytics → Cosmos analytics container)
+                  ├─ POST /api/submitContact (contact form → Cosmos contacts container)
+                  ├─ POST /api/submitBooking (booking form → Cosmos leads + contacts)
+                  └─ GET  /api/public/blog (published blog posts for /news page)
 
-## Routing & base paths
-- Router uses `basename={import.meta.env.BASE_URL}` (see `src/App.tsx`).
-- `vite.config.ts` sets `base` from `VITE_BASE_PATH` (defaults to `/CreedaVA/` for GitHub Pages, use `/` for Azure/custom domain).
+Admin users   → /login (Google OAuth popup → ID token in localStorage)
+              → /admin/* (ProtectedRoute → AdminLayout)
+                  ├─ authorizedFetch() injects Bearer <google_id_token>
+                  ├─ CRUD: GET/POST/PUT/DELETE /api/{get|create|update|delete}<EntityType>
+                  ├─ GET /api/getAnalytics?days=N (dashboard metrics)
+                  └─ GET /api/diagnose (auth-protected config check)
+```
 
-## Auth model (admin)
-- Frontend uses **Google OAuth** popup (`src/lib/auth.ts`) and sends a Google **ID token** as `Authorization: Bearer <id_token>`.
-- Backend validates via Google's JWKS in `api/shared/auth.js` using:
-  - `GOOGLE_CLIENT_ID`, `GOOGLE_ALLOWED_DOMAIN`.
-- Dev-mode UI: `VITE_DEV_MODE=true` uses localStorage `dev_user` and returns a placeholder token (`dev-token`).
-  - Important: backend still enforces JWT verification; admin APIs will 401 unless Google config is present.
+## Local Dev
 
-## Cosmos DB data model (important)
-- Cosmos DB is the system of record. Containers are created with partition key **`/type`** (see `api/create-containers.js`).
-- Practical consequence: every persisted item must include a `type` field matching the partition key value used in reads/writes.
-- Containers created locally include (non-exhaustive): `contacts`, `leads`, `tasks`, `projects`, `emails`, `seo`, `keywords`, `socialmedia`, `adcampaigns`, `blog`, `landingpages`, `customerjourney`, `reports`, `analytics`.
+```bash
+npm install && cd api && npm install && cd ..
+npm run dev          # Vite on http://localhost:5173
+cd api && npm start  # Functions on http://localhost:7071
+```
 
-## Azure Functions structure & conventions
-- Functions register via the v4 programming model: each `api/<functionName>/index.js` calls `app.http(...)`.
-- Entry points:
-  - `api/index.js` (exports all handlers)
-  - `api/src/functions.js` (Functions v4 entry; functions auto-register)
-- CORS headers are centralized in `api/shared/cors.js` using `APP_ORIGIN`/`CORS_ORIGIN`.
-- Emulator TLS: several scripts/functions set `NODE_TLS_REJECT_UNAUTHORIZED=0` and/or `DisableSSLVerification` when connecting to localhost.
+- Vite proxies `/api/*` → `http://localhost:7071` (see `vite.config.ts` `server.proxy`)
+- Cosmos emulator: `npm run start:cosmos` then `npm run setup:db` to create containers
+- Dev mode: set `VITE_DEV_MODE=true` to bypass Google OAuth on the frontend (backend still validates JWT unless `ALLOW_DEV_TOKEN=true`)
 
-## Admin CRUD API (generated)
-All admin CRUD endpoints are generated in `api/adminApi/index.js` and secured by `validateBearer()`.
+## Build
 
-Entity → container mapping is in `CONTAINERS`:
-- `social` → `socialmedia`
-- `campaigns` → `adcampaigns`
-- `landingPages` → `landingpages`
-- `customerJourneys` → `customerjourney`
+```bash
+npm run build        # app + widget
+npm run build:app    # tsc + vite build → dist/
+npm run build:widget # vite build → creedava-widget.iife.js
+```
 
-Route naming pattern (this is the source of truth):
-- `GET  /api/get<PascalEntityType>`
-- `POST /api/create<PascalEntityType>`
-- `PUT  /api/update<PascalEntityType>/{id}`
-- `DELETE /api/delete<PascalEntityType>/{id}`
+- Router uses `basename={import.meta.env.BASE_URL}`
+- `VITE_BASE_PATH` defaults to `/CreedaVA/` (GitHub Pages); use `/` for Azure/custom domain
 
-Example (leads):
-- `GET /api/getLeads`
-- `POST /api/createLeads`
-- `PUT /api/updateLeads/{id}`
-- `DELETE /api/deleteLeads/{id}`
+## Auth Model
 
-Cosmos query/write pattern used by admin CRUD:
-- Reads: `SELECT * FROM c WHERE c.type = @type` (so `type` must equal the entityType string, e.g. `"leads"`).
-- Updates use `container.item(id, entityType).replace(updatedItem)` so the **partition key value is the entityType**.
+- **Frontend:** Google OAuth popup (`src/lib/auth.ts`) stores `google_id_token` in localStorage
+- **Backend:** `api/shared/auth.js` validates via Google JWKS using `GOOGLE_CLIENT_ID` + `GOOGLE_ALLOWED_DOMAIN`
+- **API client:** `src/lib/api-client.ts` exports `authorizedFetch()` and `API_BASE` — ALL admin pages use this exclusively
+- Dev mode: `VITE_DEV_MODE=true` → localStorage `dev_user` → placeholder `dev-token`
 
-Availability behavior:
-- If Cosmos is unavailable and `ALLOW_INMEMORY_FALLBACK=true`, CRUD can use in-memory arrays.
-- If fallback is disabled, endpoints return 503 when Cosmos is down.
+## Cosmos DB Data Model
 
-## Public + “db-like” bridge endpoints
-- `POST /api/trackEvent` (`api/trackEvent/index.js`)
-  - No auth.
-  - No-ops (returns success) if Cosmos is not configured.
-  - Writes to `analytics` container with `type: 'event'` and `timestamp`.
+Partition key: **`/type`** on all containers. Every persisted item MUST include a `type` field.
 
-- `GET /api/getAnalytics` (`api/getAnalytics/index.js`)
-  - Requires bearer token.
-  - Supports querying arbitrary containers via query params:
-    - `table=<containerName>` (defaults to `analytics`)
-    - `days=<n>` adds `c.timestamp >= @startDate` and returns `{ data, summary }`
-    - `orderBy`, `orderDirection`, `limit`, plus `filterN=<json>` entries.
-  - Gotcha: return shape differs:
-    - with `days`: object with `data` and `summary`
-    - without `days`: raw JSON array
+**Containers** (defined in `api/create-containers.js`):
+`contacts`, `leads`, `tasks`, `projects`, `emails`, `seo`, `keywords`, `socialmedia`, `adcampaigns`, `blog`, `landingpages`, `customerjourney`, `reports`, `analytics`
 
-- `POST|PUT|DELETE /api/submitContact` (`api/submitContact/index.js`)
-  - Public contact-form handler AND a lightweight CRUD bridge.
-  - Bridge mode uses `{ table, data, filter }`:
-    - POST inserts into container `table` and sets `type: table`.
-    - PUT/DELETE read/write using partition key value `table` (passed to `container.item(id, table)`).
-  - Legacy contact-form mode stores to `contacts` container with `type: 'contact-form'`.
+## API Endpoints (Complete List)
 
-## Frontend API calling conventions
-- Admin pages should use `authorizedFetch` (`src/lib/api-client.ts`) to inject `Authorization: Bearer <idToken>`.
-- There are two “client styles” in the repo:
-  1) Direct admin calls (preferred): `authorizedFetch(`${API_BASE}/getLeads`)`
-  2) Supabase-like wrapper: `src/lib/database.ts` exposes `db.from(table)` but actually calls `GET /getAnalytics` and `POST/PUT/DELETE /submitContact`.
-- Public site analytics + contact:
-  - `src/lib/tracking.ts` calls `/trackEvent` and `/submitContact` (public).
-  - Optional GA4 is loaded by `src/lib/analytics.ts` when `VITE_GA_MEASUREMENT_ID` exists.
+### Admin CRUD (all require Bearer token)
+Generated in `api/adminApi/index.js`. Entity → container mapping:
 
-## Known sharp edges (don’t get tricked)
-- Admin endpoint naming is pluralized based on entityType keys in `CONTAINERS`.
-  - Historically, some admin pages called singular endpoints like `/createLead` or `/deleteContact` and would 404.
-  - Keep new/updated pages aligned to the generated routes (e.g. `/createLeads`, `/deleteContacts/{id}`) and casing (`/getSeo`, not `/getSEO`).
-- Historically, some admin pages hard-coded `http://localhost:7071/api/...`.
-  - Keep the API base centralized via `API_BASE`/`authorizedFetch` in `src/lib/api-client.ts` and do not reintroduce hard-coded URLs.
-- Dev-mode (`VITE_DEV_MODE=true`) bypasses UI login but does not bypass backend JWT validation.
+| Entity Key | Container | GET | POST | PUT | DELETE |
+|---|---|---|---|---|---|
+| leads | leads | getLeads | createLeads | updateLeads/{id} | deleteLeads/{id} |
+| contacts | contacts | getContacts | createContacts | updateContacts/{id} | deleteContacts/{id} |
+| tasks | tasks | getTasks | createTasks | updateTasks/{id} | deleteTasks/{id} |
+| projects | projects | getProjects | createProjects | updateProjects/{id} | deleteProjects/{id} |
+| emails | emails | getEmails | createEmails | updateEmails/{id} | deleteEmails/{id} |
+| seo | seo | getSeo | createSeo | updateSeo/{id} | deleteSeo/{id} |
+| keywords | keywords | getKeywords | createKeywords | updateKeywords/{id} | deleteKeywords/{id} |
+| social | socialmedia | getSocial | createSocial | updateSocial/{id} | deleteSocial/{id} |
+| blog | blog | getBlog | createBlog | updateBlog/{id} | deleteBlog/{id} |
+| campaigns | adcampaigns | getCampaigns | createCampaigns | updateCampaigns/{id} | deleteCampaigns/{id} |
+| landingPages | landingpages | getLandingPages | createLandingPages | updateLandingPages/{id} | deleteLandingPages/{id} |
+| customerJourneys | customerjourney | getCustomerJourneys | createCustomerJourneys | updateCustomerJourneys/{id} | deleteCustomerJourneys/{id} |
+| reports | reports | getReports | createReports | updateReports/{id} | deleteReports/{id} |
 
-## Deployments & ops
-- Static Web Apps CI/CD: `.github/workflows/azure-static-web-apps-*.yml` builds `dist/` and deploys `api/` as SWA Functions. It sets `VITE_BASE_PATH=/` and points `VITE_API_BASE_URL` at a deployed API URL.
-- Azure Function App CI/CD: `.github/workflows/main_creedava-api.yml` zips and deploys the repo to the `creedava-api` function app.
-- Static Web Apps runtime behavior (routing/caching) is configured in `public/staticwebapp.config.json`.
-- Runbook: `docs/OPERATIONS.md` (env vars, deployments, monitoring, smoke checks).
+### Other Endpoints
+| Endpoint | Auth | Description |
+|---|---|---|
+| `GET /api/getAnalytics` | Bearer | Query analytics + arbitrary containers. `?days=N` returns `{ data, summary }`, without `days` returns raw array |
+| `POST /api/trackEvent` | None | Write analytics events. No-ops if Cosmos not configured |
+| `POST /api/submitContact` | None | Public contact form → `contacts` container. Also bridge mode: `{ table, data }` |
+| `POST /api/submitBooking` | None | Booking form → `leads` + `contacts` containers |
+| `GET /api/public/blog` | None | Published blog posts for public News page |
+| `GET /api/health` | None | Cosmos connectivity check |
+| `GET /api/diagnose` | Bearer | Internal config diagnostic (auth-protected) |
 
-## “Where do I change X?”
-- Add/edit admin UI: `src/pages/admin/*` + dialogs in `src/components/admin/*`.
-- Adjust admin entity/container mapping: `api/adminApi/index.js` (`CONTAINERS` + in-memory arrays).
-- Adjust auth: `src/lib/auth.ts` (MSAL) and `api/shared/auth.js` (JWT validation).
-- Adjust CORS: `api/shared/cors.js`.
+### Functions Registration
+`api/src/functions.js` is the v4 entry point (`main` in `api/package.json`). All function modules MUST be `require()`-ed there to register their `app.http()` handlers.
+
+## Frontend Routes
+
+**Public:** `/`, `/services`, `/about`, `/pricing`, `/news`, `/blog/:slug`, `/contact`
+**Auth:** `/login`
+**Admin:** `/admin`, `/admin/leads`, `/admin/contacts`, `/admin/tasks`, `/admin/projects`, `/admin/emails`, `/admin/seo`, `/admin/keywords`, `/admin/analytics`, `/admin/settings`, `/admin/social`, `/admin/blog`, `/admin/ad-campaigns`, `/admin/landing-pages`, `/admin/customer-journey`, `/admin/reports`
+**Debug:** `/env-check` (gated, dev-mode only)
+
+## CORS
+Centralized in `api/shared/cors.js`. Uses `APP_ORIGIN` / `CORS_ORIGIN` env vars. All endpoints should use `corsHeaders()` or `corsHeadersForOrigin()` — no inline CORS headers.
+
+## Deployments
+- **Azure Static Web Apps:** `.github/workflows/azure-static-web-apps-*.yml` → builds `dist/` + deploys `api/`
+- **Azure Function App:** `.github/workflows/main_creedava-api.yml` → deploys `api/` to `creedava-api`
+- **SWA config:** `public/staticwebapp.config.json` (routing, caching, security headers)
+- **SEO:** `public/sitemap.xml`, `public/robots.txt`
+
+## Key Rules
+
+1. **Endpoint naming:** Always match the generated pattern — `get<PascalEntityType>`, pluralized. E.g. `getLeads` not `getLead`, `getSeo` not `getSEO`.
+2. **API base:** Always use `API_BASE` / `authorizedFetch()` from `src/lib/api-client.ts`. Never hard-code URLs.
+3. **Cosmos `type` field:** Every item written to any container MUST include `type` matching the entity key or partition key value.
+4. **Adding new entities:** Add to `CONTAINERS` map in `api/adminApi/index.js`, add container to `api/create-containers.js`, add admin page + route in `src/App.tsx`.
+5. **Adding new Functions:** Create `api/<name>/index.js` with `app.http()`, then add `require('../<name>')` to `api/src/functions.js` AND `api/index.js`.
+6. **Public endpoints:** No auth. Admin endpoints: validate with `validateBearer()`.
+7. **orderBy parameter:** `getAnalytics` whitelists allowed sort columns to prevent injection.
+
+## "Where Do I Change X?"
+
+| Task | File(s) |
+|---|---|
+| Add/edit admin UI | `src/pages/admin/*` + `src/components/admin/*` |
+| Add/edit admin entity | `api/adminApi/index.js` (CONTAINERS map) |
+| Add new API function | `api/<name>/index.js` + register in `api/src/functions.js` + `api/index.js` |
+| Auth logic | `src/lib/auth.ts` (frontend) + `api/shared/auth.js` (backend JWT) |
+| CORS | `api/shared/cors.js` |
+| Public pages | `src/pages/*.tsx` + routes in `src/App.tsx` |
+| SEO metadata | `src/components/SEO.tsx` (per-page data at bottom of file) |
+| Tracking | `src/lib/tracking.ts` (Cosmos) + `src/lib/analytics.ts` (GA4) |
+| SWA routing/headers | `public/staticwebapp.config.json` |
+| CI/CD | `.github/workflows/` |

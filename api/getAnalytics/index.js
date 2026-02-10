@@ -195,9 +195,11 @@ app.http('getAnalytics', {
         query += ' WHERE ' + conditions.join(' AND ');
       }
 
-      // Add ordering
-      if (orderBy) {
-        query += ` ORDER BY c.${orderBy} ${orderDirection.toUpperCase()}`;
+      // Add ordering (whitelist allowed columns to prevent injection)
+      const ALLOWED_ORDER_COLUMNS = ['timestamp', 'createdAt', 'updatedAt', 'eventType', 'page', 'type', 'name', 'status', 'date', 'title'];
+      if (orderBy && ALLOWED_ORDER_COLUMNS.includes(orderBy)) {
+        const direction = orderDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        query += ` ORDER BY c.${orderBy} ${direction}`;
       }
 
       // Execute query

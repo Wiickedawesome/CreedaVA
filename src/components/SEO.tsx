@@ -25,7 +25,7 @@ export function SEO({
   title = 'CreedaVA - Bilingual Virtual Assistants from Belize | Professional Remote Support',
   description = 'Belize-based bilingual virtual assistants fluent in English & Spanish. Professional remote support for executive tasks, administration, customer service, and more. Founded 2023. Call +1 844-702-2202',
   keywords = 'virtual assistant, Belize virtual assistant, bilingual assistant, remote assistant, executive support, administrative services, business support, CreedaVA, English Spanish VA, Central America virtual assistant',
-  ogImage = 'https://creedava.com/og-image.jpg',
+  ogImage = 'https://creedava.com/og-image.webp',
   ogType = 'website',
   canonicalUrl,
   noindex = false
@@ -126,12 +126,6 @@ export const seoData = {
     title: 'Admin Login | CreedaVA',
     description: 'Secure login portal for CreedaVA admin dashboard. Access your account to manage leads, contacts, projects, and analytics.',
     keywords: 'CreedaVA login, admin portal, secure login',
-    noindex: true,
-  },
-  signup: {
-    title: 'Sign Up | CreedaVA Admin',
-    description: 'Create your CreedaVA admin account.',
-    keywords: 'CreedaVA signup, create account, admin registration',
     noindex: true,
   },
   admin: {
