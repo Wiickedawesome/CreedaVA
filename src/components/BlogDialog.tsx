@@ -255,11 +255,20 @@ Success in digital marketing requires a combination of strategy, execution, and 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const isPublished = formData.status === 'published';
     const dataToSave = {
       ...formData,
       publishDate,
       lastModified: new Date(),
       updatedAt: new Date().toISOString(),
+      // Fields required by the public blog API
+      isPublished,
+      publishedAt: isPublished ? (publishDate?.toISOString() || new Date().toISOString()) : null,
+      isFeatured: formData.featured.isFeatured,
+      featuredImage: formData.featured.image || '',
+      seoTitle: formData.seo.metaTitle || formData.title,
+      seoDescription: formData.seo.metaDescription || formData.excerpt,
+      views: formData.engagement.views || 0,
       seo: {
         ...formData.seo,
         metaTitle: formData.seo.metaTitle || formData.title,

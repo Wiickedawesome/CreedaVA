@@ -69,13 +69,12 @@ app.http('getPublicBlog', {
 
             const container = database.container('blog');
             
-            // Query ONLY published blogs
+            // Query ONLY published blogs - support both legacy and new schema
             const query = {
-                query: 'SELECT * FROM c WHERE c.type = @type AND c.status = @status AND c.isPublished = @isPublished ORDER BY c.publishedAt DESC, c.createdAt DESC',
+                query: 'SELECT * FROM c WHERE c.type = @type AND c.status = @status ORDER BY c.publishedAt DESC, c.createdAt DESC',
                 parameters: [
                     { name: '@type', value: 'blog' },
-                    { name: '@status', value: 'published' },
-                    { name: '@isPublished', value: true }
+                    { name: '@status', value: 'published' }
                 ]
             };
             

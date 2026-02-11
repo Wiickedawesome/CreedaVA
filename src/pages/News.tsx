@@ -54,9 +54,9 @@ export default function News() {
       }
       
       const data = await response.json()
-      // Filter for published posts only and sort by date
+      // The API already filters for published posts; sort by date client-side
       const publishedPosts = (data.data || [])
-        .filter((post: BlogPost) => post.status === 'published' && post.isPublished)
+        .filter((post: BlogPost) => post.status === 'published')
         .sort((a: BlogPost, b: BlogPost) => {
           const dateA = new Date(a.publishedAt || a.createdAt)
           const dateB = new Date(b.publishedAt || b.createdAt)

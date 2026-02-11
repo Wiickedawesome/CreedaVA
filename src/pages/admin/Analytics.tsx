@@ -4,12 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { TrendingUp, Eye, MousePointer, Users, Globe, Globe2, Calendar, RefreshCw, Info, MapPin, Clock, ArrowRight } from 'lucide-react';
+import { TrendingUp, Eye, MousePointer, Users, Globe, Globe2, Calendar, RefreshCw, Info, MapPin, Clock, ArrowRight, Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { API_BASE, authorizedFetch } from '@/lib/api-client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ErrorPanel } from '@/components/ErrorPanel';
 import { CountryMap } from '@/components/CountryMap';
+import { GlobeVisualization } from '@/components/GlobeVisualization';
 
 interface AnalyticsEvent {
   id: string;
@@ -127,6 +130,10 @@ export function Analytics() {
   const [errorStatus, setErrorStatus] = useState<number | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<AnalyticsEvent | null>(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  // Recent activity filters
+  const [recentEventTypeFilter, setRecentEventTypeFilter] = useState<string>('all');
+  const [recentPageFilter, setRecentPageFilter] = useState('');
+  const [recentItemsToShow, setRecentItemsToShow] = useState(15);
   const { signIn } = useAuth()
 
   // Filter function to exclude admin pages
@@ -141,6 +148,16 @@ export function Analytics() {
   const filteredAnalytics = showAdminPages 
     ? analytics 
     : analytics.filter(event => !isAdminPage(event.page));
+
+  // Recent activity filtered view
+  const recentFilteredEvents = filteredAnalytics.filter(event => {
+    if (recentEventTypeFilter !== 'all' && event.eventType !== recentEventTypeFilter) return false;
+    if (recentPageFilter && !event.page.toLowerCase().includes(recentPageFilter.toLowerCase())) return false;
+    return true;
+  });
+
+  // Unique event types for the filter dropdown
+  const uniqueEventTypes = Array.from(new Set(filteredAnalytics.map(e => e.eventType)));
 
   useEffect(() => { fetchAnalytics(); }, [daysFilter]);
 
@@ -714,6 +731,9 @@ export function Analytics() {
           </div>
 
           {/* Country Distribution Map - NEW ENHANCED VERSION */}
+          <GlobeVisualization countryData={countryData} events={filteredAnalytics} />
+
+          {/* Heatmap breakdown */}
           <CountryMap countryData={countryData} />
 
           {/* SECTION: RECENT ACTIVITY */}
@@ -728,13 +748,52 @@ export function Analytics() {
           {/* Recent Events Table */}
           <Card className="bg-gray-800 border-gray-700">
             <div className="p-6 border-b border-gray-700">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                     <Clock className="h-5 w-5 text-blue-400" />
                     Recent Events
                   </h3>
-                  <p className="text-gray-400 text-sm">Click any event to see full details</p>
+                  <p className="text-gray-400 text-sm">
+                    Showing {Math.min(recentItemsToShow, recentFilteredEvents.length)} of {recentFilteredEvents.length} events
+                    {(recentEventTypeFilter !== 'all' || recentPageFilter) && ' (filtered)'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* Event Type Filter */}
+                  <Select value={recentEventTypeFilter} onValueChange={(v) => { setRecentEventTypeFilter(v); setRecentItemsToShow(15); }}>
+                    <SelectTrigger className="w-[180px] bg-gray-700 border-gray-600 text-white text-xs h-9">
+                      <Filter className="h-3 w-3 mr-1" />
+                      <SelectValue placeholder="Event type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Event Types</SelectItem>
+                      {uniqueEventTypes.map(et => (
+                        <SelectItem key={et} value={et}>{getEventTypeInfo(et).label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {/* Page Search */}
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+                    <Input
+                      placeholder="Filter by page..."
+                      value={recentPageFilter}
+                      onChange={(e) => { setRecentPageFilter(e.target.value); setRecentItemsToShow(15); }}
+                      className="pl-8 w-[180px] bg-gray-700 border-gray-600 text-white text-xs h-9"
+                    />
+                  </div>
+                  {/* Clear Filters */}
+                  {(recentEventTypeFilter !== 'all' || recentPageFilter) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { setRecentEventTypeFilter('all'); setRecentPageFilter(''); setRecentItemsToShow(15); }}
+                      className="text-xs text-gray-400 hover:text-white h-9"
+                    >
+                      Clear
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -749,7 +808,7 @@ export function Analytics() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAnalytics.slice(0, 15).map((event, index) => {
+                {recentFilteredEvents.slice(0, recentItemsToShow).map((event, index) => {
                   const eventInfo = getEventTypeInfo(event.eventType);
                   return (
                     <TableRow 
@@ -802,6 +861,37 @@ export function Analytics() {
                 })}
               </TableBody>
             </Table>
+            {/* Pagination controls */}
+            <div className="p-4 border-t border-gray-700 flex items-center justify-between">
+              <p className="text-xs text-gray-500">
+                {recentFilteredEvents.length === 0 ? 'No events match your filters' :
+                  `Showing ${Math.min(recentItemsToShow, recentFilteredEvents.length)} of ${recentFilteredEvents.length}`}
+              </p>
+              <div className="flex gap-2">
+                {recentItemsToShow > 15 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRecentItemsToShow(15)}
+                    className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600 text-xs"
+                  >
+                    <ChevronUp className="h-3 w-3 mr-1" />
+                    Show Less
+                  </Button>
+                )}
+                {recentItemsToShow < recentFilteredEvents.length && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRecentItemsToShow(prev => Math.min(prev + 25, recentFilteredEvents.length))}
+                    className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600 text-xs"
+                  >
+                    <ChevronDown className="h-3 w-3 mr-1" />
+                    Show More ({Math.min(25, recentFilteredEvents.length - recentItemsToShow)} more)
+                  </Button>
+                )}
+              </div>
+            </div>
           </Card>
 
           {/* Event Details Modal */}

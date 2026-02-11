@@ -88,28 +88,34 @@ export function Blog() {
 
   const handleSave = async (postData: Omit<BlogPost, 'id'>) => {
     try {
+      let response;
       if (selectedPost) {
         // Update existing post
-        await authorizedFetch(`${API_BASE}/updateBlog/${selectedPost.id}`, {
+        response = await authorizedFetch(`${API_BASE}/updateBlog/${selectedPost.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(postData)
         });
-        await loadPosts(); // Reload posts to get updated data
       } else {
         // Create new post
-        await authorizedFetch(`${API_BASE}/createBlog`, {
+        response = await authorizedFetch(`${API_BASE}/createBlog`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(postData)
         });
-        await loadPosts(); // Reload posts to get new data
       }
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Server returned an error');
+      }
+
+      await loadPosts(); // Reload posts to get updated data
       setIsDialogOpen(false);
       setSelectedPost(undefined);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving post:', error);
-      alert('Failed to save post. Please try again.');
+      alert(`Failed to save post: ${error.message || 'Please try again.'}`);
     }
   };
 
