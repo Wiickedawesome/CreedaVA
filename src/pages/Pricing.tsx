@@ -8,7 +8,7 @@ import { CheckCircle, Phone, UsersThree, ChartLineUp } from '@phosphor-icons/rea
 import { motion } from 'framer-motion'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
-import { SEO, seoData } from '@/components/SEO'
+import { DynamicSEO } from '@/components/SEO'
 
 export function Pricing() {
   const { t } = useTranslation();
@@ -106,9 +106,21 @@ export function Pricing() {
     },
   ]
 
+  // FAQPage structured data for Google rich results
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': faqs.map(faq => ({
+      '@type': 'Question',
+      'name': faq.question,
+      'acceptedAnswer': { '@type': 'Answer', 'text': faq.answer }
+    }))
+  }
+
   return (
     <>
-      <SEO {...seoData.pricing} />
+      <DynamicSEO page="pricing" />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <AnimatedBackground />

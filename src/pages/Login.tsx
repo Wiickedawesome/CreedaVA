@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CreedaLogo } from '@/components/CreedaLogo'
+import { SEO, seoData } from '@/components/SEO'
 
 const isDevMode = import.meta.env.VITE_DEV_MODE === 'true'
 
@@ -17,18 +17,6 @@ export function Login() {
   const [email, setEmail] = useState('')
   const enableGoogleLogin = import.meta.env.VITE_ENABLE_GOOGLE_LOGIN === 'true'
   const googleClientId = enableGoogleLogin ? (import.meta.env.VITE_GOOGLE_CLIENT_ID || '') : ''
-
-  // Add noindex meta tag for login page
-  useEffect(() => {
-    const metaRobots = document.createElement('meta')
-    metaRobots.name = 'robots'
-    metaRobots.content = 'noindex, nofollow'
-    document.head.appendChild(metaRobots)
-
-    return () => {
-      document.head.removeChild(metaRobots)
-    }
-  }, [])
 
   const signInWithGooglePopup = () => {
     if (!enableGoogleLogin || !googleClientId) {
@@ -107,6 +95,7 @@ export function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+      <SEO {...seoData.login} />
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-4">
           <div className="flex justify-center">

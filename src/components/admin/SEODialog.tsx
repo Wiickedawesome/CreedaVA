@@ -36,8 +36,10 @@ export interface SEOContent {
   canonicalUrl?: string;
   openGraphTitle?: string;
   openGraphDescription?: string;
+  openGraphImage?: string;
   twitterTitle?: string;
   twitterDescription?: string;
+  twitterImage?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -93,8 +95,10 @@ export function SEODialog({ open, onOpenChange, seo, onSave, mode }: SEODialogPr
     canonicalUrl: '',
     openGraphTitle: '',
     openGraphDescription: '',
+    openGraphImage: '',
     twitterTitle: '',
     twitterDescription: '',
+    twitterImage: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -118,8 +122,10 @@ export function SEODialog({ open, onOpenChange, seo, onSave, mode }: SEODialogPr
         canonicalUrl: seo.canonicalUrl || '',
         openGraphTitle: seo.openGraphTitle || '',
         openGraphDescription: seo.openGraphDescription || '',
+        openGraphImage: seo.openGraphImage || '',
         twitterTitle: seo.twitterTitle || '',
         twitterDescription: seo.twitterDescription || '',
+        twitterImage: seo.twitterImage || '',
       });
       setEnableSocialMedia(!!(seo.openGraphTitle || seo.twitterTitle));
     } else if (mode === 'create') {
@@ -139,8 +145,10 @@ export function SEODialog({ open, onOpenChange, seo, onSave, mode }: SEODialogPr
         canonicalUrl: '',
         openGraphTitle: '',
         openGraphDescription: '',
+        openGraphImage: '',
         twitterTitle: '',
         twitterDescription: '',
+        twitterImage: '',
       });
       setEnableSocialMedia(false);
     }
@@ -213,8 +221,10 @@ export function SEODialog({ open, onOpenChange, seo, onSave, mode }: SEODialogPr
         canonicalUrl: formData.canonicalUrl,
         openGraphTitle: enableSocialMedia ? formData.openGraphTitle : undefined,
         openGraphDescription: enableSocialMedia ? formData.openGraphDescription : undefined,
+        openGraphImage: enableSocialMedia ? formData.openGraphImage : undefined,
         twitterTitle: enableSocialMedia ? formData.twitterTitle : undefined,
         twitterDescription: enableSocialMedia ? formData.twitterDescription : undefined,
+        twitterImage: enableSocialMedia ? formData.twitterImage : undefined,
         // Compute SEO/readability scores deterministically instead of using random mocks
         seoScore: getSEOScore(),
         readabilityScore: computeReadability(formData.content),
@@ -580,6 +590,28 @@ export function SEODialog({ open, onOpenChange, seo, onSave, mode }: SEODialogPr
                       className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
                       disabled={isReadOnly}
                     />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-300">Open Graph Image URL</Label>
+                    <Input
+                      value={formData.openGraphImage}
+                      onChange={(e) => setFormData({ ...formData, openGraphImage: e.target.value })}
+                      placeholder="https://creedava.com/og-image.webp (1200×630px)"
+                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      disabled={isReadOnly}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Recommended: 1200×630px. Used when sharing on Facebook, LinkedIn, etc.</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-300">Twitter Image URL</Label>
+                    <Input
+                      value={formData.twitterImage}
+                      onChange={(e) => setFormData({ ...formData, twitterImage: e.target.value })}
+                      placeholder="https://creedava.com/og-image.webp (1200×630px)"
+                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      disabled={isReadOnly}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Recommended: 1200×630px. Used when sharing on Twitter/X.</p>
                   </div>
                 </div>
               )}

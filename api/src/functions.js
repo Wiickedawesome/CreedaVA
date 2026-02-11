@@ -11,6 +11,8 @@ require('../submitBooking');
 require('../adminApi');
 require('../health');
 require('../getPublicBlog');
+require('../getPublicSeo');
+require('../getSitemap');
 require('../diagnose');
 
 console.log('✅ Azure Functions initialized and registered');

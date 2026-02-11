@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { CreedaLogo } from '@/components/CreedaLogo';
 import { submitContactForm, trackButtonClick } from '@/lib/tracking';
-import { SEO, seoData } from '@/components/SEO';
+import { DynamicSEO } from '@/components/SEO';
 import {
   Dialog,
   DialogContent,
@@ -231,7 +231,7 @@ export default function Contact() {
 
   return (
     <>
-      <SEO {...seoData.contact} />
+      <DynamicSEO page="contact" />
       <div className="min-h-screen bg-background">
       <section className="relative py-32 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-br from-navy-50 via-white to-green-50 -z-10" />

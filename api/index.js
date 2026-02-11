@@ -10,6 +10,8 @@ module.exports = {
   ...require('./adminApi'),
   ...require('./health'),
   ...require('./getPublicBlog'),
+  ...require('./getPublicSeo'),
+  ...require('./getSitemap'),
   ...require('./diagnose')
 };
 

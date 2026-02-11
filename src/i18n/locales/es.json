@@ -604,5 +604,37 @@
     "sort": "Ordenar",
     "export": "Exportar",
     "import": "Importar"
+  },
+  "seo": {
+    "home": {
+      "title": "CreedaVA - Asistentes Virtuales Bilingües desde Belice | Soporte Remoto Profesional",
+      "description": "Asistentes virtuales bilingües en inglés y español desde Belice. Soporte remoto profesional para tareas ejecutivas, administración, servicio al cliente y más. Llame al +1 844-702-2202",
+      "keywords": "asistente virtual, asistente virtual Belice, asistente bilingüe, soporte remoto, asistente ejecutivo, servicios administrativos, soporte empresarial, CreedaVA, VA inglés español, asistente virtual Centroamérica"
+    },
+    "about": {
+      "title": "Sobre CreedaVA - Empresa de Asistentes Virtuales Bilingües | Soporte desde Belice",
+      "description": "Conozca CreedaVA — empresa confiable de asistentes virtuales bilingües fundada en 2023. Nuestra misión: ayudar a empresas a crecer con soporte remoto profesional en inglés y español desde Belice.",
+      "keywords": "sobre CreedaVA, empresa asistente virtual, soporte empresarial Belice, servicios VA bilingüe, asistentes virtuales profesionales, equipo remoto Belice"
+    },
+    "services": {
+      "title": "Servicios de Asistente Virtual | Soporte Ejecutivo, Administrativo y al Cliente | CreedaVA",
+      "description": "Servicios integrales de asistente virtual de CreedaVA: soporte ejecutivo, tareas administrativas, servicio al cliente, e-commerce, contenido y redes sociales, y soporte de seguros. Bilingüe inglés/español.",
+      "keywords": "servicios asistente virtual, asistente ejecutivo, soporte administrativo, servicio al cliente VA, asistente e-commerce, gestión redes sociales, asistente seguros, soporte bilingüe"
+    },
+    "pricing": {
+      "title": "Planes de Precios | Servicios de Asistente Virtual Accesibles | CreedaVA",
+      "description": "Precios transparentes para servicios profesionales de asistente virtual. Planes Starter ($1,699/mes), Professional ($1,899/mes) y Enterprise personalizado. Soporte bilingüe dedicado a tiempo completo.",
+      "keywords": "precios asistente virtual, costo VA, asistente virtual accesible, planes asistente virtual, precios soporte remoto, tarifas asistente bilingüe, planes mensuales VA"
+    },
+    "contact": {
+      "title": "Contactar CreedaVA | Consulta Gratuita | Contrate Asistentes Virtuales",
+      "description": "¿Listo para hacer crecer su negocio? Contacte a CreedaVA para una consulta gratuita. Llame al +1 844-702-2202, escriba a hello@creedava.com, o agende una llamada. Asistentes virtuales bilingües profesionales.",
+      "keywords": "contactar CreedaVA, consulta asistente virtual, contratar asistente virtual, cotización VA, agendar consulta, consulta gratis VA"
+    },
+    "news": {
+      "title": "Noticias y Blog | CreedaVA | Perspectivas y Actualizaciones de la Industria VA",
+      "description": "Últimas noticias, perspectivas y consejos de CreedaVA. Estrategias de asistencia virtual, consejos de productividad empresarial, mejores prácticas de trabajo remoto y actualizaciones de la empresa.",
+      "keywords": "blog asistente virtual, noticias VA, consejos trabajo remoto, productividad empresarial, actualizaciones CreedaVA, perspectivas asistente virtual"
+    }
   }
 }

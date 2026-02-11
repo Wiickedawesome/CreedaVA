@@ -15,7 +15,7 @@ import {
 import { motion } from 'framer-motion'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
-import { SEO, seoData } from '@/components/SEO'
+import { DynamicSEO } from '@/components/SEO'
 
 export function About() {
   const { t } = useTranslation();
@@ -81,7 +81,7 @@ export function About() {
 
   return (
     <>
-      <SEO {...seoData.about} />
+      <DynamicSEO page="about" />
       <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <AnimatedBackground />

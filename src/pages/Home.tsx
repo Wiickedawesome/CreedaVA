@@ -25,7 +25,7 @@ import {
 import { motion } from 'framer-motion'
 import { LazyAnimatedBackground } from '@/components/LazyAnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
-import { SEO, seoData } from '@/components/SEO'
+import { DynamicSEO } from '@/components/SEO'
 
 export function Home() {
   const { t } = useTranslation();
@@ -91,9 +91,24 @@ export function Home() {
     { value: '24/7', label: t('home.stats.support') },
   ]
 
+  // FAQPage structured data for Google rich results
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': [
+      { '@type': 'Question', 'name': t('home.faq.question1.q'), 'acceptedAnswer': { '@type': 'Answer', 'text': t('home.faq.question1.a') } },
+      { '@type': 'Question', 'name': t('home.faq.question2.q'), 'acceptedAnswer': { '@type': 'Answer', 'text': t('home.faq.question2.a') } },
+      { '@type': 'Question', 'name': t('home.faq.question3.q'), 'acceptedAnswer': { '@type': 'Answer', 'text': t('home.faq.question3.a') } },
+      { '@type': 'Question', 'name': t('home.faq.question4.q'), 'acceptedAnswer': { '@type': 'Answer', 'text': t('home.faq.question4.a') } },
+      { '@type': 'Question', 'name': t('home.faq.question5.q'), 'acceptedAnswer': { '@type': 'Answer', 'text': t('home.faq.question5.a') } },
+      { '@type': 'Question', 'name': t('home.faq.question6.q'), 'acceptedAnswer': { '@type': 'Answer', 'text': t('home.faq.question6.a') } },
+    ]
+  }
+
   return (
     <>
-      <SEO {...seoData.home} />
+      <DynamicSEO page="home" />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <LazyAnimatedBackground />

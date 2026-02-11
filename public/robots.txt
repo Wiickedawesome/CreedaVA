@@ -17,4 +17,4 @@ Allow: /contact
 
 # Sitemap location
 Sitemap: https://creedava.com/sitemap.xml
-Sitemap: https://www.creedava.com/sitemap.xml
+Sitemap: https://creedava.com/api/sitemap.xml

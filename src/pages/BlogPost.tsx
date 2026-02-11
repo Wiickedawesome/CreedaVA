@@ -8,6 +8,7 @@ import { Calendar, ArrowLeft, Eye, Linkedin, Share2 } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { format } from 'date-fns'
 import { trackCosmosEvent } from '@/lib/tracking'
+import { SEO } from '@/components/SEO'
 
 interface BlogPost {
   id: string
@@ -143,6 +144,14 @@ export default function BlogPost() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title={post.seoTitle || `${post.title} | CreedaVA Blog`}
+        description={post.seoDescription || post.excerpt || `Read "${post.title}" on the CreedaVA blog. Virtual assistant insights, tips, and company updates.`}
+        keywords={post.tags?.join(', ') || `CreedaVA blog, ${post.category || 'virtual assistant'}, VA insights`}
+        ogType="article"
+        ogImage={post.featuredImage || 'https://creedava.com/og-image.webp'}
+        canonicalUrl={`https://creedava.com/blog/${post.slug}`}
+      />
       <section className="relative pt-32 pb-12 px-4 overflow-hidden">
         <AnimatedBackground />
         <div className="container mx-auto max-w-4xl">

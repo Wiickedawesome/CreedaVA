@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar, ArrowRight, Newspaper, Linkedin } from 'lucide-react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { CreedaLogo } from '@/components/CreedaLogo'
-import { SEO, seoData } from '@/components/SEO'
+import { DynamicSEO } from '@/components/SEO'
 import { format } from 'date-fns'
 
 interface BlogPost {
@@ -101,7 +101,7 @@ export default function News() {
 
   return (
     <>
-      <SEO {...seoData.news} />
+      <DynamicSEO page="news" />
       <div className="min-h-screen bg-background">
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         <AnimatedBackground />

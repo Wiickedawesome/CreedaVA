@@ -602,5 +602,37 @@
     "sort": "Sort",
     "export": "Export",
     "import": "Import"
+  },
+  "seo": {
+    "home": {
+      "title": "CreedaVA - Bilingual Virtual Assistants from Belize | Professional Remote Support",
+      "description": "Belize-based bilingual virtual assistants fluent in English & Spanish. Professional remote support for executive tasks, administration, customer service, and more. Trusted since 2023. Call +1 844-702-2202",
+      "keywords": "virtual assistant, Belize virtual assistant, bilingual assistant, remote assistant, executive support, administrative services, business support, CreedaVA, English Spanish VA, Central America virtual assistant"
+    },
+    "about": {
+      "title": "About CreedaVA - Bilingual Virtual Assistant Company | Belize-Based Support",
+      "description": "Meet CreedaVA — trusted bilingual virtual assistant company founded in 2023. Our mission: help businesses scale with professional English & Spanish remote support from Belize. Learn our story, values, and team.",
+      "keywords": "about CreedaVA, virtual assistant company, Belize business support, bilingual VA services, professional virtual assistants, company mission, remote team Belize"
+    },
+    "services": {
+      "title": "Virtual Assistant Services | Executive, Admin & Customer Support | CreedaVA",
+      "description": "Comprehensive virtual assistant services from CreedaVA: executive support, administrative tasks, customer service, e-commerce, content & social media, and insurance support. Bilingual English/Spanish.",
+      "keywords": "virtual assistant services, executive assistant, administrative support, customer service VA, e-commerce assistant, social media management, insurance virtual assistant, bilingual support"
+    },
+    "pricing": {
+      "title": "Pricing Plans | Affordable Virtual Assistant Services | CreedaVA",
+      "description": "Transparent pricing for professional virtual assistant services. Starter ($1,699/mo), Professional ($1,899/mo), and custom Enterprise plans. Full-time dedicated bilingual support. No hidden fees.",
+      "keywords": "virtual assistant pricing, VA cost, affordable virtual assistant, virtual assistant plans, remote support pricing, dedicated VA pricing, bilingual assistant rates"
+    },
+    "contact": {
+      "title": "Contact CreedaVA | Get a Free Consultation | Hire Virtual Assistants",
+      "description": "Ready to scale your business? Contact CreedaVA for a free consultation. Call +1 844-702-2202, email hello@creedava.com, or book a call online. Professional bilingual virtual assistants from Belize.",
+      "keywords": "contact CreedaVA, virtual assistant consultation, book VA call, hire virtual assistant, get virtual assistant quote, schedule consultation"
+    },
+    "news": {
+      "title": "News & Blog | CreedaVA | Virtual Assistant Industry Insights & Updates",
+      "description": "Latest news, insights, and tips from CreedaVA. Virtual assistant strategies, business productivity advice, remote work best practices, and company updates.",
+      "keywords": "virtual assistant blog, VA news, remote work tips, business productivity, CreedaVA updates, virtual assistant insights"
+    }
   }
 }
