@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,12 +12,7 @@ import { API_BASE, authorizedFetch } from '@/lib/api-client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ErrorPanel } from '@/components/ErrorPanel';
 import { CountryMap } from '@/components/CountryMap';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-
-// Lazy-load the heavy Globe component so WebGL/Three.js failures don't crash the page
-const GlobeVisualization = lazy(() =>
-  import('@/components/GlobeVisualization').then(m => ({ default: m.GlobeVisualization }))
-);
+import { WorldMap } from '@/components/WorldMap';
 
 interface AnalyticsEvent {
   id: string;
@@ -741,26 +736,8 @@ export function Analytics() {
             <p className="text-gray-400 text-sm mt-1">Where your visitors are coming from</p>
           </div>
 
-          {/* Country Distribution Map - NEW ENHANCED VERSION */}
-          <ErrorBoundary fallback={
-            <Card className="p-6 bg-gray-800 border-gray-700">
-              <div className="h-[400px] flex flex-col items-center justify-center text-gray-500">
-                <Globe className="w-16 h-16 mb-4 opacity-50" />
-                <p className="text-sm">Interactive globe could not be loaded.</p>
-                <p className="text-xs text-gray-600 mt-1">Your browser may not support WebGL, or the globe assets failed to load.</p>
-              </div>
-            </Card>
-          }>
-            <Suspense fallback={
-              <Card className="p-6 bg-gray-800 border-gray-700">
-                <div className="h-[500px] flex items-center justify-center text-gray-400">
-                  <RefreshCw className="h-6 w-6 animate-spin mr-2" /> Loading globe...
-                </div>
-              </Card>
-            }>
-              <GlobeVisualization countryData={countryData} events={filteredAnalytics} />
-            </Suspense>
-          </ErrorBoundary>
+          {/* Visitor World Map */}
+          <WorldMap countryData={countryData} />
 
           {/* Heatmap breakdown */}
           <CountryMap countryData={countryData} />
