@@ -227,12 +227,17 @@ Object.keys(CONTAINERS).forEach(entityType => {
                 await initializeCosmosDB();
                 const data = await request.json();
                 // `type` is the Cosmos partition key (and used in reads); never accept it from callers.
-                // Also never accept `id` or timestamps from callers.
+                // Also never accept `id`, timestamps, or Cosmos system properties from callers.
                 const {
                     type: _ignoredType,
                     id: _ignoredId,
                     createdAt: _ignoredCreatedAt,
                     updatedAt: _ignoredUpdatedAt,
+                    _rid: _r,
+                    _self: _s,
+                    _etag: _e,
+                    _ts: _t,
+                    _attachments: _a,
                     ...payload
                 } = data || {};
 
@@ -345,6 +350,7 @@ Object.keys(CONTAINERS).forEach(entityType => {
                             id: _ignoredId,
                             createdAt: _ignoredCreatedAt,
                             updatedAt: _ignoredUpdatedAt,
+                            _rid: _r, _self: _s, _etag: _e, _ts: _t, _attachments: _a,
                             ...payload
                         } = data || {};
                         const nowIso = new Date().toISOString();
@@ -380,6 +386,13 @@ Object.keys(CONTAINERS).forEach(entityType => {
                     id: _ignoredId,
                     createdAt: _ignoredCreatedAt,
                     updatedAt: _ignoredUpdatedAt,
+                    // Strip Cosmos DB system properties to prevent stale values
+                    // from overwriting fresh ones read from the database
+                    _rid: _r,
+                    _self: _s,
+                    _etag: _e,
+                    _ts: _t,
+                    _attachments: _a,
                     ...payload
                 } = data || {};
 
@@ -393,7 +406,7 @@ Object.keys(CONTAINERS).forEach(entityType => {
                     existing = resource;
                 } catch (readError) {
                     const statusCode = readError?.statusCode || readError?.code;
-                    if (statusCode === 404) {
+                    if (statusCode === 404 || statusCode === 'NotFound') {
                         return {
                             status: 404,
                             headers: corsHeaders({ 'Content-Type': 'application/json' }),
@@ -401,6 +414,14 @@ Object.keys(CONTAINERS).forEach(entityType => {
                         };
                     }
                     throw readError;
+                }
+
+                if (!existing) {
+                    return {
+                        status: 404,
+                        headers: corsHeaders({ 'Content-Type': 'application/json' }),
+                        body: JSON.stringify({ success: false, error: 'Item not found' })
+                    };
                 }
                 
                 const updatedItem = {
@@ -440,12 +461,18 @@ Object.keys(CONTAINERS).forEach(entityType => {
                 };
             } catch (error) {
                 context.error('Error updating item:', error);
+                const cosmosCode = error?.statusCode || error?.code;
+                const userMessage = (cosmosCode === 404 || cosmosCode === 'NotFound')
+                    ? 'Item not found'
+                    : (typeof error.message === 'string' && error.message.length > 200)
+                        ? error.message.split('\n')[0]
+                        : error.message;
                 return {
-                    status: 500,
+                    status: cosmosCode === 404 || cosmosCode === 'NotFound' ? 404 : 500,
                     headers: corsHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify({ 
                         success: false, 
-                        error: error.message 
+                        error: userMessage 
                     })
                 };
             }
