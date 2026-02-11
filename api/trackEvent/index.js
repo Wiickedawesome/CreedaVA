@@ -61,11 +61,14 @@ app.http('trackEvent', {
       context.log(`Client IP detected: ${clientIp}`);
       
       // Try multiple header sources for country/region detection
+      // Note: x-azure-fdid is Azure Front Door ID, NOT country — do not use it for geo
       let country = request.headers.get('cloudflare-ipcountry') ||
+                    request.headers.get('cf-ipcountry') ||
                     request.headers.get('x-vercel-ip-country') ||
-                    request.headers.get('x-azure-fdid') ||        // Azure Front Door
                     request.headers.get('x-ms-client-country') ||  // Azure
                     request.headers.get('x-country-code') || null;
+      
+      let countryName = null;
       
       let region = request.headers.get('x-vercel-ip-city') ||
                    request.headers.get('x-azure-clientcity') ||
@@ -98,30 +101,59 @@ app.http('trackEvent', {
         try {
           context.log(`Attempting geolocation lookup for IP: ${clientIp}`);
           
-          // Use ip-api.com (free, no API key needed, 45 req/min)
-          const geoResponse = await fetch(`http://ip-api.com/json/${clientIp}?fields=status,message,country,countryCode,region,regionName,city,timezone,lat,lon`, {
-            headers: { 'User-Agent': 'CreedaVA/1.0' },
-            signal: AbortSignal.timeout(3000) // 3 second timeout
-          });
-          
-          if (geoResponse.ok) {
-            const geoData = await geoResponse.json();
-            context.log('Geolocation data received:', JSON.stringify(geoData));
+          // Try ip-api.com first (free, no API key needed, 45 req/min)
+          let geoResolved = false;
+          try {
+            const geoResponse = await fetch(`http://ip-api.com/json/${clientIp}?fields=status,message,country,countryCode,region,regionName,city,timezone,lat,lon`, {
+              headers: { 'User-Agent': 'CreedaVA/1.0' },
+              signal: AbortSignal.timeout(3000)
+            });
             
-            if (geoData.status === 'success') {
-              country = geoData.countryCode || country;
-              region = geoData.regionName || region;
-              city = geoData.city || city;
-              timezone = geoData.timezone || timezone;
-              latitude = geoData.lat?.toString() || latitude;
-              longitude = geoData.lon?.toString() || longitude;
+            if (geoResponse.ok) {
+              const geoData = await geoResponse.json();
+              context.log('ip-api.com data:', JSON.stringify(geoData));
               
-              context.log(`Location resolved: ${city}, ${region}, ${country}`);
-            } else {
-              context.log('Geolocation API returned error:', geoData.message);
+              if (geoData.status === 'success') {
+                country = geoData.countryCode || country;
+                countryName = geoData.country || null;
+                region = geoData.regionName || region;
+                city = geoData.city || city;
+                timezone = geoData.timezone || timezone;
+                latitude = geoData.lat?.toString() || latitude;
+                longitude = geoData.lon?.toString() || longitude;
+                geoResolved = true;
+                context.log(`Location resolved (ip-api): ${city}, ${region}, ${country}`);
+              }
             }
-          } else {
-            context.log(`Geolocation API request failed with status: ${geoResponse.status}`);
+          } catch (primaryError) {
+            context.log('ip-api.com failed:', primaryError.message);
+          }
+
+          // Fallback: try ipwho.is (free, no key, higher rate limit)
+          if (!geoResolved) {
+            try {
+              const fallbackResponse = await fetch(`https://ipwho.is/${clientIp}`, {
+                headers: { 'User-Agent': 'CreedaVA/1.0' },
+                signal: AbortSignal.timeout(3000)
+              });
+              if (fallbackResponse.ok) {
+                const fbData = await fallbackResponse.json();
+                context.log('ipwho.is data:', JSON.stringify(fbData));
+                if (fbData.success !== false) {
+                  country = fbData.country_code || country;
+                  countryName = fbData.country || null;
+                  region = fbData.region || region;
+                  city = fbData.city || city;
+                  timezone = fbData.timezone?.id || timezone;
+                  latitude = fbData.latitude?.toString() || latitude;
+                  longitude = fbData.longitude?.toString() || longitude;
+                  geoResolved = true;
+                  context.log(`Location resolved (ipwho.is): ${city}, ${region}, ${country}`);
+                }
+              }
+            } catch (fallbackError) {
+              context.log('ipwho.is fallback failed:', fallbackError.message);
+            }
           }
         } catch (geoError) {
           context.log('Geolocation lookup failed:', geoError.message);
@@ -130,11 +162,36 @@ app.http('trackEvent', {
         context.log(`Skipping geolocation for IP: ${clientIp} (private/invalid)`);
       }
 
+      // Last resort: try to infer country from client-supplied timezone
+      if (!country || country === 'Unknown') {
+        const clientTimezone = body.timezone || timezone;
+        if (clientTimezone) {
+          const tzCountryMap = {
+            'America/New_York': 'US', 'America/Chicago': 'US', 'America/Denver': 'US',
+            'America/Los_Angeles': 'US', 'America/Phoenix': 'US', 'America/Anchorage': 'US',
+            'Pacific/Honolulu': 'US', 'America/Belize': 'BZ', 'America/Toronto': 'CA',
+            'America/Vancouver': 'CA', 'Europe/London': 'GB', 'Europe/Berlin': 'DE',
+            'Europe/Paris': 'FR', 'Europe/Madrid': 'ES', 'Europe/Rome': 'IT',
+            'Europe/Amsterdam': 'NL', 'Asia/Tokyo': 'JP', 'Asia/Shanghai': 'CN',
+            'Asia/Seoul': 'KR', 'Asia/Kolkata': 'IN', 'Asia/Singapore': 'SG',
+            'Australia/Sydney': 'AU', 'Australia/Melbourne': 'AU',
+            'America/Mexico_City': 'MX', 'America/Sao_Paulo': 'BR',
+            'America/Argentina/Buenos_Aires': 'AR',
+          };
+          const inferredCountry = tzCountryMap[clientTimezone];
+          if (inferredCountry) {
+            country = inferredCountry;
+            context.log(`Country inferred from timezone ${clientTimezone}: ${country}`);
+          }
+        }
+      }
+
       const item = {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: 'event',
         clientIp: clientIp || null,
         country: country || 'Unknown',
+        countryName: countryName || null,
         region: region || null,
         city: city || null,
         timezone: timezone || null,

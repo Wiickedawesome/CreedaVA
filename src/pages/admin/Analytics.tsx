@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { TrendingUp, Eye, MousePointer, Users, Globe, Globe2, Calendar, RefreshCw, Info, MapPin, Clock, ArrowRight, Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, Eye, MousePointer, Users, Globe, Globe2, Calendar, RefreshCw, Info, MapPin, Clock, ArrowRight, Search, Filter, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -21,6 +21,7 @@ interface AnalyticsEvent {
   timestamp: string;
   sessionId?: string;
   country?: string;
+  countryName?: string;
   region?: string;
   city?: string;
   timezone?: string;
@@ -134,6 +135,11 @@ export function Analytics() {
   const [recentEventTypeFilter, setRecentEventTypeFilter] = useState<string>('all');
   const [recentPageFilter, setRecentPageFilter] = useState('');
   const [recentItemsToShow, setRecentItemsToShow] = useState(15);
+  // Sort state for recent activity table
+  type SortField = 'timestamp' | 'eventType' | 'page' | 'country';
+  type SortDir = 'asc' | 'desc';
+  const [sortField, setSortField] = useState<SortField>('timestamp');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
   const { signIn } = useAuth()
 
   // Filter function to exclude admin pages
@@ -154,6 +160,23 @@ export function Analytics() {
     if (recentEventTypeFilter !== 'all' && event.eventType !== recentEventTypeFilter) return false;
     if (recentPageFilter && !event.page.toLowerCase().includes(recentPageFilter.toLowerCase())) return false;
     return true;
+  }).sort((a, b) => {
+    const dir = sortDir === 'asc' ? 1 : -1;
+    switch (sortField) {
+      case 'timestamp':
+        return dir * (new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      case 'eventType':
+        return dir * a.eventType.localeCompare(b.eventType);
+      case 'page':
+        return dir * (a.page || '').localeCompare(b.page || '');
+      case 'country': {
+        const ac = a.countryName || a.country || 'Unknown';
+        const bc = b.countryName || b.country || 'Unknown';
+        return dir * ac.localeCompare(bc);
+      }
+      default:
+        return 0;
+    }
   });
 
   // Unique event types for the filter dropdown
@@ -806,10 +829,30 @@ export function Analytics() {
             <Table>
               <TableHeader>
                 <TableRow className="border-gray-700">
-                  <TableHead className="text-gray-400">Event Type</TableHead>
-                  <TableHead className="text-gray-400">Page</TableHead>
-                  <TableHead className="text-gray-400">Location</TableHead>
-                  <TableHead className="text-gray-400">Timestamp</TableHead>
+                  <TableHead className="text-gray-400 cursor-pointer select-none hover:text-white transition-colors" onClick={() => { if (sortField === 'eventType') { setSortDir(d => d === 'asc' ? 'desc' : 'asc'); } else { setSortField('eventType'); setSortDir('asc'); } }}>
+                    <span className="flex items-center gap-1">
+                      Event Type
+                      {sortField === 'eventType' ? (sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />) : <ArrowUpDown className="h-3 w-3 opacity-40" />}
+                    </span>
+                  </TableHead>
+                  <TableHead className="text-gray-400 cursor-pointer select-none hover:text-white transition-colors" onClick={() => { if (sortField === 'page') { setSortDir(d => d === 'asc' ? 'desc' : 'asc'); } else { setSortField('page'); setSortDir('asc'); } }}>
+                    <span className="flex items-center gap-1">
+                      Page
+                      {sortField === 'page' ? (sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />) : <ArrowUpDown className="h-3 w-3 opacity-40" />}
+                    </span>
+                  </TableHead>
+                  <TableHead className="text-gray-400 cursor-pointer select-none hover:text-white transition-colors" onClick={() => { if (sortField === 'country') { setSortDir(d => d === 'asc' ? 'desc' : 'asc'); } else { setSortField('country'); setSortDir('asc'); } }}>
+                    <span className="flex items-center gap-1">
+                      Location
+                      {sortField === 'country' ? (sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />) : <ArrowUpDown className="h-3 w-3 opacity-40" />}
+                    </span>
+                  </TableHead>
+                  <TableHead className="text-gray-400 cursor-pointer select-none hover:text-white transition-colors" onClick={() => { if (sortField === 'timestamp') { setSortDir(d => d === 'asc' ? 'desc' : 'asc'); } else { setSortField('timestamp'); setSortDir('desc'); } }}>
+                    <span className="flex items-center gap-1">
+                      Timestamp
+                      {sortField === 'timestamp' ? (sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />) : <ArrowUpDown className="h-3 w-3 opacity-40" />}
+                    </span>
+                  </TableHead>
                   <TableHead className="text-gray-400">Details</TableHead>
                 </TableRow>
               </TableHeader>
@@ -839,8 +882,8 @@ export function Analytics() {
                           <MapPin className="h-3 w-3" />
                           <span>
                             {event.city && event.city !== 'Unknown' 
-                              ? `${event.city}, ${getCountryName(event.country)}`
-                              : getCountryName(event.country)
+                              ? `${event.city}, ${event.countryName || getCountryName(event.country)}`
+                              : event.countryName || getCountryName(event.country)
                             }
                           </span>
                         </div>
