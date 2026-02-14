@@ -5,9 +5,9 @@
    ======================================== */
 
 :root {
-  /* CoolGray Palette */
-  --gray-100: #001D6C;
-  --gray-90: #343A3F;
+  /* CoolGray Palette (Navy Blue tinted) */
+  --gray-100: #002D72;
+  --gray-90: #1B3A5C;
   --gray-80: #4D5358;
   --gray-70: #697077;
   --gray-60: #878D96;
@@ -29,7 +29,7 @@
 
   /* Semantic */
   --background: #FFFFFF;
-  --foreground: #001D6C;
+  --foreground: #002D72;
   --muted: #F2F4F8;
   --muted-foreground: #697077;
   --border: #DDE1E6;

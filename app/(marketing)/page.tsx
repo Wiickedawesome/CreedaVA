@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "@/components/ui";
 
 const services = [
@@ -106,15 +107,14 @@ export default function HomePage() {
             <div className="hidden lg:block">
               <div className="relative">
                 <div className="w-full aspect-square bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl flex items-center justify-center">
-                  <div className="text-center p-12">
-                    <div className="w-24 h-24 mx-auto mb-6 bg-primary/20 rounded-2xl flex items-center justify-center">
-                      <svg className="w-12 h-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                    <p className="text-2xl font-bold text-gray-100">Your Business</p>
-                    <p className="text-gray-60 mt-2">Powered by CreedaVA</p>
-                  </div>
+                  <Image
+                    src="/logo.webp"
+                    alt="CreedaVA — Professional Virtual Assistants"
+                    width={400}
+                    height={400}
+                    className="w-3/4 h-auto object-contain"
+                    priority
+                  />
                 </div>
               </div>
             </div>
