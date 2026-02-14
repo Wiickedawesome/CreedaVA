@@ -104,31 +104,27 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <div className="hidden lg:block">
-              <div className="relative">
-                <div className="w-full aspect-square bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl flex items-center justify-center">
-                  <Image
-                    src="/logo.webp"
-                    alt="CreedaVA — Professional Virtual Assistants"
-                    width={400}
-                    height={400}
-                    className="w-3/4 h-auto object-contain"
-                    priority
-                  />
-                </div>
-              </div>
+            <div className="hidden lg:flex items-center justify-center">
+              <Image
+                src="/logo.webp"
+                alt="CreedaVA — Professional Virtual Assistants"
+                width={500}
+                height={500}
+                className="w-full h-auto object-contain"
+                priority
+              />
             </div>
           </div>
         </Container>
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 bg-primary">
+      <section className="py-14 bg-[#1B2A4A]">
         <Container>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-3xl lg:text-4xl font-bold text-white">
+                <p className="text-3xl lg:text-4xl font-bold text-primary">
                   {stat.value}
                 </p>
                 <p className="text-sm text-white/70 mt-1">{stat.label}</p>
