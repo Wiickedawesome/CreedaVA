@@ -20,11 +20,11 @@ export default function HomePage() {
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
                 Professional Virtual Assistants
               </span>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-100 leading-tight mb-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
                 Focus on What{" "}
-                <span className="text-primary">Matters Most</span>
+                <span className="text-white">Matters Most</span>
               </h1>
-              <p className="text-lg text-gray-70 leading-relaxed mb-8">
+              <p className="text-lg text-white/80 leading-relaxed mb-8">
                 Delegate your administrative tasks to skilled virtual assistants.
                 Save time, reduce costs, and scale your business with CreedaVA&apos;s
                 professional support services.
