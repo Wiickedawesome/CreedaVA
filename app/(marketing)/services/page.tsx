@@ -137,19 +137,19 @@ const serviceCategories = [
   },
   {
     id: "campaigns",
-    title: "Specialized Campaigns",
-    description: "End-to-end campaign management from planning to execution across digital and traditional channels.",
+    title: "Dedicated Campaigns",
+    description: "A fully assigned team working exclusively for your company — handling calls, chats, and operations as an extension of your brand.",
     features: [
-      "Campaign strategy and planning",
-      "Multi-channel campaign execution",
-      "Performance tracking and reporting",
-      "A/B testing and optimization",
-      "Audience segmentation and targeting",
-      "Creative brief coordination",
+      "Dedicated agents assigned to your account",
+      "Inbound and outbound call handling",
+      "Brand-specific training and onboarding",
+      "Quality assurance and call monitoring",
+      "Real-time performance dashboards",
+      "Scalable team size as your needs grow",
     ],
     icon: (
       <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
     ),
   },
