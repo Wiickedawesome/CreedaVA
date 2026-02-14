@@ -108,9 +108,9 @@ export default function HomePage() {
               <Image
                 src="/logo.webp"
                 alt="CreedaVA — Professional Virtual Assistants"
-                width={500}
-                height={500}
-                className="w-full h-auto object-contain"
+                width={380}
+                height={380}
+                className="w-3/4 h-auto object-contain"
                 priority
               />
             </div>

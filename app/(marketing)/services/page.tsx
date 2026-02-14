@@ -130,54 +130,42 @@ export default function ServicesPage() {
               Our Services
             </h1>
             <p className="text-lg text-gray-60 leading-relaxed">
-              From administrative tasks to strategic support, our professional
-              virtual assistants are ready to help your business thrive.
+              Comprehensive virtual assistant services designed to free up your
+              time and accelerate growth.
             </p>
           </div>
         </Container>
       </section>
 
-      {/* Services Grid */}
+      {/* Services Tile Grid */}
       <section className="py-20 lg:py-28">
         <Container>
-          <div className="space-y-20">
-            {serviceCategories.map((service, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {serviceCategories.map((service) => (
               <div
                 key={service.id}
                 id={service.id}
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${
-                  index % 2 === 1 ? "lg:[direction:rtl] lg:*:[direction:ltr]" : ""
-                }`}
+                className="group bg-white border border-border rounded-2xl p-8 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
               >
-                <div>
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6">
-                    {service.icon}
-                  </div>
-                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-100 mb-4">
-                    {service.title}
-                  </h2>
-                  <p className="text-gray-60 leading-relaxed mb-6">
-                    {service.description}
-                  </p>
-                  <ul className="space-y-3">
-                    {service.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-success mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span className="text-gray-70">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                  {service.icon}
                 </div>
-                <div className="bg-gradient-to-br from-gray-10 to-gray-20 rounded-2xl aspect-[4/3] flex items-center justify-center">
-                  <div className="text-center p-8">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                      {service.icon}
-                    </div>
-                    <p className="text-lg font-bold text-gray-100">{service.title}</p>
-                  </div>
-                </div>
+                <h3 className="text-xl font-bold text-gray-100 mb-3">
+                  {service.title}
+                </h3>
+                <p className="text-gray-60 text-sm leading-relaxed mb-5">
+                  {service.description}
+                </p>
+                <ul className="space-y-2">
+                  {service.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2">
+                      <svg className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-70 text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
