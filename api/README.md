@@ -1,1 +1,0 @@
-# CreedaVA API - Azure Functions

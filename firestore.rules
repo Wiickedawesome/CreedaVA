@@ -1,0 +1,72 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: check if user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper: check if user belongs to CreedaVA domain
+    function isAdmin() {
+      return isAuth() && request.auth.token.hd == 'creedava.com';
+    }
+
+    // Blog posts — public read, admin write
+    match /blog/{postId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Contact form submissions — anyone can create, admin can read
+    match /contacts/{contactId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Bookings — anyone can create, admin can manage
+    match /bookings/{bookingId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // CRM entities — admin only
+    match /leads/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /customers/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /tasks/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /notes/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /analytics/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Forum — authenticated users can read/create, admin can manage
+    match /forum-categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /forum-threads/{threadId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow update, delete: if isAdmin() || request.auth.uid == resource.data.authorId;
+    }
+    match /forum-replies/{replyId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow update, delete: if isAdmin() || request.auth.uid == resource.data.authorId;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
