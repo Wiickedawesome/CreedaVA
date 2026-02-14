@@ -117,6 +117,60 @@ const serviceCategories = [
       </svg>
     ),
   },
+  {
+    id: "real-estate",
+    title: "Real Estate Virtual Assistant",
+    description: "Dedicated support for real estate professionals to manage listings, leads, and client communications.",
+    features: [
+      "Listing coordination and management",
+      "Lead follow-up and qualification",
+      "MLS data entry and updates",
+      "Transaction coordination",
+      "Open house scheduling and promotion",
+      "Client communication and nurturing",
+    ],
+    icon: (
+      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1m-2 0h2" />
+      </svg>
+    ),
+  },
+  {
+    id: "campaigns",
+    title: "Specialized Campaigns",
+    description: "End-to-end campaign management from planning to execution across digital and traditional channels.",
+    features: [
+      "Campaign strategy and planning",
+      "Multi-channel campaign execution",
+      "Performance tracking and reporting",
+      "A/B testing and optimization",
+      "Audience segmentation and targeting",
+      "Creative brief coordination",
+    ],
+    icon: (
+      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+      </svg>
+    ),
+  },
+  {
+    id: "enterprise",
+    title: "Enterprise",
+    description: "Scalable virtual assistant solutions for larger organizations with complex operational needs.",
+    features: [
+      "Dedicated team of virtual assistants",
+      "Custom workflow integration",
+      "Project management and oversight",
+      "SLA-backed service levels",
+      "Multi-department support",
+      "Executive-level reporting and insights",
+    ],
+    icon: (
+      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+    ),
+  },
 ];
 
 export default function ServicesPage() {

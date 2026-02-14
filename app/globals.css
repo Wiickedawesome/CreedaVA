@@ -18,14 +18,14 @@
   --gray-10: #F9FBFF;
 
   /* Brand Colors (from CreedaVA logo: teal gradient) */
-  --primary: #0A8A9A;
-  --primary-light: #10A7B8;
-  --primary-hover: #077B89;
-  --accent: #1295A3;
+  --primary: #005148;
+  --primary-light: #007A6D;
+  --primary-hover: #003D36;
+  --accent: #00685C;
   --success: #24A148;
   --warning: #F1C21B;
   --error: #DA1E28;
-  --info: #0A8A9A;
+  --info: #005148;
 
   /* Semantic */
   --background: #FFFFFF;
@@ -33,7 +33,7 @@
   --muted: #F2F4F8;
   --muted-foreground: #697077;
   --border: #DDE1E6;
-  --ring: #10A7B8;
+  --ring: #007A6D;
 
   /* Typography Scale (Figma: Roboto) */
   --font-size-h1: 3.375rem;   /* 54px */
