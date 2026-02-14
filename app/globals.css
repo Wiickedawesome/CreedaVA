@@ -6,7 +6,7 @@
 
 :root {
   /* CoolGray Palette */
-  --gray-100: #21272A;
+  --gray-100: #001D6C;
   --gray-90: #343A3F;
   --gray-80: #4D5358;
   --gray-70: #697077;
@@ -29,7 +29,7 @@
 
   /* Semantic */
   --background: #FFFFFF;
-  --foreground: #21272A;
+  --foreground: #001D6C;
   --muted: #F2F4F8;
   --muted-foreground: #697077;
   --border: #DDE1E6;

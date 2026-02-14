@@ -12,22 +12,39 @@ const values = [
   {
     title: "Excellence",
     description: "We hold ourselves to the highest standards in every task, no matter how small.",
-    icon: "🏆",
+    icon: (
+      <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-4.5A3.375 3.375 0 0012.75 11.25h-1.5A3.375 3.375 0 007.875 14.25v4.5m4.125-12a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5zM12 6.75l2.25-2.25M12 6.75L9.75 4.5" />
+      </svg>
+    ),
   },
   {
     title: "Reliability",
     description: "Your deadlines are our deadlines. We deliver consistently, on time, every time.",
-    icon: "🤝",
+    icon: (
+      <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.746 3.746 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.746 3.746 0 011.043-3.296 3.745 3.745 0 013.296-1.043A3.745 3.745 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+      </svg>
+    ),
   },
   {
     title: "Transparency",
     description: "Clear communication, honest pricing, and no surprises. You always know where you stand.",
-    icon: "💎",
+    icon: (
+      <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
   },
   {
     title: "Growth",
     description: "We're committed to helping your business grow while continuously improving our own skills.",
-    icon: "🌱",
+    icon: (
+      <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 18L9 11.25l4.306 4.306a11.95 11.95 0 015.814-5.518l2.74-1.22m0 0l-5.94-2.281m5.94 2.28l-2.28 5.941" />
+      </svg>
+    ),
   },
 ];
 
@@ -97,7 +114,7 @@ export default function AboutPage() {
                 key={value.title}
                 className="bg-white p-8 rounded-2xl border border-border text-center hover:shadow-lg transition-shadow"
               >
-                <div className="text-4xl mb-4">{value.icon}</div>
+                <div className="mb-4 flex justify-center">{value.icon}</div>
                 <h3 className="text-xl font-bold text-gray-100 mb-3">
                   {value.title}
                 </h3>
