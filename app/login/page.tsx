@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Container, Button } from "@/components/ui";
 
 export default function LoginPage() {
@@ -8,9 +9,13 @@ export default function LoginPage() {
       <Container size="sm">
         <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg border border-border p-8">
           <div className="text-center mb-8">
-            <div className="w-12 h-12 mx-auto mb-4 bg-primary rounded-[var(--radius-md)] flex items-center justify-center">
-              <span className="text-white font-bold text-lg">C</span>
-            </div>
+            <Image
+              src="/logo.webp"
+              alt="CreedaVA"
+              width={160}
+              height={46}
+              className="h-12 w-auto mx-auto mb-4"
+            />
             <h1 className="text-2xl font-bold text-gray-100">
               Welcome Back
             </h1>

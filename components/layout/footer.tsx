@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Container } from "@/components/ui";
 
 const footerLinks = {
@@ -31,12 +32,13 @@ export function Footer() {
             {/* Brand */}
             <div className="lg:col-span-1">
               <Link href="/" className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-white rounded-[var(--radius-md)] flex items-center justify-center">
-                  <span className="text-primary font-bold text-sm">C</span>
-                </div>
-                <span className="text-xl font-bold">
-                  Creeda<span className="text-accent">VA</span>
-                </span>
+                <Image
+                  src="/logo.webp"
+                  alt="CreedaVA"
+                  width={140}
+                  height={40}
+                  className="h-10 w-auto brightness-0 invert"
+                />
               </Link>
               <p className="text-gray-50 text-sm leading-relaxed max-w-xs">
                 Professional virtual assistant services that help businesses
