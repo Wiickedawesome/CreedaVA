@@ -1,10 +1,16 @@
 // Firebase configuration
-// Replace these values with your Firebase project config
-// Get them from: Firebase Console → Project Settings → Your apps → Web app
+// Get values from: Firebase Console → Project Settings → Your apps → Web app
 
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import {
+  getAnalytics,
+  logEvent as firebaseLogEvent,
+  isSupported,
+  type Analytics,
+} from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
@@ -16,9 +22,37 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
 };
 
-// Initialize Firebase (prevent re-initialization in dev)
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Initialize Firebase (prevent re-initialization in dev / HMR)
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
-const db = getFirestore(app);
 
-export { app, auth, db };
+// Use getFirestore — safe to call multiple times (returns same instance).
+// initializeFirestore + persistentLocalCache crashes on HMR re-init.
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// ─── GA4 Analytics ───────────────────────────────────
+// Lazy-init: only in browser, only when supported
+let _analytics: Analytics | null = null;
+
+async function getGA4(): Promise<Analytics | null> {
+  if (typeof window === "undefined") return null;
+  if (_analytics) return _analytics;
+  const supported = await isSupported();
+  if (!supported) return null;
+  _analytics = getAnalytics(app);
+  return _analytics;
+}
+
+/** Log a GA4 event alongside custom Firestore analytics */
+async function logGA4Event(
+  eventName: string,
+  params?: Record<string, unknown>,
+): Promise<void> {
+  const analytics = await getGA4();
+  if (analytics) {
+    firebaseLogEvent(analytics, eventName, params);
+  }
+}
+
+export { app, auth, db, storage, getGA4, logGA4Event };

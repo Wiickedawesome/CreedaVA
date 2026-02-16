@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 
@@ -8,6 +8,12 @@ const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#005148",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -34,6 +40,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Preconnect to Firebase services — saves ~200-400ms on first request */}
+        <link rel="preconnect" href="https://firestore.googleapis.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://apis.google.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.googleapis.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
+      </head>
       <body className={`${roboto.variable} antialiased`}>
         {children}
       </body>

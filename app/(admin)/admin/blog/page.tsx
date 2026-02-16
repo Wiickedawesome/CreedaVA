@@ -1,0 +1,551 @@
+"use client";
+
+import { useState, useRef } from "react";
+import { useCollection } from "@/hooks/useCollection";
+import {
+  PageHeader,
+  AdminTabs,
+  DataTable,
+  StatusBadge,
+  Modal,
+  useToast,
+} from "@/components/admin";
+import type { Column } from "@/components/admin";
+import { Button, Input } from "@/components/ui";
+import { AIPromptButton, RichTextEditor } from "@/components/admin";
+import { lazyGenerateBlogPost as generateBlogPost } from "@/lib/firebase/ai-lazy";
+import { uploadImage, uploadFile } from "@/lib/firebase/storage";
+import { cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
+import type { BlogPost, BlogPostFormData } from "@/lib/types/content";
+
+const emptyPost: BlogPostFormData = {
+  title: "",
+  slug: "",
+  excerpt: "",
+  content: "",
+  tags: [],
+  metaDescription: "",
+  status: "draft",
+  featuredImage: "",
+  images: [],
+  attachments: [],
+};
+
+export default function BlogPage() {
+  const { data: posts, loading, add, edit, del } = useCollection<BlogPost>("blog", {
+    orderByField: "createdAt",
+  });
+  const { toast } = useToast();
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const attachInputRef = useRef<HTMLInputElement>(null);
+
+  const [tab, setTab] = useState("all");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [selected, setSelected] = useState<BlogPost | null>(null);
+  const [form, setForm] = useState<BlogPostFormData>(emptyPost);
+  const [uploading, setUploading] = useState(false);
+
+  // Drive import
+  const [driveOpen, setDriveOpen] = useState(false);
+  const [driveLoading, setDriveLoading] = useState(false);
+  const [driveFiles, setDriveFiles] = useState<{ id: string; name: string; type: string; mimeType: string; webLink: string; modifiedAt: string; thumbnail: string }[]>([]);
+
+  // AI generation (state reserved for future inline AI prompt UI)
+
+  const filtered = posts.filter((p) => tab === "all" || p.status === tab);
+
+  const tabs = [
+    { label: "All", value: "all", badge: posts.length },
+    { label: "Draft", value: "draft", badge: posts.filter((p) => p.status === "draft").length },
+    { label: "Published", value: "published", badge: posts.filter((p) => p.status === "published").length },
+  ];
+
+  function openModal(post?: BlogPost) {
+    if (post) {
+      setSelected(post);
+      setForm({
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        tags: post.tags || [],
+        metaDescription: post.metaDescription || "",
+        status: post.status,
+        featuredImage: post.featuredImage || "",
+        images: post.images || [],
+        attachments: post.attachments || [],
+      });
+    } else {
+      setSelected(null);
+      setForm(emptyPost);
+    }
+    setModalOpen(true);
+  }
+
+  // ── Image upload handler ──────────────────────────
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const folder = `blog/${selected?.id || "new_" + Date.now()}`;
+      const uploaded: string[] = [];
+      for (const file of Array.from(files)) {
+        const result = await uploadImage(file, folder);
+        uploaded.push(result.url);
+      }
+      const currentImages = form.images || [];
+      setForm({
+        ...form,
+        images: [...currentImages, ...uploaded],
+        featuredImage: form.featuredImage || uploaded[0] || "",
+      });
+      toast(`${uploaded.length} image(s) uploaded`, "success");
+    } catch (err) {
+      toast((err as Error).message || "Upload failed", "error");
+    } finally {
+      setUploading(false);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+  }
+
+  // ── Attachment upload handler ─────────────────────
+  async function handleAttachmentUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const folder = `blog/${selected?.id || "new_" + Date.now()}/attachments`;
+      const currentAttachments = form.attachments || [];
+      const newAttachments = [...currentAttachments];
+      for (const file of Array.from(files)) {
+        const result = await uploadFile(file, folder);
+        newAttachments.push({ name: result.name, url: result.url, type: result.type });
+      }
+      setForm({ ...form, attachments: newAttachments });
+      toast(`${files.length} file(s) attached`, "success");
+    } catch {
+      toast("Upload failed", "error");
+    } finally {
+      setUploading(false);
+      if (attachInputRef.current) attachInputRef.current.value = "";
+    }
+  }
+
+  function removeImage(index: number) {
+    const imgs = [...(form.images || [])];
+    const removed = imgs.splice(index, 1)[0];
+    setForm({
+      ...form,
+      images: imgs,
+      featuredImage: form.featuredImage === removed ? (imgs[0] || "") : form.featuredImage,
+    });
+  }
+
+  function removeAttachment(index: number) {
+    const atts = [...(form.attachments || [])];
+    atts.splice(index, 1);
+    setForm({ ...form, attachments: atts });
+  }
+
+  // ── Drive import ──────────────────────────────────
+  async function handleBrowseDrive() {
+    setDriveLoading(true);
+    try {
+      const result = await cloudListDriveFiles();
+      if (result.success) {
+        setDriveFiles(result.files);
+        setDriveOpen(true);
+      }
+    } catch {
+      toast("Failed — ensure Google Drive is configured in Settings → Integrations", "error");
+    } finally {
+      setDriveLoading(false);
+    }
+  }
+
+  function handleImportDriveFile(file: { name: string; webLink: string; mimeType: string }) {
+    if (file.mimeType.startsWith("image/")) {
+      setForm({
+        ...form,
+        images: [...(form.images || []), file.webLink],
+        featuredImage: form.featuredImage || file.webLink,
+      });
+      toast(`Image "${file.name}" imported from Drive`, "success");
+    } else {
+      setForm({
+        ...form,
+        attachments: [...(form.attachments || []), { name: file.name, url: file.webLink, type: file.mimeType }],
+      });
+      toast(`File "${file.name}" attached from Drive`, "success");
+    }
+  }
+
+  async function handleSave() {
+    try {
+      if (selected) {
+        await edit(selected.id, form);
+        toast("Post updated");
+      } else {
+        await add(form);
+        toast("Post created");
+      }
+      setModalOpen(false);
+    } catch {
+      toast("Failed to save post", "error");
+    }
+  }
+
+  async function handlePublish() {
+    if (!selected) return;
+    try {
+      await edit(selected.id, { status: "published", publishedAt: new Date().toISOString() });
+      toast("Post published!");
+      setModalOpen(false);
+    } catch {
+      toast("Failed to publish", "error");
+    }
+  }
+
+  async function handleDelete() {
+    if (!selected) return;
+    setDeleting(true);
+    try {
+      await del(selected.id);
+      toast("Post deleted");
+      setDeleteOpen(false);
+      setModalOpen(false);
+      setSelected(null);
+    } catch {
+      toast("Failed to delete post", "error");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const columns: Column<BlogPost>[] = [
+    {
+      key: "title",
+      header: "Title",
+      render: (p) => (
+        <div className="flex items-center gap-3">
+          {p.featuredImage ? (
+            <img src={p.featuredImage} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+          ) : (
+            <div className="w-10 h-10 rounded-lg bg-gray-10 shrink-0 flex items-center justify-center">
+              <svg className="w-5 h-5 text-gray-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="font-medium text-gray-90">{p.title}</p>
+            <p className="text-xs text-gray-50 mt-0.5 truncate max-w-xs">{p.excerpt}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "tags",
+      header: "Tags",
+      render: (p) =>
+        p.tags?.length ? (
+          <div className="flex flex-wrap gap-1">
+            {p.tags.slice(0, 3).map((tag) => (
+              <span key={tag} className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : (
+          "—"
+        ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (p) => (
+        <StatusBadge
+          status={p.status}
+          variant={p.status === "published" ? "success" : "default"}
+        />
+      ),
+    },
+    {
+      key: "publishedAt",
+      header: "Published",
+      render: (p) => (p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : "—"),
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Blog"
+        description="Create and manage blog posts — AI-assisted writing included"
+        actions={
+          <div className="flex items-center gap-2">
+            <AIPromptButton
+              section="Blog AI"
+              description="Generate a full blog post from a topic description. The AI will create a title, slug, excerpt, content, tags, and meta description."
+              placeholder="Describe your blog post topic... e.g. 'How virtual assistants can save startups 20 hours per week'"
+              presets={[
+                { label: "Business Tips", prompt: "Write a blog post about practical business tips for small business owners looking to delegate tasks to virtual assistants." },
+                { label: "Industry Trends", prompt: "Write a blog post about the latest trends in virtual assistant services and remote work for 2026." },
+                { label: "Case Study", prompt: "Write a blog post case study about how a startup scaled their operations using CreedaVA's virtual assistant services." },
+              ]}
+              previewable
+              previewLabel="Preview Post"
+              onResult={(raw) => {
+                try {
+                  const result = JSON.parse(raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim());
+                  const generated: BlogPostFormData = {
+                    title: result.title || "",
+                    slug: result.slug || "",
+                    excerpt: result.excerpt || "",
+                    content: result.content || "",
+                    tags: result.tags || [],
+                    metaDescription: result.metaDescription || "",
+                    status: "draft",
+                    featuredImage: "",
+                    images: [],
+                    attachments: [],
+                  };
+                  setSelected(null);
+                  setForm(generated);
+                  setModalOpen(true);
+                  toast("AI content loaded — edit and save when ready", "success");
+                } catch {
+                  generateBlogPost(raw.slice(0, 200)).then((r) => {
+                    setSelected(null);
+                    setForm({ title: r.title, slug: r.slug, excerpt: r.excerpt, content: r.content, tags: r.tags, metaDescription: r.metaDescription, status: "draft", featuredImage: "", images: [], attachments: [] });
+                    setModalOpen(true);
+                    toast("AI content loaded — edit and save when ready", "success");
+                  }).catch(() => toast("AI generation failed", "error"));
+                }
+              }}
+              buildPrompt={(input) =>
+                `You are a blog writer for CreedaVA, a virtual assistant services company.
+Write a complete blog post about: "${input}"
+
+Return ONLY valid JSON with these fields:
+- title: compelling blog title
+- slug: URL-friendly slug
+- excerpt: 1-2 sentence summary
+- content: full blog post in HTML (use h2, h3, p, ul, li tags)
+- tags: array of 3-5 relevant tags
+- metaDescription: SEO meta description (150-160 chars)
+
+Return ONLY valid JSON, no markdown fences.`
+              }
+            />
+            <Button size="sm" onClick={() => openModal()}>
+              + New Post
+            </Button>
+          </div>
+        }
+      />
+
+      <AdminTabs tabs={tabs} defaultValue="all" onChange={setTab} />
+
+      <DataTable
+        columns={columns}
+        data={filtered}
+        keyExtractor={(p) => p.id}
+        onRowClick={(p) => openModal(p)}
+        emptyMessage="No posts yet — create one or let AI generate a draft"
+      />
+
+      {/* Create / Edit Modal */}
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selected ? "Edit Post" : "New Post"}
+        size="lg"
+        footer={
+          <>
+            {selected && (
+              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+                Delete
+              </Button>
+            )}
+            {selected?.status === "draft" && (
+              <Button variant="outline" size="sm" onClick={handlePublish}>
+                Publish
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleBrowseDrive} isLoading={driveLoading}>
+              <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
+              Drive
+            </Button>
+            <div className="flex-1" />
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleSave}>
+              {selected ? "Save Changes" : "Save Draft"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input label="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <Input label="Slug" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+          <Input label="Excerpt" value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} />
+          <Input label="Meta Description" value={form.metaDescription} onChange={(e) => setForm({ ...form, metaDescription: e.target.value })} />
+          <RichTextEditor
+            label="Content"
+            value={form.content}
+            onChange={(val) => setForm({ ...form, content: val })}
+            placeholder="Write your blog post content..."
+            minHeight="250px"
+          />
+          <Input
+            label="Tags (comma-separated)"
+            value={form.tags?.join(", ") || ""}
+            onChange={(e) => setForm({ ...form, tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) })}
+          />
+
+          {/* ── Images ──────────────────────────────── */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-gray-100">Images</label>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => imageInputRef.current?.click()} isLoading={uploading}>
+                  <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                  Upload
+                </Button>
+                <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+              </div>
+            </div>
+            {(form.images?.length ?? 0) > 0 ? (
+              <div className="grid grid-cols-4 gap-2">
+                {form.images!.map((url, i) => (
+                  <div key={i} className="relative group">
+                    <img src={url} alt="" className="w-full h-20 rounded-lg object-cover" />
+                    {url === form.featuredImage && (
+                      <span className="absolute top-1 left-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded">Featured</span>
+                    )}
+                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {url !== form.featuredImage && (
+                        <button
+                          onClick={() => setForm({ ...form, featuredImage: url })}
+                          className="bg-white/90 text-gray-60 rounded p-0.5 hover:text-primary"
+                          title="Set as featured"
+                        >
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => removeImage(i)}
+                        className="bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500"
+                        title="Remove"
+                      >
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-40">No images — upload or import from Drive</p>
+            )}
+          </div>
+
+          {/* ── Attachments ─────────────────────────── */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-gray-100">Attachments</label>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => attachInputRef.current?.click()} isLoading={uploading}>
+                  <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
+                  Attach
+                </Button>
+                <input ref={attachInputRef} type="file" multiple className="hidden" onChange={handleAttachmentUpload} />
+              </div>
+            </div>
+            {(form.attachments?.length ?? 0) > 0 ? (
+              <div className="space-y-1">
+                {form.attachments!.map((att, i) => (
+                  <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-gray-10 text-sm">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                      <a href={att.url} target="_blank" rel="noopener noreferrer" className="text-gray-70 hover:text-primary truncate">{att.name}</a>
+                    </div>
+                    <button onClick={() => removeAttachment(i)} className="text-gray-40 hover:text-red-500 shrink-0 ml-2">
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-40">No attachments</p>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirm */}
+      <Modal
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Delete Post"
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-gray-70">
+          Are you sure you want to delete <strong>{selected?.title}</strong>? This action cannot be undone.
+        </p>
+      </Modal>
+
+      {/* Drive Import Modal */}
+      <Modal open={driveOpen} onClose={() => setDriveOpen(false)} title="Import from Google Drive" size="lg">
+        {driveLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </div>
+        ) : driveFiles.length === 0 ? (
+          <p className="text-sm text-gray-40 text-center py-12">No files found in Drive</p>
+        ) : (
+          <div className="space-y-1 max-h-96 overflow-y-auto">
+            {driveFiles.map((f) => (
+              <div key={f.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-10 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  {f.mimeType?.startsWith("image/") && f.thumbnail ? (
+                    <img src={f.thumbnail} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                  ) : (
+                    <svg className="w-8 h-8 text-gray-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-100 truncate">{f.name}</p>
+                    <p className="text-xs text-gray-40">{f.mimeType}</p>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => handleImportDriveFile(f)}>
+                  Import
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}

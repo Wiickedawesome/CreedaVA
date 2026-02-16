@@ -68,8 +68,12 @@ export async function update(
   data: Partial<DocumentData>,
 ): Promise<void> {
   const docRef = getDocRef(collectionName, docId);
+  // Strip undefined values — Firestore updateDoc rejects them
+  const clean = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined),
+  );
   await updateDoc(docRef, {
-    ...data,
+    ...clean,
     updatedAt: serverTimestamp(),
   });
 }
@@ -89,13 +93,28 @@ export function subscribe<T extends DocumentData>(
   ...constraints: QueryConstraint[]
 ) {
   const q = query(getCollection(collectionName), ...constraints);
-  return onSnapshot(q, (snapshot) => {
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as T),
-    }));
-    callback(data);
-  });
+  try {
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as T),
+        }));
+        callback(data);
+      },
+      (error) => {
+        console.warn(`[Firestore] ${collectionName} listener error:`, error.message);
+        // Return empty array so the page doesn't hang at loading forever
+        callback([]);
+      },
+    );
+  } catch (error) {
+    console.warn(`[Firestore] Failed to create ${collectionName} listener:`, error);
+    callback([]);
+    // Return no-op unsubscribe
+    return () => {};
+  }
 }
 
 // Re-export query helpers for convenience

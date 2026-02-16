@@ -9,8 +9,9 @@ service cloud.firestore {
     }
 
     // Helper: check if user belongs to CreedaVA domain
+    // Uses email match instead of hd claim (hd only works with Google Workspace)
     function isAdmin() {
-      return isAuth() && request.auth.token.hd == 'creedava.com';
+      return isAuth() && request.auth.token.email.matches('.*@creedava[.]com$');
     }
 
     // Blog posts — public read, admin write
@@ -19,10 +20,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Contact form submissions — anyone can create, admin can read
-    match /contacts/{contactId} {
+    // Contact form submissions from website — public create, admin read
+    match /contact-submissions/{docId} {
       allow create: if true;
       allow read, update, delete: if isAdmin();
+    }
+
+    // CRM Contacts — admin only
+    match /contacts/{contactId} {
+      allow read, write: if isAdmin();
     }
 
     // Bookings — anyone can create, admin can manage
@@ -41,27 +47,91 @@ service cloud.firestore {
     match /tasks/{docId} {
       allow read, write: if isAdmin();
     }
+    match /projects/{docId} {
+      allow read, write: if isAdmin();
+    }
     match /notes/{docId} {
       allow read, write: if isAdmin();
     }
-    match /analytics/{docId} {
+
+    // SEO / keywords — admin only
+    match /seo/{docId} {
+      allow read, write: if isAdmin();
+    }
+    match /keywords/{docId} {
       allow read, write: if isAdmin();
     }
 
-    // Forum — authenticated users can read/create, admin can manage
-    match /forum-categories/{categoryId} {
+    // Settings — admin only
+    match /settings/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Social posts — admin only
+    match /social-posts/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Email drafts — admin only
+    match /emails/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Campaigns — admin only
+    match /campaigns/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Landing pages — public read, admin write
+    match /landing-pages/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    match /forum-threads/{threadId} {
-      allow read: if isAuth();
-      allow create: if isAuth();
-      allow update, delete: if isAdmin() || request.auth.uid == resource.data.authorId;
+
+    // Page SEO metadata — public read, admin write
+    match /page-seo/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
-    match /forum-replies/{replyId} {
-      allow read: if isAuth();
+
+    // AI Reports — admin only
+    match /reports/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // AI Worker tasks — admin only
+    match /ai-tasks/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Analytics — public create, admin read
+    match /analytics/{docId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Forum threads — public read, authenticated create, admin manage
+    match /forum/{threadId} {
+      allow read: if true;
       allow create: if isAuth();
-      allow update, delete: if isAdmin() || request.auth.uid == resource.data.authorId;
+      allow update: if isAuth() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Forum replies — public read, authenticated create, admin manage
+    match /forumReplies/{replyId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update: if isAuth() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Forum user profiles — public read (display names), authenticated create/update own
+    match /forumProfiles/{profileId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update: if isAuth() && resource.data.uid == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
     // Default deny

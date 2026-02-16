@@ -1,0 +1,573 @@
+"use client";
+
+import { useState, useRef } from "react";
+import { useCollection } from "@/hooks/useCollection";
+import {
+  PageHeader,
+  AdminTabs,
+  DataTable,
+  StatusBadge,
+  Modal,
+  useToast,
+} from "@/components/admin";
+import type { Column } from "@/components/admin";
+import { Button, Input } from "@/components/ui";
+import { AIPromptButton, RichTextEditor } from "@/components/admin";
+import { lazyGenerateLandingPage as generateLandingPage } from "@/lib/firebase/ai-lazy";
+import type { LandingPage } from "@/lib/types/content";
+import { uploadImage, uploadFile } from "@/lib/firebase/storage";
+import { cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
+
+const emptyForm = {
+  title: "",
+  slug: "",
+  headline: "",
+  subheadline: "",
+  ctaText: "Get Started",
+  bodyHtml: "",
+  status: "draft" as "draft" | "published",
+  images: [] as string[],
+  attachments: [] as { name: string; url: string; type: string }[],
+};
+
+export default function LandingPagesPage() {
+  const { data: pages, loading, add, edit, del } = useCollection<LandingPage>("landing-pages", {
+    orderByField: "createdAt",
+  });
+  const { toast } = useToast();
+
+  const [tab, setTab] = useState("all");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [selected, setSelected] = useState<LandingPage | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
+
+  // Image/attachment/Drive state
+  const [uploading, setUploading] = useState(false);
+  const [driveOpen, setDriveOpen] = useState(false);
+  const [driveLoading, setDriveLoading] = useState(false);
+  const [driveFiles, setDriveFiles] = useState<{ id: string; name: string; mimeType: string; thumbnail?: string; webLink?: string }[]>([]);
+  const lpImageRef = useRef<HTMLInputElement>(null);
+  const lpAttachRef = useRef<HTMLInputElement>(null);
+
+  const filtered = pages.filter((p) => tab === "all" || p.status === tab);
+
+  const tabs = [
+    { label: "All", value: "all", badge: pages.length },
+    { label: "Draft", value: "draft", badge: pages.filter((p) => p.status === "draft").length },
+    { label: "Published", value: "published", badge: pages.filter((p) => p.status === "published").length },
+  ];
+
+  function openModal(page?: LandingPage) {
+    if (page) {
+      setSelected(page);
+      setForm({
+        title: page.title,
+        slug: page.slug,
+        headline: page.headline,
+        subheadline: page.subheadline,
+        ctaText: page.ctaText,
+        bodyHtml: page.bodyHtml,
+        status: page.status,
+        images: page.images || [],
+        attachments: page.attachments || [],
+      });
+    } else {
+      setSelected(null);
+      setForm({ ...emptyForm });
+    }
+    setModalOpen(true);
+  }
+
+  async function handleSave() {
+    if (!form.title.trim() && !form.headline.trim()) return;
+    setSaving(true);
+    try {
+      const data = {
+        title: form.title,
+        slug: form.slug,
+        headline: form.headline,
+        subheadline: form.subheadline,
+        ctaText: form.ctaText,
+        bodyHtml: form.bodyHtml,
+        status: form.status,
+        images: form.images,
+        attachments: form.attachments,
+      };
+      if (selected) {
+        await edit(selected.id, data);
+        toast("Landing page updated");
+      } else {
+        await add({ ...data, views: 0, conversions: 0 });
+        toast("Landing page saved as draft");
+      }
+      setModalOpen(false);
+    } catch {
+      toast("Failed to save", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handlePublish() {
+    if (!selected) return;
+    try {
+      await edit(selected.id, { status: "published" as const });
+      toast("Published!");
+      setModalOpen(false);
+    } catch {
+      toast("Failed to publish", "error");
+    }
+  }
+
+  async function handleDelete() {
+    if (!selected) return;
+    setDeleting(true);
+    try {
+      await del(selected.id);
+      toast("Page deleted");
+      setDeleteOpen(false);
+      setModalOpen(false);
+      setSelected(null);
+    } catch {
+      toast("Failed to delete", "error");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  // ── Landing page image/attachment handlers ──
+  async function handleLpImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files?.length) return;
+    setUploading(true);
+    try {
+      const folder = `landing-pages/${selected?.id || "new_" + Date.now()}`;
+      const urls: string[] = [];
+      for (const file of Array.from(files)) {
+        const result = await uploadImage(file, folder);
+        urls.push(result.url);
+      }
+      setForm(f => ({ ...f, images: [...f.images, ...urls] }));
+      toast(`${urls.length} image(s) uploaded`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Upload failed", "error");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleLpAttachUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files?.length) return;
+    setUploading(true);
+    try {
+      const folder = `landing-pages/${selected?.id || "new_" + Date.now()}/attachments`;
+      const newAtts: { name: string; url: string; type: string }[] = [];
+      for (const file of Array.from(files)) {
+        const result = await uploadFile(file, folder);
+        newAtts.push({ name: result.name, url: result.url, type: result.type });
+      }
+      setForm(f => ({ ...f, attachments: [...f.attachments, ...newAtts] }));
+      toast(`${newAtts.length} file(s) attached`);
+    } catch {
+      toast("Upload failed", "error");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  function removeLpImage(index: number) {
+    setForm(f => ({ ...f, images: f.images.filter((_, i) => i !== index) }));
+  }
+
+  function removeLpAttachment(index: number) {
+    setForm(f => ({ ...f, attachments: f.attachments.filter((_, i) => i !== index) }));
+  }
+
+  async function handleLpBrowseDrive() {
+    setDriveLoading(true);
+    try {
+      const res = await cloudListDriveFiles();
+      if (res.success) {
+        setDriveFiles(res.files || []);
+        setDriveOpen(true);
+      } else {
+        toast("Failed to load Drive files", "error");
+      }
+    } catch {
+      toast("Drive connection failed", "error");
+    } finally {
+      setDriveLoading(false);
+    }
+  }
+
+  async function handleLpImportDrive(file: { id: string; name: string; mimeType: string; webLink?: string }) {
+    if (!file.webLink) return;
+    if (file.mimeType?.startsWith("image/")) {
+      setForm(f => ({ ...f, images: [...f.images, file.webLink!] }));
+      toast(`Imported image: ${file.name}`);
+    } else {
+      setForm(f => ({
+        ...f,
+        attachments: [...f.attachments, { name: file.name, url: file.webLink!, type: file.mimeType }],
+      }));
+      toast(`Imported: ${file.name}`);
+    }
+    setDriveOpen(false);
+  }
+
+  function cvr(p: LandingPage) {
+    return p.views > 0 ? ((p.conversions / p.views) * 100).toFixed(1) : "0.0";
+  }
+
+  const columns: Column<LandingPage>[] = [
+    {
+      key: "title",
+      header: "Page",
+      render: (p) => (
+        <div>
+          <p className="text-sm font-medium text-gray-90">{p.title}</p>
+          <p className="text-xs text-gray-40">/{p.slug}</p>
+        </div>
+      ),
+    },
+    {
+      key: "headline",
+      header: "Headline",
+      render: (p) => (
+        <p className="text-sm text-gray-70 truncate max-w-xs">{p.headline}</p>
+      ),
+    },
+    {
+      key: "views",
+      header: "Views",
+      render: (p) => <span className="text-sm text-gray-80">{p.views.toLocaleString()}</span>,
+    },
+    {
+      key: "conversions",
+      header: "CVR",
+      render: (p) => <span className="text-sm text-gray-80">{cvr(p)}%</span>,
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (p) => (
+        <StatusBadge
+          status={p.status}
+          variant={p.status === "published" ? "success" : "default"}
+        />
+      ),
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Landing Pages"
+        description="AI-generated landing pages for marketing campaigns"
+        actions={
+          <div className="flex items-center gap-2">
+          <AIPromptButton
+            section="Landing Page AI"
+            description="Generate a complete landing page with headline, content, and call-to-action. Preview the page live in a new tab."
+            placeholder="Page topic (e.g. Virtual assistant for startups) and CTA text"
+            presets={[
+              { label: "Lead Capture", prompt: "Create a landing page to capture leads for virtual assistant services with a free consultation offer" },
+              { label: "Service Promo", prompt: "Create a landing page promoting CreedaVA's executive assistant services with 'Get Started' CTA" },
+              { label: "Event Signup", prompt: "Create a landing page for a free webinar about how VAs can transform your business" },
+            ]}
+            previewable
+            previewLabel="Preview Page"
+            onResult={(raw) => {
+              try {
+                const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
+                const result = JSON.parse(cleaned);
+                setSelected(null);
+                setForm({
+                  title: result.title || "",
+                  slug: result.slug || "",
+                  headline: result.headline || "",
+                  subheadline: result.subheadline || "",
+                  ctaText: result.ctaText || "Get Started",
+                  bodyHtml: result.bodyHtml || "",
+                  status: "draft",
+                  images: [],
+                  attachments: [],
+                });
+                setModalOpen(true);
+                toast("AI content loaded \u2014 edit and save when ready", "success");
+              } catch {
+                generateLandingPage(raw.slice(0, 200), "Get Started").then((r) => {
+                  setSelected(null);
+                  setForm({
+                    title: r.title || "",
+                    slug: r.slug || "",
+                    headline: r.headline || "",
+                    subheadline: r.subheadline || "",
+                    ctaText: r.ctaText || "Get Started",
+                    bodyHtml: r.bodyHtml || "",
+                    status: "draft",
+                    images: [],
+                    attachments: [],
+                  });
+                  setModalOpen(true);
+                  toast("AI content loaded \u2014 edit and save when ready", "success");
+                }).catch(() => toast("AI generation failed", "error"));
+              }
+            }}
+            buildPrompt={(input) =>
+              `You are a landing page designer for CreedaVA, a virtual assistant services company.
+Create a landing page about: "${input}"
+
+Return ONLY valid JSON with:
+- title: page title
+- slug: URL-friendly slug
+- headline: main headline (compelling, action-oriented)
+- subheadline: supporting text
+- ctaText: call-to-action button text
+- bodyHtml: full page body in HTML (use h2, h3, p, ul, section tags)
+
+No markdown fences.`
+            }
+          />
+          <Button size="sm" onClick={() => openModal()}>
+            <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Page
+          </Button>
+          </div>
+        }
+      />
+
+      <AdminTabs tabs={tabs} defaultValue="all" onChange={setTab} />
+
+      <DataTable
+        columns={columns}
+        data={filtered}
+        keyExtractor={(p) => p.id}
+        onRowClick={(p) => openModal(p)}
+        emptyMessage="No landing pages yet — try the AI builder or create one manually"
+      />
+
+      {/* Create / Edit Modal */}
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={selected ? `Edit: ${selected.title}` : "New Landing Page"}
+        size="lg"
+        footer={
+          <>
+            {selected && (
+              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+                Delete
+              </Button>
+            )}
+            {selected?.status === "draft" && (
+              <Button variant="outline" size="sm" onClick={handlePublish}>
+                Publish
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={handleLpBrowseDrive} isLoading={driveLoading}>
+              <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
+              Drive
+            </Button>
+            <div className="flex-1" />
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleSave} isLoading={saving}>
+              {selected ? "Update" : "Save Draft"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          {/* Stats row (edit mode only) */}
+          {selected && (
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <p className="text-xs text-gray-50">Views</p>
+                <p className="text-sm font-medium text-gray-90">{selected.views.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-50">Conversions</p>
+                <p className="text-sm font-medium text-gray-90">{selected.conversions}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-50">CVR</p>
+                <p className="text-sm font-medium text-gray-90">{cvr(selected)}%</p>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Page Title"
+              placeholder="e.g. VA Startup Package"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+            />
+            <Input
+              label="URL Slug"
+              placeholder="e.g. va-startup-package"
+              value={form.slug}
+              onChange={(e) => setForm({ ...form, slug: e.target.value })}
+            />
+          </div>
+          <Input
+            label="Headline"
+            placeholder="Compelling main headline"
+            value={form.headline}
+            onChange={(e) => setForm({ ...form, headline: e.target.value })}
+          />
+          <Input
+            label="Subheadline"
+            placeholder="Supporting text"
+            value={form.subheadline}
+            onChange={(e) => setForm({ ...form, subheadline: e.target.value })}
+          />
+          <Input
+            label="CTA Button Text"
+            placeholder="e.g. Get Started"
+            value={form.ctaText}
+            onChange={(e) => setForm({ ...form, ctaText: e.target.value })}
+          />
+          <RichTextEditor
+            label="Page Body"
+            value={form.bodyHtml}
+            onChange={(val) => setForm({ ...form, bodyHtml: val })}
+            placeholder="Page content..."
+            minHeight="200px"
+          />
+
+          {/* ── Images ──────────────────── */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-50">Images</p>
+              <Button variant="outline" size="sm" onClick={() => lpImageRef.current?.click()} isLoading={uploading}>
+                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                Upload
+              </Button>
+              <input ref={lpImageRef} type="file" accept="image/*" multiple className="hidden" onChange={handleLpImageUpload} />
+            </div>
+            {form.images.length > 0 ? (
+              <div className="grid grid-cols-4 gap-2">
+                {form.images.map((url, i) => (
+                  <div key={i} className="relative group">
+                    <img src={url} alt="" className="w-full h-20 rounded-lg object-cover" />
+                    <button
+                      onClick={() => removeLpImage(i)}
+                      className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-40">No images &mdash; upload or import from Drive</p>
+            )}
+          </div>
+
+          {/* ── Attachments ─────────────── */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-50">Attachments</p>
+              <Button variant="outline" size="sm" onClick={() => lpAttachRef.current?.click()} isLoading={uploading}>
+                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
+                Attach
+              </Button>
+              <input ref={lpAttachRef} type="file" multiple className="hidden" onChange={handleLpAttachUpload} />
+            </div>
+            {form.attachments.length > 0 ? (
+              <div className="space-y-1">
+                {form.attachments.map((att, i) => (
+                  <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-gray-10 text-sm">
+                    <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 text-gray-70 hover:text-primary">
+                      <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                      <span className="truncate">{att.name}</span>
+                    </a>
+                    <button onClick={() => removeLpAttachment(i)} className="text-gray-40 hover:text-red-500 shrink-0 ml-2">
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-40">No attachments</p>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirm */}
+      <Modal
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Delete Page"
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-gray-70">
+          Delete &ldquo;{selected?.title}&rdquo;? This cannot be undone.
+        </p>
+      </Modal>
+
+      {/* Drive Import Modal */}
+      <Modal open={driveOpen} onClose={() => setDriveOpen(false)} title="Import from Google Drive" size="lg">
+        {driveLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </div>
+        ) : driveFiles.length === 0 ? (
+          <p className="text-sm text-gray-40 text-center py-12">No files found in Drive</p>
+        ) : (
+          <div className="space-y-1 max-h-96 overflow-y-auto">
+            {driveFiles.map((f) => (
+              <div key={f.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-10 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  {f.mimeType?.startsWith("image/") && f.thumbnail ? (
+                    <img src={f.thumbnail} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                  ) : (
+                    <svg className="w-8 h-8 text-gray-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-100 truncate">{f.name}</p>
+                    <p className="text-xs text-gray-40">{f.mimeType}</p>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => handleLpImportDrive(f)}>
+                  Import
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}

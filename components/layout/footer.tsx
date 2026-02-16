@@ -1,29 +1,39 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui";
+import { useTranslation } from "@/lib/i18n";
 
-const footerLinks = {
-  services: [
-    { href: "/services#administrative", label: "Administrative Support" },
-    { href: "/services#customer", label: "Customer Service" },
-    { href: "/services#social", label: "Social Media Management" },
-    { href: "/services#data", label: "Data Entry & Research" },
-    { href: "/services#bookkeeping", label: "Bookkeeping" },
-  ],
-  company: [
-    { href: "/about", label: "About Us" },
-    { href: "/news", label: "News & Blog" },
-    { href: "/pricing", label: "Pricing" },
-    { href: "/contact", label: "Contact" },
-  ],
-  support: [
-    { href: "/faq", label: "FAQ" },
-    { href: "/privacy", label: "Privacy Policy" },
-    { href: "/terms", label: "Terms of Service" },
-  ],
-};
+const serviceHrefs = [
+  "/services#administrative",
+  "/services#customer",
+  "/services#social",
+  "/services#data",
+  "/services#bookkeeping",
+  "/services#web",
+  "/services#real-estate",
+  "/services#insurance",
+  "/services#ai-streamlining",
+];
+
+const companyHrefs = [
+  { href: "/about", key: "about" as const },
+  { href: "/news", key: "news" as const },
+  { href: "/pricing", key: "pricing" as const },
+  { href: "/contact", key: "contact" as const },
+];
+
+const supportHrefs = [
+  { href: "/faq", key: "faq" as const },
+  { href: "/forum", key: "forum" as const },
+  { href: "/privacy", key: "privacy" as const },
+  { href: "/terms", key: "terms" as const },
+];
 
 export function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-[#1B2A4A] text-white">
       <Container>
@@ -35,30 +45,29 @@ export function Footer() {
                 <Image
                   src="/logo.webp"
                   alt="CreedaVA"
-                  width={140}
-                  height={40}
-                  className="h-10 w-auto brightness-0 invert"
+                  width={280}
+                  height={80}
+                  className="h-20 w-auto brightness-0 invert"
                 />
               </Link>
               <p className="text-gray-50 text-sm leading-relaxed max-w-xs">
-                Professional virtual assistant services that help businesses
-                save time, reduce costs, and scale operations.
+                {t.footer.tagline}
               </p>
             </div>
 
             {/* Services */}
             <div>
               <h4 className="text-sm font-bold uppercase tracking-wider mb-4 text-gray-40">
-                Services
+                {t.footer.servicesCol}
               </h4>
               <ul className="space-y-3">
-                {footerLinks.services.map((link) => (
-                  <li key={link.href}>
+                {t.footer.serviceLinks.map((label, i) => (
+                  <li key={i}>
                     <Link
-                      href={link.href}
+                      href={serviceHrefs[i]}
                       className="text-sm text-gray-50 hover:text-white transition-colors"
                     >
-                      {link.label}
+                      {label}
                     </Link>
                   </li>
                 ))}
@@ -68,16 +77,16 @@ export function Footer() {
             {/* Company */}
             <div>
               <h4 className="text-sm font-bold uppercase tracking-wider mb-4 text-gray-40">
-                Company
+                {t.footer.companyCol}
               </h4>
               <ul className="space-y-3">
-                {footerLinks.company.map((link) => (
+                {companyHrefs.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
                       className="text-sm text-gray-50 hover:text-white transition-colors"
                     >
-                      {link.label}
+                      {t.footer.companyLinks[link.key]}
                     </Link>
                   </li>
                 ))}
@@ -87,18 +96,18 @@ export function Footer() {
             {/* Support */}
             <div>
               <h4 className="text-sm font-bold uppercase tracking-wider mb-4 text-gray-40">
-                Support
+                {t.footer.supportCol}
               </h4>
               <ul className="space-y-3">
-                {footerLinks.support.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-gray-50 hover:text-white transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
+                {supportHrefs.map((link) => (
+                    <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className="text-sm text-gray-50 hover:text-white transition-colors"
+                        >
+                          {t.footer.supportLinks[link.key]}
+                        </Link>
+                    </li>
                 ))}
               </ul>
             </div>
@@ -108,7 +117,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-80 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-50">
-            &copy; {new Date().getFullYear()} CreedaVA. All rights reserved.
+            &copy; {new Date().getFullYear()} {t.footer.copyright}
           </p>
           <div className="flex items-center gap-4">
             <a

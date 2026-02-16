@@ -1,17 +1,18 @@
-import type { Metadata } from "next";
 import { Container } from "@/components/ui";
+import { getPageSEO } from "@/lib/firebase/seo";
 
-export const metadata: Metadata = {
-  title: "Terms of Service",
-  description:
-    "CreedaVA's terms of service — the rules and guidelines governing the use of our virtual assistant services.",
-};
+export async function generateMetadata() {
+  return getPageSEO("/terms", {
+    title: "Terms of Service",
+    description: "CreedaVA's terms of service — the rules and guidelines governing the use of our virtual assistant services.",
+  });
+}
 
 export default function TermsPage() {
   return (
     <>
       {/* Hero */}
-      <section className="py-20 lg:py-28 bg-gradient-to-b from-gray-10 to-white">
+      <section className="py-20 lg:py-28 bg-linear-to-b from-gray-10 to-white">
         <Container>
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-100 mb-6">
