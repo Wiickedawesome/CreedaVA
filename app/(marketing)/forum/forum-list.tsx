@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { fetchAll, update, create } from "@/lib/firebase/firestore";
 import { where, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n";
@@ -354,8 +355,14 @@ export function ForumList() {
             {createForm.images.length > 0 ? (
               <div className="grid grid-cols-4 gap-2">
                 {createForm.images.map((url, i) => (
-                  <div key={i} className="relative group">
-                    <img src={url} alt="" className="w-full h-20 rounded-lg object-cover" />
+                  <div key={i} className="relative group h-20 w-full">
+                    <Image 
+                      src={url} 
+                      alt="Uploaded image" 
+                      fill
+                      className="rounded-lg object-cover"
+                      sizes="(max-width: 768px) 25vw, 15vw" 
+                    />
                     <button
                       onClick={() => removeImage(i)}
                       className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"

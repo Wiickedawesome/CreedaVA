@@ -151,6 +151,8 @@ export interface Booking extends FirestoreDoc {
   status: BookingStatus;
   notes?: string;
   source?: string;         // "website", "phone", etc.
+  syncedToCalendar?: boolean;
+  googleCalendarLink?: string;
 }
 
 export type BookingFormData = Omit<Booking, keyof FirestoreDoc>;

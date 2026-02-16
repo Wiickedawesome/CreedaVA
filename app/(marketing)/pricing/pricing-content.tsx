@@ -36,7 +36,7 @@ export function PricingContent() {
                   key={i}
                   className={`relative rounded-2xl p-8 ${
                     popular
-                      ? "bg-primary text-white ring-4 ring-primary/20 scale-105"
+                      ? "bg-primary text-white ring-4 ring-primary/20 md:scale-105"
                       : "bg-white border border-border"
                   }`}
                 >

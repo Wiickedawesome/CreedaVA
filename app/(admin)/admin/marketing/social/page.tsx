@@ -40,7 +40,6 @@ export default function SocialMediaPage() {
   const [createForm, setCreateForm] = useState({ platform: "linkedin", content: "", hashtags: "" });
 
   // AI generation
-  const [aiTopic, _setAiTopic] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previews, setPreviews] = useState<
     { platform: string; content: string; hashtags: string[]; characterCount: number }[]
@@ -54,18 +53,6 @@ export default function SocialMediaPage() {
     { label: "Scheduled", value: "scheduled", badge: posts.filter((p) => p.status === "scheduled").length },
     { label: "Published", value: "published", badge: posts.filter((p) => p.status === "published").length },
   ];
-
-  async function _handleGenerate() {
-    if (!aiTopic.trim()) return;
-    try {
-      const result = await generateSocialPosts(aiTopic);
-      setPreviews(result.posts);
-      setPreviewOpen(true);
-      toast("Posts generated!", "success");
-    } catch {
-      toast("AI generation failed \u2014 try again", "error");
-    }
-  }
 
   async function handleSavePost(preview: {
     platform: string;

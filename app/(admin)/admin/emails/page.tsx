@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,
@@ -53,7 +53,7 @@ export default function EmailsPage() {
   const emailImageRef = useRef<HTMLInputElement>(null);
   const emailAttachRef = useRef<HTMLInputElement>(null);
 
-  const filtered = emails.filter((e) => tab === "all" || e.status === tab);
+  const filtered = useMemo(() => emails.filter((e) => tab === "all" || e.status === tab), [emails, tab]);
 
   const tabs = [
     { label: "All", value: "all", badge: emails.length },

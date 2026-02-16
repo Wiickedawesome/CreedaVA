@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { cache } from "react";
 import type { Metadata } from "next";
 import { Container } from "@/components/ui";
 import { fetchAll, where } from "@/lib/firebase/firestore";
@@ -8,14 +10,14 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-async function getPage(slug: string): Promise<(LandingPage & { id: string }) | null> {
+const getPage = cache(async (slug: string): Promise<(LandingPage & { id: string }) | null> => {
   const pages = await fetchAll<LandingPage>(
     "landing-pages",
     where("slug", "==", slug),
     where("status", "==", "published"),
   );
   return pages[0] || null;
-}
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -50,12 +52,12 @@ export default async function LandingPageRoute({ params }: Props) {
             <p className="text-lg lg:text-xl text-gray-60 leading-relaxed mb-10">
               {page.subheadline}
             </p>
-            <a
+            <Link
               href="/contact"
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-md hover:bg-primary-light transition-colors text-lg"
             >
               {page.ctaText || "Get Started"}
-            </a>
+            </Link>
           </div>
         </Container>
       </section>
@@ -86,12 +88,12 @@ export default async function LandingPageRoute({ params }: Props) {
             <p className="text-white/80 mb-8 max-w-lg mx-auto">
               {page.subheadline}
             </p>
-            <a
+            <Link
               href="/contact"
               className="inline-flex items-center gap-2 px-8 py-4 bg-white text-primary font-semibold rounded-md hover:bg-gray-10 transition-colors text-lg"
             >
               {page.ctaText || "Get Started"}
-            </a>
+            </Link>
           </div>
         </Container>
       </section>

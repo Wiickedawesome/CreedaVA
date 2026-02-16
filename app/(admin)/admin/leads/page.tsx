@@ -54,7 +54,7 @@ export default function LeadsPage() {
   const [form, setForm] = useState<LeadFormData>(emptyLead);
 
   // Filtering
-  const filtered = leads
+  const filtered = useMemo(() => leads
     .filter((l) => tab === "all" || l.status === tab)
     .filter((l) => {
       if (!search) return true;
@@ -64,7 +64,7 @@ export default function LeadsPage() {
         l.email.toLowerCase().includes(q) ||
         (l.company?.toLowerCase().includes(q) ?? false)
       );
-    });
+    }), [leads, tab, search]);
 
   // ─── Metrics ────────────────────────────────────────
   const totalLeads = leads.length;

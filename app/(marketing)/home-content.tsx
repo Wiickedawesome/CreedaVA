@@ -63,13 +63,13 @@ export function HomeContent() {
                 </Link>
               </div>
             </div>
-            <div className="hidden lg:flex items-center justify-center">
+            <div className="flex items-center justify-center mt-12 lg:mt-0">
               <Image
                 src="/logo.webp"
                 alt="CreedaVA — Professional Virtual Assistants"
                 width={380}
                 height={380}
-                className="w-3/4 h-auto object-contain"
+                className="w-48 sm:w-64 lg:w-3/4 h-auto object-contain"
                 priority
               />
             </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import { fetchAll } from "@/lib/firebase/firestore";
 import { where, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n";
@@ -118,16 +120,28 @@ export function NewsList() {
           : "";
 
         return (
-          <a
-            key={post.slug}
+          <Link
+            key={post.id}
             href={`/news/${post.slug}`}
-            className="group bg-white rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow"
+            className="group bg-white rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-shadow block"
           >
-            <div className="bg-linear-to-br from-primary/5 to-accent/5 h-48 flex items-center justify-center">
-              <span className="text-4xl text-primary/20 font-bold">
-                {category.charAt(0)}
-              </span>
-            </div>
+            {post.featuredImage ? (
+              <div className="relative h-48 w-full bg-gray-10">
+                <Image
+                  src={post.featuredImage}
+                  alt={getTranslatedTitle(post, locale)}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              </div>
+            ) : (
+              <div className="bg-linear-to-br from-primary/5 to-accent/5 h-48 flex items-center justify-center">
+                <span className="text-4xl text-primary/20 font-bold">
+                  {category.charAt(0)}
+                </span>
+              </div>
+            )}
             <div className="p-6">
               <div className="flex items-center gap-3 mb-3">
                 <span className="px-2.5 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
@@ -143,7 +157,7 @@ export function NewsList() {
               </p>
               <p className="text-xs text-gray-50">{date}</p>
             </div>
-          </a>
+          </Link>
         );
       })}
     </div>
