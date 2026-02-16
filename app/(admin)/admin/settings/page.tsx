@@ -30,7 +30,7 @@ interface ProviderConfig {
   label: string;
   description: string;
   icon: React.ReactNode;
-  fields: { key: string; label: string; type: "text" | "password" | "email"; required: boolean; placeholder: string }[];
+  fields: { key: string; label: string; type: "text" | "password" | "email"; required: boolean; placeholder: string; description?: string }[];
   docsUrl: string;
 }
 
@@ -569,6 +569,7 @@ export default function SettingsPage() {
                               onChange={(e) => setFieldValue(provider.id, field.key, e.target.value)}
                             />
                           )}
+                          {field.description && <p className="text-[10px] text-gray-50 mt-1">{field.description}</p>}
                         </div>
                       ))}
                     </div>

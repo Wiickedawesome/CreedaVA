@@ -61,7 +61,7 @@ export default function SocialMediaPage() {
   }) {
     try {
       await add({
-        topic: aiTopic,
+        topic: "AI Generated Content",
         platform: preview.platform,
         content: preview.content,
         hashtags: preview.hashtags,

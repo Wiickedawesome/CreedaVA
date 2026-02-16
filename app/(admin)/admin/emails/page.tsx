@@ -522,7 +522,7 @@ No markdown fences.`
                     label="From Address"
                     options={aliases}
                     value={sender || aliases[0]?.value}
-                    onChange={(val) => setSender(val)}
+                    onChange={(e) => setSender(e.target.value)}
                   />
                 )}
                 <div className="flex items-center gap-2">
