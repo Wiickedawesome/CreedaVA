@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { useAuth } from "@/lib/firebase";
 import { useCollection } from "@/hooks/useCollection";
 import { PageHeader, useToast } from "@/components/admin";
@@ -377,7 +378,14 @@ export default function SettingsPage() {
         </div>
         <div className="flex items-center gap-4">
           {user?.photoURL ? (
-            <img src={user.photoURL} alt="" className="w-14 h-14 rounded-full" referrerPolicy="no-referrer" />
+            <Image 
+              src={user.photoURL} 
+              alt={user.displayName || "User"} 
+              width={56} 
+              height={56} 
+              className="w-14 h-14 rounded-full" 
+              referrerPolicy="no-referrer" 
+            />
           ) : (
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium text-lg">
               {user?.displayName?.charAt(0) ?? "?"}

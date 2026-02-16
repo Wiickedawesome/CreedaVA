@@ -67,6 +67,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Integrations — admin only
+    match /integrations/{docId} {
+      allow read, write: if isAdmin();
+    }
+
     // Social posts — admin only
     match /social-posts/{docId} {
       allow read, write: if isAdmin();
