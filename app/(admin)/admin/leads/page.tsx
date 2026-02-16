@@ -224,7 +224,7 @@ export default function LeadsPage() {
         title="Leads"
         description="Track and manage your sales pipeline"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <AIPromptButton
               section="Leads AI"
               description="Analyze leads and improve conversion"
@@ -244,11 +244,11 @@ export default function LeadsPage() {
                 `You are a sales manager for CreedaVA (virtual assistant services).\n${input}\n\nLead data:\n${ctx}\n\nUse the actual data. Be professional and actionable.`
               }
             />
-            <Button variant="outline" size="sm" onClick={handleExport}>
+            <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               Export
             </Button>
-            <Button size="sm" onClick={() => openModal()}>
+            <Button size="sm" onClick={() => openModal()} className="w-full sm:w-auto">
               + Add Lead
             </Button>
           </div>
@@ -266,31 +266,33 @@ export default function LeadsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <DashboardSection title="Status Distribution">
           {statusData.length > 0 ? (
-            <div className="flex items-center gap-6">
-              <svg width="140" height="140" viewBox="0 0 140 140" className="shrink-0">
-                {(() => {
-                  const total = statusData.reduce((s, d) => s + d.value, 0);
-                  let cum = -90;
-                  const cx = 70, cy = 70, r = 60, inner = 38;
-                  return statusData.map((seg, i) => {
-                    const angle = (seg.value / total) * 360;
-                    const start = cum; const end = start + angle; cum = end;
-                    const large = angle > 180 ? 1 : 0;
-                    const sr = (start * Math.PI) / 180; const er = (end * Math.PI) / 180;
-                    return (
-                      <path key={i} fill={seg.color}
-                        d={`M ${cx + r * Math.cos(sr)} ${cy + r * Math.sin(sr)} A ${r} ${r} 0 ${large} 1 ${cx + r * Math.cos(er)} ${cy + r * Math.sin(er)} L ${cx + inner * Math.cos(er)} ${cy + inner * Math.sin(er)} A ${inner} ${inner} 0 ${large} 0 ${cx + inner * Math.cos(sr)} ${cy + inner * Math.sin(sr)} Z`}
-                      />
-                    );
-                  });
-                })()}
-                <text x="70" y="75" textAnchor="middle" style={{ fontSize: "16px", fontWeight: 700, fill: "var(--gray-90)" }}>{totalLeads}</text>
-              </svg>
-              <div className="space-y-2">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="shrink-0 flex justify-center">
+                <svg width="140" height="140" viewBox="0 0 140 140">
+                  {(() => {
+                    const total = statusData.reduce((s, d) => s + d.value, 0);
+                    let cum = -90;
+                    const cx = 70, cy = 70, r = 60, inner = 38;
+                    return statusData.map((seg, i) => {
+                      const angle = (seg.value / total) * 360;
+                      const start = cum; const end = start + angle; cum = end;
+                      const large = angle > 180 ? 1 : 0;
+                      const sr = (start * Math.PI) / 180; const er = (end * Math.PI) / 180;
+                      return (
+                        <path key={i} fill={seg.color}
+                          d={`M ${cx + r * Math.cos(sr)} ${cy + r * Math.sin(sr)} A ${r} ${r} 0 ${large} 1 ${cx + r * Math.cos(er)} ${cy + r * Math.sin(er)} L ${cx + inner * Math.cos(er)} ${cy + inner * Math.sin(er)} A ${inner} ${inner} 0 ${large} 0 ${cx + inner * Math.cos(sr)} ${cy + inner * Math.sin(sr)} Z`}
+                        />
+                      );
+                    });
+                  })()}
+                  <text x="70" y="75" textAnchor="middle" style={{ fontSize: "16px", fontWeight: 700, fill: "var(--gray-90)" }}>{totalLeads}</text>
+                </svg>
+              </div>
+              <div className="space-y-2 w-full">
                 {statusData.map((d) => (
                   <div key={d.label} className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                    <span className="text-sm text-gray-70">{d.label}</span>
+                    <span className="text-sm text-gray-70 truncate">{d.label}</span>
                     <span className="text-sm font-semibold text-gray-90 ml-auto">{d.value}</span>
                   </div>
                 ))}
@@ -319,7 +321,7 @@ export default function LeadsPage() {
       </div>
 
       {/* Search */}
-      <div className="max-w-sm">
+      <div className="max-w-sm w-full">
         <Input
           placeholder="Search leads..."
           value={search}
@@ -343,30 +345,30 @@ export default function LeadsPage() {
         onClose={() => setModalOpen(false)}
         title={selected ? "Edit Lead" : "New Lead"}
         footer={
-          <>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
             {selected && (
-              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto">
                 Delete
               </Button>
             )}
-            <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+            <div className="flex-1 hidden sm:block" />
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Create Lead"}
             </Button>
-          </>
+          </div>
         }
       >
         <div className="space-y-4">
           <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             <Input label="Company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select
               label="Source"
               value={form.source}
@@ -397,14 +399,14 @@ export default function LeadsPage() {
         title="Delete Lead"
         size="sm"
         footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>
+            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting} className="w-full sm:w-auto">
               Delete
             </Button>
-          </>
+          </div>
         }
       >
         <p className="text-sm text-gray-70">

@@ -207,7 +207,7 @@ const analyticsItems: NavItem[] = [
 
 
 
-function NavSection({ title, items }: { title?: string; items: NavItem[] }) {
+function NavSection({ title, items, onNavigate }: { title?: string; items: NavItem[]; onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -228,6 +228,7 @@ function NavSection({ title, items }: { title?: string; items: NavItem[] }) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-primary/10 text-primary"
@@ -249,25 +250,25 @@ function NavSection({ title, items }: { title?: string; items: NavItem[] }) {
   );
 }
 
-export function AdminSidebar() {
+export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { user, logOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-border bg-white transition-all duration-200 ${
-        collapsed ? "w-16" : "w-64"
+      className={`fixed left-0 top-0 z-30 flex h-full flex-col border-r border-border bg-white transition-all duration-200 ${
+        collapsed ? "w-16" : "w-full lg:w-64"
       }`}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-border px-4">
+      <div className="flex h-16 items-center gap-3 border-b border-border px-4 shrink-0">
         <Image src="/logo.webp" alt="CreedaVA" width={32} height={32} className="h-8 w-8 rounded-lg" />
         {!collapsed && (
           <span className="text-lg font-bold text-foreground">CreedaVA</span>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto rounded-lg p-1.5 text-gray-50 hover:bg-gray-20 hover:text-gray-80"
+          className="ml-auto rounded-lg p-1.5 text-gray-50 hover:bg-gray-20 hover:text-gray-80 hidden lg:block"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -282,7 +283,7 @@ export function AdminSidebar() {
 
       {/* Search */}
       {!collapsed && (
-        <div className="p-3">
+        <div className="p-3 shrink-0">
           <div className="flex items-center gap-2 rounded-lg border border-border bg-gray-10 px-3 py-2">
             <svg className="w-4 h-4 text-gray-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
@@ -306,6 +307,7 @@ export function AdminSidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={onNavigate}
                   className="rounded-lg p-2.5 text-gray-70 hover:bg-gray-20 hover:text-gray-90"
                   title={item.label}
                 >
@@ -316,20 +318,20 @@ export function AdminSidebar() {
           </nav>
         ) : (
           <>
-            <NavSection items={crmItems} />
-            <NavSection title="Content" items={contentItems} />
-            <NavSection title="SEO" items={seoItems} />
-            <NavSection title="Marketing" items={marketingItems} />
-            <NavSection title="Analytics" items={analyticsItems} />
+            <NavSection items={crmItems} onNavigate={onNavigate} />
+            <NavSection title="Content" items={contentItems} onNavigate={onNavigate} />
+            <NavSection title="SEO" items={seoItems} onNavigate={onNavigate} />
+            <NavSection title="Marketing" items={marketingItems} onNavigate={onNavigate} />
+            <NavSection title="Analytics" items={analyticsItems} onNavigate={onNavigate} />
           </>
         )}
       </div>
 
       {/* User + Settings footer */}
       {!collapsed && (
-        <div className="border-t border-border p-3">
+        <div className="border-t border-border p-3 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-20">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-20 shrink-0">
               {user?.photoURL ? (
                 <Image
                   src={user.photoURL}
@@ -367,6 +369,7 @@ export function AdminSidebar() {
           </div>
           <Link
             href="/admin/settings"
+            onClick={onNavigate}
             className="mt-2 flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-60 hover:bg-gray-20 hover:text-gray-90 transition-colors"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

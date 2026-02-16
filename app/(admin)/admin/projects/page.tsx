@@ -200,7 +200,7 @@ export default function ProjectsPage() {
         title="Projects"
         description="Track project timelines, budgets, and deliverables"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <AIPromptButton
               section="Projects AI"
               description="Plan projects and track deliverables"
@@ -221,7 +221,7 @@ export default function ProjectsPage() {
               }
               onResult={handleAIResult}
             />
-            <Button size="sm" onClick={() => openModal()}>
+            <Button size="sm" onClick={() => openModal()} className="w-full sm:w-auto">
               + Add Project
             </Button>
           </div>
@@ -244,26 +244,26 @@ export default function ProjectsPage() {
         onClose={() => setModalOpen(false)}
         title={selected ? "Edit Project" : "New Project"}
         footer={
-          <>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
             {selected && (
-              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto">
                 Delete
               </Button>
             )}
-            <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+            <div className="flex-1 hidden sm:block" />
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Create Project"}
             </Button>
-          </>
+          </div>
         }
       >
         <div className="space-y-4">
           <Input label="Project Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <Input label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Client Name" value={form.clientName} onChange={(e) => setForm({ ...form, clientName: e.target.value })} />
             <Select
               label="Status"
@@ -272,7 +272,7 @@ export default function ProjectsPage() {
               options={PROJECT_STATUSES.map((s) => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Start Date" type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
             <Input label="End Date" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
           </div>
@@ -292,14 +292,14 @@ export default function ProjectsPage() {
         title="Delete Project"
         size="sm"
         footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>
+            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting} className="w-full sm:w-auto">
               Delete
             </Button>
-          </>
+          </div>
         }
       >
         <p className="text-sm text-gray-70">

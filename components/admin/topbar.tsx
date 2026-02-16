@@ -9,6 +9,10 @@ export function AdminTopbar() {
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const handleNavigate = () => {
+    setSidebarOpen(false);
+  };
+
   return (
     <>
       {/* Mobile topbar — hidden on desktop (sidebar visible there) */}
@@ -65,8 +69,8 @@ export function AdminTopbar() {
             className="absolute inset-0 bg-black/30"
             onClick={() => setSidebarOpen(false)}
           />
-          <div className="relative z-50 h-full w-64">
-            <AdminSidebar />
+          <div className="relative z-50 h-full w-64 bg-white shadow-xl transition-transform duration-300 transform translate-x-0">
+             <AdminSidebar onNavigate={handleNavigate} />
           </div>
         </div>
       )}

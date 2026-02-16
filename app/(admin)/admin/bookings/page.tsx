@@ -228,7 +228,7 @@ export default function BookingsPage() {
         title="Bookings"
         description="Manage service bookings and appointments"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <AIPromptButton
             section="Bookings AI"
             description="Improve booking follow-up and conversion"
@@ -249,7 +249,7 @@ export default function BookingsPage() {
             }
             onResult={handleAIResult}
           />
-          <Button variant="outline" size="sm" onClick={handleViewCalendar} isLoading={calendarLoading}>
+          <Button variant="outline" size="sm" onClick={handleViewCalendar} isLoading={calendarLoading} className="w-full sm:w-auto">
             <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
             View Calendar
           </Button>
@@ -274,23 +274,23 @@ export default function BookingsPage() {
         title="Booking Details"
         size="lg"
         footer={
-          <>
-            <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto">
               Delete
             </Button>
-            <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => setDetailOpen(false)}>
+            <div className="flex-1 hidden sm:block" />
+            <Button variant="outline" size="sm" onClick={() => setDetailOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave} isLoading={saving}>
+            <Button size="sm" onClick={handleSave} isLoading={saving} className="w-full sm:w-auto">
               Update
             </Button>
-          </>
+          </div>
         }
       >
         {selected && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
@@ -359,14 +359,14 @@ export default function BookingsPage() {
         title="Delete Booking"
         size="sm"
         footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>
+            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting} className="w-full sm:w-auto">
               Delete
             </Button>
-          </>
+          </div>
         }
       >
         <p className="text-sm text-gray-70">

@@ -18,6 +18,7 @@ import { useAuth } from "@/lib/firebase/auth-context";
 import { uploadImage } from "@/lib/firebase/storage";
 import { cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
 import { translateThreadInBackground } from "@/lib/firebase/translate";
+import Image from "next/image";
 
 export default function ForumPage() {
   const { data: threads, loading, add, edit, del } = useCollection<ForumThread>("forum", {
@@ -285,7 +286,9 @@ export default function ForumPage() {
       render: (t) => (
         <div className="flex items-center gap-2">
           {(t.images?.length ?? 0) > 0 ? (
-            <img src={t.images![0]} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+            <div className="relative w-8 h-8 shrink-0">
+              <Image src={t.images![0]} alt="" fill className="rounded object-cover" />
+            </div>
           ) : (t.links?.length ?? 0) > 0 ? (
             <svg className="w-5 h-5 text-gray-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
           ) : null}
@@ -500,8 +503,8 @@ Return ONLY valid JSON, no markdown fences.`
               {(selected.images?.length ?? 0) > 0 ? (
                 <div className="grid grid-cols-4 gap-2">
                   {selected.images!.map((url, i) => (
-                    <div key={i} className="relative group">
-                      <img src={url} alt="" className="w-full h-20 rounded-lg object-cover" />
+                    <div key={i} className="relative group w-full h-20">
+                      <Image src={url} alt="" fill className="rounded-lg object-cover" />
                       <button
                         onClick={() => removeDetailImage(i)}
                         className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -635,8 +638,8 @@ Return ONLY valid JSON, no markdown fences.`
             {createForm.images.length > 0 ? (
               <div className="grid grid-cols-4 gap-2">
                 {createForm.images.map((url, i) => (
-                  <div key={i} className="relative group">
-                    <img src={url} alt="" className="w-full h-20 rounded-lg object-cover" />
+                  <div key={i} className="relative group w-full h-20">
+                    <Image src={url} alt="" fill className="rounded-lg object-cover" />
                     <button
                       onClick={() => removeForumImage(i)}
                       className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -704,7 +707,9 @@ Return ONLY valid JSON, no markdown fences.`
               <div key={f.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-10 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   {f.mimeType?.startsWith("image/") && f.thumbnail ? (
-                    <img src={f.thumbnail} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                    <div className="relative w-8 h-8 shrink-0">
+                      <Image src={f.thumbnail} alt="" fill className="rounded object-cover" />
+                    </div>
                   ) : (
                     <svg className="w-8 h-8 text-gray-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                   )}

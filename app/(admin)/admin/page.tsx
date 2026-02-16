@@ -23,7 +23,7 @@ function GaugeChart({ value, label }: { value: number; label: string }) {
 
   return (
     <div className="flex flex-col items-center justify-center py-2">
-      <svg width="200" height="120" viewBox="0 0 200 120">
+      <svg width="200" height="120" viewBox="0 0 200 120" className="max-w-full h-auto">
         <path
           d="M 20 100 A 80 80 0 0 1 180 100"
           fill="none"

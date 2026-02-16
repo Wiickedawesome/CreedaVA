@@ -244,7 +244,7 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
         title="Tasks"
         description="Manage your team&apos;s tasks and to-dos"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <AIPromptButton
               section="Tasks AI"
               description="Prioritize and plan your work"
@@ -265,7 +265,7 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
               }
               onResult={handleAIResult}
             />
-            <Button size="sm" onClick={() => openModal()}>
+            <Button size="sm" onClick={() => openModal()} className="w-full sm:w-auto">
               + Add Task
             </Button>
           </div>
@@ -273,7 +273,7 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
       />
 
       {/* Search */}
-      <div className="max-w-sm">
+      <div className="max-w-sm w-full">
         <Input
           placeholder="Search tasks..."
           value={search}
@@ -297,26 +297,26 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
         onClose={() => setModalOpen(false)}
         title={selected ? "Edit Task" : "New Task"}
         footer={
-          <>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
             {selected && (
-              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto">
                 Delete
               </Button>
             )}
-            <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+            <div className="flex-1 hidden sm:block" />
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Create Task"}
             </Button>
-          </>
+          </div>
         }
       >
         <div className="space-y-4">
           <Input label="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <Input label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select
               label="Status"
               value={form.status}
@@ -330,7 +330,7 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
               options={PRIORITIES.map((p) => ({ value: p, label: p.charAt(0).toUpperCase() + p.slice(1) }))}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Due Date"
               type="date"
@@ -381,14 +381,14 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
         title="Delete Task"
         size="sm"
         footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>
+            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting} className="w-full sm:w-auto">
               Delete
             </Button>
-          </>
+          </div>
         }
       >
         <p className="text-sm text-gray-70">
@@ -403,25 +403,25 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
         title="Set Reminder"
         size="sm"
         footer={
-          <>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
             {form.reminder && (
               <Button variant="danger" size="sm" onClick={() => {
                 setForm((f) => ({ ...f, reminder: undefined }));
                 if (selected) edit(selected.id, { reminder: null as unknown as undefined });
                 setReminderOpen(false);
                 toast("Reminder removed");
-              }}>
+              }} className="w-full sm:w-auto">
                 Remove
               </Button>
             )}
-            <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => setReminderOpen(false)}>
+            <div className="flex-1 hidden sm:block" />
+            <Button variant="outline" size="sm" onClick={() => setReminderOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSendReminder}>
+            <Button size="sm" onClick={handleSendReminder} className="w-full sm:w-auto">
               Save &amp; Create Email
             </Button>
-          </>
+          </div>
         }
       >
         <div className="space-y-4">

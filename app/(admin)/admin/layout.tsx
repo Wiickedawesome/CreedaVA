@@ -39,19 +39,21 @@ function AdminAuthGate({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-10">
+    <div className="flex h-screen bg-gray-10 overflow-hidden">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block w-64 flex-shrink-0 border-r border-border bg-white h-full overflow-y-auto">
         <MemoSidebar />
       </div>
 
       {/* Main content area */}
-      <div className="flex flex-1 flex-col lg:ml-64">
+      <div className="flex flex-1 flex-col h-full w-full overflow-hidden">
         <AdminTopbar />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <Suspense fallback={<PageSkeleton />}>
-            {children}
-          </Suspense>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-20 sm:pb-6">
+          <div className="mx-auto max-w-7xl w-full">
+            <Suspense fallback={<PageSkeleton />}>
+              {children}
+            </Suspense>
+          </div>
         </main>
       </div>
     </div>

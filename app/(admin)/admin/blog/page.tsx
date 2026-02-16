@@ -17,6 +17,7 @@ import { lazyGenerateBlogPost as generateBlogPost } from "@/lib/firebase/ai-lazy
 import { uploadImage, uploadFile } from "@/lib/firebase/storage";
 import { cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
 import type { BlogPost, BlogPostFormData } from "@/lib/types/content";
+import Image from "next/image";
 
 const emptyPost: BlogPostFormData = {
   title: "",
@@ -232,7 +233,9 @@ export default function BlogPage() {
       render: (p) => (
         <div className="flex items-center gap-3">
           {p.featuredImage ? (
-            <img src={p.featuredImage} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+            <div className="relative w-10 h-10 shrink-0">
+              <Image src={p.featuredImage} alt="" fill className="rounded-lg object-cover" />
+            </div>
           ) : (
             <div className="w-10 h-10 rounded-lg bg-gray-10 shrink-0 flex items-center justify-center">
               <svg className="w-5 h-5 text-gray-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>
@@ -371,29 +374,29 @@ Return ONLY valid JSON, no markdown fences.`
         title={selected ? "Edit Post" : "New Post"}
         size="lg"
         footer={
-          <>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
             {selected && (
-              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto">
                 Delete
               </Button>
             )}
             {selected?.status === "draft" && (
-              <Button variant="outline" size="sm" onClick={handlePublish}>
+              <Button variant="outline" size="sm" onClick={handlePublish} className="w-full sm:w-auto">
                 Publish
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={handleBrowseDrive} isLoading={driveLoading}>
+            <Button variant="outline" size="sm" onClick={handleBrowseDrive} isLoading={driveLoading} className="w-full sm:w-auto">
               <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
               Drive
             </Button>
-            <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+            <div className="flex-1 hidden sm:block" />
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Save Draft"}
             </Button>
-          </>
+          </div>
         }
       >
         <div className="space-y-4">
@@ -429,8 +432,8 @@ Return ONLY valid JSON, no markdown fences.`
             {(form.images?.length ?? 0) > 0 ? (
               <div className="grid grid-cols-4 gap-2">
                 {form.images!.map((url, i) => (
-                  <div key={i} className="relative group">
-                    <img src={url} alt="" className="w-full h-20 rounded-lg object-cover" />
+                  <div key={i} className="relative group w-full h-20">
+                    <Image src={url} alt="" fill className="rounded-lg object-cover" />
                     {url === form.featuredImage && (
                       <span className="absolute top-1 left-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded">Featured</span>
                     )}
@@ -500,14 +503,14 @@ Return ONLY valid JSON, no markdown fences.`
         title="Delete Post"
         size="sm"
         footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>
+            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting} className="w-full sm:w-auto">
               Delete
             </Button>
-          </>
+          </div>
         }
       >
         <p className="text-sm text-gray-70">
@@ -529,7 +532,9 @@ Return ONLY valid JSON, no markdown fences.`
               <div key={f.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-10 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   {f.mimeType?.startsWith("image/") && f.thumbnail ? (
-                    <img src={f.thumbnail} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                    <div className="relative w-8 h-8 shrink-0">
+                      <Image src={f.thumbnail} alt="" fill className="rounded object-cover" />
+                    </div>
                   ) : (
                     <svg className="w-8 h-8 text-gray-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                   )}

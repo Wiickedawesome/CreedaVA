@@ -39,7 +39,7 @@ export default function ContactsPage() {
   const { toast } = useToast();
 
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "email" | "company" | "role" | "createdAt">("name");
+  const [sortBy, setSortBy] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -60,8 +60,10 @@ export default function ContactsPage() {
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
-      const aVal = (sortBy === "createdAt" ? a.createdAt : (a[sortBy] || "")) as string;
-      const bVal = (sortBy === "createdAt" ? b.createdAt : (b[sortBy] || "")) as string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const aVal = (sortBy === "createdAt" ? a.createdAt : ((a as any)[sortBy] || "")) as string;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const bVal = (sortBy === "createdAt" ? b.createdAt : ((b as any)[sortBy] || "")) as string;
       const cmp = String(aVal).localeCompare(String(bVal));
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -219,7 +221,7 @@ export default function ContactsPage() {
         title="Contacts"
         description="Manage your contact directory"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <AIPromptButton
               section="Contacts AI"
               description="Draft outreach and nurture contacts"
@@ -239,43 +241,45 @@ export default function ContactsPage() {
                 `You are a relationship manager for CreedaVA (virtual assistant services).\n${input}\n\nContact data:\n${ctx}\n\nBe professional and actionable.`
               }
             />
-            <Button variant="outline" size="sm" onClick={handleExport}>
+            <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               Export
             </Button>
-            <Button size="sm" onClick={() => openModal()}>
+            <Button size="sm" onClick={() => openModal()} className="w-full sm:w-auto">
               + Add Contact
             </Button>
           </div>
         }
       />
 
-      <div className="flex items-center gap-3">
-        <div className="max-w-sm flex-1">
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="max-w-sm w-full sm:flex-1">
           <Input
             placeholder="Search contacts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Select
-          label=""
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-          options={[
-            { value: "name", label: "Sort: Name" },
-            { value: "email", label: "Sort: Email" },
-            { value: "company", label: "Sort: Company" },
-            { value: "role", label: "Sort: Role" },
-            { value: "createdAt", label: "Sort: Date Added" },
-          ]}
-        />
-        <button
-          onClick={() => setSortDir((d) => d === "asc" ? "desc" : "asc")}
-          className="px-2 py-1.5 rounded-md border border-border text-xs text-gray-60 hover:bg-gray-10 transition-colors"
-        >
-          {sortDir === "asc" ? "A → Z" : "Z → A"}
-        </button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Select
+            label=""
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            options={[
+              { value: "name", label: "Sort: Name" },
+              { value: "email", label: "Sort: Email" },
+              { value: "company", label: "Sort: Company" },
+              { value: "role", label: "Sort: Role" },
+              { value: "createdAt", label: "Sort: Date Added" },
+            ]}
+          />
+          <button
+            onClick={() => setSortDir((d) => d === "asc" ? "desc" : "asc")}
+            className="px-2 py-1.5 rounded-md border border-border text-xs text-gray-60 hover:bg-gray-10 transition-colors shrink-0"
+          >
+            {sortDir === "asc" ? "A → Z" : "Z → A"}
+          </button>
+        </div>
       </div>
 
       <DataTable
@@ -292,36 +296,36 @@ export default function ContactsPage() {
         onClose={() => setModalOpen(false)}
         title={selected ? "Edit Contact" : "New Contact"}
         footer={
-          <>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
             {selected && (
-              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto">
                 Delete
               </Button>
             )}
             {selected && (
-              <Button variant="outline" size="sm" onClick={handleAddAsLead}>
+              <Button variant="outline" size="sm" onClick={handleAddAsLead} className="w-full sm:w-auto">
                 + Lead
               </Button>
             )}
             {selected && (
-              <Button variant="outline" size="sm" onClick={handleAddAsCustomer}>
+              <Button variant="outline" size="sm" onClick={handleAddAsCustomer} className="w-full sm:w-auto">
                 + Customer
               </Button>
             )}
-            <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+            <div className="flex-1 hidden sm:block" />
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Create Contact"}
             </Button>
-          </>
+          </div>
         }
       >
         <div className="space-y-4">
           <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             <Input label="Company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
           </div>
@@ -337,14 +341,14 @@ export default function ContactsPage() {
         title="Delete Contact"
         size="sm"
         footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>
+            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting} className="w-full sm:w-auto">
               Delete
             </Button>
-          </>
+          </div>
         }
       >
         <p className="text-sm text-gray-70">

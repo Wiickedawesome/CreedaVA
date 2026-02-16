@@ -17,6 +17,7 @@ import { lazyGenerateEmail as generateEmail } from "@/lib/firebase/ai-lazy";
 import { cloudSendEmail, cloudSendBulkEmail } from "@/lib/firebase/cloud-functions";
 import type { EmailDraft } from "@/lib/types/content";
 import { uploadImage, uploadFile } from "@/lib/firebase/storage";
+import Image from "next/image";
 
 const emptyForm = {
   subject: "",
@@ -448,8 +449,8 @@ No markdown fences.`
             {form.images.length > 0 ? (
               <div className="grid grid-cols-4 gap-2">
                 {form.images.map((url, i) => (
-                  <div key={i} className="relative group">
-                    <img src={url} alt="" className="w-full h-20 rounded-lg object-cover" />
+                  <div key={i} className="relative group w-full h-20">
+                    <Image src={url} alt="" fill className="rounded-lg object-cover" />
                     <button
                       onClick={() => removeEmailImage(i)}
                       className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"

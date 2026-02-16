@@ -487,7 +487,7 @@ ${context}`;
         title="AI Dashboard"
         description="AI-powered business intelligence — reports, insights, and recommendations"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <AIPromptButton
             section="AI Dashboard"
             description="Ask AI anything about your business data"
@@ -503,8 +503,8 @@ ${context}`;
             }
             onResult={handleAiResult}
           />
-          <div className="relative group">
-            <Button variant="outline" size="sm" isLoading={exporting}>
+          <div className="relative group w-full sm:w-auto">
+            <Button variant="outline" size="sm" isLoading={exporting} className="w-full sm:w-auto">
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18" /></svg>
               Export to Sheets
             </Button>
@@ -810,24 +810,24 @@ ${context}`;
         title={selected ? `Edit: ${editForm.title || "Report"}` : "Report"}
         size="lg"
         footer={
-          <>
-            <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto">
               Delete
             </Button>
             {selected && (
-              <Button variant="outline" size="sm" onClick={() => handleUploadReportToDrive(selected)} isLoading={uploading}>
+              <Button variant="outline" size="sm" onClick={() => handleUploadReportToDrive(selected)} isLoading={uploading} className="w-full sm:w-auto">
                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                 Save to Drive
               </Button>
             )}
-            <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => setDetailOpen(false)}>
+            <div className="flex-1 hidden sm:block" />
+            <Button variant="outline" size="sm" onClick={() => setDetailOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSaveReport} isLoading={saving}>
+            <Button size="sm" onClick={handleSaveReport} isLoading={saving} className="w-full sm:w-auto">
               Update
             </Button>
-          </>
+          </div>
         }
       >
         {selected && (

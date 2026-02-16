@@ -29,43 +29,45 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-white">
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b border-border bg-gray-10">
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                className={`px-4 py-3 font-medium text-gray-60 ${col.className || ""}`}
-              >
-                {col.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item) => (
-            <tr
-              key={keyExtractor(item)}
-              onClick={() => onRowClick?.(item)}
-              className={`border-b border-border last:border-0 ${
-                onRowClick ? "cursor-pointer hover:bg-gray-10" : ""
-              }`}
-            >
+    <div className="w-full overflow-hidden rounded-lg border border-border bg-white">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm whitespace-nowrap">
+          <thead>
+            <tr className="border-b border-border bg-gray-10">
               {columns.map((col) => (
-                <td
+                <th
                   key={col.key}
-                  className={`px-4 py-3 text-gray-80 ${col.className || ""}`}
+                  className={`px-4 py-3 font-medium text-gray-60 ${col.className || ""}`}
                 >
-                  {col.render
-                    ? col.render(item)
-                    : String((item as Record<string, unknown>)[col.key] ?? "")}
-                </td>
+                  {col.header}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.map((item) => (
+              <tr
+                key={keyExtractor(item)}
+                onClick={() => onRowClick?.(item)}
+                className={`border-b border-border last:border-0 ${
+                  onRowClick ? "cursor-pointer hover:bg-gray-10" : ""
+                }`}
+              >
+                {columns.map((col) => (
+                  <td
+                    key={col.key}
+                    className={`px-4 py-3 text-gray-80 ${col.className || ""}`}
+                  >
+                    {col.render
+                      ? col.render(item)
+                      : String((item as Record<string, unknown>)[col.key] ?? "")}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -152,53 +152,55 @@ function DonutWithLegend({
   let cum = -90;
 
   return (
-    <div className="flex items-center gap-6">
-      <svg width="140" height="140" viewBox="0 0 140 140" className="shrink-0">
-        {total > 0 ? (
-          segments.map((seg, i) => {
-            const angle = (seg.value / total) * 360;
-            const start = cum;
-            const end = start + angle;
-            cum = end;
-            const large = angle > 180 ? 1 : 0;
-            const sr = (start * Math.PI) / 180;
-            const er = (end * Math.PI) / 180;
-            const x1 = cx + radius * Math.cos(sr);
-            const y1 = cy + radius * Math.sin(sr);
-            const x2 = cx + radius * Math.cos(er);
-            const y2 = cy + radius * Math.sin(er);
-            const x3 = cx + inner * Math.cos(er);
-            const y3 = cy + inner * Math.sin(er);
-            const x4 = cx + inner * Math.cos(sr);
-            const y4 = cy + inner * Math.sin(sr);
-            return (
-              <path
-                key={i}
-                d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 ${large} 0 ${x4} ${y4} Z`}
-                fill={seg.color}
-              />
-            );
-          })
-        ) : (
-          <circle cx={cx} cy={cy} r={radius} fill="var(--gray-20)" />
-        )}
-        <text
-          x={cx}
-          y={cy + 5}
-          textAnchor="middle"
-          style={{ fontSize: "16px", fontWeight: 700, fill: "var(--gray-90)" }}
-        >
-          {centerValue}
-        </text>
-      </svg>
-      <div className="space-y-2">
+    <div className="flex flex-col sm:flex-row items-center gap-6">
+      <div className="shrink-0 flex justify-center">
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          {total > 0 ? (
+            segments.map((seg, i) => {
+              const angle = (seg.value / total) * 360;
+              const start = cum;
+              const end = start + angle;
+              cum = end;
+              const large = angle > 180 ? 1 : 0;
+              const sr = (start * Math.PI) / 180;
+              const er = (end * Math.PI) / 180;
+              const x1 = cx + radius * Math.cos(sr);
+              const y1 = cy + radius * Math.sin(sr);
+              const x2 = cx + radius * Math.cos(er);
+              const y2 = cy + radius * Math.sin(er);
+              const x3 = cx + inner * Math.cos(er);
+              const y3 = cy + inner * Math.sin(er);
+              const x4 = cx + inner * Math.cos(sr);
+              const y4 = cy + inner * Math.sin(sr);
+              return (
+                <path
+                  key={i}
+                  d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${inner} ${inner} 0 ${large} 0 ${x4} ${y4} Z`}
+                  fill={seg.color}
+                />
+              );
+            })
+          ) : (
+            <circle cx={cx} cy={cy} r={radius} fill="var(--gray-20)" />
+          )}
+          <text
+            x={cx}
+            y={cy + 5}
+            textAnchor="middle"
+            style={{ fontSize: "16px", fontWeight: 700, fill: "var(--gray-90)" }}
+          >
+            {centerValue}
+          </text>
+        </svg>
+      </div>
+      <div className="space-y-2 w-full">
         {segments.map((seg) => (
           <div key={seg.label} className="flex items-center gap-2">
             <div
               className="w-3 h-3 rounded-full shrink-0"
               style={{ backgroundColor: seg.color }}
             />
-            <span className="text-sm text-gray-70">{seg.label}</span>
+            <span className="text-sm text-gray-70 truncate">{seg.label}</span>
             <span className="text-sm font-semibold text-gray-90 ml-auto">
               {seg.value}
             </span>
@@ -586,7 +588,7 @@ export default function AnalyticsPage() {
         title="Website Analytics"
         description="Real-time website traffic, visitor locations, and page performance"
         actions={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <AIPromptButton
               section="Analytics AI"
               description="Interpret traffic data and improve SEO performance"
@@ -607,44 +609,46 @@ export default function AnalyticsPage() {
                 `You are an analytics expert for CreedaVA (virtual assistant services).\n${input}\n\nAnalytics data:\n${ctx}\n\nUse the numbers. Be specific and actionable.`
               }
             />
-            <label className="flex items-center gap-1.5 text-xs text-gray-50">
-              <input
-                type="checkbox"
-                checked={showAdminPages}
-                onChange={(e) => setShowAdminPages(e.target.checked)}
-                className="rounded border-border"
-              />
-              Admin pages
-            </label>
-            <div className="flex rounded-lg border border-border overflow-hidden">
-              {(["7d", "30d", "90d"] as const).map((p) => (
-                <button
-                  key={p}
-                  className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                    period === p
-                      ? "bg-primary text-white"
-                      : "bg-white text-gray-60 hover:bg-gray-10"
-                  }`}
-                  onClick={() => setPeriod(p)}
-                >
-                  {p === "7d" ? "7 Days" : p === "30d" ? "30 Days" : "90 Days"}
-                </button>
-              ))}
+            <div className="flex items-center gap-3 justify-end w-full sm:w-auto">
+              <label className="flex items-center gap-1.5 text-xs text-gray-50">
+                <input
+                  type="checkbox"
+                  checked={showAdminPages}
+                  onChange={(e) => setShowAdminPages(e.target.checked)}
+                  className="rounded border-border"
+                />
+                Admin pages
+              </label>
+              <div className="flex rounded-lg border border-border overflow-hidden">
+                {(["7d", "30d", "90d"] as const).map((p) => (
+                  <button
+                    key={p}
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      period === p
+                        ? "bg-primary text-white"
+                        : "bg-white text-gray-60 hover:bg-gray-10"
+                    }`}
+                    onClick={() => setPeriod(p)}
+                  >
+                    {p === "7d" ? "7 Days" : p === "30d" ? "30 Days" : "90 Days"}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={fetchAnalytics}
+                className="p-1.5 rounded-md hover:bg-gray-10 text-gray-50 transition-colors"
+                title="Refresh"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M2 8a6 6 0 0 1 10.47-4M14 8a6 6 0 0 1-10.47 4" />
+                  <path d="M12 1v3h3M4 12v3H1" />
+                </svg>
+              </button>
+              <Button variant="outline" size="sm" onClick={handleSyncGA4} isLoading={ga4Syncing} className="hidden sm:inline-flex">
+                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+                Sync GA4
+              </Button>
             </div>
-            <button
-              onClick={fetchAnalytics}
-              className="p-1.5 rounded-md hover:bg-gray-10 text-gray-50 transition-colors"
-              title="Refresh"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M2 8a6 6 0 0 1 10.47-4M14 8a6 6 0 0 1-10.47 4" />
-                <path d="M12 1v3h3M4 12v3H1" />
-              </svg>
-            </button>
-            <Button variant="outline" size="sm" onClick={handleSyncGA4} isLoading={ga4Syncing}>
-              <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
-              Sync GA4
-            </Button>
           </div>
         }
       />

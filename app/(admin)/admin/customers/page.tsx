@@ -346,7 +346,7 @@ export default function CustomersPage() {
         title="Customers"
         description={`${customers.filter((c) => c.status === "active").length} active · MRR $${mrr.toLocaleString()}`}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <AIPromptButton
               section="Customers AI"
               description="Retain customers and grow revenue"
@@ -368,15 +368,15 @@ export default function CustomersPage() {
                 `You are a customer success manager for CreedaVA (virtual assistant services).\n${input}\n\nCustomer data:\n${ctx}\n\nUse the actual data. Be professional and actionable.`
               }
             />
-            <Button variant="outline" size="sm" onClick={handleExport}>
+            <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               CSV
             </Button>
-            <Button variant="outline" size="sm" onClick={handleExportCustomersToSheets} isLoading={exportingSheets}>
+            <Button variant="outline" size="sm" onClick={handleExportCustomersToSheets} isLoading={exportingSheets} className="w-full sm:w-auto">
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18" /></svg>
               Sheets
             </Button>
-            <Button size="sm" onClick={() => openModal()}>
+            <Button size="sm" onClick={() => openModal()} className="w-full sm:w-auto">
               + Add Customer
             </Button>
           </div>
@@ -398,32 +398,34 @@ export default function CustomersPage() {
       </div>
 
       <DashboardSection title="Customer Health">
-        <div className="flex items-center gap-6">
-          <svg width="140" height="140" viewBox="0 0 140 140" className="shrink-0">
-            {(() => {
-              const total = churnSegments.reduce((s, d) => s + d.value, 0) || 1;
-              let cum = -90;
-              const cx = 70, cy = 70, r = 60, inner = 38;
-              if (total <= 0) return <circle cx={cx} cy={cy} r={r} fill="var(--gray-20)" />;
-              return churnSegments.filter(s => s.value > 0).map((seg, i) => {
-                const angle = (seg.value / total) * 360;
-                const start = cum; const end = start + angle; cum = end;
-                const large = angle > 180 ? 1 : 0;
-                const sr = (start * Math.PI) / 180; const er = (end * Math.PI) / 180;
-                return (
-                  <path key={i} fill={seg.color}
-                    d={`M ${cx + r * Math.cos(sr)} ${cy + r * Math.sin(sr)} A ${r} ${r} 0 ${large} 1 ${cx + r * Math.cos(er)} ${cy + r * Math.sin(er)} L ${cx + inner * Math.cos(er)} ${cy + inner * Math.sin(er)} A ${inner} ${inner} 0 ${large} 0 ${cx + inner * Math.cos(sr)} ${cy + inner * Math.sin(sr)} Z`}
-                  />
-                );
-              });
-            })()}
-            <text x="70" y="75" textAnchor="middle" style={{ fontSize: "16px", fontWeight: 700, fill: "var(--gray-90)" }}>{customers.length}</text>
-          </svg>
-          <div className="space-y-2">
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="shrink-0 flex justify-center">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              {(() => {
+                const total = churnSegments.reduce((s, d) => s + d.value, 0) || 1;
+                let cum = -90;
+                const cx = 70, cy = 70, r = 60, inner = 38;
+                if (total <= 0) return <circle cx={cx} cy={cy} r={r} fill="var(--gray-20)" />;
+                return churnSegments.filter(s => s.value > 0).map((seg, i) => {
+                  const angle = (seg.value / total) * 360;
+                  const start = cum; const end = start + angle; cum = end;
+                  const large = angle > 180 ? 1 : 0;
+                  const sr = (start * Math.PI) / 180; const er = (end * Math.PI) / 180;
+                  return (
+                    <path key={i} fill={seg.color}
+                      d={`M ${cx + r * Math.cos(sr)} ${cy + r * Math.sin(sr)} A ${r} ${r} 0 ${large} 1 ${cx + r * Math.cos(er)} ${cy + r * Math.sin(er)} L ${cx + inner * Math.cos(er)} ${cy + inner * Math.sin(er)} A ${inner} ${inner} 0 ${large} 0 ${cx + inner * Math.cos(sr)} ${cy + inner * Math.sin(sr)} Z`}
+                    />
+                  );
+                });
+              })()}
+              <text x="70" y="75" textAnchor="middle" style={{ fontSize: "16px", fontWeight: 700, fill: "var(--gray-90)" }}>{customers.length}</text>
+            </svg>
+          </div>
+          <div className="space-y-2 w-full">
             {churnSegments.map((d) => (
               <div key={d.label} className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                <span className="text-sm text-gray-70">{d.label}</span>
+                <span className="text-sm text-gray-70 truncate">{d.label}</span>
                 <span className="text-sm font-semibold text-gray-90 ml-auto">{d.value}</span>
                 <span className="text-xs text-gray-40">
                   ({customers.length > 0 ? Math.round((d.value / customers.length) * 100) : 0}%)
@@ -434,7 +436,7 @@ export default function CustomersPage() {
         </div>
       </DashboardSection>
 
-      <div className="max-w-sm">
+      <div className="max-w-sm w-full">
         <Input
           placeholder="Search customers..."
           value={search}
@@ -458,42 +460,42 @@ export default function CustomersPage() {
         onClose={() => setModalOpen(false)}
         title={selected ? "Edit Customer" : "New Customer"}
         footer={
-          <>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
             {selected && (
-              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto">
                 Delete
               </Button>
             )}
             {selected && (
-              <Button variant="outline" size="sm" onClick={handleCreateDriveFolder} isLoading={creatingFolder}>
+              <Button variant="outline" size="sm" onClick={handleCreateDriveFolder} isLoading={creatingFolder} className="w-full sm:w-auto">
                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
                 Drive Folder
               </Button>
             )}
             {selected && (selected as Customer & { driveFolderId?: string }).driveFolderId && (
-              <Button variant="outline" size="sm" onClick={handleBrowseDriveFiles} isLoading={driveLoading}>
-                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+              <Button variant="outline" size="sm" onClick={handleBrowseDriveFiles} isLoading={driveLoading} className="w-full sm:w-auto">
+                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></</svg>
                 Browse Files
               </Button>
             )}
-            <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+            <div className="flex-1 hidden sm:block" />
+            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Create Customer"}
             </Button>
-          </>
+          </div>
         }
       >
         <div className="space-y-4">
           <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             <Input label="Company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select
               label="Plan"
               value={form.plan}
@@ -510,7 +512,7 @@ export default function CustomersPage() {
 
           {/* Revenue */}
           <p className="text-xs font-medium text-gray-50 uppercase tracking-wide pt-2">Revenue</p>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input
               label="Monthly Value ($)"
               type="number"
@@ -530,7 +532,7 @@ export default function CustomersPage() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Hours / Month"
               type="number"
@@ -546,7 +548,7 @@ export default function CustomersPage() {
 
           {/* Dates */}
           <p className="text-xs font-medium text-gray-50 uppercase tracking-wide pt-2">Dates</p>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input
               label="Start Date"
               type="date"
@@ -569,7 +571,7 @@ export default function CustomersPage() {
 
           {/* Engagement */}
           <p className="text-xs font-medium text-gray-50 uppercase tracking-wide pt-2">Engagement</p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select
               label="Satisfaction (1–5)"
               value={String(form.satisfaction || "")}
@@ -602,14 +604,14 @@ export default function CustomersPage() {
         title="Delete Customer"
         size="sm"
         footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>
+            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting} className="w-full sm:w-auto">
               Delete
             </Button>
-          </>
+          </div>
         }
       >
         <p className="text-sm text-gray-70">
