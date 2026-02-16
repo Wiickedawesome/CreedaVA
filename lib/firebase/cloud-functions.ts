@@ -22,6 +22,7 @@ const functions = getFunctions(app, "us-east4");
 
 interface SendEmailParams {
   to: string;
+  from?: string;
   subject: string;
   html: string;
   replyTo?: string;

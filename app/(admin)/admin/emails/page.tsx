@@ -9,6 +9,7 @@ import {
   StatusBadge,
   Modal,
   useToast,
+  Select,
 } from "@/components/admin";
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
@@ -33,6 +34,21 @@ export default function EmailsPage() {
   const { data: emails, loading, add, edit, del } = useCollection<EmailDraft>("emails", {
     orderByField: "createdAt",
   });
+  // Fetch settings to get aliases
+  const { data: integrations } = useCollection("integrations");
+  const emailSettings = useMemo(() => integrations.find((i) => i.id === "email")?.config || {}, [integrations]);
+  const aliases = useMemo(() => {
+    const list: {label: string, value: string}[] = [];
+    if (emailSettings.user) list.push({ label: emailSettings.user, value: emailSettings.user });
+    if (emailSettings.aliases) {
+      emailSettings.aliases.split(',').forEach((s: any) => {
+        const email = s.trim();
+        if (email) list.push({ label: email, value: email });
+      });
+    }
+    return list;
+  }, [emailSettings]);
+  
   const { toast } = useToast();
 
   const [tab, setTab] = useState("all");
@@ -43,6 +59,7 @@ export default function EmailsPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [recipient, setRecipient] = useState("");
+  const [sender, setSender] = useState("");
   const [sending, setSending] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkRecipients, setBulkRecipients] = useState("");
@@ -128,6 +145,7 @@ export default function EmailsPage() {
     try {
       const result = await cloudSendEmail({
         to: recipient,
+        from: sender || undefined,
         subject: selected.subject,
         html: selected.body,
       });
@@ -498,18 +516,28 @@ No markdown fences.`
           {selected?.status === "draft" && (
             <div className="border-t border-border pt-4">
               <label className="text-xs font-medium text-gray-50 uppercase tracking-wide">Send via Email</label>
-              <div className="flex items-center gap-2 mt-2">
-                <Input
-                  placeholder="recipient@example.com"
-                  type="email"
-                  value={recipient}
-                  onChange={(e) => setRecipient(e.target.value)}
-                  className="flex-1"
-                />
-                <Button size="sm" onClick={handleSendEmail} isLoading={sending}>
-                  <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
-                  Send
-                </Button>
+              <div className="space-y-3 mt-2">
+                {aliases.length > 1 && (
+                  <Select
+                    label="From Address"
+                    options={aliases}
+                    value={sender || aliases[0]?.value}
+                    onChange={(val) => setSender(val)}
+                  />
+                )}
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="recipient@example.com"
+                    type="email"
+                    value={recipient}
+                    onChange={(e) => setRecipient(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button size="sm" onClick={handleSendEmail} isLoading={sending}>
+                    <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+                    Send
+                  </Button>
+                </div>
               </div>
               <p className="text-xs text-gray-40 mt-1">Sends via SMTP configured in Settings &rarr; Integrations</p>
               <div className="mt-3 pt-3 border-t border-border">

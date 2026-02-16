@@ -28,6 +28,7 @@ import { db, getIntegrationConfig, verifyAdmin } from "./admin";
 
 interface SendEmailRequest {
   to: string;
+  from?: string;
   subject: string;
   html: string;
   replyTo?: string;
@@ -88,10 +89,21 @@ export const sendEmail = onCall(
 
     const transport = await getTransport();
     const integration = await getIntegrationConfig("email");
-    const fromEmail = integration?.config.user || "admin@creedava.com";
+    
+    // Determine 'from' address
+    let sentFrom = integration?.config.user || "admin@creedava.com";
+    if (data.from) {
+      const aliases = (integration?.config.aliases || "").split(",").map((s: string) => s.trim().toLowerCase());
+      if (aliases.includes(data.from.toLowerCase()) || data.from.toLowerCase() === integration?.config.user?.toLowerCase()) {
+        sentFrom = data.from;
+      }
+    } else if (integration?.config.fromEmail) {
+      // Backwards compatibility
+      sentFrom = integration.config.fromEmail;
+    }
 
     const result = await transport.sendMail({
-      from: `"CreedaVA" <${fromEmail}>`,
+      from: `"CreedaVA" <${sentFrom}>`,
       to: data.to,
       subject: data.subject,
       html: data.html,

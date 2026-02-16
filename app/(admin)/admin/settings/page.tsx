@@ -134,7 +134,8 @@ const PROVIDERS: ProviderConfig[] = [
     fields: [
       { key: "host", label: "SMTP Host", type: "text", required: true, placeholder: "smtp.gmail.com" },
       { key: "port", label: "Port", type: "text", required: true, placeholder: "587" },
-      { key: "user", label: "Email Address", type: "email", required: true, placeholder: "admin@creedava.com" },
+      { key: "user", label: "Primary Email Address", type: "email", required: true, placeholder: "admin@creedava.com" },
+      { key: "aliases", label: "Sender Aliases (Comma Separated)", type: "text", required: false, placeholder: "hello@creedava.com, team@creedava.com", description: "Use these as 'From' addresses. Add them as aliases in your Google Admin console." },
       { key: "pass", label: "App Password", type: "password", required: true, placeholder: "16-char app password" },
     ],
     docsUrl: "https://support.google.com/accounts/answer/185833",
