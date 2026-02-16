@@ -4,6 +4,7 @@ import {
   getDocs,
   getDoc,
   addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   query,
@@ -60,6 +61,22 @@ export async function create<T extends DocumentData>(
     updatedAt: serverTimestamp(),
   });
   return docRef.id;
+}
+
+/**
+ * Create or overwrite a document with a specific ID (merge mode).
+ * Used for integration configs where the provider name IS the doc ID.
+ */
+export async function createWithId<T extends DocumentData>(
+  collectionName: string,
+  docId: string,
+  data: T,
+): Promise<void> {
+  const docRef = doc(db, collectionName, docId);
+  await setDoc(docRef, {
+    ...data,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
 }
 
 export async function update(

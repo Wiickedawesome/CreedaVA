@@ -7,7 +7,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { google } from "googleapis";
-import { db, getIntegrationConfig, verifyAdmin } from "./admin";
+import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 // ─── Auth helper ─────────────────────────────────────
 
@@ -58,7 +58,7 @@ interface GARow {
 export const fetchAnalyticsReport = onCall(
   { region: "us-east4", memory: "256MiB" },
   async (request) => {
-    await verifyAdmin(request.auth?.token?.email || "");
+    verifyAdminEmail(request.auth?.token?.email);
 
     const { token, propertyId } = await getAnalyticsAuth();
     const days = (request.data as { days?: number })?.days || 30;
@@ -162,7 +162,7 @@ export const fetchAnalyticsReport = onCall(
 export const fetchRealtimeAnalytics = onCall(
   { region: "us-east4", memory: "256MiB" },
   async (request) => {
-    await verifyAdmin(request.auth?.token?.email || "");
+    verifyAdminEmail(request.auth?.token?.email);
 
     const { token, propertyId } = await getAnalyticsAuth();
     const url = `https://analyticsdata.googleapis.com/v1beta/${propertyId}:runRealtimeReport`;

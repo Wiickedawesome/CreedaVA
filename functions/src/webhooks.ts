@@ -7,8 +7,9 @@
  */
 
 import { onRequest } from "firebase-functions/v2/https";
-import { db } from "./admin";
+import { db, getIntegrationConfig } from "./admin";
 import cors from "cors";
+import * as nodemailer from "nodemailer";
 
 const corsHandler = cors({ origin: true });
 
@@ -80,6 +81,44 @@ export const handleFormWebhook = onRequest(
               notes: data.notes || "",
               createdAt: new Date(),
             });
+
+            // Send notification email if notifyEmail is specified (landing page forms)
+            if (data.notifyEmail) {
+              try {
+                const emailConfig = await getIntegrationConfig("email");
+                if (emailConfig?.enabled && emailConfig.config.user && emailConfig.config.pass) {
+                  const transport = nodemailer.createTransport({
+                    host: emailConfig.config.host || "smtp.gmail.com",
+                    port: parseInt(emailConfig.config.port || "587"),
+                    secure: emailConfig.config.port === "465",
+                    auth: {
+                      user: emailConfig.config.user,
+                      pass: emailConfig.config.pass,
+                    },
+                  });
+                  await transport.sendMail({
+                    from: `"CreedaVA" <${emailConfig.config.user}>`,
+                    to: data.notifyEmail,
+                    subject: `New lead from ${data.pageTitle || "Landing Page"}`,
+                    html: `
+                      <h2>New Lead Submission</h2>
+                      <p><strong>From:</strong> ${data.pageTitle || "Landing Page"}</p>
+                      <p><strong>Source:</strong> ${data.source || "form-webhook"}</p>
+                      <hr/>
+                      <p><strong>Name:</strong> ${data.name || "—"}</p>
+                      <p><strong>Email:</strong> ${data.email || "—"}</p>
+                      <p><strong>Phone:</strong> ${data.phone || "—"}</p>
+                      <p><strong>Company:</strong> ${data.company || "—"}</p>
+                      <p><strong>Message:</strong> ${data.notes || "—"}</p>
+                      <hr/>
+                      <p style="color:#888;font-size:12px;">View in <a href="https://creeda-va-host-creeda-va.us-east4.hosted.app/admin/leads">CRM Dashboard</a></p>
+                    `,
+                  });
+                }
+              } catch (emailErr) {
+                console.error("Lead notification email failed:", emailErr);
+              }
+            }
             break;
 
           default:

@@ -25,6 +25,7 @@ const emptyForm = {
   headline: "",
   subheadline: "",
   ctaText: "Get Started",
+  ctaEmail: "contact@creedava.com",
   bodyHtml: "",
   status: "draft" as "draft" | "published",
   images: [] as string[],
@@ -70,6 +71,7 @@ export default function LandingPagesPage() {
         headline: page.headline,
         subheadline: page.subheadline,
         ctaText: page.ctaText,
+        ctaEmail: page.ctaEmail || "contact@creedava.com",
         bodyHtml: page.bodyHtml,
         status: page.status,
         images: page.images || [],
@@ -92,6 +94,7 @@ export default function LandingPagesPage() {
         headline: form.headline,
         subheadline: form.subheadline,
         ctaText: form.ctaText,
+        ctaEmail: form.ctaEmail,
         bodyHtml: form.bodyHtml,
         status: form.status,
         images: form.images,
@@ -264,6 +267,23 @@ export default function LandingPagesPage() {
         />
       ),
     },
+    {
+      key: "slug",
+      header: "",
+      render: (p) =>
+        p.status === "published" && p.slug ? (
+          <a
+            href={`/lp/${p.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-light font-medium"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+            View
+          </a>
+        ) : null,
+    },
   ];
 
   if (loading) {
@@ -303,6 +323,7 @@ export default function LandingPagesPage() {
                   headline: result.headline || "",
                   subheadline: result.subheadline || "",
                   ctaText: result.ctaText || "Get Started",
+                  ctaEmail: "contact@creedava.com",
                   bodyHtml: result.bodyHtml || "",
                   status: "draft",
                   images: [],
@@ -319,6 +340,7 @@ export default function LandingPagesPage() {
                     headline: r.headline || "",
                     subheadline: r.subheadline || "",
                     ctaText: r.ctaText || "Get Started",
+                    ctaEmail: "contact@creedava.com",
                     bodyHtml: r.bodyHtml || "",
                     status: "draft",
                     images: [],
@@ -398,6 +420,20 @@ No markdown fences.`
         }
       >
         <div className="space-y-4">
+          {/* View link for published pages */}
+          {selected?.status === "published" && selected.slug && (
+            <a
+              href={`/lp/${selected.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-10 text-sm text-primary hover:text-primary-light hover:bg-primary/5 transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+              <span className="font-medium">View Page</span>
+              <span className="text-gray-40">creedava.com/lp/{selected.slug}</span>
+            </a>
+          )}
+
           {/* Stats row (edit mode only) */}
           {selected && (
             <div className="grid grid-cols-3 gap-3">
@@ -448,6 +484,20 @@ No markdown fences.`
             value={form.ctaText}
             onChange={(e) => setForm({ ...form, ctaText: e.target.value })}
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-70 mb-1">Send Inquiries To</label>
+            <select
+              value={form.ctaEmail}
+              onChange={(e) => setForm({ ...form, ctaEmail: e.target.value })}
+              className="w-full rounded-lg border border-gray-20 bg-white px-3 py-2 text-sm text-gray-90 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+            >
+              <option value="contact@creedava.com">contact@creedava.com</option>
+              <option value="sales@creedava.com">sales@creedava.com</option>
+              <option value="info@creedava.com">info@creedava.com</option>
+              <option value="john@creedava.com">john@creedava.com</option>
+            </select>
+            <p className="text-xs text-gray-40 mt-1">Form submissions from this page will be sent to this email</p>
+          </div>
           <RichTextEditor
             label="Page Body"
             value={form.bodyHtml}

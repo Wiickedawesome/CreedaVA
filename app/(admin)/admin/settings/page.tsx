@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useAuth } from "@/lib/firebase";
 import { useCollection } from "@/hooks/useCollection";
+import { createWithId } from "@/lib/firebase/firestore";
 import { PageHeader, useToast } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 
@@ -244,7 +245,7 @@ const PROVIDERS: ProviderConfig[] = [
 export default function SettingsPage() {
   const { user } = useAuth();
   const { data: settings, loading: settingsLoading, add, edit } = useCollection<Setting>("settings");
-  const { data: integrations, loading: integrationsLoading, add: addIntegration, edit: editIntegration } = useCollection<Integration>("integrations");
+  const { data: integrations, loading: integrationsLoading, refetch: refetchIntegrations } = useCollection<Integration>("integrations");
   const { toast } = useToast();
 
   // ─── General settings state ─────────
@@ -326,13 +327,14 @@ export default function SettingsPage() {
   async function handleSaveIntegration(providerId: string) {
     setSavingProvider(providerId);
     try {
-      const existing = getIntegration(providerId);
       const config = formData[providerId] || {};
-      if (existing) {
-        await editIntegration(existing.id, { config, enabled: true, provider: providerId });
-      } else {
-        await addIntegration({ provider: providerId, enabled: true, config });
-      }
+      // Use provider name as document ID so Cloud Functions can find it
+      await createWithId("integrations", providerId, {
+        provider: providerId,
+        enabled: true,
+        config,
+      });
+      refetchIntegrations();
       toast(`${providerId} integration saved`);
     } catch {
       toast(`Failed to save ${providerId}`, "error");
@@ -345,7 +347,11 @@ export default function SettingsPage() {
     const existing = getIntegration(providerId);
     if (!existing) return;
     try {
-      await editIntegration(existing.id, { enabled: !existing.enabled });
+      await createWithId("integrations", providerId, {
+        provider: providerId,
+        enabled: !existing.enabled,
+      });
+      refetchIntegrations();
       toast(`${providerId} ${existing.enabled ? "disabled" : "enabled"}`);
     } catch {
       toast(`Failed to toggle ${providerId}`, "error");

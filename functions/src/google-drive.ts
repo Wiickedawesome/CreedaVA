@@ -7,7 +7,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { google } from "googleapis";
-import { db, getIntegrationConfig, verifyAdmin } from "./admin";
+import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 // ─── Auth helper ─────────────────────────────────────
 
@@ -38,7 +38,7 @@ async function getDriveClient() {
 export const listDriveFiles = onCall(
   { region: "us-east4", memory: "256MiB" },
   async (request) => {
-    await verifyAdmin(request.auth?.token?.email || "");
+    verifyAdminEmail(request.auth?.token?.email);
 
     const { drive, rootFolderId } = await getDriveClient();
     const folderId = (request.data as { folderId?: string })?.folderId || rootFolderId;
@@ -77,7 +77,7 @@ export const listDriveFiles = onCall(
 export const createClientFolder = onCall(
   { region: "us-east4" },
   async (request) => {
-    await verifyAdmin(request.auth?.token?.email || "");
+    verifyAdminEmail(request.auth?.token?.email);
 
     const { clientName, clientId } = request.data as { clientName: string; clientId?: string };
     if (!clientName) throw new HttpsError("invalid-argument", "clientName required");
@@ -139,7 +139,7 @@ export const createClientFolder = onCall(
 export const uploadReportToDrive = onCall(
   { region: "us-east4", memory: "512MiB", timeoutSeconds: 60 },
   async (request) => {
-    await verifyAdmin(request.auth?.token?.email || "");
+    verifyAdminEmail(request.auth?.token?.email);
 
     const { fileName, content, mimeType, folderId: targetFolderId } =
       request.data as {

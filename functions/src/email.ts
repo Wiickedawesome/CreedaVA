@@ -22,7 +22,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as nodemailer from "nodemailer";
-import { db, getIntegrationConfig, verifyAdmin } from "./admin";
+import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -76,11 +76,7 @@ export const sendEmail = onCall(
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");
     }
-    await verifyAdmin(request.auth.token as unknown as string).catch(() => {
-      if (!request.auth?.token.email?.endsWith("@creedava.com")) {
-        throw new HttpsError("permission-denied", "Must be @creedava.com");
-      }
-    });
+    verifyAdminEmail(request.auth.token.email);
 
     const data = request.data as SendEmailRequest;
     if (!data.to || !data.subject || !data.html) {

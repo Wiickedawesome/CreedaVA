@@ -3,6 +3,7 @@
  */
 
 import * as admin from "firebase-admin";
+import { HttpsError } from "firebase-functions/v2/https";
 
 // Initialize Firebase Admin (auto-detects credentials in Cloud Functions)
 if (!admin.apps.length) {
@@ -19,8 +20,13 @@ export const auth = admin.auth();
 export async function getIntegrationConfig(
   provider: string,
 ): Promise<{ enabled: boolean; config: Record<string, string> } | null> {
-  const doc = await db.collection("integrations").doc(provider).get();
-  if (!doc.exists) return null;
+  // Try doc ID first (new format), then query by provider field (legacy random IDs)
+  let doc = await db.collection("integrations").doc(provider).get();
+  if (!doc.exists) {
+    const query = await db.collection("integrations").where("provider", "==", provider).limit(1).get();
+    if (query.empty) return null;
+    doc = query.docs[0];
+  }
   const data = doc.data()!;
   return {
     enabled: data.enabled ?? false,
@@ -30,6 +36,17 @@ export async function getIntegrationConfig(
 
 /**
  * Verify the request comes from an authenticated @creedava.com user.
+ * For onCall functions, pass request.auth?.token?.email directly.
+ * For HTTP functions, pass the raw ID token string.
+ */
+export function verifyAdminEmail(email: string | undefined): void {
+  if (!email?.endsWith("@creedava.com")) {
+    throw new HttpsError("permission-denied", "Must be @creedava.com");
+  }
+}
+
+/**
+ * Legacy: Verify via raw ID token (for HTTP endpoints only).
  */
 export async function verifyAdmin(idToken: string): Promise<admin.auth.DecodedIdToken> {
   const decoded = await auth.verifyIdToken(idToken);

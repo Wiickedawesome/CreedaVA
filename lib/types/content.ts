@@ -104,6 +104,7 @@ export interface LandingPage extends FirestoreDoc {
   headline: string;
   subheadline: string;
   ctaText: string;
+  ctaEmail: string;
   bodyHtml: string;
   status: "draft" | "published";
   views: number;

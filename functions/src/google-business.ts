@@ -7,7 +7,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { google } from "googleapis";
-import { db, getIntegrationConfig, verifyAdmin } from "./admin";
+import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 // ─── Auth helper ─────────────────────────────────────
 
@@ -39,7 +39,7 @@ async function getBusinessClient() {
 export const fetchBusinessReviews = onCall(
   { region: "us-east4", memory: "256MiB" },
   async (request) => {
-    await verifyAdmin(request.auth?.token?.email || "");
+    verifyAdminEmail(request.auth?.token?.email);
 
     const { auth, accountId, locationId } = await getBusinessClient();
 
@@ -89,7 +89,7 @@ export const fetchBusinessReviews = onCall(
 export const fetchBusinessInsights = onCall(
   { region: "us-east4", memory: "256MiB" },
   async (request) => {
-    await verifyAdmin(request.auth?.token?.email || "");
+    verifyAdminEmail(request.auth?.token?.email);
 
     const { auth, accountId, locationId } = await getBusinessClient();
 

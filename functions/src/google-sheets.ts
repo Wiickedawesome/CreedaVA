@@ -7,7 +7,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { google } from "googleapis";
-import { db, getIntegrationConfig, verifyAdmin } from "./admin";
+import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 // ─── Auth helper ─────────────────────────────────────
 
@@ -38,7 +38,7 @@ async function getSheetsClient() {
 export const exportToSheets = onCall(
   { region: "us-east4", memory: "512MiB", timeoutSeconds: 120 },
   async (request) => {
-    await verifyAdmin(request.auth?.token?.email || "");
+    verifyAdminEmail(request.auth?.token?.email);
 
     const collection = (request.data as { collection?: string })?.collection || "leads";
     const allowedCollections = ["leads", "customers", "contacts", "bookings", "tasks", "campaigns", "blog"];
@@ -169,7 +169,7 @@ export const exportToSheets = onCall(
 export const generateReportSheet = onCall(
   { region: "us-east4", memory: "512MiB", timeoutSeconds: 120 },
   async (request) => {
-    await verifyAdmin(request.auth?.token?.email || "");
+    verifyAdminEmail(request.auth?.token?.email);
 
     const { sheets, spreadsheetId: existingReportId } = await getSheetsClient();
     let spreadsheetId = existingReportId;
