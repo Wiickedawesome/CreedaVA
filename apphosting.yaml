@@ -9,33 +9,17 @@ runConfig:
   concurrency: 80
 
 env:
-  # Firebase config — set values in Firebase Console → App Hosting → Settings → Environment variables
-  # Or use: firebase apphosting:secrets:set <KEY>
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    availability:
-      - BUILD
-      - RUNTIME
+    value: AIzaSyBGaDhXUnmMfYsjxK9Jh5Tk3vGn78mum3U
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    availability:
-      - BUILD
-      - RUNTIME
+    value: creeda-va.firebaseapp.com
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    availability:
-      - BUILD
-      - RUNTIME
+    value: creeda-va
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    availability:
-      - BUILD
-      - RUNTIME
+    value: creeda-va.firebasestorage.app
   - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-    availability:
-      - BUILD
-      - RUNTIME
+    value: "53722795216"
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    availability:
-      - BUILD
-      - RUNTIME
+    value: "1:53722795216:web:18065a250c22647774a2d5"
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-    availability:
-      - BUILD
-      - RUNTIME
+    value: G-GSYB90RLF2
