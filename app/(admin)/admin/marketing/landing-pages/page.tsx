@@ -14,6 +14,7 @@ import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { AIPromptButton, RichTextEditor } from "@/components/admin";
 import { lazyGenerateLandingPage as generateLandingPage } from "@/lib/firebase/ai-lazy";
+import { buildLandingPagePrompt } from "@/lib/utils/ai-system-prompt";
 import type { LandingPage } from "@/lib/types/content";
 import { uploadImage, uploadFile } from "@/lib/firebase/storage";
 import { cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
@@ -271,7 +272,7 @@ export default function LandingPagesPage() {
       key: "slug",
       header: "",
       render: (p) =>
-        p.status === "published" && p.slug ? (
+        p.slug ? (
           <a
             href={`/lp/${p.slug}`}
             target="_blank"
@@ -309,6 +310,11 @@ export default function LandingPagesPage() {
               { label: "Lead Capture", prompt: "Create a landing page to capture leads for virtual assistant services with a free consultation offer" },
               { label: "Service Promo", prompt: "Create a landing page promoting CreedaVA's executive assistant services with 'Get Started' CTA" },
               { label: "Event Signup", prompt: "Create a landing page for a free webinar about how VAs can transform your business" },
+              { label: "Case Study LP", prompt: "Create a landing page showcasing a client success story with key metrics, testimonial, and a CTA to book a consultation" },
+              { label: "Pricing Page", prompt: "Create a landing page comparing VA service plans (Basic, Professional, Enterprise) with features, pricing, and a CTA for each tier" },
+              { label: "Free Trial", prompt: "Create a landing page offering a free 1-week virtual assistant trial. Highlight zero-risk, no commitment, and immediate value" },
+              { label: "Industry Focus", prompt: "Create a landing page targeting real estate agents who need virtual assistant support. Address their specific pain points and workflows" },
+              { label: "Seasonal Offer", prompt: "Create a limited-time promotional landing page with urgency elements, a special discount, and countdown-style messaging for VA services" },
             ]}
             previewable
             previewLabel="Preview Page"
@@ -351,20 +357,7 @@ export default function LandingPagesPage() {
                 }).catch(() => toast("AI generation failed", "error"));
               }
             }}
-            buildPrompt={(input) =>
-              `You are a landing page designer for CreedaVA, a virtual assistant services company.
-Create a landing page about: "${input}"
-
-Return ONLY valid JSON with:
-- title: page title
-- slug: URL-friendly slug
-- headline: main headline (compelling, action-oriented)
-- subheadline: supporting text
-- ctaText: call-to-action button text
-- bodyHtml: full page body in HTML (use h2, h3, p, ul, section tags)
-
-No markdown fences.`
-            }
+            buildPrompt={(input) => buildLandingPagePrompt(input)}
           />
           <Button size="sm" onClick={() => openModal()}>
             <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

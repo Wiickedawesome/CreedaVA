@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -284,6 +285,11 @@ export default function SeoContentPage() {
               { label: "Homepage Audit", prompt: "Analyze the SEO of https://creedava.com/ and suggest improvements" },
               { label: "Services Page", prompt: "Analyze SEO for a virtual assistant services page" },
               { label: "Content Gap", prompt: "What content topics should CreedaVA cover to improve organic search rankings?" },
+              { label: "Meta Tag Review", prompt: "Review and optimize meta titles and descriptions for the top 5 pages. Provide improved versions with character counts." },
+              { label: "Internal Linking", prompt: "Suggest an internal linking strategy to improve page authority distribution. Identify orphan pages and recommend link placements." },
+              { label: "Schema Markup", prompt: "Recommend structured data / schema markup improvements for CreedaVA's website. Cover FAQ, Service, Organization, and BreadcrumbList schemas." },
+              { label: "Page Speed Tips", prompt: "Identify common page speed issues for service websites and suggest 5 specific optimizations to improve Core Web Vitals scores." },
+              { label: "Local SEO", prompt: "Provide a local SEO strategy for a virtual assistant services company. Cover Google Business Profile, local keywords, citations, and reviews." },
             ]}
             onResult={(raw) => {
               try {
@@ -300,17 +306,7 @@ export default function SeoContentPage() {
               }
             }}
             buildPrompt={(input) =>
-              `You are an SEO expert. Analyze this URL/topic: "${input}"
-
-Return ONLY valid JSON with:
-- url: the analyzed URL or topic
-- score: numeric SEO score 0-100
-- suggestedTitle: improved page title
-- suggestedDescription: improved meta description
-- issues: array of { issue: string, severity: "low"|"medium"|"high", suggestion: string }
-- recommendations: array of strings with specific improvements
-
-No markdown fences.`
+              buildTrainedPrompt("SEO Audit", `Analyze this URL/topic: "${input}"\n\nReturn ONLY valid JSON with:\n- url: the analyzed URL or topic\n- score: numeric SEO score 0-100\n- suggestedTitle: improved page title\n- suggestedDescription: improved meta description\n- issues: array of { issue: string, severity: "low"|"medium"|"high", suggestion: string }\n- recommendations: array of strings with specific improvements\n\nNo markdown fences.`, "", { includeCompetitors: true, includeKPIs: true })
             }
           />
         }

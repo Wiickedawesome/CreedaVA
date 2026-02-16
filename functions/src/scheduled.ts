@@ -135,11 +135,11 @@ export const dailyDigest = onSchedule(
 );
 
 // ─── Weekly Report ───────────────────────────────────
-// Runs every Monday at 9 AM Belize time
+// Runs every Monday at midnight Belize time (UTC-6)
 
 export const weeklyReport = onSchedule(
   {
-    schedule: "0 9 * * 1",
+    schedule: "0 0 * * 1",
     timeZone: "America/Belize",
     region: "us-east4",
   },
@@ -206,6 +206,136 @@ export const weeklyReport = onSchedule(
     });
 
     console.log("Weekly report generated successfully");
+  },
+);
+
+// ─── Monthly Report ──────────────────────────────────
+// Runs on the 1st of every month at midnight Belize time (UTC-6)
+
+export const monthlyReport = onSchedule(
+  {
+    schedule: "0 0 1 * *",
+    timeZone: "America/Belize",
+    region: "us-east4",
+  },
+  async () => {
+    const now = new Date();
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const monthName = prevMonth.toLocaleString("en-US", { month: "long", year: "numeric" });
+
+    // Gather monthly stats
+    const [leads, bookings, tasks, customers, campaigns, blog] = await Promise.all([
+      db.collection("leads").where("createdAt", ">=", monthAgo).get(),
+      db.collection("bookings").where("createdAt", ">=", monthAgo).get(),
+      db.collection("tasks").where("createdAt", ">=", monthAgo).get(),
+      db.collection("customers").get(),
+      db.collection("campaigns").get(),
+      db.collection("blog").where("createdAt", ">=", monthAgo).get(),
+    ]);
+
+    const leadsWon = leads.docs.filter((d) => d.data().status === "won").length;
+    const leadsLost = leads.docs.filter((d) => d.data().status === "lost").length;
+    const pipelineValue = leads.docs
+      .filter((d) => !["won", "lost"].includes(d.data().status))
+      .reduce((s, d) => s + (d.data().value || 0), 0);
+    const activeCustomers = customers.docs.filter(
+      (d) => d.data().status === "active",
+    ).length;
+    const mrr = customers.docs
+      .filter((d) => d.data().status === "active")
+      .reduce((s, d) => s + (d.data().monthlyValue || 0), 0);
+    const totalSpent = campaigns.docs.reduce(
+      (s, d) => s + (d.data().spent || 0), 0,
+    );
+    const totalConversions = campaigns.docs.reduce(
+      (s, d) => s + (d.data().conversions || 0), 0,
+    );
+    const bookingsCancelled = bookings.docs.filter(
+      (d) => d.data().status === "cancelled",
+    ).length;
+    const blogPublished = blog.docs.filter(
+      (d) => d.data().status === "published",
+    ).length;
+    const winRate = leads.size > 0
+      ? ((leadsWon / leads.size) * 100).toFixed(1)
+      : "0";
+
+    const html = `
+      <div style="font-family: Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: #005148; color: white; padding: 20px; border-radius: 12px 12px 0 0;">
+          <h1 style="margin: 0; font-size: 20px;">CreedaVA Monthly Report</h1>
+          <p style="margin: 4px 0 0; opacity: 0.8;">${monthName}</p>
+        </div>
+        <div style="padding: 20px; background: #f9fbff; border: 1px solid #e0e8f5;">
+          <h2 style="color: #002D72;">📈 Pipeline & Revenue</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr><td style="padding: 8px;">New Leads</td><td style="padding: 8px; font-weight: bold; text-align: right;">${leads.size}</td></tr>
+            <tr><td style="padding: 8px;">Won / Lost</td><td style="padding: 8px; font-weight: bold; text-align: right; color: #005148;">${leadsWon} / ${leadsLost}</td></tr>
+            <tr><td style="padding: 8px;">Win Rate</td><td style="padding: 8px; font-weight: bold; text-align: right;">${winRate}%</td></tr>
+            <tr><td style="padding: 8px;">Pipeline Value</td><td style="padding: 8px; font-weight: bold; text-align: right;">$${pipelineValue.toLocaleString()}</td></tr>
+            <tr><td style="padding: 8px;">MRR</td><td style="padding: 8px; font-weight: bold; text-align: right; color: #005148;">$${mrr.toLocaleString()}</td></tr>
+            <tr><td style="padding: 8px;">ARR (projected)</td><td style="padding: 8px; font-weight: bold; text-align: right;">$${(mrr * 12).toLocaleString()}</td></tr>
+          </table>
+          <h2 style="color: #002D72; margin-top: 16px;">📊 Activity</h2>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr><td style="padding: 8px;">Bookings</td><td style="padding: 8px; font-weight: bold; text-align: right;">${bookings.size} (${bookingsCancelled} cancelled)</td></tr>
+            <tr><td style="padding: 8px;">Tasks Created</td><td style="padding: 8px; font-weight: bold; text-align: right;">${tasks.size}</td></tr>
+            <tr><td style="padding: 8px;">Active Customers</td><td style="padding: 8px; font-weight: bold; text-align: right;">${activeCustomers}</td></tr>
+            <tr><td style="padding: 8px;">Blog Posts Published</td><td style="padding: 8px; font-weight: bold; text-align: right;">${blogPublished}</td></tr>
+            <tr><td style="padding: 8px;">Campaign Spend</td><td style="padding: 8px; font-weight: bold; text-align: right;">$${totalSpent.toLocaleString()}</td></tr>
+            <tr><td style="padding: 8px;">Campaign Conversions</td><td style="padding: 8px; font-weight: bold; text-align: right;">${totalConversions}</td></tr>
+          </table>
+        </div>
+        <div style="padding: 12px; text-align: center; color: #888; font-size: 12px;">
+          CreedaVA — Virtual Assistant Services
+        </div>
+      </div>
+    `;
+
+    await db.collection("reports").add({
+      title: `Monthly Report — ${monthName}`,
+      type: "monthly",
+      category: "scheduled",
+      summaryHtml: html,
+      highlights: [
+        `${leads.size} leads, ${winRate}% win rate`,
+        `$${mrr.toLocaleString()} MRR ($${(mrr * 12).toLocaleString()} ARR)`,
+        `${bookings.size} bookings (${bookingsCancelled} cancelled)`,
+        `${blogPublished} blog posts published`,
+        `$${totalSpent.toLocaleString()} campaign spend → ${totalConversions} conversions`,
+      ],
+      recommendations: [],
+      createdAt: now,
+      source: "cloud-function",
+    });
+
+    // Try to send monthly email
+    try {
+      const emailConfig = await getIntegrationConfig("email");
+      if (emailConfig?.enabled) {
+        const transport = nodemailer.createTransport({
+          host: emailConfig.config.host || "smtp.gmail.com",
+          port: parseInt(emailConfig.config.port || "587"),
+          secure: emailConfig.config.port === "465",
+          auth: {
+            user: emailConfig.config.user,
+            pass: emailConfig.config.pass,
+          },
+        });
+
+        await transport.sendMail({
+          from: `"CreedaVA" <${emailConfig.config.user}>`,
+          to: emailConfig.config.user,
+          subject: `CreedaVA Monthly Report — ${monthName}`,
+          html,
+        });
+      }
+    } catch (emailErr) {
+      console.warn("Monthly report email failed:", emailErr);
+    }
+
+    console.log("Monthly report generated successfully");
   },
 );
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useRef } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -304,6 +305,11 @@ export default function BlogPage() {
                 { label: "Business Tips", prompt: "Write a blog post about practical business tips for small business owners looking to delegate tasks to virtual assistants." },
                 { label: "Industry Trends", prompt: "Write a blog post about the latest trends in virtual assistant services and remote work for 2026." },
                 { label: "Case Study", prompt: "Write a blog post case study about how a startup scaled their operations using CreedaVA's virtual assistant services." },
+                { label: "How-To Guide", prompt: "Write a step-by-step how-to guide on hiring and onboarding your first virtual assistant. Include tips for setting expectations and communication." },
+                { label: "Cost Savings", prompt: "Write a blog post breaking down how much money businesses save by using virtual assistants vs full-time employees. Include real calculations." },
+                { label: "Common Mistakes", prompt: "Write a blog post about the top 7 mistakes businesses make when working with virtual assistants and how to avoid them." },
+                { label: "Tools & Tech", prompt: "Write a blog post reviewing the best tools and tech stack for managing virtual assistant teams effectively in 2026." },
+                { label: "Client FAQ", prompt: "Write a blog post answering the 10 most frequently asked questions about virtual assistant services from potential clients." },
               ]}
               previewable
               previewLabel="Preview Post"
@@ -336,18 +342,7 @@ export default function BlogPage() {
                 }
               }}
               buildPrompt={(input) =>
-                `You are a blog writer for CreedaVA, a virtual assistant services company.
-Write a complete blog post about: "${input}"
-
-Return ONLY valid JSON with these fields:
-- title: compelling blog title
-- slug: URL-friendly slug
-- excerpt: 1-2 sentence summary
-- content: full blog post in HTML (use h2, h3, p, ul, li tags)
-- tags: array of 3-5 relevant tags
-- metaDescription: SEO meta description (150-160 chars)
-
-Return ONLY valid JSON, no markdown fences.`
+                buildTrainedPrompt("Blog", `Write a complete blog post about: "${input}"\n\nReturn ONLY valid JSON with these fields:\n- title: compelling blog title\n- slug: URL-friendly slug\n- excerpt: 1-2 sentence summary\n- content: full blog post in HTML (use h2, h3, p, ul, li tags)\n- tags: array of 3-5 relevant tags\n- metaDescription: SEO meta description (150-160 chars)\n\nReturn ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true })
               }
             />
             <Button size="sm" onClick={() => openModal()}>

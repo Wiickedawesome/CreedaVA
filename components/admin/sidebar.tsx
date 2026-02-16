@@ -135,6 +135,17 @@ const seoItems: NavItem[] = [
       </svg>
     ),
   },
+  {
+    label: "Landing Pages",
+    href: "/admin/marketing/landing-pages",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+        <line x1="8" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="17" x2="12" y2="21" />
+      </svg>
+    ),
+  },
 ];
 
 const marketingItems: NavItem[] = [
@@ -153,17 +164,6 @@ const marketingItems: NavItem[] = [
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-      </svg>
-    ),
-  },
-  {
-    label: "Landing Pages",
-    href: "/admin/marketing/landing-pages",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-        <line x1="8" y1="21" x2="16" y2="21" />
-        <line x1="12" y1="17" x2="12" y2="21" />
       </svg>
     ),
   },
@@ -302,7 +302,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="flex-1 overflow-y-auto px-2 py-2">
         {collapsed ? (
           <nav className="flex flex-col items-center gap-1">
-            {[...crmItems, ...contentItems, ...seoItems, ...marketingItems, ...analyticsItems].map(
+            {[...crmItems, ...analyticsItems, ...contentItems, ...seoItems, ...marketingItems].map(
               (item) => (
                 <Link
                   key={item.href}
@@ -319,10 +319,10 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
         ) : (
           <>
             <NavSection items={crmItems} onNavigate={onNavigate} />
+            <NavSection title="Analytics" items={analyticsItems} onNavigate={onNavigate} />
             <NavSection title="Content" items={contentItems} onNavigate={onNavigate} />
             <NavSection title="SEO" items={seoItems} onNavigate={onNavigate} />
             <NavSection title="Marketing" items={marketingItems} onNavigate={onNavigate} />
-            <NavSection title="Analytics" items={analyticsItems} onNavigate={onNavigate} />
           </>
         )}
       </div>

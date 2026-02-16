@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, type ReactNode } from "react";
 import { Modal, useToast } from "@/components/admin";
 import { Button } from "@/components/ui";
 import { lazyGenerateText } from "@/lib/firebase/ai-lazy";
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -135,6 +136,24 @@ function AIPromptDialog({
   const [result, setResult] = useState("");
   const [showResult, setShowResult] = useState(false);
 
+  // Rotating presets: show 5 at a time, cycle every 6 seconds
+  const VISIBLE_PRESETS = 5;
+  const [presetOffset, setPresetOffset] = useState(0);
+  const visiblePresets =
+    presets.length <= VISIBLE_PRESETS
+      ? presets
+      : Array.from({ length: VISIBLE_PRESETS }, (_, i) =>
+          presets[(presetOffset + i) % presets.length],
+        );
+
+  useEffect(() => {
+    if (presets.length <= VISIBLE_PRESETS || generating || showResult) return;
+    const timer = setInterval(() => {
+      setPresetOffset((prev) => (prev + 1) % presets.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [presets, generating, showResult]);
+
   // Auto-focus textarea on open
   useEffect(() => {
     if (open && textareaRef.current) {
@@ -153,13 +172,10 @@ function AIPromptDialog({
     try {
       const fullPrompt = buildPrompt
         ? buildPrompt(prompt, dataContext)
-        : `You are an AI assistant for CreedaVA, a virtual assistant services company.
-Section: ${section}
-Context: ${description}
-
-${dataContext ? `Current data:\n${dataContext}\n\n` : ""}User request: ${prompt}
-
-Provide a detailed, actionable response.`;
+        : buildTrainedPrompt(section, prompt, dataContext, {
+            includeCompetitors: true,
+            includeKPIs: true,
+          });
 
       const raw = await lazyGenerateText(fullPrompt);
 
@@ -278,15 +294,15 @@ Provide a detailed, actionable response.`;
       size="lg"
       footer={
         <>
-          <div className="flex items-center gap-3 flex-1">
-            {/* Preset chips */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Preset chips — rotate through suggestions */}
             {presets.length > 0 && (
-              <div className="flex items-center gap-1.5 overflow-x-auto">
-                {presets.map((p) => (
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                {visiblePresets.map((p) => (
                   <button
                     key={p.label}
                     onClick={() => handlePreset(p.prompt)}
-                    className="shrink-0 rounded-full border border-border bg-white px-3 py-1 text-xs text-gray-60 hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap cursor-pointer"
+                    className="flex-1 min-w-0 rounded-full border border-border bg-white px-2 py-1 text-xs text-gray-60 hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-all duration-300 truncate cursor-pointer"
                   >
                     {p.label}
                   </button>

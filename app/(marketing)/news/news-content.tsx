@@ -41,7 +41,7 @@ export function NewsContent() {
               {t.news.stayConnectedDesc}
             </p>
             <a
-              href="https://linkedin.com/company/creedava"
+              href="https://www.linkedin.com/company/108356527"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#0A66C2] text-white font-medium rounded-md hover:bg-[#004182] transition-colors"

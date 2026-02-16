@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -233,6 +234,11 @@ export default function LeadsPage() {
                 { label: "Follow-up Emails", prompt: "Draft personalised follow-up email templates for leads that need attention. For each lead, write a short email (subject + 3-4 sentences) tailored to their status and value." },
                 { label: "Lead Scoring", prompt: "Score and rank all leads from highest to lowest potential. For each lead give: Score (1-10), reasoning, and recommended next action." },
                 { label: "Conversion Tips", prompt: "Give 5 specific tactics to improve lead conversion rate. For each tactic explain what to do, why it works, and the expected improvement." },
+                { label: "Stale Lead Recovery", prompt: "Identify stale leads (no activity in 14+ days). For each, draft a personalized re-engagement message and suggest the best channel (email, phone, LinkedIn)." },
+                { label: "Pipeline Review", prompt: "Review the sales pipeline health. Identify bottlenecks, stuck deals, and leads that are most likely to close this week. Recommend specific actions for each." },
+                { label: "Source Analysis", prompt: "Analyze lead sources and their conversion rates. Identify which channels produce the highest quality leads and recommend where to invest more effort." },
+                { label: "Objection Handler", prompt: "List the top 5 common objections from leads in the VA industry and draft persuasive responses for each. Keep them concise and value-focused." },
+                { label: "Weekly Report", prompt: "Generate a weekly lead activity report. Cover: new leads, status changes, pipeline value change, top opportunities, and one key action for next week." },
               ]}
               dataContext={(() => {
                 const byStatus = Object.entries(leads.reduce((acc, l) => ({ ...acc, [l.status]: (acc[l.status] || 0) + 1 }), {} as Record<string, number>)).map(([s, c]) => `${s}: ${c}`).join(", ");
@@ -241,7 +247,7 @@ export default function LeadsPage() {
                 return `CreedaVA Leads (${leads.length} total):\nBy status: ${byStatus}\nBy source: ${bySource}\nPipeline: $${pipeline.toLocaleString()}, Win rate: ${winRate}%\nTop open leads: ${topLeads}`;
               })()}
               buildPrompt={(input, ctx) =>
-                `You are a sales manager for CreedaVA (virtual assistant services).\n${input}\n\nLead data:\n${ctx}\n\nUse the actual data. Be professional and actionable.`
+                buildTrainedPrompt("Leads", input, ctx, { includeCompetitors: true, includeKPIs: true })
               }
             />
             <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">

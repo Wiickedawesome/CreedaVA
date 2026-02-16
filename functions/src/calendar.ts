@@ -16,9 +16,13 @@
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onRequest } from "firebase-functions/v2/https";
 import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { google, calendar_v3 } from "googleapis";
 import { getIntegrationConfig } from "./admin";
+import cors from "cors";
+
+const corsHandler = cors({ origin: true });
 
 // ─── Auth helper ─────────────────────────────────────
 
@@ -225,5 +229,80 @@ export const listCalendarEvents = onCall(
         })),
       })),
     };
+  },
+);
+
+// ─── Public: Get available booking slots ─────────────
+
+export const getAvailableSlots = onRequest(
+  { region: "us-east4" },
+  (req, res) => {
+    corsHandler(req, res, async () => {
+      if (req.method !== "GET") {
+        res.status(405).json({ error: "Method not allowed" });
+        return;
+      }
+
+      try {
+        const { calendar, calendarId } = await getCalendarClient();
+
+        // Look 60 days ahead
+        const now = new Date();
+        const endDate = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
+
+        const busyRes = await calendar.freebusy.query({
+          requestBody: {
+            timeMin: now.toISOString(),
+            timeMax: endDate.toISOString(),
+            timeZone: "America/Belize",
+            items: [{ id: calendarId }],
+          },
+        });
+
+        const busySlots = busyRes.data.calendars?.[calendarId]?.busy || [];
+
+        // Generate available 1-hour slots (Mon-Fri 9am-5pm Belize time)
+        const slots: { date: string; time: string; available: boolean }[] = [];
+        const cursor = new Date(now);
+        cursor.setHours(0, 0, 0, 0);
+        // Move to next day
+        cursor.setDate(cursor.getDate() + 1);
+
+        for (let d = 0; d < 60; d++) {
+          const day = cursor.getDay();
+          if (day >= 1 && day <= 5) { // Mon-Fri
+            for (let hour = 9; hour < 17; hour++) {
+              const slotStart = new Date(cursor);
+              slotStart.setHours(hour, 0, 0, 0);
+              const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+
+              // Check if this slot overlaps with any busy period
+              const isBusy = busySlots.some((busy) => {
+                const busyStart = new Date(busy.start!);
+                const busyEnd = new Date(busy.end!);
+                return slotStart < busyEnd && slotEnd > busyStart;
+              });
+
+              // Only include future slots
+              if (slotStart > now) {
+                slots.push({
+                  date: slotStart.toISOString().split("T")[0],
+                  time: `${String(hour).padStart(2, "0")}:00`,
+                  available: !isBusy,
+                });
+              }
+            }
+          }
+          cursor.setDate(cursor.getDate() + 1);
+        }
+
+        res.status(200).json({ slots });
+      } catch (err) {
+        console.error("Available slots error:", err);
+        res.status(500).json({
+          error: err instanceof Error ? err.message : "Failed to fetch availability",
+        });
+      }
+    });
   },
 );

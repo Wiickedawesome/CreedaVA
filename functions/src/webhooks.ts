@@ -48,10 +48,43 @@ export const handleFormWebhook = onRequest(
               phone: data.phone || "",
               company: data.company || "",
               notes: data.message || data.notes || "",
-              source: "form-webhook",
+              source: data.source || "form-webhook",
               tags: ["form-submission"],
               createdAt: new Date(),
             });
+
+            // Send notification email
+            if (data.notifyEmail) {
+              try {
+                const emailConfig = await getIntegrationConfig("email");
+                if (emailConfig?.enabled && emailConfig.config.user && emailConfig.config.pass) {
+                  const transport = nodemailer.createTransport({
+                    host: emailConfig.config.host || "smtp.gmail.com",
+                    port: parseInt(emailConfig.config.port || "587"),
+                    secure: emailConfig.config.port === "465",
+                    auth: { user: emailConfig.config.user, pass: emailConfig.config.pass },
+                  });
+                  await transport.sendMail({
+                    from: `"CreedaVA" <${emailConfig.config.user}>`,
+                    to: data.notifyEmail,
+                    replyTo: data.email || undefined,
+                    subject: `New message from ${data.name || "Contact Form"}`,
+                    html: `
+                      <h2>New Contact Form Submission</h2>
+                      <p><strong>Name:</strong> ${data.name || "—"}</p>
+                      <p><strong>Email:</strong> ${data.email || "—"}</p>
+                      <p><strong>Company:</strong> ${data.company || "—"}</p>
+                      <p><strong>Message:</strong></p>
+                      <blockquote style="border-left:3px solid #005148;padding-left:12px;color:#444;">${data.message || data.notes || "—"}</blockquote>
+                      <hr/>
+                      <p style="color:#888;font-size:12px;">View in <a href="https://creeda-va-host-creeda-va.us-east4.hosted.app/admin/contacts">CRM Dashboard</a></p>
+                    `,
+                  });
+                }
+              } catch (emailErr) {
+                console.error("Contact notification email failed:", emailErr);
+              }
+            }
             break;
 
           case "booking":

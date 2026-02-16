@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt, buildReportPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import { useScheduledReports } from "@/hooks/useScheduledReports";
@@ -30,6 +31,7 @@ import type {
   SocialPost,
   EmailDraft,
   LandingPage,
+  ForumThread,
 } from "@/lib/types/content";
 import type { AllCollections } from "@/lib/utils/ai-data-context";
 import {
@@ -38,6 +40,17 @@ import {
   buildSEOContext,
   buildMarketingContext,
   buildOperationsContext,
+  buildKeywordContext,
+  buildLandingPageContext,
+  buildBookingContext,
+  buildBlogContext,
+  buildForumContext,
+  buildContentVelocityContext,
+  buildCustomerLTVContext,
+  buildLeadResponseContext,
+  buildEmailEngagementContext,
+  buildSocialEngagementContext,
+  buildRevenueAttributionContext,
 } from "@/lib/utils/ai-data-context";
 import { lazyGenerateText } from "@/lib/firebase/ai-lazy";
 import { cloudExportToSheets, cloudGenerateReportSheet, cloudUploadReportToDrive } from "@/lib/firebase/cloud-functions";
@@ -132,6 +145,114 @@ const CATEGORIES: CategoryDef[] = [
     contextBuilder: buildMarketingContext,
     promptTemplate: `Analyze CreedaVA&apos;s marketing ROI across all channels. Cover: campaign budget vs spend vs conversions, platform performance comparison, social media content output and engagement patterns, email campaign effectiveness, landing page conversion rates. Calculate cost-per-lead and cost-per-conversion where possible. Recommend 5 optimizations. Score 0-100.`,
   },
+  {
+    id: "gap-analysis",
+    title: "Competitive Gap Analysis",
+    description: "Bridges the gap between CreedaVA and market leaders",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" />
+      </svg>
+    ),
+    contextBuilder: buildFullContext,
+    promptTemplate: `Perform a competitive gap analysis for CreedaVA vs. top VA competitors (Belay Solutions, Time Etc, Boldly, Wishup, MyOutDesk). Compare: service breadth, pricing transparency, bilingual capabilities, AI integration, customer acquisition channels, content marketing quality, SEO authority. Identify the top 5 gaps where CreedaVA trails and 3 where it leads. For each gap, recommend specific actions to close it. Score 0-100.`,
+  },
+  {
+    id: "daily-status",
+    title: "Daily Status Brief",
+    description: "Quick snapshot of today&apos;s metrics, wins, and action items",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+    ),
+    contextBuilder: buildFullContext,
+    promptTemplate: `Generate a concise daily status brief for CreedaVA. Cover: new leads today, open tasks/overdue count, today&apos;s bookings, active campaigns status, content published this week, pipeline value changes. Highlight the single most important win and the most urgent action item. Keep the summary tight (2 paragraphs). Recommend 3 things to focus on today. Score 0-100 (today&apos;s health).`,
+  },
+  {
+    id: "growth-forecast",
+    title: "Growth Forecast",
+    description: "Revenue trends, lead projections, and scaling readiness",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" />
+      </svg>
+    ),
+    contextBuilder: buildFullContext,
+    promptTemplate: `Create a 90-day growth forecast for CreedaVA. Analyze current trends in: lead volume, conversion rates, revenue trajectory, customer acquisition cost, churn signals. Project forward based on current momentum. Identify the #1 growth lever and #1 risk. Recommend 5 strategic bets to accelerate growth. Score 0-100 (growth readiness).`,
+  },
+  {
+    id: "keyword-health",
+    title: "Keyword Health",
+    description: "Keyword coverage, difficulty balance, intent gaps, ranking potential",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="4 7 4 4 20 4 20 7" /><line x1="9" y1="20" x2="15" y2="20" /><line x1="12" y1="4" x2="12" y2="20" />
+      </svg>
+    ),
+    contextBuilder: buildKeywordContext,
+    promptTemplate: `Analyze CreedaVA&apos;s keyword portfolio health. Evaluate: keyword count vs. recommended coverage for a VA company, difficulty distribution (too many hard keywords?), search intent balance (informational vs. commercial vs. transactional), keyword-to-content mapping (are all keywords covered by blog posts?), missing high-value keywords competitors rank for. Rate keyword portfolio diversity and identify the 5 highest-opportunity keywords to target next. Score 0-100.`,
+  },
+  {
+    id: "landing-page-perf",
+    title: "Landing Page Performance",
+    description: "Conversion potential, messaging alignment, A/B opportunities",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" />
+      </svg>
+    ),
+    contextBuilder: buildLandingPageContext,
+    promptTemplate: `Evaluate CreedaVA&apos;s landing page effectiveness. For each landing page, assess: status (published vs. draft ratio), messaging alignment with campaigns, service coverage (are all VA services represented?), CTA clarity, potential conversion bottlenecks. Cross-reference with campaign data to check traffic-to-landing-page alignment. Identify pages that need refresh, new pages to create, and A/B test opportunities. Score 0-100.`,
+  },
+  {
+    id: "booking-retention",
+    title: "Booking & Retention",
+    description: "Cancellation patterns, no-shows, service demand, rebooking rates",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /><path d="M8 14h.01" /><path d="M12 14h.01" /><path d="M16 14h.01" /><path d="M8 18h.01" /><path d="M12 18h.01" />
+      </svg>
+    ),
+    contextBuilder: buildBookingContext,
+    promptTemplate: `Analyze CreedaVA&apos;s booking and client retention metrics. Calculate: booking completion rate, cancellation rate (pending → cancelled), no-show rate, most requested services, booking-to-customer conversion rate, rebooking frequency for existing customers. Identify: cancellation patterns (by day/service), services with highest drop-off, and opportunities to improve retention. Recommend 5 specific actions to reduce cancellations and increase repeat bookings. Score 0-100.`,
+  },
+  {
+    id: "blog-perf",
+    title: "Blog Performance",
+    description: "Publishing cadence, topic coverage, SEO alignment, content gaps",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+      </svg>
+    ),
+    contextBuilder: buildBlogContext,
+    promptTemplate: `Analyze CreedaVA&apos;s blog performance and content strategy. Evaluate: publishing frequency (posts/month), draft-to-published ratio, topic diversity (tag coverage), SEO optimization (keyword alignment with blog titles/content), content freshness (stale posts needing updates). Compare output against industry benchmarks for VA companies (2-4 posts/week ideal). Identify: top-performing content patterns, content gaps for key service areas, and repurposing opportunities. Recommend 5 specific content actions. Score 0-100.`,
+  },
+  {
+    id: "forum-health",
+    title: "Forum Health",
+    description: "Community engagement, thread activity, response rates, growth",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+      </svg>
+    ),
+    contextBuilder: buildForumContext,
+    promptTemplate: `Evaluate CreedaVA&apos;s community forum health. Analyze: thread volume and growth trend, average replies per thread, engagement rate (likes per thread), unanswered threads (0 replies), flagged content percentage, most popular tags/topics, power users (most active authors). Assess the community&apos;s vitality: is engagement growing, stagnant, or declining? Identify: topics that spark the most discussion, content gaps the community is asking about, and moderation health. Recommend 5 community growth strategies. Score 0-100.`,
+  },
+  {
+    id: "content-velocity",
+    title: "Content Velocity",
+    description: "Cross-channel content output speed and publishing momentum",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+      </svg>
+    ),
+    contextBuilder: buildContentVelocityContext,
+    promptTemplate: `Measure CreedaVA&apos;s content velocity across all channels. Calculate output rates for: blog posts (per week/month), social media posts (per platform per week), email campaigns (per month), landing pages created, forum engagement (threads/replies). Compare against VA industry benchmarks. Identify: fastest-producing channels, bottleneck channels (low output), content repurposing opportunities (blog → social → email), and the overall content-to-lead conversion pipeline. Recommend 5 actions to accelerate content velocity without sacrificing quality. Score 0-100.`,
+  },
 ];
 
 // ─── Helper: format Firestore date ───────────────────
@@ -171,14 +292,15 @@ export default function AIReportsDashboard() {
   const { data: keywords } = useCollection<SEOKeyword>("keywords");
   const { data: seoAudits } = useCollection<SEOAudit>("seo");
   const { data: landingPages } = useCollection<LandingPage>("landing-pages");
+  const { data: forumThreads } = useCollection<ForumThread>("forum-threads");
 
   const { toast } = useToast();
 
   // ─── All data bundle ──────────────────────────────
   const allData: AllCollections = useMemo(() => ({
     leads, customers, tasks, projects, contacts, bookings,
-    campaigns, socialPosts, emails, blog, keywords, seoAudits, landingPages,
-  }), [leads, customers, tasks, projects, contacts, bookings, campaigns, socialPosts, emails, blog, keywords, seoAudits, landingPages]);
+    campaigns, socialPosts, emails, blog, keywords, seoAudits, landingPages, forumThreads,
+  }), [leads, customers, tasks, projects, contacts, bookings, campaigns, socialPosts, emails, blog, keywords, seoAudits, landingPages, forumThreads]);
 
   // ─── Scheduler ─────────────────────────────────────
   const { schedules, isGenerating: schedulerGenerating, generateReport } = useScheduledReports();
@@ -304,14 +426,7 @@ export default function AIReportsDashboard() {
     setCategoryGenerating(cat.id);
     try {
       const context = cat.contextBuilder(allData);
-      const prompt = `You are a senior business analyst for CreedaVA (virtual assistant services).
-${cat.promptTemplate}
-
-RESPOND WITH VALID JSON ONLY — no markdown fences, no extra text.
-JSON shape: { "title": "string", "summaryHtml": "HTML string (2-4 paragraphs)", "highlights": ["3-5 items"], "recommendations": ["3-5 items"], "score": number 0-100 }
-
-Business data:
-${context}`;
+      const prompt = buildReportPrompt(cat.id, cat.promptTemplate, context);
 
       const raw = await lazyGenerateText(prompt);
       const cleaned = raw.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
@@ -496,10 +611,19 @@ ${context}`;
               { label: "Full Analysis", prompt: "Generate a comprehensive business health analysis. Cover all areas: sales pipeline, revenue, marketing, SEO, operations. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
               { label: "Quick Pulse", prompt: "Give me a quick business pulse. What are the 3 most important things I should know right now? Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array)." },
               { label: "Risk Assessment", prompt: "Identify the top business risks and vulnerabilities. Check for: stale leads, overdue tasks, low conversion rates, content gaps, marketing spend inefficiency. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
+              { label: "Revenue Forecast", prompt: "Forecast revenue for the next 3 months based on current pipeline, conversion rates, and customer retention. Include best/worst/likely scenarios. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
+              { label: "Competitor Benchmark", prompt: "Compare our KPIs against typical VA industry benchmarks. Highlight where we outperform and underperform. Suggest 3 areas to close the gap. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
+              { label: "Monthly Recap", prompt: "Write a monthly business recap covering wins, losses, key metrics changes, and strategic recommendations for next month. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
+              { label: "Customer Health", prompt: "Assess overall customer health. Analyze churn risk, satisfaction indicators, upsell readiness, and lifetime value trends. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
+              { label: "Growth Blockers", prompt: "Identify the top 5 growth blockers across sales, marketing, and operations. For each: root cause, impact, and specific fix. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
             ]}
             dataContext={buildFullContext(allData)}
             buildPrompt={(input, ctx) =>
-              `You are a senior business analyst for CreedaVA (virtual assistant services).\n${input}\n\nBusiness data:\n${ctx}\n\nReturn valid JSON: { "title": "string", "summaryHtml": "HTML string", "highlights": ["string array"], "recommendations": ["string array"], "score": number 0-100 }. Use actual data.`
+              buildTrainedPrompt("AI Dashboard", input, ctx, {
+                includeCompetitors: true,
+                includeKPIs: true,
+                includeReportFormat: true,
+              })
             }
             onResult={handleAiResult}
           />
@@ -582,6 +706,10 @@ ${context}`;
                 { label: "Operations", value: tasks.length > 0 ? Math.round((tasks.filter((t) => t.status === "done").length / tasks.length) * 100) : 0 },
                 { label: "Content", value: blog.length > 0 ? Math.round((blog.filter((b) => b.status === "published").length / blog.length) * 100) : 0 },
                 { label: "Marketing", value: campaigns.length > 0 ? Math.round((campaigns.filter((c) => c.status === "active" || c.status === "completed").length / campaigns.length) * 100) : 0 },
+                { label: "SEO", value: seoAudits.length > 0 ? Math.round(seoAudits.reduce((s, a) => s + a.score, 0) / seoAudits.length) : 0 },
+                { label: "Bookings", value: bookings.length > 0 ? Math.round((bookings.filter((b) => b.status === "completed" || b.status === "confirmed").length / bookings.length) * 100) : 0 },
+                { label: "Forum", value: forumThreads.length > 0 ? Math.round((forumThreads.filter((t) => t.replies > 0).length / forumThreads.length) * 100) : 0 },
+                { label: "Keywords", value: keywords.length > 0 ? Math.round((keywords.filter((k) => k.tracked).length / keywords.length) * 100) : 0 },
               ]}
             />
 

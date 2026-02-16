@@ -80,6 +80,54 @@ export interface EmailDraft extends FirestoreDoc {
 
 export type EmailDraftFormData = Omit<EmailDraft, keyof FirestoreDoc>;
 
+// ─── Inbox Message (synced from IMAP) ────────────────
+export interface InboxMessage extends FirestoreDoc {
+  uid: number;
+  messageId: string;
+  from: string;
+  fromName: string;
+  to: string;
+  receivedBy: string;        // which alias received this
+  cc?: string;
+  subject: string;
+  date: string;
+  preview: string;
+  bodyHtml: string;
+  bodyText: string;
+  seen: boolean;
+  flagged: boolean;
+  hasAttachments: boolean;
+  attachments?: { filename: string; contentType: string; size: number }[];
+  replied: boolean;
+  archived: boolean;
+  starred: boolean;
+}
+
+// ─── Email Campaign ──────────────────────────────────
+export interface EmailCampaign extends FirestoreDoc {
+  name: string;
+  subject: string;
+  body: string;               // HTML content
+  previewText: string;
+  fromAddress: string;         // which alias to send from
+  status: "draft" | "scheduled" | "sending" | "sent" | "paused";
+  recipients: string[];        // email addresses
+  recipientSource?: string;    // "manual" | "leads" | "customers" | "contacts"
+  scheduledAt?: string;        // ISO date for scheduled send
+  sentAt?: string;
+  stats: {
+    total: number;
+    sent: number;
+    failed: number;
+    opened: number;
+    clicked: number;
+  };
+  tags?: string[];
+  notes?: string;
+}
+
+export type EmailCampaignFormData = Omit<EmailCampaign, keyof FirestoreDoc>;
+
 // ─── Campaign ────────────────────────────────────────
 export interface Campaign extends FirestoreDoc {
   name: string;
@@ -182,7 +230,20 @@ export type AIReportType =
   | "performance"
   | "pipeline"
   | "marketing"
-  | "operational";
+  | "operational"
+  | "daily-status"
+  | "growth-forecast"
+  | "keyword-health"
+  | "landing-page-perf"
+  | "booking-retention"
+  | "blog-perf"
+  | "forum-health"
+  | "content-velocity"
+  | "customer-ltv"
+  | "lead-response"
+  | "email-engagement"
+  | "social-engagement"
+  | "revenue-attribution";
 
 export type AIReportCategory = "scheduled" | "on-demand" | "insight";
 

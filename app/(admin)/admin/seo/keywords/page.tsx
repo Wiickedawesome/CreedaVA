@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -240,6 +241,11 @@ export default function KeywordsPage() {
               { label: "VA Services", prompt: "virtual assistant services for small businesses" },
               { label: "Remote Work", prompt: "remote work productivity and tools" },
               { label: "Outsourcing", prompt: "business process outsourcing benefits" },
+              { label: "Executive Support", prompt: "executive assistant services for CEOs and founders" },
+              { label: "Cost Savings", prompt: "cost of hiring virtual assistant vs full-time employee" },
+              { label: "Admin Tasks", prompt: "administrative tasks to delegate to virtual assistants" },
+              { label: "Industry Specific", prompt: "virtual assistant for real estate agents and brokers" },
+              { label: "Scaling Business", prompt: "scaling small business with virtual assistants and automation" },
             ]}
             onResult={(raw) => {
               try {
@@ -256,12 +262,7 @@ export default function KeywordsPage() {
               }
             }}
             buildPrompt={(input) =>
-              `You are an SEO keyword researcher for CreedaVA, a virtual assistant services company.
-Suggest 8-10 SEO keywords related to: "${input}"
-
-Return ONLY valid JSON: { "keywords": [{ "keyword": string, "searchIntent": "informational"|"commercial"|"transactional"|"navigational", "difficulty": "low"|"medium"|"high", "suggestedTitle": string }] }
-
-No markdown fences.`
+              buildTrainedPrompt("SEO Keywords", `Suggest 8-10 SEO keywords related to: "${input}"\n\nReturn ONLY valid JSON: { "keywords": [{ "keyword": string, "searchIntent": "informational"|"commercial"|"transactional"|"navigational", "difficulty": "low"|"medium"|"high", "suggestedTitle": string }] }\n\nNo markdown fences.`, "", { includeCompetitors: true })
             }
           />
           <Button variant="outline" size="sm" onClick={handleFetchConsole} isLoading={fetchingConsole}>

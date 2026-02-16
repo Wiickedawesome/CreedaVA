@@ -61,6 +61,83 @@ export async function cloudSendBulkEmail(params: BulkEmailParams): Promise<BulkE
   return result.data;
 }
 
+// ─── Inbox (IMAP) ────────────────────────────────────
+
+interface FetchInboxParams {
+  folder?: string;
+  limit?: number;
+  page?: number;
+  filter?: string;
+}
+
+interface InboxMessageResult {
+  uid: number;
+  messageId: string;
+  from: string;
+  fromName: string;
+  to: string;
+  cc?: string;
+  subject: string;
+  date: string;
+  preview: string;
+  bodyHtml?: string;
+  bodyText?: string;
+  seen: boolean;
+  flagged: boolean;
+  hasAttachments: boolean;
+  attachments?: { filename: string; contentType: string; size: number }[];
+}
+
+interface FetchInboxResult {
+  success: boolean;
+  messages: InboxMessageResult[];
+  total: number;
+  folder: string;
+  page: number;
+  aliases?: string[];
+}
+
+interface FetchEmailResult {
+  success: boolean;
+  message: InboxMessageResult;
+}
+
+interface MailboxFolder {
+  name: string;
+  path: string;
+  specialUse: string | null;
+  listed: boolean;
+}
+
+interface SyncInboxResult {
+  success: boolean;
+  synced: number;
+}
+
+export async function cloudFetchInbox(params?: FetchInboxParams): Promise<FetchInboxResult> {
+  const fn = httpsCallable<FetchInboxParams | undefined, FetchInboxResult>(functions, "fetchInbox");
+  const result = await fn(params);
+  return result.data;
+}
+
+export async function cloudFetchEmailMessage(uid: number, folder?: string): Promise<FetchEmailResult> {
+  const fn = httpsCallable<{ uid: number; folder?: string }, FetchEmailResult>(functions, "fetchEmailMessage");
+  const result = await fn({ uid, folder });
+  return result.data;
+}
+
+export async function cloudListMailboxFolders(): Promise<MailboxFolder[]> {
+  const fn = httpsCallable<void, { success: boolean; folders: MailboxFolder[] }>(functions, "listMailboxFolders");
+  const result = await fn();
+  return result.data.folders;
+}
+
+export async function cloudSyncInbox(): Promise<SyncInboxResult> {
+  const fn = httpsCallable<void, SyncInboxResult>(functions, "syncInboxToFirestore");
+  const result = await fn();
+  return result.data;
+}
+
 // ─── Google Calendar ─────────────────────────────────
 
 interface CalendarEvent {

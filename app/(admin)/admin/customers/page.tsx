@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -355,6 +356,11 @@ export default function CustomersPage() {
                 { label: "Retention Strategy", prompt: "Analyze customer data and suggest a churn prevention strategy. Provide 5 specific retention tactics, early warning signs, and a re-engagement plan for churned customers." },
                 { label: "Upsell Opportunities", prompt: "Identify upsell opportunities. For each customer with upsell potential: explain why they're ready, what to offer, and draft a 2-sentence pitch. Prioritize by revenue impact." },
                 { label: "Client Email", prompt: "Draft a professional email to the customer base announcing updates. Include subject line and HTML body. Personalise for the audience with a clear CTA." },
+                { label: "QBR Template", prompt: "Create a quarterly business review template for a client meeting. Include: accomplishments, KPIs, hours saved, ROI summary, and recommendations for next quarter." },
+                { label: "Churn Analysis", prompt: "Analyze churned customers for patterns. Identify common churn reasons, time-to-churn, plan types most at risk, and 3 specific actions to reduce future churn." },
+                { label: "NPS Survey", prompt: "Draft a Net Promoter Score survey email for customers. Include subject line, brief intro, the NPS question, and a follow-up open-ended question. Keep it short." },
+                { label: "Win-Back Campaign", prompt: "Design a 3-email win-back sequence for churned customers. Each email should offer increasing value and a compelling reason to return. Include subject lines." },
+                { label: "LTV Analysis", prompt: "Analyze customer lifetime value by plan type and tenure. Identify the most valuable customer segments and suggest strategies to increase LTV across all tiers." },
               ]}
               dataContext={(() => {
                 const active = customers.filter(c => c.status === "active");
@@ -365,7 +371,7 @@ export default function CustomersPage() {
                 return `CreedaVA Customers (${customers.length} total, ${active.length} active, ${churned.length} churned):\nMRR: $${mrr}, ARR: $${mrr * 12}\nPlans: ${plans.join(", ")}\nTop customers: ${topCustomers.join("; ")}`;
               })()}
               buildPrompt={(input, ctx) =>
-                `You are a customer success manager for CreedaVA (virtual assistant services).\n${input}\n\nCustomer data:\n${ctx}\n\nUse the actual data. Be professional and actionable.`
+                buildTrainedPrompt("Customers", input, ctx, { includeCompetitors: true, includeKPIs: true })
               }
             />
             <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">

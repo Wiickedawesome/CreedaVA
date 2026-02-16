@@ -13,19 +13,25 @@ import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 async function getBusinessClient() {
   const integration = await getIntegrationConfig("google-business");
-  if (!integration?.config?.serviceAccountKey) {
-    throw new HttpsError("failed-precondition", "Google Business Profile not configured");
-  }
+  const config = integration?.config ?? {};
 
-  const { config } = integration;
-  const key = JSON.parse(config.serviceAccountKey);
-  const authClient = new google.auth.JWT({
-    email: key.client_email,
-    key: key.private_key,
-    scopes: [
-      "https://www.googleapis.com/auth/business.manage",
-    ],
-  });
+  let authClient;
+  if (config.serviceAccountKey) {
+    const key = JSON.parse(config.serviceAccountKey);
+    authClient = new google.auth.JWT({
+      email: key.client_email,
+      key: key.private_key,
+      scopes: [
+        "https://www.googleapis.com/auth/business.manage",
+      ],
+    });
+  } else {
+    authClient = new google.auth.GoogleAuth({
+      scopes: [
+        "https://www.googleapis.com/auth/business.manage",
+      ],
+    });
+  }
 
   return {
     auth: authClient,
@@ -146,10 +152,16 @@ export const fetchBusinessInsights = onCall(
 
 // ─── Helper: authenticated fetch ─────────────────────
 
-async function authClient_fetch(auth: InstanceType<typeof google.auth.JWT>, url: string) {
-  const client = await auth.authorize();
+async function authClient_fetch(auth: InstanceType<typeof google.auth.JWT> | InstanceType<typeof google.auth.GoogleAuth>, url: string) {
+  let token: string | null | undefined;
+  if (auth instanceof google.auth.JWT) {
+    const creds = await auth.authorize();
+    token = creds.access_token;
+  } else {
+    token = await (auth as InstanceType<typeof google.auth.GoogleAuth>).getAccessToken();
+  }
   const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${client.access_token}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) {
     const text = await res.text();

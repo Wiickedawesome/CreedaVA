@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useRef } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -352,6 +353,11 @@ export default function ForumPage() {
                 { label: "VA Tips", prompt: "Best practices for delegating tasks effectively to a virtual assistant" },
                 { label: "Remote Work", prompt: "How remote work is changing the future of business operations" },
                 { label: "Productivity", prompt: "Top productivity hacks for entrepreneurs working with virtual teams" },
+                { label: "Hiring Guide", prompt: "What to look for when hiring a virtual assistant for the first time" },
+                { label: "Time Management", prompt: "Time management strategies for business owners who work with VAs" },
+                { label: "Tool Review", prompt: "Best collaboration tools for managing virtual assistant workflows in 2026" },
+                { label: "Industry Q&A", prompt: "Common questions and misconceptions about the virtual assistant industry" },
+                { label: "Success Stories", prompt: "How small businesses transformed their operations with virtual assistant support" },
               ]}
               onResult={(raw) => {
                 try {
@@ -370,15 +376,7 @@ export default function ForumPage() {
                 }
               }}
               buildPrompt={(input) =>
-                `You are a community manager for CreedaVA, a virtual assistant services company.
-Generate a forum discussion thread about: "${input}"
-
-Return ONLY valid JSON with:
-- title: engaging discussion title (a question or provocative statement)
-- content: opening post body in plain text (3-5 paragraphs, ask questions to spark discussion, include actionable insights)
-- tags: array of 3-5 relevant tags (lowercase, no spaces — use hyphens)
-
-Return ONLY valid JSON, no markdown fences.`
+                buildTrainedPrompt("Forum", `Generate a forum discussion thread about: "${input}"\n\nReturn ONLY valid JSON with:\n- title: engaging discussion title (a question or provocative statement)\n- content: opening post body in plain text (3-5 paragraphs, ask questions to spark discussion, include actionable insights)\n- tags: array of 3-5 relevant tags (lowercase, no spaces — use hyphens)\n\nReturn ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true })
               }
             />
             <Button size="sm" onClick={() => setCreateOpen(true)}>

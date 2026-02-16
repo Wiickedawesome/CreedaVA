@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -203,6 +204,11 @@ export default function SocialMediaPage() {
               { label: "VA Benefits", prompt: "Top benefits of hiring a virtual assistant for small businesses" },
               { label: "Client Success", prompt: "Share a client success story about how virtual assistants transformed their business" },
               { label: "Tips & Tricks", prompt: "Quick productivity tips for entrepreneurs who work with virtual teams" },
+              { label: "Behind the Scenes", prompt: "A behind-the-scenes look at how CreedaVA's virtual assistants handle daily operations for clients" },
+              { label: "Industry Stats", prompt: "Share compelling statistics about the virtual assistant industry growth and remote work trends in 2026" },
+              { label: "FAQ Post", prompt: "Answer a common question about virtual assistant services in an engaging social media post format" },
+              { label: "Holiday Campaign", prompt: "Create a seasonal or holiday-themed social media post promoting virtual assistant services during busy business periods" },
+              { label: "Poll / Engagement", prompt: "Create an engaging poll or question post that sparks conversation about delegation, productivity, or business growth" },
             ]}
             onResult={(raw) => {
               try {
@@ -218,11 +224,7 @@ export default function SocialMediaPage() {
               }
             }}
             buildPrompt={(input) =>
-              `You are a social media manager for CreedaVA, a virtual assistant services company.
-Create social media posts about: "${input}"
-
-Return ONLY valid JSON: { "posts": [{ "platform": "linkedin"|"twitter"|"facebook"|"instagram", "content": string, "hashtags": string[], "characterCount": number }] }
-Generate one post per platform. No markdown fences.`
+              buildTrainedPrompt("Social Media", `Create social media posts about: "${input}"\n\nReturn ONLY valid JSON: { "posts": [{ "platform": "linkedin"|"twitter"|"facebook"|"instagram", "content": string, "hashtags": string[], "characterCount": number }] }\nGenerate one post per platform. No markdown fences.`, "", { includeCompetitors: true })
             }
           />
           <Button size="sm" onClick={() => setCreateOpen(true)}>

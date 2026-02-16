@@ -13,22 +13,31 @@ import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 async function getAnalyticsAuth() {
   const integration = await getIntegrationConfig("google-analytics");
-  if (!integration?.config?.serviceAccountKey) {
-    throw new HttpsError("failed-precondition", "Google Analytics Admin not configured");
+  const config = integration?.config ?? {};
+
+  let authClient;
+  if (config.serviceAccountKey) {
+    const key = JSON.parse(config.serviceAccountKey);
+    authClient = new google.auth.JWT({
+      email: key.client_email,
+      key: key.private_key,
+      scopes: [
+        "https://www.googleapis.com/auth/analytics.readonly",
+        "https://www.googleapis.com/auth/analytics.edit",
+      ],
+    });
+  } else {
+    authClient = new google.auth.GoogleAuth({
+      scopes: [
+        "https://www.googleapis.com/auth/analytics.readonly",
+        "https://www.googleapis.com/auth/analytics.edit",
+      ],
+    });
   }
 
-  const { config } = integration;
-  const key = JSON.parse(config.serviceAccountKey);
-  const authClient = new google.auth.JWT({
-    email: key.client_email,
-    key: key.private_key,
-    scopes: [
-      "https://www.googleapis.com/auth/analytics.readonly",
-      "https://www.googleapis.com/auth/analytics.edit",
-    ],
-  });
-
-  const credentials = await authClient.authorize();
+  const credentials = authClient instanceof google.auth.JWT
+    ? await authClient.authorize()
+    : { access_token: (await (authClient as InstanceType<typeof google.auth.GoogleAuth>).getAccessToken()) };
   return { token: credentials.access_token!, propertyId: config.propertyId || "" };
 }
 

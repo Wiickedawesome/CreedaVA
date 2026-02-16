@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
+import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,
@@ -15,10 +16,25 @@ import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { AIPromptButton, RichTextEditor } from "@/components/admin";
 import { lazyGenerateEmail as generateEmail } from "@/lib/firebase/ai-lazy";
-import { cloudSendEmail, cloudSendBulkEmail } from "@/lib/firebase/cloud-functions";
-import type { EmailDraft } from "@/lib/types/content";
+import {
+  cloudSendEmail,
+  cloudSendBulkEmail,
+  cloudSyncInbox,
+} from "@/lib/firebase/cloud-functions";
+import type { EmailDraft, InboxMessage } from "@/lib/types/content";
 import { uploadImage, uploadFile } from "@/lib/firebase/storage";
 import Image from "next/image";
+import { update } from "@/lib/firebase/firestore";
+
+// ─── Business Addresses ─────────────────────────────
+
+const BUSINESS_EMAILS = [
+  { label: "contact@creedava.com", value: "contact@creedava.com" },
+  { label: "sales@creedava.com", value: "sales@creedava.com" },
+  { label: "info@creedava.com", value: "info@creedava.com" },
+  { label: "privacy@creedava.com", value: "privacy@creedava.com" },
+  { label: "legal@creedava.com", value: "legal@creedava.com" },
+];
 
 const emptyForm = {
   subject: "",
@@ -31,70 +47,151 @@ const emptyForm = {
 };
 
 export default function EmailsPage() {
-  const { data: emails, loading, add, edit, del } = useCollection<EmailDraft>("emails", {
+  // ─── Collections ──────────────────
+  const { data: emails, loading: draftsLoading, add, edit, del } = useCollection<EmailDraft>("emails", {
     orderByField: "createdAt",
   });
-  // Fetch settings to get aliases
+  const { data: inboxMessages, loading: inboxLoading, refetch: refetchInbox } = useCollection<InboxMessage>("inbox", {
+    orderByField: "date",
+  });
   const { data: integrations } = useCollection("integrations");
+
   const emailSettings = useMemo(() => integrations.find((i) => i.id === "email")?.config || {}, [integrations]);
   const aliases = useMemo(() => {
-    const list: {label: string, value: string}[] = [];
+    const list: { label: string; value: string }[] = [];
     if (emailSettings.user) list.push({ label: emailSettings.user, value: emailSettings.user });
     if (emailSettings.aliases) {
-      emailSettings.aliases.split(',').forEach((s: any) => {
+      emailSettings.aliases.split(",").forEach((s: string) => {
         const email = s.trim();
-        if (email) list.push({ label: email, value: email });
+        if (email && !list.find((l) => l.value === email)) list.push({ label: email, value: email });
       });
+    }
+    for (const be of BUSINESS_EMAILS) {
+      if (!list.find((l) => l.value === be.value)) list.push(be);
     }
     return list;
   }, [emailSettings]);
-  
+
   const { toast } = useToast();
 
-  const [tab, setTab] = useState("all");
+  // ─── UI State ─────────────────────
+  const [tab, setTab] = useState("inbox");
   const [modalOpen, setModalOpen] = useState(false);
+  const [composeOpen, setComposeOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<EmailDraft | null>(null);
+  const [selectedInbox, setSelectedInbox] = useState<InboxMessage | null>(null);
+  const [inboxViewOpen, setInboxViewOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [recipient, setRecipient] = useState("");
-  const [sender, setSender] = useState("");
+  const [sender, setSender] = useState(BUSINESS_EMAILS[0].value);
   const [sending, setSending] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkRecipients, setBulkRecipients] = useState("");
   const [bulkSending, setBulkSending] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [inboxFilter, setInboxFilter] = useState("all");
 
   // Image/attachment state
   const [uploading, setUploading] = useState(false);
   const emailImageRef = useRef<HTMLInputElement>(null);
   const emailAttachRef = useRef<HTMLInputElement>(null);
 
-  const filtered = useMemo(() => emails.filter((e) => tab === "all" || e.status === tab), [emails, tab]);
+  // ─── Derived data ─────────────────
+  const filteredInbox = useMemo(() => {
+    let msgs = inboxMessages.filter((m) => !m.archived);
+    if (inboxFilter !== "all") {
+      msgs = msgs.filter((m) => m.receivedBy?.toLowerCase() === inboxFilter.toLowerCase());
+    }
+    return msgs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [inboxMessages, inboxFilter]);
+
+  const unreadCount = useMemo(() => inboxMessages.filter((m) => !m.seen && !m.archived).length, [inboxMessages]);
+
+  const filteredDrafts = useMemo(() => {
+    if (tab === "drafts") return emails.filter((e) => e.status === "draft");
+    if (tab === "sent") return emails.filter((e) => e.status === "sent");
+    return emails;
+  }, [emails, tab]);
 
   const tabs = [
-    { label: "All", value: "all", badge: emails.length },
-    { label: "Draft", value: "draft", badge: emails.filter((e) => e.status === "draft").length },
-    { label: "Sent", value: "sent", badge: emails.filter((e) => e.status === "sent").length },
+    { label: "Inbox", value: "inbox", badge: unreadCount || undefined },
+    { label: "Drafts", value: "drafts", badge: emails.filter((e) => e.status === "draft").length || undefined },
+    { label: "Sent", value: "sent", badge: emails.filter((e) => e.status === "sent").length || undefined },
+    { label: "All Drafts", value: "all", badge: emails.length || undefined },
   ];
 
-  function openModal(email?: EmailDraft) {
-    if (email) {
-      setSelected(email);
-      setForm({
-        subject: email.subject,
-        body: email.body,
-        previewText: email.previewText,
-        purpose: email.purpose,
-        status: email.status,
-        images: email.images || [],
-        attachments: email.attachments || [],
-      });
-    } else {
-      setSelected(null);
-      setForm({ ...emptyForm });
+  // ─── Sync inbox ───────────────────
+  const handleSync = useCallback(async () => {
+    setSyncing(true);
+    try {
+      const result = await cloudSyncInbox();
+      if (result.synced > 0) {
+        toast(`Synced ${result.synced} new email(s)`, "success");
+        refetchInbox();
+      } else {
+        toast("Inbox is up to date");
+      }
+    } catch {
+      toast("Failed to sync inbox — check email config in Settings → Integrations", "error");
+    } finally {
+      setSyncing(false);
     }
+  }, [toast, refetchInbox]);
+
+  useEffect(() => {
+    if (!inboxLoading && inboxMessages.length === 0) {
+      handleSync();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inboxLoading]);
+
+  // ─── Compose / Draft Handlers ─────
+
+  function openCompose(replyTo?: InboxMessage) {
+    setSelected(null);
+    if (replyTo) {
+      setForm({
+        subject: replyTo.subject.startsWith("Re:") ? replyTo.subject : `Re: ${replyTo.subject}`,
+        body: `<br/><br/><hr/><p><em>On ${new Date(replyTo.date).toLocaleDateString()}, ${replyTo.fromName} &lt;${replyTo.from}&gt; wrote:</em></p><blockquote style="border-left:3px solid #ccc;padding-left:12px;margin-left:0;color:#666">${replyTo.bodyHtml || replyTo.bodyText || replyTo.preview}</blockquote>`,
+        previewText: "",
+        purpose: "reply",
+        status: "draft",
+        images: [],
+        attachments: [],
+      });
+      setRecipient(replyTo.from);
+      setSender(replyTo.receivedBy || BUSINESS_EMAILS[0].value);
+    } else {
+      setForm({ ...emptyForm });
+      setRecipient("");
+      setSender(BUSINESS_EMAILS[0].value);
+    }
+    setComposeOpen(true);
+  }
+
+  function openDraft(email: EmailDraft) {
+    setSelected(email);
+    setForm({
+      subject: email.subject,
+      body: email.body,
+      previewText: email.previewText,
+      purpose: email.purpose,
+      status: email.status,
+      images: email.images || [],
+      attachments: email.attachments || [],
+    });
     setModalOpen(true);
+  }
+
+  function openInboxMessage(msg: InboxMessage) {
+    setSelectedInbox(msg);
+    setInboxViewOpen(true);
+    if (!msg.seen) {
+      update("inbox", msg.id, { seen: true }).catch(() => {});
+    }
   }
 
   async function handleSave() {
@@ -118,6 +215,7 @@ export default function EmailsPage() {
         toast("Email saved as draft");
       }
       setModalOpen(false);
+      setComposeOpen(false);
     } catch {
       toast("Failed to save", "error");
     } finally {
@@ -125,20 +223,13 @@ export default function EmailsPage() {
     }
   }
 
-  async function handleMarkSent() {
-    if (!selected) return;
-    try {
-      await edit(selected.id, { status: "sent" as const });
-      toast("Marked as sent");
-      setModalOpen(false);
-    } catch {
-      toast("Failed to update", "error");
-    }
-  }
-
   async function handleSendEmail() {
-    if (!selected || !recipient.trim()) {
+    if (!recipient.trim()) {
       toast("Enter a recipient email address", "error");
+      return;
+    }
+    if (!form.subject.trim()) {
+      toast("Enter a subject", "error");
       return;
     }
     setSending(true);
@@ -146,49 +237,62 @@ export default function EmailsPage() {
       const result = await cloudSendEmail({
         to: recipient,
         from: sender || undefined,
-        subject: selected.subject,
-        html: selected.body,
+        subject: form.subject,
+        html: form.body,
       });
       if (result.success) {
-        await edit(selected.id, { status: "sent" as const });
-        toast("Email sent successfully!", "success");
+        if (selected) {
+          await edit(selected.id, { status: "sent" as const });
+        } else {
+          await add({
+            subject: form.subject,
+            body: form.body,
+            previewText: form.previewText,
+            purpose: form.purpose || "sent",
+            status: "sent" as const,
+            images: form.images,
+            attachments: form.attachments,
+          });
+        }
+        toast("Email sent!", "success");
         setRecipient("");
         setModalOpen(false);
+        setComposeOpen(false);
       } else {
-        toast("Email sending failed — check integration settings", "error");
+        toast("Email sending failed", "error");
       }
     } catch {
-      toast("Failed to send — ensure Email SMTP is configured in Settings → Integrations", "error");
+      toast("Failed to send — ensure Email is configured in Settings → Integrations", "error");
     } finally {
       setSending(false);
     }
   }
 
   async function handleBulkSend() {
-    if (!selected) return;
-    const emails = bulkRecipients.split(/[,;\n]+/).map((e) => e.trim()).filter(Boolean);
-    if (emails.length === 0) {
+    const emailList = bulkRecipients.split(/[,;\n]+/).map((e) => e.trim()).filter(Boolean);
+    if (emailList.length === 0) {
       toast("Enter at least one recipient email", "error");
       return;
     }
     setBulkSending(true);
     try {
       const result = await cloudSendBulkEmail({
-        recipients: emails,
-        subject: selected.subject,
-        html: selected.body,
+        recipients: emailList,
+        subject: form.subject,
+        html: form.body,
       });
       if (result.success) {
-        await edit(selected.id, { status: "sent" as const });
-        toast(`Sent to ${result.sent} of ${emails.length} recipients`, "success");
+        if (selected) await edit(selected.id, { status: "sent" as const });
+        toast(`Sent to ${result.sent} of ${emailList.length} recipients`, "success");
         setBulkRecipients("");
         setBulkOpen(false);
         setModalOpen(false);
+        setComposeOpen(false);
       } else {
         toast(`${result.sent} sent, ${result.failed} failed`, "error");
       }
     } catch {
-      toast("Bulk send failed — check SMTP config in Settings → Integrations", "error");
+      toast("Bulk send failed — check SMTP config", "error");
     } finally {
       setBulkSending(false);
     }
@@ -210,7 +314,6 @@ export default function EmailsPage() {
     }
   }
 
-  // ── Email image/attachment handlers ──
   async function handleEmailImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files?.length) return;
@@ -222,7 +325,7 @@ export default function EmailsPage() {
         const result = await uploadImage(file, folder);
         urls.push(result.url);
       }
-      setForm(f => ({ ...f, images: [...f.images, ...urls] }));
+      setForm((f) => ({ ...f, images: [...f.images, ...urls] }));
       toast(`${urls.length} image(s) uploaded`);
     } catch (err) {
       toast(err instanceof Error ? err.message : "Upload failed", "error");
@@ -243,7 +346,7 @@ export default function EmailsPage() {
         const result = await uploadFile(file, folder);
         newAtts.push({ name: result.name, url: result.url, type: result.type });
       }
-      setForm(f => ({ ...f, attachments: [...f.attachments, ...newAtts] }));
+      setForm((f) => ({ ...f, attachments: [...f.attachments, ...newAtts] }));
       toast(`${newAtts.length} file(s) attached`);
     } catch {
       toast("Upload failed", "error");
@@ -254,21 +357,76 @@ export default function EmailsPage() {
   }
 
   function removeEmailImage(index: number) {
-    setForm(f => ({ ...f, images: f.images.filter((_, i) => i !== index) }));
+    setForm((f) => ({ ...f, images: f.images.filter((_, i) => i !== index) }));
   }
 
   function removeEmailAttachment(index: number) {
-    setForm(f => ({ ...f, attachments: f.attachments.filter((_, i) => i !== index) }));
+    setForm((f) => ({ ...f, attachments: f.attachments.filter((_, i) => i !== index) }));
   }
 
-  const columns: Column<EmailDraft>[] = [
+  // ─── Inbox Table Columns ──────────
+  const inboxColumns: Column<InboxMessage>[] = [
+    {
+      key: "from",
+      header: "From",
+      render: (m) => (
+        <div className={`min-w-0 ${!m.seen ? "font-semibold" : ""}`}>
+          <p className="text-sm text-gray-90 truncate">{m.fromName || m.from}</p>
+          {m.fromName && m.fromName !== m.from && (
+            <p className="text-xs text-gray-40 truncate">{m.from}</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "subject",
+      header: "Subject",
+      render: (m) => (
+        <div className="min-w-0 flex-1">
+          <p className={`text-sm truncate max-w-md ${!m.seen ? "text-gray-90 font-medium" : "text-gray-70"}`}>
+            {m.subject}
+          </p>
+          <p className="text-xs text-gray-40 truncate max-w-md">{m.preview}</p>
+        </div>
+      ),
+    },
+    {
+      key: "receivedBy",
+      header: "To",
+      render: (m) => (
+        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-10 text-gray-60 whitespace-nowrap">
+          {m.receivedBy?.split("@")[0] || "—"}
+        </span>
+      ),
+    },
+    {
+      key: "date",
+      header: "Date",
+      render: (m) => (
+        <span className={`text-xs whitespace-nowrap ${!m.seen ? "text-gray-80 font-medium" : "text-gray-50"}`}>
+          {formatDate(m.date)}
+        </span>
+      ),
+    },
+    {
+      key: "hasAttachments",
+      header: "",
+      render: (m) =>
+        m.hasAttachments ? (
+          <svg className="w-4 h-4 text-gray-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+          </svg>
+        ) : null,
+    },
+  ];
+
+  // ─── Draft Table Columns ──────────
+  const draftColumns: Column<EmailDraft>[] = [
     {
       key: "subject",
       header: "Subject",
       render: (e) => (
-        <span className="text-sm font-medium text-gray-90 truncate max-w-sm block">
-          {e.subject}
-        </span>
+        <span className="text-sm font-medium text-gray-90 truncate max-w-sm block">{e.subject}</span>
       ),
     },
     {
@@ -289,13 +447,12 @@ export default function EmailsPage() {
       key: "status",
       header: "Status",
       render: (e) => (
-        <StatusBadge
-          status={e.status}
-          variant={e.status === "sent" ? "success" : "default"}
-        />
+        <StatusBadge status={e.status} variant={e.status === "sent" ? "success" : "default"} />
       ),
     },
   ];
+
+  const loading = draftsLoading || inboxLoading;
 
   if (loading) {
     return (
@@ -308,90 +465,227 @@ export default function EmailsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Email Drafts"
-        description="AI-composed emails for outreach &amp; follow-ups"
+        title="Email"
+        description="Inbox, drafts, and outbound emails for all business addresses"
         actions={
           <div className="flex items-center gap-2">
-          <AIPromptButton
-            section="Email AI"
-            description="Compose professional emails with AI. Describe the purpose and context, and AI will generate a subject line, preview text, and full email body."
-            placeholder="e.g. Follow-up email after a product demo with John from Acme Corp. Keep it professional but friendly."
-            presets={[
-              { label: "Follow-up", prompt: "Write a follow-up email after an initial consultation about virtual assistant services. Professional tone." },
-              { label: "Cold Outreach", prompt: "Write a cold outreach email to a startup founder introducing CreedaVA's virtual assistant services. Friendly and concise." },
-              { label: "Thank You", prompt: "Write a thank you email to a new client who just signed up for our virtual assistant services." },
-            ]}
-            onResult={(raw) => {
-              try {
-                const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-                const result = JSON.parse(cleaned);
-                setSelected(null);
-                setForm({
-                  subject: result.subject || "",
-                  body: result.body || "",
-                  previewText: result.previewText || "",
-                  purpose: "",
-                  status: "draft",
-                  images: [],
-                  attachments: [],
-                });
-                setModalOpen(true);
-                toast("AI content loaded \u2014 edit and save when ready", "success");
-              } catch {
-                generateEmail(raw.slice(0, 200), "", "professional").then((r) => {
-                  setSelected(null);
+            <AIPromptButton
+              section="Email AI"
+              description="Compose professional emails with AI."
+              placeholder="e.g. Follow-up email after a product demo..."
+              presets={[
+                { label: "Follow-up", prompt: "Write a follow-up email after an initial consultation about virtual assistant services. Professional tone." },
+                { label: "Cold Outreach", prompt: "Write a cold outreach email to a startup founder introducing CreedaVA virtual assistant services." },
+                { label: "Thank You", prompt: "Write a thank you email to a new client who just signed up." },
+                { label: "Re-engagement", prompt: "Write a re-engagement email to a prospect who went silent. Offer a new incentive." },
+                { label: "Onboarding", prompt: "Write a warm onboarding welcome email for new clients with next steps." },
+                { label: "Service Update", prompt: "Write an email announcing a new service offering. Highlight benefits and include a CTA." },
+                { label: "Testimonial Request", prompt: "Write a polite email asking a happy client for a testimonial or review." },
+                { label: "Meeting Recap", prompt: "Write a meeting recap email with key discussion points, action items, and next steps." },
+              ]}
+              onResult={(raw) => {
+                try {
+                  const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
+                  const result = JSON.parse(cleaned);
                   setForm({
-                    subject: r.subject || "",
-                    body: r.body || "",
-                    previewText: r.previewText || "",
+                    subject: result.subject || "",
+                    body: result.body || "",
+                    previewText: result.previewText || "",
                     purpose: "",
                     status: "draft",
                     images: [],
                     attachments: [],
                   });
-                  setModalOpen(true);
-                  toast("AI content loaded \u2014 edit and save when ready", "success");
-                }).catch(() => toast("AI generation failed", "error"));
+                  setSelected(null);
+                  setComposeOpen(true);
+                  toast("AI content loaded — edit and send when ready", "success");
+                } catch {
+                  generateEmail(raw.slice(0, 200), "", "professional")
+                    .then((r) => {
+                      setForm({
+                        subject: r.subject || "",
+                        body: r.body || "",
+                        previewText: r.previewText || "",
+                        purpose: "",
+                        status: "draft",
+                        images: [],
+                        attachments: [],
+                      });
+                      setSelected(null);
+                      setComposeOpen(true);
+                      toast("AI content loaded", "success");
+                    })
+                    .catch(() => toast("AI generation failed", "error"));
+                }
+              }}
+              buildPrompt={(input) =>
+                buildTrainedPrompt(
+                  "Emails",
+                  `Compose an email based on: "${input}"\n\nReturn ONLY valid JSON with:\n- subject: email subject line\n- previewText: short preview text (50-80 chars)\n- body: full email body in HTML\n\nNo markdown fences.`,
+                  "",
+                  { includeCompetitors: true },
+                )
               }
-            }}
-            buildPrompt={(input) =>
-              `You are an email copywriter for CreedaVA, a virtual assistant services company.
-Compose an email based on: "${input}"
-
-Return ONLY valid JSON with:
-- subject: email subject line
-- previewText: short preview text (50-80 chars)
-- body: full email body in HTML
-
-No markdown fences.`
-            }
-          />
-          <Button size="sm" onClick={() => openModal()}>
-            <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            New Email
-          </Button>
+            />
+            <Button size="sm" variant="outline" onClick={handleSync} isLoading={syncing}>
+              <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+              </svg>
+              Sync
+            </Button>
+            <Button size="sm" onClick={() => openCompose()}>
+              <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Compose
+            </Button>
           </div>
         }
       />
 
-      <AdminTabs tabs={tabs} defaultValue="all" onChange={setTab} />
+      {/* Business Address Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {BUSINESS_EMAILS.map((be) => {
+          const count = inboxMessages.filter((m) => m.receivedBy?.toLowerCase() === be.value.toLowerCase() && !m.archived).length;
+          const unread = inboxMessages.filter((m) => m.receivedBy?.toLowerCase() === be.value.toLowerCase() && !m.seen && !m.archived).length;
+          return (
+            <button
+              key={be.value}
+              onClick={() => { setInboxFilter(inboxFilter === be.value ? "all" : be.value); setTab("inbox"); }}
+              className={`rounded-lg border p-3 text-left transition-colors ${
+                inboxFilter === be.value ? "border-primary bg-primary/5" : "border-border bg-white hover:border-gray-30"
+              }`}
+            >
+              <p className="text-xs text-gray-50 truncate">{be.value.split("@")[0]}</p>
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="text-lg font-semibold text-gray-90">{count}</span>
+                {unread > 0 && (
+                  <span className="text-xs font-medium text-primary">{unread} new</span>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
 
-      <DataTable
-        columns={columns}
-        data={filtered}
-        keyExtractor={(e) => e.id}
-        onRowClick={(e) => openModal(e)}
-        emptyMessage="No emails yet — compose one or let AI draft it"
-      />
+      <AdminTabs tabs={tabs} defaultValue="inbox" onChange={setTab} />
 
-      {/* Create / Edit Modal */}
+      {/* Inbox Tab */}
+      {tab === "inbox" && (
+        <>
+          {inboxFilter !== "all" && (
+            <div className="flex items-center gap-2 text-sm text-gray-60">
+              Filtered: <span className="font-medium text-gray-80">{inboxFilter}</span>
+              <button onClick={() => setInboxFilter("all")} className="text-primary hover:underline text-xs">Clear</button>
+            </div>
+          )}
+          <DataTable
+            columns={inboxColumns}
+            data={filteredInbox}
+            keyExtractor={(m) => m.id}
+            onRowClick={(m) => openInboxMessage(m)}
+            emptyMessage="No emails in inbox — click Sync to check for new messages"
+          />
+        </>
+      )}
+
+      {/* Drafts / Sent / All Tab */}
+      {tab !== "inbox" && (
+        <DataTable
+          columns={draftColumns}
+          data={filteredDrafts}
+          keyExtractor={(e) => e.id}
+          onRowClick={(e) => openDraft(e)}
+          emptyMessage="No emails — compose one or let AI draft it"
+        />
+      )}
+
+      {/* ─── Inbox View Modal ─────────────────── */}
       <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={selected ? `Edit: ${selected.subject}` : "New Email"}
+        open={inboxViewOpen}
+        onClose={() => setInboxViewOpen(false)}
+        title={selectedInbox?.subject || "Email"}
+        size="lg"
+        footer={
+          <>
+            <Button
+              size="sm"
+              onClick={() => {
+                if (selectedInbox) openCompose(selectedInbox);
+                setInboxViewOpen(false);
+              }}
+            >
+              <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 17 4 12 9 7" />
+                <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+              </svg>
+              Reply
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const subject = encodeURIComponent(`Fwd: ${selectedInbox?.subject || ""}`);
+                const body = encodeURIComponent(selectedInbox?.bodyText || selectedInbox?.preview || "");
+                window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`, "_blank");
+              }}
+            >
+              Forward in Gmail
+            </Button>
+            <div className="flex-1" />
+            <Button variant="outline" size="sm" onClick={() => setInboxViewOpen(false)}>
+              Close
+            </Button>
+          </>
+        }
+      >
+        {selectedInbox && (
+          <div className="space-y-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-90">{selectedInbox.fromName}</p>
+                <p className="text-xs text-gray-50">{selectedInbox.from}</p>
+              </div>
+              <p className="text-xs text-gray-40">{new Date(selectedInbox.date).toLocaleString()}</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-50">
+              <span>To:</span>
+              <span className="px-2 py-0.5 rounded-full bg-gray-10 text-gray-60">{selectedInbox.receivedBy || selectedInbox.to}</span>
+              {selectedInbox.cc && (
+                <>
+                  <span className="ml-2">Cc:</span>
+                  <span className="text-gray-60">{selectedInbox.cc}</span>
+                </>
+              )}
+            </div>
+            {selectedInbox.hasAttachments && selectedInbox.attachments && (
+              <div className="flex flex-wrap gap-2">
+                {selectedInbox.attachments.map((a, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded bg-gray-10 text-xs text-gray-60">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                    </svg>
+                    {a.filename} ({formatSize(a.size)})
+                  </span>
+                ))}
+              </div>
+            )}
+            <hr className="border-border" />
+            <div
+              className="prose prose-sm max-w-none text-gray-80"
+              dangerouslySetInnerHTML={{ __html: selectedInbox.bodyHtml || selectedInbox.bodyText || selectedInbox.preview }}
+            />
+          </div>
+        )}
+      </Modal>
+
+      {/* ─── Compose / Edit Draft Modal ───────── */}
+      <Modal
+        open={composeOpen || modalOpen}
+        onClose={() => { setComposeOpen(false); setModalOpen(false); }}
+        title={selected ? `Edit: ${selected.subject}` : "Compose Email"}
         size="lg"
         footer={
           <>
@@ -400,34 +694,48 @@ No markdown fences.`
                 Delete
               </Button>
             )}
-            {selected?.status === "draft" && (
-              <Button variant="outline" size="sm" onClick={handleMarkSent}>
-                Mark Sent
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const subject = encodeURIComponent(form.subject);
-                const body = encodeURIComponent(form.body.replace(/<[^>]*>/g, ""));
-                window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`, "_blank");
-              }}
-            >
-              <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
-              Gmail
+            <Button variant="outline" size="sm" onClick={() => setBulkOpen(true)}>
+              <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Bulk
             </Button>
             <div className="flex-1" />
-            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+            <Button variant="outline" size="sm" onClick={() => { setComposeOpen(false); setModalOpen(false); }}>
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave} isLoading={saving}>
-              {selected ? "Update" : "Save Draft"}
+            <Button variant="outline" size="sm" onClick={handleSave} isLoading={saving}>
+              {selected ? "Update Draft" : "Save Draft"}
+            </Button>
+            <Button size="sm" onClick={handleSendEmail} isLoading={sending}>
+              <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+              Send
             </Button>
           </>
         }
       >
         <div className="space-y-4">
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Select
+              label="From"
+              options={aliases}
+              value={sender}
+              onChange={(e) => setSender(e.target.value)}
+            />
+            <Input
+              label="To"
+              placeholder="recipient@example.com"
+              type="email"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+            />
+          </div>
           <Input
             label="Subject"
             placeholder="Email subject line"
@@ -440,12 +748,6 @@ No markdown fences.`
             value={form.previewText}
             onChange={(e) => setForm({ ...form, previewText: e.target.value })}
           />
-          <Input
-            label="Purpose"
-            placeholder="e.g. Follow-up after demo"
-            value={form.purpose}
-            onChange={(e) => setForm({ ...form, purpose: e.target.value })}
-          />
           <RichTextEditor
             label="Email Body"
             value={form.body}
@@ -454,12 +756,16 @@ No markdown fences.`
             minHeight="200px"
           />
 
-          {/* ── Images ──────────────────── */}
+          {/* Images */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-medium text-gray-50 uppercase tracking-wide">Images</label>
               <Button variant="outline" size="sm" onClick={() => emailImageRef.current?.click()} isLoading={uploading}>
-                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
                 Upload
               </Button>
               <input ref={emailImageRef} type="file" accept="image/*" multiple className="hidden" onChange={handleEmailImageUpload} />
@@ -469,10 +775,7 @@ No markdown fences.`
                 {form.images.map((url, i) => (
                   <div key={i} className="relative group w-full h-20">
                     <Image src={url} alt="" fill className="rounded-lg object-cover" />
-                    <button
-                      onClick={() => removeEmailImage(i)}
-                      className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
+                    <button onClick={() => removeEmailImage(i)} className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>
                   </div>
@@ -483,12 +786,14 @@ No markdown fences.`
             )}
           </div>
 
-          {/* ── Attachments ─────────────── */}
+          {/* Attachments */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-medium text-gray-50 uppercase tracking-wide">Attachments</label>
               <Button variant="outline" size="sm" onClick={() => emailAttachRef.current?.click()} isLoading={uploading}>
-                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
+                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                </svg>
                 Attach
               </Button>
               <input ref={emailAttachRef} type="file" multiple className="hidden" onChange={handleEmailAttachUpload} />
@@ -511,43 +816,6 @@ No markdown fences.`
               <p className="text-xs text-gray-40">No attachments</p>
             )}
           </div>
-
-          {/* ── Send section (edit mode, draft only) ── */}
-          {selected?.status === "draft" && (
-            <div className="border-t border-border pt-4">
-              <label className="text-xs font-medium text-gray-50 uppercase tracking-wide">Send via Email</label>
-              <div className="space-y-3 mt-2">
-                {aliases.length > 1 && (
-                  <Select
-                    label="From Address"
-                    options={aliases}
-                    value={sender || aliases[0]?.value}
-                    onChange={(e) => setSender(e.target.value)}
-                  />
-                )}
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="recipient@example.com"
-                    type="email"
-                    value={recipient}
-                    onChange={(e) => setRecipient(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button size="sm" onClick={handleSendEmail} isLoading={sending}>
-                    <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
-                    Send
-                  </Button>
-                </div>
-              </div>
-              <p className="text-xs text-gray-40 mt-1">Sends via SMTP configured in Settings &rarr; Integrations</p>
-              <div className="mt-3 pt-3 border-t border-border">
-                <Button variant="outline" size="sm" onClick={() => setBulkOpen(true)}>
-                  <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                  Bulk Send to Multiple
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </Modal>
 
@@ -559,47 +827,43 @@ No markdown fences.`
         size="sm"
         footer={
           <>
-            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>
-              Delete
-            </Button>
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+            <Button variant="danger" size="sm" onClick={handleDelete} isLoading={deleting}>Delete</Button>
           </>
         }
       >
-        <p className="text-sm text-gray-70">
-          Delete this email draft? This cannot be undone.
-        </p>
+        <p className="text-sm text-gray-70">Delete this email? This cannot be undone.</p>
       </Modal>
 
       {/* Bulk Send Modal */}
       <Modal
         open={bulkOpen}
         onClose={() => setBulkOpen(false)}
-        title="Bulk Send Email"
+        title="Bulk Send"
         size="md"
         footer={
           <>
-            <Button variant="outline" size="sm" onClick={() => setBulkOpen(false)}>
-              Cancel
-            </Button>
-            <Button size="sm" onClick={handleBulkSend} isLoading={bulkSending}>
-              Send to All
-            </Button>
+            <Button variant="outline" size="sm" onClick={() => setBulkOpen(false)}>Cancel</Button>
+            <Button size="sm" onClick={handleBulkSend} isLoading={bulkSending}>Send to All</Button>
           </>
         }
       >
         <div className="space-y-3">
           <p className="text-sm text-gray-70">
-            Sending: <strong>{selected?.subject}</strong>
+            Subject: <strong>{form.subject}</strong>
           </p>
+          <Select
+            label="Send From"
+            options={aliases}
+            value={sender}
+            onChange={(e) => setSender(e.target.value)}
+          />
           <div>
             <label className="text-xs font-medium text-gray-50 uppercase tracking-wide">Recipients</label>
             <textarea
               className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               rows={4}
-              placeholder={"email1@example.com\nemail2@example.com\nemail3@example.com"}
+              placeholder={"email1@example.com\nemail2@example.com"}
               value={bulkRecipients}
               onChange={(e) => setBulkRecipients(e.target.value)}
             />
@@ -612,4 +876,25 @@ No markdown fences.`
       </Modal>
     </div>
   );
+}
+
+// ─── Helpers ─────────────────────────────────────────
+
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  if (diff < 86400000 && d.getDate() === now.getDate()) {
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  if (diff < 604800000) {
+    return d.toLocaleDateString([], { weekday: "short" });
+  }
+  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+function formatSize(bytes: number) {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(0)}KB`;
+  return `${(bytes / 1048576).toFixed(1)}MB`;
 }

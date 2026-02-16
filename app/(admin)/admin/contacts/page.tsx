@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -230,6 +231,11 @@ export default function ContactsPage() {
                 { label: "Outreach Email", prompt: "Draft a personalised outreach email for contacts. Include subject line + email body (3-5 sentences, professional, warm) with a clear CTA." },
                 { label: "Segment Analysis", prompt: "Segment contacts into 3-4 actionable groups based on company type, role, and tags. For each segment, suggest a specific outreach strategy." },
                 { label: "Newsletter Draft", prompt: "Write a newsletter email with subject line, then HTML email body with sections (intro, main content, tips/value, CTA). Professional and engaging. 300-500 words." },
+                { label: "Re-engage Stale", prompt: "Identify contacts who haven't been engaged in 30+ days. Draft a re-engagement email sequence (2 emails) that offers value and reignites the relationship." },
+                { label: "LinkedIn Message", prompt: "Draft 3 LinkedIn connection request messages for different contact segments (startup founders, enterprise managers, solopreneurs). Keep each under 300 characters." },
+                { label: "Referral Ask", prompt: "Write a professional email asking existing contacts for referrals. Include subject line, explain the value of referring, and make it easy with a one-click CTA." },
+                { label: "Event Invite", prompt: "Draft an event invitation email for a virtual assistant webinar. Include subject line, event details, 3 key takeaways, and RSVP CTA." },
+                { label: "Contact Cleanup", prompt: "Analyze the contact list for data quality issues: missing emails, duplicate companies, incomplete tags. Suggest a cleanup plan with priorities." },
               ]}
               dataContext={(() => {
                 const companies = [...new Set(contacts.map(c => c.company).filter(Boolean))];
@@ -238,7 +244,7 @@ export default function ContactsPage() {
                 return `CreedaVA Contacts (${contacts.length} total):\nCompanies: ${companies.slice(0, 10).join(", ")}\nRoles: ${roles.slice(0, 10).join(", ")}\nTags: ${tags.slice(0, 10).join(", ")}`;
               })()}
               buildPrompt={(input, ctx) =>
-                `You are a relationship manager for CreedaVA (virtual assistant services).\n${input}\n\nContact data:\n${ctx}\n\nBe professional and actionable.`
+                buildTrainedPrompt("Contacts", input, ctx, { includeCompetitors: true })
               }
             />
             <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">

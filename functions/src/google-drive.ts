@@ -13,20 +13,29 @@ import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 async function getDriveClient() {
   const integration = await getIntegrationConfig("google-drive");
-  if (!integration?.config?.serviceAccountKey) {
-    throw new HttpsError("failed-precondition", "Google Drive not configured");
-  }
+  const config = integration?.config ?? {};
 
-  const { config } = integration;
-  const key = JSON.parse(config.serviceAccountKey);
-  const authClient = new google.auth.JWT({
-    email: key.client_email,
-    key: key.private_key,
-    scopes: [
-      "https://www.googleapis.com/auth/drive.file",
-      "https://www.googleapis.com/auth/drive",
-    ],
-  });
+  let authClient;
+  if (config.serviceAccountKey) {
+    // Use stored service account JSON key
+    const key = JSON.parse(config.serviceAccountKey);
+    authClient = new google.auth.JWT({
+      email: key.client_email,
+      key: key.private_key,
+      scopes: [
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/drive",
+      ],
+    });
+  } else {
+    // Fall back to Application Default Credentials (Cloud Functions environment)
+    authClient = new google.auth.GoogleAuth({
+      scopes: [
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/drive",
+      ],
+    });
+  }
 
   const drive = google.drive({ version: "v3", auth: authClient });
 

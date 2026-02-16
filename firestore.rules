@@ -82,6 +82,16 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Inbox messages — admin only
+    match /inbox/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Email campaigns — admin only
+    match /email-campaigns/{docId} {
+      allow read, write: if isAdmin();
+    }
+
     // Campaigns — admin only
     match /campaigns/{docId} {
       allow read, write: if isAdmin();

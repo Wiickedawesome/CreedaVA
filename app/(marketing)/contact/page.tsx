@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { Container, Input, Textarea, Button } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
 
@@ -15,12 +16,40 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const [error, setError] = useState("");
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setSubmitted(true);
-    setIsSubmitting(false);
+    setError("");
+
+    const fd = new FormData(e.currentTarget);
+
+    try {
+      const res = await fetch(
+        "https://us-east4-creeda-va.cloudfunctions.net/handleFormWebhook",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            formType: "contact",
+            name: `${fd.get("firstName")} ${fd.get("lastName")}`.trim(),
+            email: fd.get("email"),
+            phone: fd.get("phone") || "",
+            company: fd.get("company") || "",
+            message: fd.get("message"),
+            notifyEmail: "contact@creedava.com",
+            source: "contact-page",
+          }),
+        },
+      );
+      if (!res.ok) throw new Error("Failed to send");
+      setSubmitted(true);
+    } catch {
+      setError("Something went wrong. Please try again or email us directly.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -75,13 +104,21 @@ export default function ContactPage() {
                       required
                     />
                   </div>
-                  <Input
-                    label={t.contact.email}
-                    name="email"
-                    type="email"
-                    placeholder={t.contact.emailPlaceholder}
-                    required
-                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <Input
+                      label={t.contact.email}
+                      name="email"
+                      type="email"
+                      placeholder={t.contact.emailPlaceholder}
+                      required
+                    />
+                    <Input
+                      label="Phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="+1 (555) 123-4567"
+                    />
+                  </div>
                   <Input
                     label={t.contact.company}
                     name="company"
@@ -101,6 +138,9 @@ export default function ContactPage() {
                   >
                     {t.contact.sendMessage}
                   </Button>
+                  {error && (
+                    <p className="text-sm text-red-500 text-center">{error}</p>
+                  )}
                 </form>
               )}
             </div>
@@ -130,6 +170,23 @@ export default function ContactPage() {
                       className="text-primary hover:underline"
                     >
                       {t.contact.emailValue}
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-100">{t.contact.phoneLabel}</h4>
+                    <a
+                      href={`tel:${t.contact.phoneValue}`}
+                      className="text-primary hover:underline"
+                    >
+                      {t.contact.phoneValue}
                     </a>
                   </div>
                 </div>
@@ -168,7 +225,7 @@ export default function ContactPage() {
                   {t.contact.bookDesc}
                 </p>
                 <a
-                  href="#"
+                  href="/join"
                   className="inline-flex items-center text-primary font-medium text-sm hover:underline"
                 >
                   {t.contact.bookLink}

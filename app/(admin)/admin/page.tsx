@@ -384,6 +384,11 @@ export default function AdminDashboardPage() {
               { label: "Growth Strategy", prompt: "Analyze our metrics and suggest a 5-step growth strategy focusing on lead conversion, customer retention, and revenue growth." },
               { label: "Weekly Priorities", prompt: "Based on current data, list the top 5 priorities for this week with specific actions and expected impact." },
               { label: "SEO Quick Win", prompt: "Suggest one high-impact SEO action we can do today with step-by-step instructions." },
+              { label: "Revenue Leaks", prompt: "Identify potential revenue leaks in our pipeline. Check for stale leads, underpriced customers, and missed upsell opportunities. Suggest fixes." },
+              { label: "Client Health Check", prompt: "Assess overall client health. Flag at-risk customers, highlight happiest clients, and suggest proactive outreach for each segment." },
+              { label: "Competitor Moves", prompt: "Based on our current positioning, suggest 3 competitive advantages we should emphasize in our marketing and sales conversations." },
+              { label: "Bottleneck Finder", prompt: "Identify the single biggest bottleneck slowing our growth right now. Explain why it matters, its impact, and give 3 actions to fix it." },
+              { label: "30-Day Plan", prompt: "Create a 30-day action plan to improve key business metrics. Break into weekly milestones with owners and measurable outcomes." },
             ]}
             dataContext={(() => {
               const newLeads = leads.filter((l) => l.status === "new").length;

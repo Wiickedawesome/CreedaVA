@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -266,6 +267,11 @@ export default function BookingsPage() {
               { label: "Follow-up Emails", prompt: "Draft follow-up emails for pending/recent bookings. For each pending booking write a short confirmation/follow-up email (subject + 3 sentences). Be professional and reassuring." },
               { label: "Service Analysis", prompt: "Analyze booking patterns and service popularity. Provide: most popular services, conversion rates by status, suggestions for improving booking completion, and ideas for new service offerings." },
               { label: "Thank You Email", prompt: "Draft a professional thank-you email template that thanks the client, summarises what was discussed, suggests next steps, and asks for a referral. Include subject line." },
+              { label: "No-Show Recovery", prompt: "Draft a friendly re-engagement email for clients who missed their booking. Offer to reschedule and emphasize value. Include subject line and 3-4 sentences." },
+              { label: "Upsell After Call", prompt: "Draft a post-consultation email that upsells additional services based on common booking types. Include 2-3 service recommendations with benefits." },
+              { label: "Weekly Summary", prompt: "Generate a weekly booking summary report. Cover: total bookings, completion rate, most requested services, cancellations, and revenue opportunity from pending bookings." },
+              { label: "Reminder Template", prompt: "Draft a booking reminder email to send 24 hours before the scheduled call. Professional, concise, includes what to prepare for the meeting." },
+              { label: "Availability Tips", prompt: "Analyze booking times and suggest optimal availability windows. Identify peak demand hours and recommend schedule adjustments to maximize bookings." },
             ]}
             dataContext={(() => {
               const byStatus = Object.entries(bookings.reduce((acc, b) => ({ ...acc, [b.status]: (acc[b.status] || 0) + 1 }), {} as Record<string, number>)).map(([s, c]) => `${s}: ${c}`).join(", ");
@@ -274,7 +280,7 @@ export default function BookingsPage() {
               return `CreedaVA Bookings (${bookings.length} total):\nBy status: ${byStatus}\nServices: ${services.join(", ")}\nRecent: ${recent}`;
             })()}
             buildPrompt={(input, ctx) =>
-              `You are a client success coordinator for CreedaVA (virtual assistant services).\n${input}\n\nBooking data:\n${ctx}\n\nBe professional and actionable.`
+              buildTrainedPrompt("Bookings", input, ctx, { includeKPIs: true })
             }
             onResult={handleAIResult}
           />

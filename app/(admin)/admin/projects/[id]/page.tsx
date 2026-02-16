@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCollection } from "@/hooks/useCollection";
@@ -577,9 +578,14 @@ export default function ProjectDetailPage() {
                 { label: "Next Steps", prompt: `What are the next 3-5 actionable steps for this project? Consider the current goals and tasks.` },
                 { label: "Status Email", prompt: `Write a professional status update email for this project. Include progress, completed items, upcoming milestones, and any blockers.` },
                 { label: "Risk Assessment", prompt: `Assess risks for this project. For each: risk, likelihood, impact, and mitigation. Give an overall risk rating.` },
+                { label: "Milestone Plan", prompt: `Create a detailed milestone plan for the remaining work. Include deliverables, estimated dates, dependencies, and success criteria for each milestone.` },
+                { label: "Client Recap", prompt: `Write a client-facing project recap summarizing what has been accomplished, current status, upcoming work, and any decisions needed from the client.` },
+                { label: "Resource Needs", prompt: `Analyze resource requirements for this project going forward. Identify skill gaps, capacity constraints, and recommend team adjustments.` },
+                { label: "Retrospective", prompt: `Conduct a mini retrospective. What went well? What could improve? What should we start, stop, or continue doing on this project?` },
+                { label: "Scope Check", prompt: `Review the current scope vs original goals. Flag any scope creep, missed deliverables, or gold-plating. Recommend scope adjustments if needed.` },
               ]}
               dataContext={`Project: ${project.name}\nClient: ${project.clientName || "N/A"}\nStatus: ${project.status}\nTasks: ${projectTasks.length} (${projectTasks.filter(t => t.status === "done").length} done)\nGoals: ${goals.length} (${completedGoals} completed, ${archivedGoals.length} archived)`}
-              buildPrompt={(input, ctx) => `You are a project manager for CreedaVA.\n${input}\n\nProject data:\n${ctx}\n\nBe specific and actionable.`}
+              buildPrompt={(input, ctx) => buildTrainedPrompt("Project Detail", input, ctx, { includeKPIs: true })}
             />
             <Button variant="outline" size="sm" onClick={openEditModal}>
               Edit Project

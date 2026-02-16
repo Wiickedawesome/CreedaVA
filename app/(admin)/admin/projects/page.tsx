@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCollection } from "@/hooks/useCollection";
@@ -209,6 +210,11 @@ export default function ProjectsPage() {
                 { label: "Project Plan", prompt: "Create a project plan with 6-10 milestones, timeline, deliverables, resource needs, and risk factors. Consider the current project load." },
                 { label: "Risk Assessment", prompt: "Assess risks across all active projects. For each: list top 2 risks, likelihood, impact, and mitigation strategy. Give an overall portfolio risk summary." },
                 { label: "Status Update", prompt: "Write a professional status update email covering all projects. For each project: status, progress, next steps. End with action items." },
+                { label: "Capacity Planning", prompt: "Analyze current project load and team capacity. Identify overallocated resources, upcoming availability gaps, and recommend adjustments." },
+                { label: "Portfolio Health", prompt: "Rate portfolio health across all projects. For each: on-track/at-risk/off-track with reasoning. Give an overall portfolio health score and top 3 actions." },
+                { label: "Budget Review", prompt: "Review budget utilization across all projects. Identify overspend risks, underutilized budgets, and recommend reallocations." },
+                { label: "Client Priorities", prompt: "Rank active projects by client importance and revenue impact. Suggest which projects deserve more attention and resources." },
+                { label: "New Project Scope", prompt: "Draft a scope document template for a new VA services project. Include objectives, deliverables, timeline, success criteria, and assumptions." },
               ]}
               dataContext={(() => {
                 const byStatus = Object.entries(projects.reduce((acc, p) => ({ ...acc, [p.status]: (acc[p.status] || 0) + 1 }), {} as Record<string, number>)).map(([s, c]) => `${s}: ${c}`).join(", ");
@@ -217,7 +223,7 @@ export default function ProjectsPage() {
                 return `CreedaVA Projects (${projects.length} total):\nBy status: ${byStatus}\nTotal budget: $${totalBudget}\nActive: ${activeProjects || "none"}`;
               })()}
               buildPrompt={(input, ctx) =>
-                `You are a project manager for CreedaVA (virtual assistant services).\n${input}\n\nProject data:\n${ctx}\n\nUse the actual data. Be professional and actionable.`
+                buildTrainedPrompt("Projects", input, ctx, { includeKPIs: true })
               }
               onResult={handleAIResult}
             />

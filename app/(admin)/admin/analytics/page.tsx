@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   PageHeader,
@@ -597,6 +598,11 @@ export default function AnalyticsPage() {
                 { label: "Traffic Insights", prompt: "Analyze traffic data and explain what's happening. Provide: key trends, what's working, what needs attention, and 3 specific actions to increase organic traffic." },
                 { label: "SEO Recommendations", prompt: "Give 5 high-impact SEO recommendations. For each: the action, why it matters, implementation steps, and expected traffic impact. Prioritize by effort vs. result." },
                 { label: "Content Gaps", prompt: "Identify content gaps based on current page performance. Suggest 5 new pages/blog posts that would fill gaps and capture search traffic. For each: title, target keyword, estimated search volume, and why it would rank." },
+                { label: "Bounce Rate Fix", prompt: "Analyze pages with high bounce rates. For each: explain likely causes, suggest UX or content changes, and estimate the impact of fixing them." },
+                { label: "Conversion Funnel", prompt: "Map the visitor-to-lead conversion funnel. Identify where visitors drop off, suggest improvements at each stage, and estimate potential conversion lift." },
+                { label: "Top Referrers", prompt: "Analyze referral traffic sources. Rank by quality (not just volume). Suggest 3 ways to get more traffic from the best-performing referrers." },
+                { label: "Mobile vs Desktop", prompt: "Compare mobile vs desktop performance. Highlight any significant differences in engagement, conversion, or bounce rate. Suggest mobile-specific optimizations." },
+                { label: "Weekly Digest", prompt: "Write a concise weekly analytics digest. Cover: traffic trend, top pages, new vs returning visitors, best traffic source, and one key action item for next week." },
               ]}
               dataContext={(() => {
                 const views = filtered.length;
@@ -606,7 +612,7 @@ export default function AnalyticsPage() {
                 return `CreedaVA Analytics (${period}):\nTotal events: ${views}, Unique pages: ${uniquePages}\nTop pages: ${topPgs}\nTop countries: ${countries}`;
               })()}
               buildPrompt={(input, ctx) =>
-                `You are an analytics expert for CreedaVA (virtual assistant services).\n${input}\n\nAnalytics data:\n${ctx}\n\nUse the numbers. Be specific and actionable.`
+                buildTrainedPrompt("Analytics", input, ctx, { includeCompetitors: true, includeKPIs: true })
               }
             />
             <div className="flex items-center gap-3 justify-end w-full sm:w-auto">

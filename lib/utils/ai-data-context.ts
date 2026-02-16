@@ -15,6 +15,7 @@ import type {
   SocialPost,
   EmailDraft,
   LandingPage,
+  ForumThread,
 } from "@/lib/types/content";
 
 // ─── Collection data shape passed into builders ──────
@@ -33,6 +34,7 @@ export interface AllCollections {
   keywords?: SEOKeyword[];
   seoAudits?: SEOAudit[];
   landingPages?: LandingPage[];
+  forumThreads?: ForumThread[];
 }
 
 // ─── Full context (all collections) ──────────────────
@@ -56,6 +58,7 @@ export function buildFullContext(data: AllCollections): string {
   if (data.keywords?.length) sections.push(summarizeKeywords(data.keywords));
   if (data.seoAudits?.length) sections.push(summarizeSEO(data.seoAudits));
   if (data.landingPages?.length) sections.push(summarizeLandingPages(data.landingPages));
+  if (data.forumThreads?.length) sections.push(summarizeForum(data.forumThreads));
 
   return sections.join("\n");
 }
@@ -142,6 +145,95 @@ export function buildOperationsContext(data: AllCollections): string {
   const sections = ["OPERATIONS CONTEXT"];
   if (data.tasks?.length) sections.push(summarizeTasks(data.tasks));
   if (data.projects?.length) sections.push(summarizeProjects(data.projects));
+  if (data.bookings?.length) sections.push(summarizeBookings(data.bookings));
+  return sections.join("\n");
+}
+
+export function buildKeywordContext(data: AllCollections): string {
+  const sections = ["KEYWORD HEALTH CONTEXT"];
+  if (data.keywords?.length) sections.push(summarizeKeywords(data.keywords));
+  if (data.blog?.length) sections.push(summarizeBlog(data.blog));
+  if (data.seoAudits?.length) sections.push(summarizeSEO(data.seoAudits));
+  return sections.join("\n");
+}
+
+export function buildLandingPageContext(data: AllCollections): string {
+  const sections = ["LANDING PAGE PERFORMANCE CONTEXT"];
+  if (data.landingPages?.length) sections.push(summarizeLandingPages(data.landingPages));
+  if (data.campaigns?.length) sections.push(summarizeCampaigns(data.campaigns));
+  if (data.leads?.length) sections.push(summarizeLeads(data.leads));
+  return sections.join("\n");
+}
+
+export function buildBookingContext(data: AllCollections): string {
+  const sections = ["BOOKING & RETENTION CONTEXT"];
+  if (data.bookings?.length) sections.push(summarizeBookings(data.bookings));
+  if (data.customers?.length) sections.push(summarizeCustomers(data.customers));
+  if (data.leads?.length) sections.push(summarizeLeads(data.leads));
+  return sections.join("\n");
+}
+
+export function buildBlogContext(data: AllCollections): string {
+  const sections = ["BLOG PERFORMANCE CONTEXT"];
+  if (data.blog?.length) sections.push(summarizeBlog(data.blog));
+  if (data.keywords?.length) sections.push(summarizeKeywords(data.keywords));
+  if (data.seoAudits?.length) sections.push(summarizeSEO(data.seoAudits));
+  return sections.join("\n");
+}
+
+export function buildForumContext(data: AllCollections): string {
+  const sections = ["FORUM HEALTH CONTEXT"];
+  if (data.forumThreads?.length) sections.push(summarizeForum(data.forumThreads));
+  return sections.join("\n");
+}
+
+export function buildContentVelocityContext(data: AllCollections): string {
+  const sections = ["CONTENT VELOCITY CONTEXT"];
+  if (data.blog?.length) sections.push(summarizeBlog(data.blog));
+  if (data.socialPosts?.length) sections.push(summarizeSocial(data.socialPosts));
+  if (data.emails?.length) sections.push(summarizeEmails(data.emails));
+  if (data.landingPages?.length) sections.push(summarizeLandingPages(data.landingPages));
+  if (data.forumThreads?.length) sections.push(summarizeForum(data.forumThreads));
+  return sections.join("\n");
+}
+
+export function buildCustomerLTVContext(data: AllCollections): string {
+  const sections = ["CUSTOMER LTV & CHURN RISK CONTEXT"];
+  if (data.customers?.length) sections.push(summarizeCustomers(data.customers));
+  if (data.projects?.length) sections.push(summarizeProjects(data.projects));
+  if (data.bookings?.length) sections.push(summarizeBookings(data.bookings));
+  if (data.leads?.length) sections.push(summarizeLeads(data.leads));
+  return sections.join("\n");
+}
+
+export function buildLeadResponseContext(data: AllCollections): string {
+  const sections = ["LEAD RESPONSE SPEED CONTEXT"];
+  if (data.leads?.length) sections.push(summarizeLeads(data.leads));
+  if (data.contacts?.length) sections.push(summarizeContacts(data.contacts));
+  if (data.bookings?.length) sections.push(summarizeBookings(data.bookings));
+  return sections.join("\n");
+}
+
+export function buildEmailEngagementContext(data: AllCollections): string {
+  const sections = ["EMAIL ENGAGEMENT CONTEXT"];
+  if (data.emails?.length) sections.push(summarizeEmails(data.emails));
+  if (data.campaigns?.length) sections.push(summarizeCampaigns(data.campaigns));
+  if (data.leads?.length) sections.push(summarizeLeads(data.leads));
+  return sections.join("\n");
+}
+
+export function buildSocialEngagementContext(data: AllCollections): string {
+  const sections = ["SOCIAL MEDIA ENGAGEMENT CONTEXT"];
+  if (data.socialPosts?.length) sections.push(summarizeSocial(data.socialPosts));
+  if (data.campaigns?.length) sections.push(summarizeCampaigns(data.campaigns));
+  return sections.join("\n");
+}
+
+export function buildRevenueAttributionContext(data: AllCollections): string {
+  const sections = ["REVENUE ATTRIBUTION CONTEXT"];
+  if (data.leads?.length) sections.push(summarizeLeads(data.leads));
+  if (data.customers?.length) sections.push(summarizeCustomers(data.customers));
+  if (data.campaigns?.length) sections.push(summarizeCampaigns(data.campaigns));
   if (data.bookings?.length) sections.push(summarizeBookings(data.bookings));
   return sections.join("\n");
 }
@@ -292,4 +384,25 @@ function summarizeLandingPages(pages: LandingPage[]): string {
   return `\n--- LANDING PAGES (${pages.length}) ---
 By status: ${countBy(pages, (p) => p.status)}
 Pages: ${pages.map((p) => p.title).join(", ")}`;
+}
+
+function summarizeForum(threads: ForumThread[]): string {
+  const open = threads.filter((t) => t.status === "open").length;
+  const closed = threads.filter((t) => t.status === "closed").length;
+  const flagged = threads.filter((t) => t.status === "flagged").length;
+  const totalReplies = threads.reduce((s, t) => s + (t.replies || 0), 0);
+  const totalLikes = threads.reduce((s, t) => s + (t.likes || 0), 0);
+  const avgReplies = threads.length > 0 ? (totalReplies / threads.length).toFixed(1) : "0";
+  const tags = [...new Set(threads.flatMap((t) => t.tags || []))];
+  const topThreads = threads
+    .sort((a, b) => (b.replies || 0) - (a.replies || 0))
+    .slice(0, 5)
+    .map((t) => `"${t.title}" (${t.replies} replies, ${t.likes} likes)`)
+    .join("; ");
+  return `\n--- FORUM THREADS (${threads.length}) ---
+Open: ${open}, Closed: ${closed}, Flagged: ${flagged}
+Total replies: ${totalReplies}, Total likes: ${totalLikes}
+Avg replies/thread: ${avgReplies}
+Tags: ${tags.slice(0, 15).join(", ") || "none"}
+Top by engagement: ${topThreads || "none"}`;
 }

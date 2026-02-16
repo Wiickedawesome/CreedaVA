@@ -1,5 +1,6 @@
 "use client";
 
+import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -253,6 +254,11 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
                 { label: "Prioritize Tasks", prompt: "Rank all tasks using an urgency/impact matrix from most to least important. For each explain WHY it should be at that priority. Highlight overdue items. Suggest a daily plan." },
                 { label: "Break Down Task", prompt: "Break down a complex task into 5-8 actionable subtasks. For each subtask: title, estimated time, and what to watch out for." },
                 { label: "Status Report", prompt: "Write a concise task status report. Format: Summary (2 sentences), then Completed, In Progress, Blocked, and Upcoming sections. Highlight risks and overdue items." },
+                { label: "Sprint Plan", prompt: "Create a 1-week sprint plan from the current task list. Group tasks by priority, assign estimated hours, and identify dependencies." },
+                { label: "Delegation Guide", prompt: "Identify which tasks should be delegated to virtual assistants. For each: explain why it's delegatable, skill level needed, and handoff instructions." },
+                { label: "Blocker Analysis", prompt: "Identify blocked or stalled tasks. For each: probable root cause, suggested resolution, and escalation path if unresolved in 48 hours." },
+                { label: "Automation Ideas", prompt: "Review recurring tasks and suggest which ones can be automated. For each: automation approach, tool recommendation, and estimated time savings per week." },
+                { label: "End-of-Day Recap", prompt: "Generate an end-of-day recap. Cover: tasks completed today, what moved to in-progress, new tasks added, blockers encountered, and top 3 priorities for tomorrow." },
               ]}
               dataContext={(() => {
                 const byStatus = Object.entries(tasks.reduce((acc, t) => ({ ...acc, [t.status]: (acc[t.status] || 0) + 1 }), {} as Record<string, number>)).map(([s, c]) => `${s}: ${c}`).join(", ");
@@ -261,7 +267,7 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
                 return `CreedaVA Tasks (${tasks.length} total):\nBy status: ${byStatus}\nBy priority: ${byPriority}\nOverdue: ${overdue.length > 0 ? overdue.join(", ") : "none"}`;
               })()}
               buildPrompt={(input, ctx) =>
-                `You are a productivity expert for CreedaVA (virtual assistant services).\n${input}\n\nTask data:\n${ctx}\n\nUse the actual data. Be professional and actionable.`
+                buildTrainedPrompt("Tasks", input, ctx, { includeKPIs: true })
               }
               onResult={handleAIResult}
             />

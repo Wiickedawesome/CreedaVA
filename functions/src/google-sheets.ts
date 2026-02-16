@@ -13,20 +13,29 @@ import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 async function getSheetsClient() {
   const integration = await getIntegrationConfig("google-sheets");
-  if (!integration?.config?.serviceAccountKey) {
-    throw new HttpsError("failed-precondition", "Google Sheets not configured");
-  }
+  const config = integration?.config ?? {};
 
-  const { config } = integration;
-  const key = JSON.parse(config.serviceAccountKey);
-  const authClient = new google.auth.JWT({
-    email: key.client_email,
-    key: key.private_key,
-    scopes: [
-      "https://www.googleapis.com/auth/spreadsheets",
-      "https://www.googleapis.com/auth/drive.file",
-    ],
-  });
+  let authClient;
+  if (config.serviceAccountKey) {
+    // Use stored service account JSON key
+    const key = JSON.parse(config.serviceAccountKey);
+    authClient = new google.auth.JWT({
+      email: key.client_email,
+      key: key.private_key,
+      scopes: [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive.file",
+      ],
+    });
+  } else {
+    // Fall back to Application Default Credentials (Cloud Functions environment)
+    authClient = new google.auth.GoogleAuth({
+      scopes: [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive.file",
+      ],
+    });
+  }
 
   const sheets = google.sheets({ version: "v4", auth: authClient });
 

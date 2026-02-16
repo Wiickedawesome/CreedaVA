@@ -9,7 +9,7 @@
 export { sendEmail, sendBulkEmail } from "./email";
 
 // Google Calendar
-export { syncBookingToCalendar, updateCalendarOnBookingChange, listCalendarEvents } from "./calendar";
+export { syncBookingToCalendar, updateCalendarOnBookingChange, listCalendarEvents, getAvailableSlots } from "./calendar";
 
 // Google Ads
 export { syncCampaignData } from "./ads";
@@ -32,8 +32,11 @@ export { listDriveFiles, createClientFolder, uploadReportToDrive } from "./googl
 // Webhooks (forms, etc.)
 export { handleFormWebhook } from "./webhooks";
 
+// Inbox (IMAP)
+export { fetchInbox, fetchEmailMessage, listMailboxFolders, syncInboxToFirestore } from "./inbox";
+
 // Scheduled tasks
-export { dailyDigest, weeklyReport, dailyGoogleSync } from "./scheduled";
+export { dailyDigest, weeklyReport, monthlyReport, dailyGoogleSync } from "./scheduled";
 
 // Firestore triggers (automatic sync)
 export { onNewLead, onNewContact, onEmailQueued, onBookingConfirmed } from "./triggers";
