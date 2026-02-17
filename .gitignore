@@ -56,7 +56,6 @@ next-env.d.ts
 .gemini/
 .idx/
 .github/
-!.github/copilot-instructions.md
 
 # ─── OS generated ────────────────────────────────
 Thumbs.db
