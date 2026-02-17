@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { fetchAll } from "@/lib/firebase/firestore";
@@ -17,7 +17,7 @@ export function NewsList() {
   const { t, locale } = useTranslation();
   const [posts, setPosts] = useState<(BlogPost & { id: string })[]>([]);
   const [loading, setLoading] = useState(true);
-  const [translating, setTranslating] = useState(false);
+  const translatingRef = useRef(false);
 
   useEffect(() => {
     async function loadPosts() {
@@ -51,13 +51,13 @@ export function NewsList() {
 
   // On-demand: translate blog posts missing translations for the current locale
   useEffect(() => {
-    if (translating || posts.length === 0) return;
+    if (translatingRef.current || posts.length === 0) return;
     const untranslated = posts.filter(
       (p) => !p.translations?.[locale] && (p.lang || "en") !== locale,
     );
     if (untranslated.length === 0) return;
 
-    setTranslating(true);
+    translatingRef.current = true;
     (async () => {
       const updated: (BlogPost & { id: string })[] = [];
       for (const p of untranslated) {
@@ -74,8 +74,10 @@ export function NewsList() {
       }
     })()
       .catch((err) => console.error("Blog list translation error:", err))
-      .finally(() => setTranslating(false));
-  }, [posts.length, locale, translating]); // eslint-disable-line react-hooks/exhaustive-deps
+      .finally(() => {
+        translatingRef.current = false;
+      });
+  }, [posts, locale]);
 
   if (loading) {
     return (

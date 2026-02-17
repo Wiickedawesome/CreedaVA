@@ -23,6 +23,14 @@ export const metadata: Metadata = {
   description:
     "Professional virtual assistant services for businesses. Save time, reduce costs, and scale your operations with CreedaVA.",
   keywords: ["virtual assistant", "business services", "remote assistant", "CreedaVA"],
+  metadataBase: new URL("https://creedava.com"),
+  alternates: {
+    canonical: "/",
+    languages: {
+      "en": "/",
+      "es": "/",
+    },
+  },
   openGraph: {
     title: "CreedaVA — Virtual Assistant Services",
     description:
@@ -30,6 +38,18 @@ export const metadata: Metadata = {
     url: "https://creedava.com",
     siteName: "CreedaVA",
     type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CreedaVA — Virtual Assistant Services",
+    description:
+      "Professional virtual assistant services for businesses. Save time, reduce costs, and scale your operations.",
+    site: "@creedava",
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/logo.webp",
   },
 };
 

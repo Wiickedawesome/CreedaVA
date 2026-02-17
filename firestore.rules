@@ -20,9 +20,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Contact form submissions from website — public create, admin read
+    // Contact form submissions from website — validated public create, admin read
     match /contact-submissions/{docId} {
-      allow create: if true;
+      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'message'])
+                    && request.resource.data.name is string
+                    && request.resource.data.email is string
+                    && request.resource.data.message is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() <= 200
+                    && request.resource.data.email.size() > 0
+                    && request.resource.data.email.size() <= 320
+                    && request.resource.data.message.size() > 0
+                    && request.resource.data.message.size() <= 5000;
       allow read, update, delete: if isAdmin();
     }
 
@@ -119,25 +128,26 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Analytics — public create, admin read
+    // Analytics — validated public create, admin read
     match /analytics/{docId} {
-      allow create: if true;
+      allow create: if request.resource.data.keys().hasAny(['event', 'page', 'type'])
+                    && request.resource.data.size() <= 20;
       allow read, update, delete: if isAdmin();
     }
 
-    // Forum threads — public read, authenticated create, admin manage
+    // Forum threads — public read, authenticated create, author/admin update
     match /forum/{threadId} {
       allow read: if true;
       allow create: if isAuth();
-      allow update: if isAuth() || isAdmin();
+      allow update: if (isAuth() && resource.data.uid == request.auth.uid) || isAdmin();
       allow delete: if isAdmin();
     }
 
-    // Forum replies — public read, authenticated create, admin manage
+    // Forum replies — public read, authenticated create, author/admin update
     match /forumReplies/{replyId} {
       allow read: if true;
       allow create: if isAuth();
-      allow update: if isAuth() || isAdmin();
+      allow update: if (isAuth() && resource.data.uid == request.auth.uid) || isAdmin();
       allow delete: if isAdmin();
     }
 

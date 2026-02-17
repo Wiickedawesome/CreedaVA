@@ -62,7 +62,7 @@ export function ForumList() {
   const [linkInput, setLinkInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [translating, setTranslating] = useState(false);
+  const translatingRef = useRef(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const loadThreads = useCallback(async () => {
@@ -93,13 +93,13 @@ export function ForumList() {
 
   // On-demand: translate threads that lack translations for the current locale
   useEffect(() => {
-    if (translating || threads.length === 0) return;
+    if (translatingRef.current || threads.length === 0) return;
     const untranslated = threads.filter(
       (th) => !th.translations?.[locale] && (th.lang || "en") !== locale,
     );
     if (untranslated.length === 0) return;
 
-    setTranslating(true);
+    translatingRef.current = true;
     (async () => {
       const updated: (ForumThread & { id: string })[] = [];
       for (const th of untranslated) {
@@ -116,8 +116,10 @@ export function ForumList() {
       }
     })()
       .catch((err) => console.error("Forum list translation error:", err))
-      .finally(() => setTranslating(false));
-  }, [threads.length, locale, translating]); // eslint-disable-line react-hooks/exhaustive-deps
+      .finally(() => {
+        translatingRef.current = false;
+      });
+  }, [threads, locale]);
 
   const sorted = [...threads].sort((a, b) => {
     if (sort === "top") return (b.likes || 0) - (a.likes || 0);

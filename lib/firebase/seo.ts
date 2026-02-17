@@ -25,18 +25,32 @@ export async function getPageSEO(
     const seo = docs[0];
     if (!seo) return fallback(path, defaults);
 
+    const title = seo.title || defaults.title;
+    const description = seo.description || defaults.description;
+    const ogTitle = seo.ogTitle || title;
+    const ogDescription = seo.ogDescription || description;
+    const pageUrl = `${SITE_URL}${path}`;
+
     return {
-      title: seo.title || defaults.title,
-      description: seo.description || defaults.description,
+      title,
+      description,
       keywords: seo.keywords,
       ...(seo.noIndex ? { robots: { index: false, follow: false } } : {}),
+      alternates: {
+        canonical: pageUrl,
+      },
       openGraph: {
-        title: seo.ogTitle || seo.title || defaults.title,
-        description: seo.ogDescription || seo.description || defaults.description,
-        url: `${SITE_URL}${path}`,
+        title: ogTitle,
+        description: ogDescription,
+        url: pageUrl,
         siteName: SITE_NAME,
         type: "website",
-        ...(seo.ogImage ? { images: [{ url: seo.ogImage }] } : {}),
+        ...(seo.ogImage ? { images: [{ url: seo.ogImage, width: 1200, height: 630, alt: ogTitle }] } : {}),
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: ogTitle,
+        description: ogDescription,
       },
     };
   } catch {
@@ -48,15 +62,25 @@ function fallback(
   path: string,
   defaults: { title: string; description: string },
 ): Metadata {
+  const pageUrl = `${SITE_URL}${path}`;
+
   return {
     title: defaults.title,
     description: defaults.description,
+    alternates: {
+      canonical: pageUrl,
+    },
     openGraph: {
       title: defaults.title,
       description: defaults.description,
-      url: `${SITE_URL}${path}`,
+      url: pageUrl,
       siteName: SITE_NAME,
       type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: defaults.title,
+      description: defaults.description,
     },
   };
 }

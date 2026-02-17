@@ -318,11 +318,11 @@ export default function LeadsPage() {
               ))}
               {lostLeads > 0 && (
                 <div className="flex items-center gap-3 pt-2 border-t border-gray-10">
-                  <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#DA1E28]" />
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-error" />
                   <span className="text-sm text-gray-80 w-24">Lost</span>
                   <div className="flex-1 h-2.5 bg-gray-10 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-[#DA1E28] transition-all duration-700"
+                      className="h-full rounded-full bg-error transition-all duration-700"
                       style={{ width: `${Math.max((lostLeads / totalLeads) * 100, 2)}%` }}
                     />
                   </div>

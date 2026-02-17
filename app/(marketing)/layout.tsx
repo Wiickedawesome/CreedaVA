@@ -15,7 +15,11 @@ const organizationJsonLd = {
     "@type": "PostalAddress",
     addressCountry: "BZ",
   },
-  sameAs: [],
+  sameAs: [
+    "https://linkedin.com/company/creedava",
+    "https://facebook.com/creedava",
+    "https://instagram.com/creedava",
+  ],
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer service",
@@ -35,7 +39,7 @@ export default function MarketingLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
       <Navbar />
-      <main className="min-h-screen">{children}</main>
+      <main id="main-content" className="min-h-screen">{children}</main>
       <Footer />
     </LanguageProvider>
   );

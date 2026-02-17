@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { Container } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n/context";
+import Image from "next/image";
 
 interface SurveyQuestion {
   id: string;
@@ -192,7 +193,7 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
       <div className="min-h-screen bg-linear-to-b from-gray-10 to-white py-20">
         <Container size="sm">
           <div className="text-center space-y-6">
-            <img src="/logo.webp" alt="CreedaVA" width={140} height={40} className="mx-auto" />
+            <Image src="/logo.webp" alt="CreedaVA" width={140} height={40} className="mx-auto" />
             <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
               <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
@@ -239,7 +240,7 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
 
           {/* Header */}
           <div className="text-center space-y-4">
-            <img src="/logo.webp" alt="CreedaVA" width={140} height={40} className="mx-auto" />
+            <Image src="/logo.webp" alt="CreedaVA" width={140} height={40} className="mx-auto" />
             <h1 className="text-3xl font-bold text-foreground">{t.title}</h1>
             <p className="text-gray-60">{t.greeting(customerName)}</p>
           </div>

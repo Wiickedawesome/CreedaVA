@@ -52,6 +52,12 @@ export function useCollection<T extends DocumentData>(
   const [error, setError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+  const optionsRef = useRef(options);
+
+  // Sync options ref in an effect (not during render) to satisfy React Compiler
+  useEffect(() => {
+    optionsRef.current = options;
+  });
 
   // Manual refetch trigger
   const refetch = useCallback(() => setFetchTrigger((n) => n + 1), []);
@@ -69,14 +75,14 @@ export function useCollection<T extends DocumentData>(
 
     const constraints: QueryConstraint[] = [];
 
-    if (options.filters) {
-      for (const f of options.filters) {
+    if (optionsRef.current.filters) {
+      for (const f of optionsRef.current.filters) {
         constraints.push(where(f.field, f.op, f.value));
       }
     }
 
-    if (options.orderByField) {
-      constraints.push(orderBy(options.orderByField, options.orderDirection || "desc"));
+    if (optionsRef.current.orderByField) {
+      constraints.push(orderBy(optionsRef.current.orderByField, optionsRef.current.orderDirection || "desc"));
     }
 
     // Use one-shot getDocs instead of onSnapshot to avoid
@@ -106,7 +112,7 @@ export function useCollection<T extends DocumentData>(
       cancelled = true;
       mountedRef.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `cached` derives from `key` (already a dep); including it would cause infinite re-fetch loops
   }, [collectionName, key, user, authLoading, fetchTrigger]);
 
   const add = useCallback(

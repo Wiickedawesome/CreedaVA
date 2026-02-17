@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Container, Button } from "@/components/ui";
 import { AuthProvider, useAuth } from "@/lib/firebase/auth-context";
@@ -9,14 +9,18 @@ import { AuthProvider, useAuth } from "@/lib/firebase/auth-context";
 function LoginForm() {
   const { user, loading, signIn } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [signingIn, setSigningIn] = useState(false);
 
+  // Redirect destination set by middleware (defaults to /admin)
+  const redirectTo = searchParams.get("from") || "/admin";
+
   useEffect(() => {
     if (!loading && user) {
-      router.replace("/admin");
+      router.replace(redirectTo);
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, redirectTo]);
 
   async function handleSignIn() {
     setError(null);
@@ -24,7 +28,7 @@ function LoginForm() {
     try {
       await signIn();
     } catch (err) {
-      setError("Sign-in failed. Make sure you&apos;re using a creedava.com account.");
+      setError("Sign-in failed. Make sure you're using a creedava.com account.");
       console.error(err);
     } finally {
       setSigningIn(false);

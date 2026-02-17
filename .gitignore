@@ -44,3 +44,20 @@ firebase-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ─── IDE / Editor / Cloud IDE ────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── AI & Cloud Dev Environments ─────────────────
+.gemini/
+.idx/
+.github/
+!.github/copilot-instructions.md
+
+# ─── OS generated ────────────────────────────────
+Thumbs.db
+Desktop.ini

@@ -121,8 +121,8 @@ export default function ProjectDetailPage() {
   // Backwards compat: old goals have `completed` boolean but no `status`
   function resolveGoalStatus(g: ProjectGoal): GoalStatus {
     if (g.status) return g.status;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (g as any).completed ? "completed" : "planning";
+    // Backwards compat: old Firestore docs stored `completed` boolean
+    return (g as unknown as Record<string, unknown>).completed ? "completed" : "planning";
   }
   const goals: ProjectGoal[] = (project?.goals || []).map((g) => ({ ...g, status: resolveGoalStatus(g) }));
   const completedGoals = goals.filter((g) => g.status === "completed").length;

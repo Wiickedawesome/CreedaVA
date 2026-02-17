@@ -1,7 +1,7 @@
 "use client";
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,

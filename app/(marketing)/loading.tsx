@@ -2,7 +2,7 @@ import { Container } from "@/components/ui";
 
 export default function MarketingLoading() {
   return (
-    <>
+    <div role="status" aria-busy="true" aria-label="Loading page content">
       {/* Hero skeleton */}
       <section className="py-20 lg:py-32 bg-linear-to-b from-gray-10 to-white">
         <Container>
@@ -31,6 +31,6 @@ export default function MarketingLoading() {
           </div>
         </Container>
       </section>
-    </>
+    </div>
   );
 }

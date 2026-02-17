@@ -5,8 +5,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/services", "/about", "/pricing", "/news", "/contact", "/faq", "/lp/"],
-        disallow: ["/admin", "/admin/*", "/login", "/env-check"],
+        allow: ["/", "/services", "/about", "/pricing", "/news", "/contact", "/faq", "/forum", "/join", "/lp/"],
+        disallow: ["/admin", "/admin/*", "/login", "/api/*", "/env-check"],
       },
     ],
     sitemap: "https://creedava.com/sitemap.xml",

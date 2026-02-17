@@ -46,6 +46,31 @@ const emptyForm = {
   attachments: [] as { name: string; url: string; type: string }[],
 };
 
+const SURVEY_TEMPLATE_BODY = `<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#002D72;">
+  <div style="text-align:center;padding:24px 0;">
+    <img src="/logo.webp" alt="CreedaVA" width="120" style="margin-bottom:12px;" />
+  </div>
+  <div style="background:#f9fbff;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
+    <h2 style="margin:0 0 8px;color:#005148;font-size:22px;">How are we doing?</h2>
+    <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.6;">
+      Hi {{CUSTOMER_NAME}},<br/><br/>
+      Your feedback helps us improve the services we provide. Please take a moment to rate your experience — it only takes 30 seconds.
+    </p>
+    <div style="text-align:center;margin:24px 0;">
+      <a href="{{SURVEY_LINK}}" style="display:inline-block;background:#005148;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:600;font-size:16px;">
+        Share Your Feedback →
+      </a>
+    </div>
+    <p style="margin:20px 0 0;color:#888;font-size:13px;text-align:center;">
+      This link is unique to you and will expire in 30 days.
+    </p>
+  </div>
+  <div style="text-align:center;padding:24px 0;color:#888;font-size:12px;">
+    <p>CreedaVA — Virtual Assistant Services</p>
+    <p><a href="https://creedava.com" style="color:#005148;">creedava.com</a></p>
+  </div>
+</div>`;
+
 export default function EmailsPage() {
   // ─── Collections ──────────────────
   const { data: emails, loading: draftsLoading, add, edit, del } = useCollection<EmailDraft>("emails", {
@@ -103,31 +128,6 @@ export default function EmailsPage() {
   const [surveyPreviewOpen, setSurveyPreviewOpen] = useState(false);
 
   // Auto-seed or update satisfaction survey template
-  const SURVEY_TEMPLATE_BODY = `<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#002D72;">
-  <div style="text-align:center;padding:24px 0;">
-    <img src="/logo.webp" alt="CreedaVA" width="120" style="margin-bottom:12px;" />
-  </div>
-  <div style="background:#f9fbff;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
-    <h2 style="margin:0 0 8px;color:#005148;font-size:22px;">How are we doing?</h2>
-    <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.6;">
-      Hi {{CUSTOMER_NAME}},<br/><br/>
-      Your feedback helps us improve the services we provide. Please take a moment to rate your experience — it only takes 30 seconds.
-    </p>
-    <div style="text-align:center;margin:24px 0;">
-      <a href="{{SURVEY_LINK}}" style="display:inline-block;background:#005148;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:600;font-size:16px;">
-        Share Your Feedback →
-      </a>
-    </div>
-    <p style="margin:20px 0 0;color:#888;font-size:13px;text-align:center;">
-      This link is unique to you and will expire in 30 days.
-    </p>
-  </div>
-  <div style="text-align:center;padding:24px 0;color:#888;font-size:12px;">
-    <p>CreedaVA — Virtual Assistant Services</p>
-    <p><a href="https://creedava.com" style="color:#005148;">creedava.com</a></p>
-  </div>
-</div>`;
-
   const seededRef = useRef(false);
   useEffect(() => {
     if (seededRef.current || draftsLoading) return;
@@ -194,12 +194,14 @@ export default function EmailsPage() {
     }
   }, [toast, refetchInbox]);
 
+  const initialSyncDone = useRef(false);
+
   useEffect(() => {
-    if (!inboxLoading && inboxMessages.length === 0) {
+    if (!inboxLoading && inboxMessages.length === 0 && !initialSyncDone.current) {
+      initialSyncDone.current = true;
       handleSync();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inboxLoading]);
+  }, [inboxLoading, inboxMessages.length, handleSync]);
 
   // ─── Compose / Draft Handlers ─────
 

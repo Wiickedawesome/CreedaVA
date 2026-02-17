@@ -61,11 +61,9 @@ export default function ContactsPage() {
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const aVal = (sortBy === "createdAt" ? a.createdAt : ((a as any)[sortBy] || "")) as string;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const bVal = (sortBy === "createdAt" ? b.createdAt : ((b as any)[sortBy] || "")) as string;
-      const cmp = String(aVal).localeCompare(String(bVal));
+      const aVal = String(sortBy === "createdAt" ? a.createdAt : (a as unknown as Record<string, unknown>)[sortBy] ?? "");
+      const bVal = String(sortBy === "createdAt" ? b.createdAt : (b as unknown as Record<string, unknown>)[sortBy] ?? "");
+      const cmp = aVal.localeCompare(bVal);
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [filtered, sortBy, sortDir]);

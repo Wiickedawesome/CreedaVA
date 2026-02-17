@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import Link from "next/link";
 import { Container, Input, Textarea, Button } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
 

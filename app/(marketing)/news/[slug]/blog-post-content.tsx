@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui";
@@ -16,11 +16,11 @@ interface BlogPostContentProps {
 export function BlogPostContent({ initialPost }: BlogPostContentProps) {
   const { t, locale } = useTranslation();
   const [post, setPost] = useState<(BlogPost & { id: string }) | null>(initialPost);
-  const [translating, setTranslating] = useState(false);
+  const translatingRef = useRef(false);
 
   // On-demand: translate blog post if missing translations for current locale
   useEffect(() => {
-    if (!post || translating) return;
+    if (!post || translatingRef.current) return;
 
     const sourceLang = post.lang || "en";
     if (sourceLang === locale) return;
@@ -29,9 +29,9 @@ export function BlogPostContent({ initialPost }: BlogPostContentProps) {
     if (post.translations?.[locale]) return;
 
     let mounted = true;
+    translatingRef.current = true;
 
     async function translate() {
-      setTranslating(true);
       try {
         const updated = await ensureBlogTranslated(post!, locale);
         if (mounted && updated.translations?.[locale]) {
@@ -40,14 +40,14 @@ export function BlogPostContent({ initialPost }: BlogPostContentProps) {
       } catch (err) {
         console.error("Blog translation error:", err);
       } finally {
-        if (mounted) setTranslating(false);
+        translatingRef.current = false;
       }
     }
 
     translate();
 
     return () => { mounted = false; };
-  }, [post?.id, locale]); // Rely on post update to re-check condition
+  }, [post, locale]);
 
   if (!post) {
     return (

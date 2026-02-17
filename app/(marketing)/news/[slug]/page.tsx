@@ -37,12 +37,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: post.title,
     description: post.excerpt,
+    alternates: {
+      canonical: `https://creedava.com/news/${post.slug}`,
+    },
     openGraph: {
       title: post.title,
       description: post.excerpt,
       type: "article",
       url: `https://creedava.com/news/${post.slug}`,
-      images: post.featuredImage ? [post.featuredImage] : undefined,
+      images: post.featuredImage
+        ? [{ url: post.featuredImage, width: 1200, height: 630, alt: post.title }]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
     },
   };
 }

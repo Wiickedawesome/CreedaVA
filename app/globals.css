@@ -21,11 +21,21 @@
   --primary: #005148;
   --primary-light: #007A6D;
   --primary-hover: #003D36;
+  --primary-active: #00332C;
   --accent: #00685C;
   --success: #24A148;
   --warning: #F1C21B;
   --error: #DA1E28;
+  --error-hover: #B81922;
+  --error-active: #8C1016;
   --info: #005148;
+
+  /* Section Backgrounds */
+  --footer-bg: #1B2A4A;
+
+  /* Social Brand Colors */
+  --linkedin: #0A66C2;
+  --linkedin-hover: #004182;
 
   /* Semantic */
   --background: #FFFFFF;
@@ -87,6 +97,7 @@
   --color-primary: var(--primary);
   --color-primary-light: var(--primary-light);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
   --color-accent: var(--accent);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
@@ -95,7 +106,12 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+  --color-error-hover: var(--error-hover);
+  --color-error-active: var(--error-active);
   --color-info: var(--info);
+  --color-footer-bg: var(--footer-bg);
+  --color-linkedin: var(--linkedin);
+  --color-linkedin-hover: var(--linkedin-hover);
   --color-gray-10: var(--gray-10);
   --color-gray-20: var(--gray-20);
   --color-gray-30: var(--gray-30);

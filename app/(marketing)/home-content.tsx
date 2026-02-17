@@ -78,7 +78,7 @@ export function HomeContent() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-14 bg-[#1B2A4A]">
+      <section className="py-14 bg-footer-bg">
         <Container>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {statKeys.map((key, i) => (

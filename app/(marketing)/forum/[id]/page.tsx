@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -57,8 +57,8 @@ function ThreadContent() {
   const [authModal, setAuthModal] = useState(false);
   const [sort, setSort] = useState<"new" | "old" | "top">("new");
   const [copied, setCopied] = useState(false);
-  const [translatingThread, setTranslatingThread] = useState(false);
-  const [translatingReplies, setTranslatingReplies] = useState(false);
+  const translatingThreadRef = useRef(false);
+  const translatingRepliesRef = useRef(false);
 
   const agoLabels = {
     justNow: t.forum.justNow,
@@ -105,29 +105,31 @@ function ThreadContent() {
 
   // On-demand: translate thread if missing translations for current locale
   useEffect(() => {
-    if (!thread || translatingThread) return;
+    if (!thread || translatingThreadRef.current) return;
     const sourceLang = thread.lang || "en";
     if (sourceLang === locale) return;
     if (thread.translations?.[locale]) return;
 
-    setTranslatingThread(true);
+    translatingThreadRef.current = true;
     ensureThreadTranslated(thread, locale)
       .then((updated) => {
         if (updated.translations?.[locale]) setThread(updated);
       })
       .catch((err) => console.error("Thread translation error:", err))
-      .finally(() => setTranslatingThread(false));
-  }, [thread?.id, locale, translatingThread]); // eslint-disable-line react-hooks/exhaustive-deps
+      .finally(() => {
+        translatingThreadRef.current = false;
+      });
+  }, [thread, locale]);
 
   // On-demand: translate replies if missing translations for current locale
   useEffect(() => {
-    if (translatingReplies || replies.length === 0) return;
+    if (translatingRepliesRef.current || replies.length === 0) return;
     const untranslated = replies.filter(
       (r) => !r.translations?.[locale] && (r.lang || "en") !== locale,
     );
     if (untranslated.length === 0) return;
 
-    setTranslatingReplies(true);
+    translatingRepliesRef.current = true;
     (async () => {
       const updated: (ForumReply & { id: string })[] = [];
       for (const r of untranslated) {
@@ -144,8 +146,10 @@ function ThreadContent() {
       }
     })()
       .catch((err) => console.error("Reply translation error:", err))
-      .finally(() => setTranslatingReplies(false));
-  }, [replies.length, locale, translatingReplies]); // eslint-disable-line react-hooks/exhaustive-deps
+      .finally(() => {
+        translatingRepliesRef.current = false;
+      });
+  }, [replies, locale]);
 
   // Sort replies
   const sortedReplies = [...replies].sort((a, b) => {

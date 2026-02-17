@@ -1,8 +1,7 @@
 /**
  * Export an array of objects to a CSV file and trigger download.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function exportToCsv<T extends Record<string, any>>(
+export function exportToCsv<T extends object>(
   filename: string,
   data: T[],
   columns: { key: string; header: string; render?: (item: T) => string }[],
@@ -12,7 +11,9 @@ export function exportToCsv<T extends Record<string, any>>(
   const headers = columns.map((c) => c.header);
   const rows = data.map((item) =>
     columns.map((col) => {
-      const val = col.render ? col.render(item) : item[col.key];
+      const val = col.render
+        ? col.render(item)
+        : (item as unknown as Record<string, unknown>)[col.key];
       if (val === null || val === undefined) return "";
       const str = String(val);
       // Escape quotes and wrap if contains comma/newline/quote

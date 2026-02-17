@@ -18,6 +18,24 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+/** Sync the server-side session cookie with the current Firebase auth state */
+async function syncSessionCookie(user: User | null) {
+  try {
+    if (user) {
+      const token = await user.getIdToken();
+      await fetch("/api/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+    } else {
+      await fetch("/api/session", { method: "DELETE" });
+    }
+  } catch (error) {
+    console.error("Failed to sync session cookie:", error);
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,13 +44,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged((firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
+      // Keep server-side session cookie in sync with client auth state
+      syncSessionCookie(firebaseUser);
     });
     return unsubscribe;
   }, []);
 
   async function signIn() {
     try {
-      await signInWithGoogle();
+      const firebaseUser = await signInWithGoogle();
+      await syncSessionCookie(firebaseUser);
     } catch (error) {
       console.error("Sign-in failed:", error);
       throw error;
@@ -41,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function logOut() {
     try {
+      await fetch("/api/session", { method: "DELETE" });
       await signOut();
     } catch (error) {
       console.error("Sign-out failed:", error);

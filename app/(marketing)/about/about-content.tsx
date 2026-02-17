@@ -70,7 +70,7 @@ export function AboutContent() {
       </section>
 
       {/* Vision */}
-      <section className="py-20 lg:py-28 bg-[#1B2A4A]">
+      <section className="py-20 lg:py-28 bg-footer-bg">
         <Container size="md">
           <div className="text-center">
             <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-white/10 text-white flex items-center justify-center">

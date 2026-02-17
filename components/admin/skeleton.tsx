@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Skeleton loading components for admin pages.
  * Shows content placeholders instead of a blank spinner.
@@ -11,7 +9,7 @@ function Pulse({ className = "" }: { className?: string }) {
 
 export function PageSkeleton() {
   return (
-    <div className="space-y-6">
+    <div role="status" aria-busy="true" aria-label="Loading page" className="space-y-6">
       {/* Page header */}
       <div className="space-y-2">
         <Pulse className="h-7 w-48" />
@@ -50,7 +48,7 @@ export function PageSkeleton() {
 
 export function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
+    <div role="status" aria-busy="true" aria-label="Loading dashboard" className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
         <Pulse className="h-7 w-36" />

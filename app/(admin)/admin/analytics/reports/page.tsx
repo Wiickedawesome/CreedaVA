@@ -46,11 +46,6 @@ import {
   buildBlogContext,
   buildForumContext,
   buildContentVelocityContext,
-  buildCustomerLTVContext,
-  buildLeadResponseContext,
-  buildEmailEngagementContext,
-  buildSocialEngagementContext,
-  buildRevenueAttributionContext,
 } from "@/lib/utils/ai-data-context";
 import { lazyGenerateText } from "@/lib/firebase/ai-lazy";
 import { cloudExportToSheets, cloudGenerateReportSheet, cloudUploadReportToDrive } from "@/lib/firebase/cloud-functions";
