@@ -74,17 +74,34 @@ export default function LeadsPage() {
   const winRate = totalLeads > 0 ? ((wonLeads / totalLeads) * 100).toFixed(1) : "0";
   const pipeline = leads.reduce((s, l) => s + (l.value || 0), 0);
 
-  // Status distribution for donut
-  const statusData = useMemo(() => {
+  // Conversion funnel data
+  const conversionData = useMemo(() => {
+    const stages = ["new", "contacted", "qualified", "proposal", "won"] as const;
+    const labels: Record<string, string> = {
+      new: "New", contacted: "Contacted", qualified: "Qualified",
+      proposal: "Proposal", won: "Won",
+    };
     const colors: Record<string, string> = {
       new: "#4589FF", contacted: "#0043CE", qualified: "#6929C4",
-      proposal: "#9F1853", won: "#198038", lost: "#DA1E28",
+      proposal: "#9F1853", won: "#198038",
     };
-    return CRM_STATUSES.map((s) => ({
-      label: s.charAt(0).toUpperCase() + s.slice(1),
-      value: leads.filter((l) => l.status === s).length,
-      color: colors[s] || "#A2A9B0",
-    })).filter((d) => d.value > 0);
+    // Count leads that reached each stage or beyond
+    const stageIndex = (s: string) => stages.indexOf(s as typeof stages[number]);
+    const reached = stages.map((stage) => {
+      const idx = stageIndex(stage);
+      return {
+        stage,
+        label: labels[stage],
+        color: colors[stage],
+        count: leads.filter((l) => l.status !== "lost" && stageIndex(l.status) >= idx).length,
+        current: leads.filter((l) => l.status === stage).length,
+      };
+    });
+    // Calculate conversion rates between stages
+    return reached.map((r, i) => ({
+      ...r,
+      rate: i === 0 ? 100 : (reached[i - 1].count > 0 ? Math.round((r.count / reached[i - 1].count) * 100) : 0),
+    }));
   }, [leads]);
 
   // Source breakdown for horizontal bars
@@ -270,39 +287,48 @@ export default function LeadsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <DashboardSection title="Status Distribution">
-          {statusData.length > 0 ? (
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <div className="shrink-0 flex justify-center">
-                <svg width="140" height="140" viewBox="0 0 140 140">
-                  {(() => {
-                    const total = statusData.reduce((s, d) => s + d.value, 0);
-                    let cum = -90;
-                    const cx = 70, cy = 70, r = 60, inner = 38;
-                    return statusData.map((seg, i) => {
-                      const angle = (seg.value / total) * 360;
-                      const start = cum; const end = start + angle; cum = end;
-                      const large = angle > 180 ? 1 : 0;
-                      const sr = (start * Math.PI) / 180; const er = (end * Math.PI) / 180;
-                      return (
-                        <path key={i} fill={seg.color}
-                          d={`M ${cx + r * Math.cos(sr)} ${cy + r * Math.sin(sr)} A ${r} ${r} 0 ${large} 1 ${cx + r * Math.cos(er)} ${cy + r * Math.sin(er)} L ${cx + inner * Math.cos(er)} ${cy + inner * Math.sin(er)} A ${inner} ${inner} 0 ${large} 0 ${cx + inner * Math.cos(sr)} ${cy + inner * Math.sin(sr)} Z`}
-                        />
-                      );
-                    });
-                  })()}
-                  <text x="70" y="75" textAnchor="middle" style={{ fontSize: "16px", fontWeight: 700, fill: "var(--gray-90)" }}>{totalLeads}</text>
-                </svg>
-              </div>
-              <div className="space-y-2 w-full">
-                {statusData.map((d) => (
-                  <div key={d.label} className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                    <span className="text-sm text-gray-70 truncate">{d.label}</span>
-                    <span className="text-sm font-semibold text-gray-90 ml-auto">{d.value}</span>
+        <DashboardSection title="Lead Conversion">
+          {totalLeads > 0 ? (
+            <div className="space-y-3">
+              {conversionData.map((d, i) => (
+                <div key={d.stage}>
+                  {i > 0 && (
+                    <div className="flex items-center gap-2 py-1 pl-4">
+                      <svg className="w-3.5 h-3.5 text-gray-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12l7 7 7-7" /></svg>
+                      <span className="text-xs font-medium" style={{ color: d.rate >= 50 ? "#198038" : d.rate >= 25 ? "#F1C21B" : "#DA1E28" }}>
+                        {d.rate}% conversion
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                    <span className="text-sm text-gray-80 w-24">{d.label}</span>
+                    <div className="flex-1 h-2.5 bg-gray-10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${totalLeads > 0 ? Math.max((d.count / totalLeads) * 100, 2) : 0}%`,
+                          backgroundColor: d.color,
+                        }}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-gray-90 w-8 text-right">{d.count}</span>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
+              {lostLeads > 0 && (
+                <div className="flex items-center gap-3 pt-2 border-t border-gray-10">
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#DA1E28]" />
+                  <span className="text-sm text-gray-80 w-24">Lost</span>
+                  <div className="flex-1 h-2.5 bg-gray-10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-[#DA1E28] transition-all duration-700"
+                      style={{ width: `${Math.max((lostLeads / totalLeads) * 100, 2)}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-90 w-8 text-right">{lostLeads}</span>
+                </div>
+              )}
             </div>
           ) : <p className="text-sm text-gray-40 text-center py-8">No leads yet</p>}
         </DashboardSection>

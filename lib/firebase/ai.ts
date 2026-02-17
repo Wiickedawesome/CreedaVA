@@ -13,6 +13,8 @@ import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
 import type { GenerativeModel } from "firebase/ai";
 import { app } from "@/lib/firebase/config";
 
+import { buildContentPrompt, buildLandingPagePrompt } from "@/lib/utils/ai-system-prompt";
+
 // ─── Singleton model instance ────────────────────────
 
 let _model: GenerativeModel | null = null;
@@ -44,8 +46,33 @@ export async function generateJSON<T = unknown>(prompt: string): Promise<T> {
 
 // ─── Domain-specific AI functions ────────────────────
 
-/** Generate a blog post draft */
+/** Generate a blog post draft with creative visual design */
 export async function generateBlogPost(topic: string, tone = "professional", length = "800 words") {
+  const prompt = buildContentPrompt(
+    "Blog Content AI",
+    `Write a visually engaging blog post about: "${topic}"
+
+Tone: ${tone}
+Target length: ${length}
+
+Use the CREATIVE HTML DESIGN FRAMEWORK to make the content visually stunning.
+Include CSS animations, SVG icons, callout boxes, stat highlights, and a CTA section.
+
+Return JSON with these fields:
+- title: compelling blog title (SEO-optimized, under 60 chars)
+- slug: URL-friendly slug
+- excerpt: 1-2 sentence summary
+- content: full blog post in RICH HTML with inline styles, <style> animations,
+  SVG design elements, gradient CTA section, callout boxes, and visual hierarchy.
+  Follow the BLOG CONTENT RULES and CREATIVE HTML DESIGN FRAMEWORK.
+- tags: array of 3-5 relevant tags
+- metaDescription: SEO meta description (under 160 chars)
+
+Return ONLY valid JSON, no markdown fences.`,
+    "",
+    { isBlog: true },
+  );
+
   return generateJSON<{
     title: string;
     slug: string;
@@ -53,21 +80,7 @@ export async function generateBlogPost(topic: string, tone = "professional", len
     content: string;
     tags: string[];
     metaDescription: string;
-  }>(`
-You are a content writer for CreedaVA, a virtual assistant services company.
-Write a blog post about: "${topic}"
-
-Tone: ${tone}
-Target length: ${length}
-
-Return JSON with these fields:
-- title: compelling blog title
-- slug: URL-friendly slug
-- excerpt: 1-2 sentence summary
-- content: full blog post in HTML (use <h2>, <p>, <ul>, <li>, <strong>, <em> tags)
-- tags: array of 3-5 relevant tags
-- metaDescription: SEO meta description (under 160 chars)
-  `);
+  }>(prompt);
 }
 
 /** Generate SEO keyword suggestions for a topic */
@@ -191,28 +204,26 @@ Return JSON with:
   `);
 }
 
-/** Generate landing page content */
+/** Generate landing page content with creative visual design */
 export async function generateLandingPage(topic: string, cta: string = "Get Started") {
-  return generateJSON<{
+  const prompt = buildLandingPagePrompt(topic);
+
+  // Override cta in the prompt result if custom cta provided
+  const result = await generateJSON<{
     title: string;
     slug: string;
     headline: string;
     subheadline: string;
     ctaText: string;
     bodyHtml: string;
-  }>(`
-You are a conversion copywriter for CreedaVA, a virtual assistant services company.
-Create landing page content for: "${topic}"
-CTA button: "${cta}"
+  }>(prompt);
 
-Return JSON with:
-- title: page title (under 60 chars)
-- slug: URL-friendly slug
-- headline: attention-grabbing H1 (under 10 words)
-- subheadline: supporting text (1-2 sentences)
-- ctaText: call-to-action button text
-- bodyHtml: landing page body in HTML (use <h2>, <p>, <ul>, <li>, <strong>, <em>). Include benefits, social proof, and a features section. Keep it concise and conversion-focused.
-  `);
+  // Use the provided CTA if it differs from default
+  if (cta !== "Get Started") {
+    result.ctaText = cta;
+  }
+
+  return result;
 }
 
 /** Generate an AI business report */
@@ -238,4 +249,79 @@ Return JSON with:
 - highlights: array of 3-5 key highlights (short strings)
 - recommendations: array of 3-5 actionable recommendations (short strings)
   `);
+}
+
+// ─── Web-Search-Enriched Generation ──────────────────
+
+/**
+ * Generate text with optional web search enrichment.
+ * If webSearchQuery is provided, it fetches live data first
+ * and includes it in the prompt context.
+ */
+export async function generateWithWebContext(
+  prompt: string,
+  webSearchQuery?: string,
+): Promise<string> {
+  let webContext = "";
+
+  if (webSearchQuery) {
+    try {
+      // Lazy-load cloud functions to avoid circular deps
+      const { cloudWebSearch } = await import("./cloud-functions");
+      const searchResult = await cloudWebSearch(webSearchQuery, 5);
+      if (searchResult.results.length > 0) {
+        webContext = `\n\n--- LIVE WEB DATA (searched: "${webSearchQuery}") ---\n${searchResult.summary}`;
+      }
+    } catch (err) {
+      console.warn("[AI] Web search enrichment failed:", err);
+    }
+  }
+
+  return generateText(prompt + webContext);
+}
+
+/**
+ * Generate text with full context: page-awareness, Firestore data,
+ * and optional web search — the highest-level generation function.
+ */
+export async function generateFullContext(
+  pagePath: string,
+  userPrompt: string,
+  options: {
+    webSearchQuery?: string;
+    includeMarketIntel?: boolean;
+  } = {},
+): Promise<string> {
+  // Lazy imports to keep the initial bundle lean
+  const { loadPageAwareContext } = await import("@/lib/utils/ai-page-context");
+  const { buildTrainedPrompt } = await import("@/lib/utils/ai-system-prompt");
+
+  const ctx = await loadPageAwareContext(pagePath);
+
+  let webSearchResults: string | undefined;
+  if (options.webSearchQuery) {
+    try {
+      const { cloudWebSearch } = await import("./cloud-functions");
+      const searchResult = await cloudWebSearch(options.webSearchQuery, 5);
+      webSearchResults = searchResult.summary;
+    } catch {
+      // Non-blocking — web search is optional enrichment
+    }
+  }
+
+  const fullPrompt = buildTrainedPrompt(
+    ctx.section,
+    userPrompt,
+    ctx.dataContext,
+    {
+      includeCompetitors: true,
+      includeKPIs: true,
+      includeSEOAlgorithms: true,
+      includeMarketIntel: options.includeMarketIntel ?? false,
+      pageContext: ctx.pageContext,
+      webSearchResults,
+    },
+  );
+
+  return generateText(fullPrompt);
 }

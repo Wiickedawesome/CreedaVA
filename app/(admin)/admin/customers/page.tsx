@@ -1,7 +1,7 @@
 "use client";
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,
@@ -18,11 +18,45 @@ import {
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { exportToCsv } from "@/lib/utils/csv";
-import { cloudCreateClientFolder, cloudExportToSheets, cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
+import { cloudCreateClientFolder, cloudExportToSheets, cloudListDriveFiles, cloudSendEmail } from "@/lib/firebase/cloud-functions";
 import type { Customer, CustomerFormData, BillingCycle, Project } from "@/lib/types/crm";
 import type { Contact } from "@/lib/types/crm";
+import type { EmailDraft } from "@/lib/types/content";
 import { computeLTV } from "@/lib/utils/ltv";
 import { statusVariant, CUSTOMER_PLANS, BILLING_CYCLES, REFERRAL_SOURCES } from "@/lib/types/crm";
+
+const BUSINESS_EMAILS = [
+  { label: "contact@creedava.com", value: "contact@creedava.com" },
+  { label: "sales@creedava.com", value: "sales@creedava.com" },
+  { label: "info@creedava.com", value: "info@creedava.com" },
+];
+
+const DEFAULT_SURVEY_SUBJECT = "We'd love your feedback — CreedaVA Satisfaction Survey";
+const DEFAULT_SURVEY_HTML = `
+<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#002D72;">
+  <div style="text-align:center;padding:24px 0;">
+    <img src="/logo.webp" alt="CreedaVA" width="120" style="margin-bottom:12px;" />
+  </div>
+  <div style="background:#f9fbff;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
+    <h2 style="margin:0 0 8px;color:#005148;font-size:22px;">How are we doing?</h2>
+    <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.6;">
+      Hi {{CUSTOMER_NAME}},<br/><br/>
+      Your feedback helps us improve the services we provide. Please take a moment to rate your experience — it only takes 30 seconds.
+    </p>
+    <div style="text-align:center;margin:24px 0;">
+      <a href="{{SURVEY_LINK}}" style="display:inline-block;background:#005148;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:600;font-size:16px;">
+        Share Your Feedback →
+      </a>
+    </div>
+    <p style="margin:20px 0 0;color:#888;font-size:13px;text-align:center;">
+      This link is unique to you and will expire in 30 days.
+    </p>
+  </div>
+  <div style="text-align:center;padding:24px 0;color:#888;font-size:12px;">
+    <p>CreedaVA — Virtual Assistant Services</p>
+    <p><a href="https://creedava.com" style="color:#005148;">creedava.com</a></p>
+  </div>
+</div>`;
 
 const CUSTOMER_STATUSES = ["active", "inactive", "churned"] as const;
 
@@ -70,6 +104,21 @@ export default function CustomersPage() {
   const [driveOpen, setDriveOpen] = useState(false);
   const [driveLoading, setDriveLoading] = useState(false);
   const [driveFiles, setDriveFiles] = useState<{ id: string; name: string; type: string; mimeType: string; webLink: string; modifiedAt: string }[]>([]);
+  const [sendingSurvey, setSendingSurvey] = useState(false);
+  const [surveyModalOpen, setSurveyModalOpen] = useState(false);
+  const [surveyEmail, setSurveyEmail] = useState({ subject: "", html: "" });
+  const [surveySender, setSurveySender] = useState(BUSINESS_EMAILS[0].value);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+
+  // Load satisfaction email template from emails collection
+  const { data: emailDrafts, add: addEmail, edit: editEmail } = useCollection<EmailDraft>("emails", {
+    orderByField: "createdAt",
+  });
+  const surveyTemplate = useMemo(
+    () => emailDrafts.find((e) => e.purpose === "satisfaction-survey"),
+    [emailDrafts],
+  );
+
 
   async function handleCreateDriveFolder() {
     if (!selected) return;
@@ -143,7 +192,6 @@ export default function CustomersPage() {
     });
 
   const active = customers.filter((c) => c.status === "active");
-  const inactive = customers.filter((c) => c.status === "inactive");
   const churned = customers.filter((c) => c.status === "churned");
   const mrr = useMemo(
     () => active.reduce((sum, c) => sum + (c.monthlyValue || 0), 0),
@@ -183,11 +231,59 @@ export default function CustomersPage() {
     return Math.round(totalMonths / withStart.length);
   }, [active]);
   const churnRate = customers.length > 0 ? ((churned.length / customers.length) * 100).toFixed(1) : "0";
-  const churnSegments = useMemo(() => [
-    { label: "Active", value: active.length, color: "#198038" },
-    { label: "Inactive", value: inactive.length, color: "#F1C21B" },
-    { label: "Churned", value: churned.length, color: "#DA1E28" },
-  ], [active.length, inactive.length, churned.length]);
+
+  // ─── Contact Health (based on days since last contact + satisfaction) ───
+  const contactHealthData = useMemo(() => {
+    const now = Date.now();
+    const segments = [
+      { label: "Healthy", sublabel: "≤ 60 days", color: "#198038", count: 0 },
+      { label: "Needs Attention", sublabel: "61–90 days", color: "#F1C21B", count: 0 },
+      { label: "At Risk", sublabel: "91–120 days", color: "#FF832B", count: 0 },
+      { label: "Critical", sublabel: "120+ days", color: "#DA1E28", count: 0 },
+    ];
+    active.forEach((c) => {
+      if (!c.lastContactDate) { segments[3].count++; return; }
+      const days = Math.floor((now - new Date(c.lastContactDate).getTime()) / (1000 * 60 * 60 * 24));
+      if (days <= 60) segments[0].count++;
+      else if (days <= 90) segments[1].count++;
+      else if (days <= 120) segments[2].count++;
+      else segments[3].count++;
+    });
+    return segments;
+  }, [active]);
+
+  const avgHealthScore = useMemo(() => {
+    if (active.length === 0) return 0;
+    const now = Date.now();
+    let totalScore = 0;
+    active.forEach((c) => {
+      let contactScore = 0;
+      if (c.lastContactDate) {
+        const days = Math.floor((now - new Date(c.lastContactDate).getTime()) / (1000 * 60 * 60 * 24));
+        if (days <= 60) contactScore = 100;
+        else if (days <= 90) contactScore = 60;
+        else if (days <= 120) contactScore = 30;
+        else contactScore = 10;
+      }
+      const satScore = c.satisfaction ? (c.satisfaction / 5) * 100 : 50;
+      totalScore += contactScore * 0.6 + satScore * 0.4;
+    });
+    return Math.round(totalScore / active.length);
+  }, [active]);
+
+  // ─── Customer Source Distribution ───
+  const sourceDistribution = useMemo(() => {
+    const counts: Record<string, number> = {};
+    customers.forEach((c) => {
+      const src = c.referralSource || "Unknown";
+      counts[src] = (counts[src] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([source, count]) => ({ source, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [customers]);
+  const maxSourceCount = sourceDistribution.length > 0 ? sourceDistribution[0].count : 1;
+  const sourceColors = ["#005148", "#007A6D", "#002D72", "#198038", "#4589FF", "#A56EFF", "#FF832B", "#DA1E28"];
 
   const tabs = [
     { label: "All", value: "all", badge: customers.length },
@@ -295,8 +391,108 @@ export default function CustomersPage() {
     toast("CSV exported", "info");
   }
 
+  async function handleLogContact() {
+    if (!selected) return;
+    const today = new Date().toISOString().split("T")[0];
+    try {
+      await edit(selected.id, { lastContactDate: today } as Partial<Customer>);
+      setForm({ ...form, lastContactDate: today });
+      toast(`Contact logged for ${selected.name}`, "success");
+    } catch {
+      toast("Failed to log contact", "error");
+    }
+  }
+
+  function openSurveyModal() {
+    if (!selected) return;
+    // Load from saved template in emails collection, or use default
+    if (surveyTemplate) {
+      setSurveyEmail({ subject: surveyTemplate.subject, html: surveyTemplate.body });
+    } else {
+      setSurveyEmail({ subject: DEFAULT_SURVEY_SUBJECT, html: DEFAULT_SURVEY_HTML });
+    }
+    setSurveySender(BUSINESS_EMAILS[0].value);
+    setSurveyModalOpen(true);
+  }
+
+  async function handleSaveTemplate() {
+    setSavingTemplate(true);
+    try {
+      const data = {
+        purpose: "satisfaction-survey",
+        subject: surveyEmail.subject,
+        body: surveyEmail.html,
+        previewText: "Customer satisfaction survey template",
+        status: "draft" as const,
+      };
+      if (surveyTemplate) {
+        await editEmail(surveyTemplate.id, data);
+        toast("Template updated — visible in Emails → Drafts", "success");
+      } else {
+        await addEmail(data);
+        toast("Template saved to Emails → Drafts", "success");
+      }
+    } catch {
+      toast("Failed to save template", "error");
+    } finally {
+      setSavingTemplate(false);
+    }
+  }
+
+  async function handleSendSurvey() {
+    if (!selected) return;
+    setSendingSurvey(true);
+    try {
+      // Generate token and store in Firestore with token as doc ID
+      const token = crypto.randomUUID();
+      const { createWithId } = await import("@/lib/firebase/firestore");
+      await createWithId("satisfaction-tokens", token, {
+        customerId: selected.id,
+        customerName: selected.name,
+        customerEmail: selected.email,
+        used: false,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+
+      // Build the survey link (uses current origin so it works in dev & prod)
+      const surveyLink = `${window.location.origin}/satisfaction/${token}`;
+      const finalHtml = surveyEmail.html
+        .replace(/\{\{CUSTOMER_NAME\}\}/g, selected.name)
+        .replace(/\{\{SURVEY_LINK\}\}/g, surveyLink);
+
+      await cloudSendEmail({
+        to: selected.email,
+        from: surveySender || undefined,
+        subject: surveyEmail.subject,
+        html: finalHtml,
+      });
+
+      toast(`Satisfaction survey sent to ${selected.email}`, "success");
+      setSurveyModalOpen(false);
+    } catch {
+      toast("Failed to send survey — check email integration in Settings", "error");
+    } finally {
+      setSendingSurvey(false);
+    }
+  }
+
   const columns: Column<Customer>[] = [
-    { key: "name", header: "Name", render: (c) => <span className="font-medium text-gray-90">{c.name}</span> },
+    { key: "name", header: "Name", render: (c) => {
+      const now = Date.now();
+      let healthColor = "#DA1E28"; // critical / never contacted
+      if (c.lastContactDate) {
+        const days = Math.floor((now - new Date(c.lastContactDate).getTime()) / (1000 * 60 * 60 * 24));
+        if (days <= 60) healthColor = "#198038";
+        else if (days <= 90) healthColor = "#F1C21B";
+        else if (days <= 120) healthColor = "#FF832B";
+      }
+      return (
+        <span className="flex items-center gap-2 font-medium text-gray-90">
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: healthColor }} title={`Last contacted: ${c.lastContactDate || "Never"}`} />
+          {c.name}
+        </span>
+      );
+    } },
     { key: "email", header: "Email" },
     { key: "company", header: "Company" },
     { key: "plan", header: "Plan", render: (c) => c.plan || "—" },
@@ -403,44 +599,86 @@ export default function CustomersPage() {
         <StatCard label="Renewals" value={renewingSoon.toString()} badge={`within 30 days · ${avgTenure}mo avg tenure`} trend={renewingSoon > 0 ? { value: renewingSoon, positive: false } : undefined} />
       </div>
 
-      <DashboardSection title="Customer Health">
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          <div className="shrink-0 flex justify-center">
-            <svg width="140" height="140" viewBox="0 0 140 140">
-              {(() => {
-                const total = churnSegments.reduce((s, d) => s + d.value, 0) || 1;
-                let cum = -90;
-                const cx = 70, cy = 70, r = 60, inner = 38;
-                if (total <= 0) return <circle cx={cx} cy={cy} r={r} fill="var(--gray-20)" />;
-                return churnSegments.filter(s => s.value > 0).map((seg, i) => {
-                  const angle = (seg.value / total) * 360;
-                  const start = cum; const end = start + angle; cum = end;
-                  const large = angle > 180 ? 1 : 0;
-                  const sr = (start * Math.PI) / 180; const er = (end * Math.PI) / 180;
-                  return (
-                    <path key={i} fill={seg.color}
-                      d={`M ${cx + r * Math.cos(sr)} ${cy + r * Math.sin(sr)} A ${r} ${r} 0 ${large} 1 ${cx + r * Math.cos(er)} ${cy + r * Math.sin(er)} L ${cx + inner * Math.cos(er)} ${cy + inner * Math.sin(er)} A ${inner} ${inner} 0 ${large} 0 ${cx + inner * Math.cos(sr)} ${cy + inner * Math.sin(sr)} Z`}
+      {/* Contact Health & Customer Source */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DashboardSection title="Contact Health">
+          <div className="space-y-3">
+            {/* Health Score Badge */}
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-medium text-gray-40 uppercase tracking-wide">Health Score</span>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                avgHealthScore >= 70 ? "bg-green-50 text-green-700" :
+                avgHealthScore >= 40 ? "bg-yellow-50 text-yellow-700" :
+                "bg-red-50 text-red-700"
+              }`}>{avgHealthScore}%</span>
+            </div>
+            {contactHealthData.map((seg) => {
+              const pct = active.length > 0 ? Math.round((seg.count / active.length) * 100) : 0;
+              return (
+                <div key={seg.label} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
+                      <span className="text-sm font-medium text-gray-80">{seg.label}</span>
+                      <span className="text-xs text-gray-40">{seg.sublabel}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-gray-90">{seg.count}</span>
+                      <span className="text-xs text-gray-40">({pct}%)</span>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-gray-10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%`, backgroundColor: seg.color }}
                     />
-                  );
-                });
-              })()}
-              <text x="70" y="75" textAnchor="middle" style={{ fontSize: "16px", fontWeight: 700, fill: "var(--gray-90)" }}>{customers.length}</text>
-            </svg>
-          </div>
-          <div className="space-y-2 w-full">
-            {churnSegments.map((d) => (
-              <div key={d.label} className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                <span className="text-sm text-gray-70 truncate">{d.label}</span>
-                <span className="text-sm font-semibold text-gray-90 ml-auto">{d.value}</span>
-                <span className="text-xs text-gray-40">
-                  ({customers.length > 0 ? Math.round((d.value / customers.length) * 100) : 0}%)
-                </span>
+                  </div>
+                </div>
+              );
+            })}
+            {/* Satisfaction avg */}
+            <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                <span className="text-sm text-gray-70">Avg Satisfaction</span>
               </div>
-            ))}
+              <span className="text-sm font-semibold text-gray-90">{avgSatisfaction}/5</span>
+            </div>
           </div>
-        </div>
-      </DashboardSection>
+        </DashboardSection>
+
+        <DashboardSection title="Customer Source">
+          <div className="space-y-3">
+            {sourceDistribution.length === 0 ? (
+              <p className="text-sm text-gray-40 text-center py-4">No source data yet</p>
+            ) : (
+              sourceDistribution.map((item, i) => {
+                const pct = customers.length > 0 ? Math.round((item.count / customers.length) * 100) : 0;
+                return (
+                  <div key={item.source} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-80">{item.source}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-gray-90">{item.count}</span>
+                        <span className="text-xs text-gray-40">({pct}%)</span>
+                      </div>
+                    </div>
+                    <div className="h-2 bg-gray-10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${(item.count / maxSourceCount) * 100}%`,
+                          backgroundColor: sourceColors[i % sourceColors.length],
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </DashboardSection>
+      </div>
 
       <div className="max-w-sm w-full">
         <Input
@@ -466,31 +704,42 @@ export default function CustomersPage() {
         onClose={() => setModalOpen(false)}
         title={selected ? "Edit Customer" : "New Customer"}
         footer={
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+          <div className="flex flex-col gap-2 w-full">
+            {/* Action buttons row */}
             {selected && (
-              <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto">
-                Delete
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={handleLogContact}>
+                  <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" /></svg>
+                  Log Contact
+                </Button>
+                <Button variant="outline" size="sm" onClick={openSurveyModal}>
+                  <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                  Send Survey
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleCreateDriveFolder} isLoading={creatingFolder}>
+                  <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
+                  Drive
+                </Button>
+                {(selected as Customer & { driveFolderId?: string }).driveFolderId && (
+                  <Button variant="outline" size="sm" onClick={handleBrowseDriveFiles} isLoading={driveLoading}>
+                    <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                    Files
+                  </Button>
+                )}
+                <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
+                </Button>
+              </div>
             )}
-            {selected && (
-              <Button variant="outline" size="sm" onClick={handleCreateDriveFolder} isLoading={creatingFolder} className="w-full sm:w-auto">
-                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
-                Drive Folder
+            {/* Save / Cancel row */}
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+                Cancel
               </Button>
-            )}
-            {selected && (selected as Customer & { driveFolderId?: string }).driveFolderId && (
-              <Button variant="outline" size="sm" onClick={handleBrowseDriveFiles} isLoading={driveLoading} className="w-full sm:w-auto">
-                <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                Browse Files
+              <Button size="sm" onClick={handleSave}>
+                {selected ? "Save Changes" : "Create Customer"}
               </Button>
-            )}
-            <div className="flex-1 hidden sm:block" />
-            <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
-              Cancel
-            </Button>
-            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
-              {selected ? "Save Changes" : "Create Customer"}
-            </Button>
+            </div>
           </div>
         }
       >
@@ -662,6 +911,79 @@ export default function CustomersPage() {
             ))}
           </div>
         )}
+      </Modal>
+
+      {/* Satisfaction Survey Email Modal */}
+      <Modal
+        open={surveyModalOpen}
+        onClose={() => setSurveyModalOpen(false)}
+        title="Send Satisfaction Survey"
+        size="lg"
+        footer={
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <Button variant="outline" size="sm" onClick={handleSaveTemplate} isLoading={savingTemplate} className="w-full sm:w-auto">
+              <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+              Save Template
+            </Button>
+            <div className="flex-1 hidden sm:block" />
+            <Button variant="outline" size="sm" onClick={() => setSurveyModalOpen(false)} className="w-full sm:w-auto">
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleSendSurvey} isLoading={sendingSurvey} className="w-full sm:w-auto">
+              <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+              Send to {selected?.email}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          {surveyTemplate && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 text-green-700 text-xs">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+              Template loaded from Emails → Drafts. Changes here update the template.
+            </div>
+          )}
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Select
+              label="From"
+              options={BUSINESS_EMAILS}
+              value={surveySender}
+              onChange={(e) => setSurveySender(e.target.value)}
+            />
+            <Input
+              label="To"
+              value={selected?.email || ""}
+              disabled
+            />
+          </div>
+          <Input
+            label="Subject"
+            value={surveyEmail.subject}
+            onChange={(e) => setSurveyEmail({ ...surveyEmail, subject: e.target.value })}
+          />
+          <div>
+            <label className="block text-sm font-medium text-gray-70 mb-1">Email Body (HTML)</label>
+            <textarea
+              className="w-full rounded-md border border-border bg-white px-3 py-2 min-h-48 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono text-xs"
+              value={surveyEmail.html}
+              onChange={(e) => setSurveyEmail({ ...surveyEmail, html: e.target.value })}
+            />
+            <p className="text-xs text-gray-40 mt-1">
+              Use <code className="text-primary">{"{{CUSTOMER_NAME}}"}</code> and <code className="text-primary">{"{{SURVEY_LINK}}"}</code> as placeholders.
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-70 mb-1">Preview</label>
+            <div
+              className="border border-border rounded-lg p-4 bg-white max-h-64 overflow-y-auto"
+              dangerouslySetInnerHTML={{
+                __html: surveyEmail.html
+                  .replace(/\{\{CUSTOMER_NAME\}\}/g, selected?.name || "Customer")
+                  .replace(/\{\{SURVEY_LINK\}\}/g, "#preview"),
+              }}
+            />
+          </div>
+        </div>
       </Modal>
     </div>
   );

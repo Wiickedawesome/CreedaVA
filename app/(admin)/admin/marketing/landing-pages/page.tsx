@@ -41,6 +41,9 @@ export default function LandingPagesPage() {
 
   const [tab, setTab] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewPage, setPreviewPage] = useState<LandingPage | null>(null);
+  const [surveyPreviewOpen, setSurveyPreviewOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<LandingPage | null>(null);
@@ -271,19 +274,28 @@ export default function LandingPagesPage() {
     {
       key: "slug",
       header: "",
-      render: (p) =>
-        p.slug ? (
-          <a
-            href={`/lp/${p.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+      render: (p) => (
+        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => { setPreviewPage(p); setPreviewOpen(true); }}
             className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-light font-medium"
           >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-            View
-          </a>
-        ) : null,
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+            Preview
+          </button>
+          {p.slug && p.status === "published" && (
+            <a
+              href={`/lp/${p.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-gray-50 hover:text-primary font-medium"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+              Live
+            </a>
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -371,6 +383,43 @@ export default function LandingPagesPage() {
       />
 
       <AdminTabs tabs={tabs} defaultValue="all" onChange={setTab} />
+
+      {/* System Pages — Satisfaction Survey */}
+      <div className="rounded-xl border border-border bg-white overflow-hidden">
+        <div className="px-4 py-2.5 bg-gray-10 border-b border-border">
+          <p className="text-xs font-medium text-gray-50 uppercase tracking-wider">System Pages</p>
+        </div>
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" /><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" /></svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-90">Customer Satisfaction Survey</p>
+              <p className="text-xs text-gray-40">/satisfaction/[token] — Customer feedback collection page</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span>
+            <button
+              onClick={() => setSurveyPreviewOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary hover:text-primary-light hover:bg-primary/5 rounded-lg transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+              Preview
+            </button>
+            <a
+              href="/satisfaction/demo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-50 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+              Open
+            </a>
+          </div>
+        </div>
+      </div>
 
       <DataTable
         columns={columns}
@@ -613,6 +662,147 @@ export default function LandingPagesPage() {
             ))}
           </div>
         )}
+      </Modal>
+
+      {/* Landing Page Preview Modal */}
+      <Modal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        title={previewPage?.title || "Page Preview"}
+        size="lg"
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={() => { setPreviewOpen(false); if (previewPage) openModal(previewPage); }}>
+              <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+              Edit
+            </Button>
+            {previewPage?.slug && previewPage.status === "published" && (
+              <a
+                href={`/lp/${previewPage.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:text-primary-light"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+                Open Live
+              </a>
+            )}
+            <div className="flex-1" />
+            <Button variant="outline" size="sm" onClick={() => setPreviewOpen(false)}>
+              Close
+            </Button>
+          </>
+        }
+      >
+        {previewPage && (
+          <div className="space-y-6">
+            {/* Hero preview */}
+            <div className="rounded-xl bg-linear-to-b from-gray-10 to-white p-8 text-center">
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-100 mb-3 leading-tight">
+                {previewPage.headline}
+              </h1>
+              <p className="text-base text-gray-60 leading-relaxed mb-6 max-w-lg mx-auto">
+                {previewPage.subheadline}
+              </p>
+              <span className="inline-block bg-primary text-white px-6 py-2.5 rounded-lg font-semibold text-sm">
+                {previewPage.ctaText || "Get Started"}
+              </span>
+            </div>
+
+            {/* Body preview */}
+            {previewPage.bodyHtml && (
+              <div className="rounded-xl border border-border p-6">
+                <p className="text-xs font-medium text-gray-40 uppercase tracking-wider mb-3">Page Body</p>
+                <div
+                  className="prose prose-sm max-w-none prose-headings:text-gray-100 prose-p:text-gray-70 prose-a:text-primary prose-strong:text-gray-90"
+                  dangerouslySetInnerHTML={{ __html: previewPage.bodyHtml }}
+                />
+              </div>
+            )}
+
+            {/* Meta info */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-lg bg-gray-10 p-3">
+                <p className="text-xs text-gray-50">Status</p>
+                <p className="text-sm font-medium text-gray-90 capitalize">{previewPage.status}</p>
+              </div>
+              <div className="rounded-lg bg-gray-10 p-3">
+                <p className="text-xs text-gray-50">Views</p>
+                <p className="text-sm font-medium text-gray-90">{previewPage.views.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg bg-gray-10 p-3">
+                <p className="text-xs text-gray-50">Conversions</p>
+                <p className="text-sm font-medium text-gray-90">{previewPage.conversions}</p>
+              </div>
+              <div className="rounded-lg bg-gray-10 p-3">
+                <p className="text-xs text-gray-50">CVR</p>
+                <p className="text-sm font-medium text-gray-90">{cvr(previewPage)}%</p>
+              </div>
+            </div>
+
+            {/* Slug */}
+            {previewPage.slug && (
+              <div className="flex items-center gap-2 text-sm text-gray-50">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+                /lp/{previewPage.slug}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Satisfaction Survey Preview Modal */}
+      <Modal
+        open={surveyPreviewOpen}
+        onClose={() => setSurveyPreviewOpen(false)}
+        title="Customer Satisfaction Survey"
+        size="lg"
+        footer={
+          <>
+            <a
+              href="/satisfaction/demo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:text-primary-light"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+              Open in New Tab
+            </a>
+            <div className="flex-1" />
+            <Button variant="outline" size="sm" onClick={() => setSurveyPreviewOpen(false)}>
+              Close
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-6">
+          <div className="rounded-xl border border-border overflow-hidden">
+            <iframe
+              src="/satisfaction/demo"
+              className="w-full border-0"
+              style={{ height: "600px" }}
+              title="Satisfaction Survey Preview"
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-lg bg-gray-10 p-3">
+              <p className="text-xs text-gray-50">Type</p>
+              <p className="text-sm font-medium text-gray-90">System Page</p>
+            </div>
+            <div className="rounded-lg bg-gray-10 p-3">
+              <p className="text-xs text-gray-50">Route</p>
+              <p className="text-sm font-medium text-gray-90">/satisfaction/[token]</p>
+            </div>
+            <div className="rounded-lg bg-gray-10 p-3">
+              <p className="text-xs text-gray-50">Status</p>
+              <p className="text-sm font-medium text-green-600">Active</p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-40">
+            This page is generated from code. To edit its design, modify the component at <code className="text-primary">app/(marketing)/satisfaction/[token]/page.tsx</code>.
+            The email template can be edited from Emails → Drafts.
+          </p>
+        </div>
       </Modal>
     </div>
   );

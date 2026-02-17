@@ -3,6 +3,8 @@
  *
  * Each function dynamically imports lib/firebase/ai only when called,
  * keeping the firebase/ai SDK out of the initial page bundle.
+ *
+ * v2 — Also exposes the AI Engine for advanced context-aware operations.
  */
 
 export async function lazyGenerateText(
@@ -59,4 +61,76 @@ export async function lazyGenerateReport(
 ) {
   const { generateReport } = await import("./ai");
   return generateReport(...args);
+}
+
+// ─── AI Engine v2 (lazy-loaded) ──────────────────────
+
+/** Generate with full page-aware context + web search enrichment */
+export async function lazyGenerateFullContext(
+  ...args: Parameters<typeof import("./ai").generateFullContext>
+) {
+  const { generateFullContext } = await import("./ai");
+  return generateFullContext(...args);
+}
+
+/** Generate with optional web search context */
+export async function lazyGenerateWithWebContext(
+  ...args: Parameters<typeof import("./ai").generateWithWebContext>
+) {
+  const { generateWithWebContext } = await import("./ai");
+  return generateWithWebContext(...args);
+}
+
+/** Lazy-load the full AI Engine for advanced operations */
+export async function lazyGetAIEngine() {
+  const { aiEngine } = await import("./ai-engine");
+  return aiEngine;
+}
+
+/** Run SEO analysis with full business data context */
+export async function lazyRunSEOAnalysis() {
+  const { runSEOAnalysis } = await import("./ai-engine");
+  return runSEOAnalysis();
+}
+
+/** Generate and auto-save blog post to Firestore */
+export async function lazyGenerateAndSaveBlogPost(
+  topic: string,
+  targetKeyword?: string,
+) {
+  const { generateAndSaveBlogPost } = await import("./ai-engine");
+  return generateAndSaveBlogPost(topic, targetKeyword);
+}
+
+/** Analyze sales pipeline with AI */
+export async function lazyAnalyzePipeline() {
+  const { analyzePipeline } = await import("./ai-engine");
+  return analyzePipeline();
+}
+
+/** Analyze customer health and churn risk */
+export async function lazyAnalyzeCustomerHealth() {
+  const { analyzeCustomerHealth } = await import("./ai-engine");
+  return analyzeCustomerHealth();
+}
+
+/** Generate content strategy */
+export async function lazyGenerateContentStrategy(weeks?: number) {
+  const { generateContentStrategy } = await import("./ai-engine");
+  return generateContentStrategy(weeks);
+}
+
+/** Generate market intelligence report */
+export async function lazyGenerateMarketIntelReport() {
+  const { generateMarketIntelReport } = await import("./ai-engine");
+  return generateMarketIntelReport();
+}
+
+/** Generate and save AI report to Firestore */
+export async function lazyGenerateAndSaveReport(
+  type: "daily" | "weekly" | "monthly" | "seo" | "competitor" | "market",
+  pagePath?: string,
+) {
+  const { generateAndSaveReport } = await import("./ai-engine");
+  return generateAndSaveReport(type, pagePath);
 }

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { Modal, useToast } from "@/components/admin";
 import { Button } from "@/components/ui";
 import { lazyGenerateText } from "@/lib/firebase/ai-lazy";
-import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
+import { buildTrainedPrompt, getPageContext } from "@/lib/utils/ai-system-prompt";
+import { fetchOne } from "@/lib/firebase/firestore";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -130,35 +132,83 @@ function AIPromptDialog({
 }: AIPromptDialogProps) {
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const pathname = usePathname();
 
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState("");
   const [showResult, setShowResult] = useState(false);
+  const [autoContextLoaded, setAutoContextLoaded] = useState(false);
+  const [enrichedDataContext, setEnrichedDataContext] = useState(dataContext);
+  const [dynamicPresets, setDynamicPresets] = useState<{ label: string; prompt: string }[]>([]);
 
-  // Rotating presets: show 5 at a time, cycle every 6 seconds
+  // Merge dynamic (AI-generated) presets ahead of static presets
+  const allPresets = [...dynamicPresets, ...presets];
+
+  // Rotating presets: show 5 at a time, cycle every 60 seconds
   const VISIBLE_PRESETS = 5;
   const [presetOffset, setPresetOffset] = useState(0);
   const visiblePresets =
-    presets.length <= VISIBLE_PRESETS
-      ? presets
+    allPresets.length <= VISIBLE_PRESETS
+      ? allPresets
       : Array.from({ length: VISIBLE_PRESETS }, (_, i) =>
-          presets[(presetOffset + i) % presets.length],
+          allPresets[(presetOffset + i) % allPresets.length],
         );
 
   useEffect(() => {
-    if (presets.length <= VISIBLE_PRESETS || generating || showResult) return;
+    if (allPresets.length <= VISIBLE_PRESETS || generating || showResult) return;
     const timer = setInterval(() => {
-      setPresetOffset((prev) => (prev + 1) % presets.length);
-    }, 6000);
+      setPresetOffset((prev) => (prev + 1) % allPresets.length);
+    }, 60_000);
     return () => clearInterval(timer);
-  }, [presets, generating, showResult]);
+  }, [allPresets.length, generating, showResult]);
 
   // Auto-focus textarea on open
   useEffect(() => {
     if (open && textareaRef.current) {
       setTimeout(() => textareaRef.current?.focus(), 100);
     }
+  }, [open]);
+
+  // Auto-load page-aware Firestore context when dialog opens
+  useEffect(() => {
+    if (!open || autoContextLoaded || dataContext) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { loadPageAwareContext } = await import("@/lib/utils/ai-page-context");
+        const ctx = await loadPageAwareContext(pathname);
+        if (!cancelled) {
+          setEnrichedDataContext(ctx.dataContext);
+          setAutoContextLoaded(true);
+        }
+      } catch (err) {
+        console.warn("[AI Prompt] Auto-context loading failed:", err);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [open, autoContextLoaded, dataContext, pathname]);
+
+  // Load AI-generated dynamic presets from Firestore
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const doc = await fetchOne<{
+          presets: { label: string; prompt: string }[];
+          generatedAt: string;
+        }>("settings", "ai-presets");
+        if (!cancelled && doc?.presets?.length) {
+          setDynamicPresets(doc.presets);
+        }
+      } catch (err) {
+        console.warn("[AI Prompt] Dynamic presets loading failed:", err);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [open]);
 
   function handlePreset(presetPrompt: string) {
@@ -170,11 +220,16 @@ function AIPromptDialog({
     if (!prompt.trim()) return;
     setGenerating(true);
     try {
+      // Get page-aware context directive
+      const pageContext = getPageContext(pathname);
+
       const fullPrompt = buildPrompt
-        ? buildPrompt(prompt, dataContext)
-        : buildTrainedPrompt(section, prompt, dataContext, {
+        ? buildPrompt(prompt, enrichedDataContext || dataContext)
+        : buildTrainedPrompt(section, prompt, enrichedDataContext || dataContext, {
             includeCompetitors: true,
             includeKPIs: true,
+            includeSEOAlgorithms: true,
+            pageContext,
           });
 
       const raw = await lazyGenerateText(fullPrompt);
@@ -296,17 +351,24 @@ function AIPromptDialog({
         <>
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {/* Preset chips — rotate through suggestions */}
-            {presets.length > 0 && (
+            {allPresets.length > 0 && (
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                {visiblePresets.map((p) => (
-                  <button
-                    key={p.label}
-                    onClick={() => handlePreset(p.prompt)}
-                    className="flex-1 min-w-0 rounded-full border border-border bg-white px-2 py-1 text-xs text-gray-60 hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-all duration-300 truncate cursor-pointer"
-                  >
-                    {p.label}
-                  </button>
-                ))}
+                {visiblePresets.map((p) => {
+                  const isDynamic = dynamicPresets.some((dp) => dp.label === p.label);
+                  return (
+                    <button
+                      key={p.label}
+                      onClick={() => handlePreset(p.prompt)}
+                      className={`flex-1 min-w-0 rounded-full border px-2 py-1 text-xs transition-all duration-300 truncate cursor-pointer ${
+                        isDynamic
+                          ? "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 font-medium"
+                          : "border-border bg-white text-gray-60 hover:border-primary/30 hover:text-primary hover:bg-primary/5"
+                      }`}
+                    >
+                      {isDynamic ? "✦ " : ""}{p.label}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -231,7 +231,6 @@ export type AIReportType =
   | "pipeline"
   | "marketing"
   | "operational"
-  | "daily-status"
   | "growth-forecast"
   | "keyword-health"
   | "landing-page-perf"

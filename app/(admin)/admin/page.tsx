@@ -7,9 +7,11 @@ import {
   StatCard,
   DashboardSection,
   AIPromptButton,
+  useToast,
 } from "@/components/admin";
 import { fetchAnalyticsEvents } from "@/lib/firebase/analytics";
 import { cloudFetchBusinessReviews } from "@/lib/firebase/cloud-functions";
+import { lazyGenerateAndSaveReport } from "@/lib/firebase/ai-lazy";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Lead, Customer, Task, Booking } from "@/lib/types/crm";
@@ -197,6 +199,23 @@ export default function AdminDashboardPage() {
 
   const loading = ll || cl || tl || bl;
 
+  // ─── Daily Status ──────────────────────────────────
+  const [dailyRunning, setDailyRunning] = useState(false);
+  const { toast } = useToast();
+
+  async function handleRunDailyStatus() {
+    setDailyRunning(true);
+    try {
+      await lazyGenerateAndSaveReport("daily", "/admin");
+      toast("Daily Status Brief generated — view it in Analytics → Reports", "success");
+    } catch (err) {
+      console.error("Daily status generation failed:", err);
+      toast("Daily status failed — try again", "error");
+    } finally {
+      setDailyRunning(false);
+    }
+  }
+
   // ─── Google sync status ────────────────────────────
   const [syncLog, setSyncLog] = useState<{ type: string; completedAt: string; results: { service: string; status: string; detail?: string }[] } | null>(null);
   const [reviews, setReviews] = useState<{ count: number; loading: boolean }>({ count: 0, loading: false });
@@ -376,7 +395,22 @@ export default function AdminDashboardPage() {
         title="Dashboard"
         description="Business performance overview and analytics"
         actions={
-          <AIPromptButton
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleRunDailyStatus}
+              disabled={dailyRunning}
+              className="inline-flex items-center gap-2 rounded-lg border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-primary hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {dailyRunning ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              )}
+              {dailyRunning ? "Running..." : "Daily Status"}
+            </button>
+            <AIPromptButton
             section="Dashboard AI"
             description="Analyze your business data — get growth strategies, weekly priorities, and SEO quick wins."
             placeholder="e.g. What should we focus on this week to grow revenue?"
@@ -400,6 +434,7 @@ export default function AdminDashboardPage() {
               return `CreedaVA Dashboard Summary:\n- ${leads.length} total leads (${newLeads} new), pipeline value $${pipeline}\n- Win rate: ${wonRate}%, ${leads.filter(l=>l.status==="lost").length} lost\n- ${activeClients} active customers, ${churned} churned, MRR $${customers.filter(c=>c.status==="active").reduce((s,c)=>s+(c.monthlyValue||0),0)}\n- ${tasks.length} tasks (${overdue} overdue, ${tasks.filter(t=>t.status==="done").length} done)\n- ${bookings.length} bookings (${pending} pending)`;
             })()}
           />
+          </div>
         }
       />
 

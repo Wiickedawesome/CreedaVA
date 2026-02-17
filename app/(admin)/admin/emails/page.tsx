@@ -99,6 +99,55 @@ export default function EmailsPage() {
   const emailImageRef = useRef<HTMLInputElement>(null);
   const emailAttachRef = useRef<HTMLInputElement>(null);
 
+  // System template preview
+  const [surveyPreviewOpen, setSurveyPreviewOpen] = useState(false);
+
+  // Auto-seed or update satisfaction survey template
+  const SURVEY_TEMPLATE_BODY = `<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#002D72;">
+  <div style="text-align:center;padding:24px 0;">
+    <img src="/logo.webp" alt="CreedaVA" width="120" style="margin-bottom:12px;" />
+  </div>
+  <div style="background:#f9fbff;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
+    <h2 style="margin:0 0 8px;color:#005148;font-size:22px;">How are we doing?</h2>
+    <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.6;">
+      Hi {{CUSTOMER_NAME}},<br/><br/>
+      Your feedback helps us improve the services we provide. Please take a moment to rate your experience — it only takes 30 seconds.
+    </p>
+    <div style="text-align:center;margin:24px 0;">
+      <a href="{{SURVEY_LINK}}" style="display:inline-block;background:#005148;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:600;font-size:16px;">
+        Share Your Feedback →
+      </a>
+    </div>
+    <p style="margin:20px 0 0;color:#888;font-size:13px;text-align:center;">
+      This link is unique to you and will expire in 30 days.
+    </p>
+  </div>
+  <div style="text-align:center;padding:24px 0;color:#888;font-size:12px;">
+    <p>CreedaVA — Virtual Assistant Services</p>
+    <p><a href="https://creedava.com" style="color:#005148;">creedava.com</a></p>
+  </div>
+</div>`;
+
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current || draftsLoading) return;
+    const existing = emails.find((e) => e.purpose === "satisfaction-survey");
+    if (!existing) {
+      seededRef.current = true;
+      add({
+        purpose: "satisfaction-survey",
+        subject: "We'd love your feedback — CreedaVA Satisfaction Survey",
+        body: SURVEY_TEMPLATE_BODY,
+        previewText: "Customer satisfaction survey template",
+        status: "draft" as const,
+      }).catch(() => { seededRef.current = false; });
+    } else if (existing.body.includes("https://creedava.com/logo.webp") || existing.body.includes('alt="CreedaVA" width="20"')) {
+      // Update stale template with correct logo
+      seededRef.current = true;
+      edit(existing.id, { body: SURVEY_TEMPLATE_BODY } as Partial<EmailDraft>).catch(() => { seededRef.current = false; });
+    }
+  }, [draftsLoading, emails, add, edit]);
+
   // ─── Derived data ─────────────────
   const filteredInbox = useMemo(() => {
     let msgs = inboxMessages.filter((m) => !m.archived);
@@ -110,17 +159,21 @@ export default function EmailsPage() {
 
   const unreadCount = useMemo(() => inboxMessages.filter((m) => !m.seen && !m.archived).length, [inboxMessages]);
 
+  // Separate system templates from user drafts
+  const surveyTemplate = useMemo(() => emails.find((e) => e.purpose === "satisfaction-survey"), [emails]);
+  const userEmails = useMemo(() => emails.filter((e) => e.purpose !== "satisfaction-survey"), [emails]);
+
   const filteredDrafts = useMemo(() => {
-    if (tab === "drafts") return emails.filter((e) => e.status === "draft");
-    if (tab === "sent") return emails.filter((e) => e.status === "sent");
-    return emails;
-  }, [emails, tab]);
+    if (tab === "drafts") return userEmails.filter((e) => e.status === "draft");
+    if (tab === "sent") return userEmails.filter((e) => e.status === "sent");
+    return userEmails;
+  }, [userEmails, tab]);
 
   const tabs = [
     { label: "Inbox", value: "inbox", badge: unreadCount || undefined },
-    { label: "Drafts", value: "drafts", badge: emails.filter((e) => e.status === "draft").length || undefined },
-    { label: "Sent", value: "sent", badge: emails.filter((e) => e.status === "sent").length || undefined },
-    { label: "All Drafts", value: "all", badge: emails.length || undefined },
+    { label: "Drafts", value: "drafts", badge: userEmails.filter((e) => e.status === "draft").length || undefined },
+    { label: "Sent", value: "sent", badge: userEmails.filter((e) => e.status === "sent").length || undefined },
+    { label: "All Drafts", value: "all", badge: userEmails.length || undefined },
   ];
 
   // ─── Sync inbox ───────────────────
@@ -570,6 +623,43 @@ export default function EmailsPage() {
         })}
       </div>
 
+      {/* System Templates — pinned */}
+      {surveyTemplate && (
+        <div className="rounded-xl border border-border bg-white overflow-hidden">
+          <div className="px-4 py-2.5 bg-gray-10 border-b border-border">
+            <p className="text-xs font-medium text-gray-50 uppercase tracking-wider">System Templates</p>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" /><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" /></svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-90">Satisfaction Survey Email</p>
+                <p className="text-xs text-gray-40">{surveyTemplate.subject}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span>
+              <button
+                onClick={() => setSurveyPreviewOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary hover:text-primary-light hover:bg-primary/5 rounded-lg transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                Preview
+              </button>
+              <button
+                onClick={() => openDraft(surveyTemplate)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-50 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                Edit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <AdminTabs tabs={tabs} defaultValue="inbox" onChange={setTab} />
 
       {/* Inbox Tab */}
@@ -873,6 +963,48 @@ export default function EmailsPage() {
             {bulkRecipients.split(/[,;\n]+/).map((e) => e.trim()).filter(Boolean).length} recipient(s)
           </p>
         </div>
+      </Modal>
+      {/* Survey Email Preview Modal */}
+      <Modal
+        open={surveyPreviewOpen}
+        onClose={() => setSurveyPreviewOpen(false)}
+        title="Satisfaction Survey Email"
+        size="lg"
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={() => {
+              if (surveyTemplate) openDraft(surveyTemplate);
+              setSurveyPreviewOpen(false);
+            }}>
+              <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+              Edit Template
+            </Button>
+            <div className="flex-1" />
+            <Button variant="outline" size="sm" onClick={() => setSurveyPreviewOpen(false)}>
+              Close
+            </Button>
+          </>
+        }
+      >
+        {surveyTemplate && (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-border bg-gray-10 p-3">
+              <p className="text-xs text-gray-50 mb-1">Subject</p>
+              <p className="text-sm font-medium text-gray-90">{surveyTemplate.subject}</p>
+            </div>
+            <div
+              className="rounded-lg border border-border bg-white p-6"
+              dangerouslySetInnerHTML={{ __html: surveyTemplate.body
+                .replace(/\{\{CUSTOMER_NAME\}\}/g, "John Doe")
+                .replace(/\{\{SURVEY_LINK\}\}/g, "/satisfaction/demo")
+              }}
+            />
+            <p className="text-xs text-gray-40 text-center">
+              This template is sent from the Customers page when requesting satisfaction feedback.
+              <br />Placeholders <code className="text-primary">{'{{CUSTOMER_NAME}}'}</code> and <code className="text-primary">{'{{SURVEY_LINK}}'}</code> are replaced automatically.
+            </p>
+          </div>
+        )}
       </Modal>
     </div>
   );

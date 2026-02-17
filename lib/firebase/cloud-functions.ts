@@ -419,3 +419,84 @@ export async function cloudUploadReportToDrive(
   const result = await fn({ fileName, content, mimeType, folderId });
   return result.data;
 }
+
+// ─── Web Search & Market Intelligence ────────────────
+
+interface WebSearchResult {
+  title: string;
+  link: string;
+  snippet: string;
+}
+
+interface WebSearchResponse {
+  success: boolean;
+  query: string;
+  results: WebSearchResult[];
+  summary: string;
+  searchedAt: string;
+}
+
+interface CompetitorSearchResponse {
+  success: boolean;
+  competitors: Record<string, WebSearchResult[]>;
+}
+
+interface IndustryTrendsResponse {
+  success: boolean;
+  trends: WebSearchResult[];
+  keywords: WebSearchResult[];
+}
+
+/** Search the web for real-time market data */
+export async function cloudWebSearch(
+  query: string,
+  numResults = 5,
+): Promise<WebSearchResponse> {
+  const fn = httpsCallable<
+    { query: string; numResults?: number },
+    WebSearchResponse
+  >(functions, "webSearch");
+  const result = await fn({ query, numResults });
+  return result.data;
+}
+
+/** Search for competitor news and updates */
+export async function cloudCompetitorSearch(
+  competitor?: string,
+): Promise<CompetitorSearchResponse> {
+  const fn = httpsCallable<
+    { competitor?: string },
+    CompetitorSearchResponse
+  >(functions, "competitorSearch");
+  const result = await fn({ competitor });
+  return result.data;
+}
+
+/** Get latest VA industry trends */
+export async function cloudIndustryTrends(): Promise<IndustryTrendsResponse> {
+  const fn = httpsCallable<void, IndustryTrendsResponse>(
+    functions,
+    "industryTrends",
+  );
+  const result = await fn();
+  return result.data;
+}
+
+// ─── Satisfaction Survey ─────────────────────────────
+
+interface SubmitSatisfactionParams {
+  token: string;
+  ratings: Record<string, number>;
+  comment?: string;
+}
+
+interface SubmitSatisfactionResult {
+  success: boolean;
+  message: string;
+}
+
+export async function cloudSubmitSatisfaction(params: SubmitSatisfactionParams): Promise<SubmitSatisfactionResult> {
+  const fn = httpsCallable<SubmitSatisfactionParams, SubmitSatisfactionResult>(functions, "submitSatisfaction");
+  const result = await fn(params);
+  return result.data;
+}

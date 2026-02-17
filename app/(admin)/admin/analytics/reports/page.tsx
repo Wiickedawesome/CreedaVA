@@ -158,18 +158,6 @@ const CATEGORIES: CategoryDef[] = [
     promptTemplate: `Perform a competitive gap analysis for CreedaVA vs. top VA competitors (Belay Solutions, Time Etc, Boldly, Wishup, MyOutDesk). Compare: service breadth, pricing transparency, bilingual capabilities, AI integration, customer acquisition channels, content marketing quality, SEO authority. Identify the top 5 gaps where CreedaVA trails and 3 where it leads. For each gap, recommend specific actions to close it. Score 0-100.`,
   },
   {
-    id: "daily-status",
-    title: "Daily Status Brief",
-    description: "Quick snapshot of today&apos;s metrics, wins, and action items",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-      </svg>
-    ),
-    contextBuilder: buildFullContext,
-    promptTemplate: `Generate a concise daily status brief for CreedaVA. Cover: new leads today, open tasks/overdue count, today&apos;s bookings, active campaigns status, content published this week, pipeline value changes. Highlight the single most important win and the most urgent action item. Keep the summary tight (2 paragraphs). Recommend 3 things to focus on today. Score 0-100 (today&apos;s health).`,
-  },
-  {
     id: "growth-forecast",
     title: "Growth Forecast",
     description: "Revenue trends, lead projections, and scaling readiness",

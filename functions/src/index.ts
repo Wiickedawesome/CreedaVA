@@ -40,3 +40,9 @@ export { dailyDigest, weeklyReport, monthlyReport, dailyGoogleSync } from "./sch
 
 // Firestore triggers (automatic sync)
 export { onNewLead, onNewContact, onEmailQueued, onBookingConfirmed } from "./triggers";
+
+// Web Search & Market Intelligence (AI access to internet)
+export { webSearch, competitorSearch, industryTrends } from "./web-search";
+
+// Satisfaction Survey (public customer feedback)
+export { submitSatisfaction } from "./satisfaction";

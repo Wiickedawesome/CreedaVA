@@ -74,13 +74,13 @@ interface ScheduledReportCardProps {
 }
 
 const periodLabels: Record<string, string> = {
-  daily: "Daily Scan",
+  daily: "Daily Status Brief",
   weekly: "Weekly Report",
   monthly: "Monthly Review",
 };
 
 const periodDescriptions: Record<string, string> = {
-  daily: "Quick scan of today&apos;s activity — new leads, tasks, bookings",
+  daily: "Metrics snapshot, wins, action items — same as Dashboard Daily Status",
   weekly: "Weekly trends, conversions, pipeline velocity, content",
   monthly: "Comprehensive monthly review — growth, strategy, forecasts",
 };

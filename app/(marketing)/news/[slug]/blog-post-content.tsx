@@ -96,7 +96,7 @@ export function BlogPostContent({ initialPost }: BlogPostContentProps) {
             </h1>
           </div>
           {post.featuredImage && (
-            <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-16/9">
+            <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-video">
               <Image
                 src={post.featuredImage}
                 alt={title}

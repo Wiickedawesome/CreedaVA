@@ -6,6 +6,10 @@ import type { AIReport, AIReportType } from "@/lib/types/content";
 import type { AllCollections } from "@/lib/utils/ai-data-context";
 import { buildPeriodContext } from "@/lib/utils/ai-data-context";
 import { lazyGenerateText } from "@/lib/firebase/ai-lazy";
+import {
+  buildReportPrompt,
+  DAILY_STATUS_PROMPT,
+} from "@/lib/utils/ai-system-prompt";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -39,29 +43,15 @@ const DEBOUNCE_MS = 5 * 60 * 1000; // 5 minutes between checks
 // ─── Report prompt templates ─────────────────────────
 
 function getPromptForPeriod(period: SchedulePeriod, context: string): string {
-  const instructions = `You are a senior business analyst for CreedaVA (virtual assistant services company).
-Analyze the provided business data and generate a ${period} performance report.
+  // Use the shared trained prompt for daily — ensures parity with the dashboard button
+  // and the on-demand reports page. Weekly/monthly also use the trained prompt builder.
+  const periodPrompts: Record<SchedulePeriod, string> = {
+    daily: DAILY_STATUS_PROMPT,
+    weekly: "Generate a weekly performance report for CreedaVA. Cover: weekly trends in lead volume, pipeline movement, conversion rates, task completion velocity, content output (blog, social, landing pages), campaign spend and ROI. Compare week-over-week. Identify the top 3 wins and top 3 areas needing attention. Recommend 5 priorities for next week. Score 0-100.",
+    monthly: "Generate a comprehensive monthly strategic report for CreedaVA. Cover: MoM growth in revenue, leads, customers. Customer acquisition cost, churn rate, LTV trends. Content velocity and SEO progress. Campaign ROAS. Compare against quarterly targets. Provide a 90-day forecast and 5 strategic recommendations for next month. Score 0-100.",
+  };
 
-RESPOND WITH VALID JSON ONLY — no markdown fences, no extra text.
-
-JSON shape:
-{
-  "title": "string — report title with date range",
-  "summaryHtml": "string — HTML executive summary (2-3 paragraphs)",
-  "highlights": ["string array — 3-5 key data points or achievements"],
-  "recommendations": ["string array — 3-5 actionable recommendations"],
-  "score": number (0-100 overall business health score)
-}
-
-${period === "daily" ? "Focus on: today's activity, urgent tasks, new leads, upcoming bookings." : ""}
-${period === "weekly" ? "Focus on: weekly trends, pipeline movement, conversion rates, task completion velocity, content output." : ""}
-${period === "monthly" ? "Focus on: monthly growth, revenue trends, customer acquisition cost, churn risk, strategic recommendations for next month." : ""}
-
-Use actual numbers from the data. Be specific and actionable.
-
-${context}`;
-
-  return instructions;
+  return buildReportPrompt(period, periodPrompts[period], context);
 }
 
 // ─── Hook ────────────────────────────────────────────
