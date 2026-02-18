@@ -17,9 +17,21 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/x-icon",
       },
       {
-        src: "/logo.webp",
-        sizes: "280x80",
-        type: "image/webp",
+        src: "/icon-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any maskable",
+      },
+      {
+        src: "/icon-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any maskable",
+      },
+      {
+        src: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
       },
     ],
   };

@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { LanguageProvider } from "@/lib/i18n";
+import { FirebaseInit } from "@/lib/firebase";
 
 /** JSON-LD Organization structured data for Google rich results */
 const organizationJsonLd = {
@@ -34,6 +35,7 @@ export default function MarketingLayout({
 }) {
   return (
     <LanguageProvider>
+      <FirebaseInit />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}

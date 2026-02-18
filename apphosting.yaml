@@ -34,3 +34,9 @@ env:
     value: "1:53722795216:web:18065a250c22647774a2d5"
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
     value: G-GSYB90RLF2
+  # App Check — reCAPTCHA Enterprise (set after creating key in GCP Console)
+  # - variable: NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY
+  #   value: YOUR_RECAPTCHA_ENTERPRISE_SITE_KEY
+  # Cloud Messaging — VAPID key (set after generating in Firebase Console)
+  # - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+  #   value: YOUR_VAPID_KEY

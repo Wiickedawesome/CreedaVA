@@ -7,7 +7,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { onAuthStateChanged, signInWithGoogle, signOut, type User } from "./auth";
+import { onAuthStateChanged, signInWithGoogle, signOut, checkRedirectResult, type User } from "./auth";
+import { FirebaseInit } from "./firebase-init";
 
 interface AuthContextType {
   user: User | null;
@@ -41,10 +42,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check for redirect sign-in result (when popup was blocked)
+    checkRedirectResult().then((redirectUser) => {
+      if (redirectUser) {
+        syncSessionCookie(redirectUser);
+      }
+    });
+
     const unsubscribe = onAuthStateChanged((firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
-      // Keep server-side session cookie in sync with client auth state
       syncSessionCookie(firebaseUser);
     });
     return unsubscribe;
@@ -74,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, loading, signIn, logOut }}>
+      <FirebaseInit />
       {children}
     </AuthContext.Provider>
   );

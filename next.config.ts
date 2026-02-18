@@ -27,6 +27,10 @@ const nextConfig: NextConfig = {
       "firebase/storage",
       "firebase/ai",
       "firebase/analytics",
+      "firebase/app-check",
+      "firebase/remote-config",
+      "firebase/performance",
+      "firebase/messaging",
     ],
   },
   async headers() {

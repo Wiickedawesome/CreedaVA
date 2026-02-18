@@ -12,6 +12,10 @@ vi.mock("@/lib/firebase/config", () => ({
   db: {},
 }));
 
+vi.mock("@/lib/firebase/firebase-init", () => ({
+  FirebaseInit: () => null,
+}));
+
 vi.mock("@/lib/firebase/auth", () => ({
   onAuthStateChanged: (cb: (user: unknown) => void) => {
     authCallback = cb;
@@ -21,6 +25,7 @@ vi.mock("@/lib/firebase/auth", () => ({
   },
   signInWithGoogle: () => mockSignInWithGoogle(),
   signOut: () => mockSignOut(),
+  checkRedirectResult: () => Promise.resolve(null),
 }));
 
 // Mock fetch for session cookie sync
