@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Container, Button } from "@/components/ui";
@@ -15,12 +15,28 @@ function LoginForm() {
 
   // Redirect destination set by middleware (defaults to /admin)
   const redirectTo = searchParams.get("from") || "/admin";
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
-      router.replace(redirectTo);
+    if (!loading && user && !redirecting) {
+      setRedirecting(true);
+      // Ensure the session cookie is set BEFORE navigating
+      // Otherwise middleware will redirect back to /login (no cookie yet)
+      (async () => {
+        try {
+          const token = await user.getIdToken();
+          await fetch("/api/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token }),
+          });
+        } catch (e) {
+          console.error("[Login] Session cookie sync failed:", e);
+        }
+        router.replace(redirectTo);
+      })();
     }
-  }, [user, loading, router, redirectTo]);
+  }, [user, loading, router, redirectTo, redirecting]);
 
   async function handleSignIn() {
     setError(null);
@@ -51,7 +67,7 @@ function LoginForm() {
     }
   }
 
-  if (loading) {
+  if (loading || redirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-10">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -131,7 +147,15 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <AuthProvider>
-      <LoginForm />
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-gray-10">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        }
+      >
+        <LoginForm />
+      </Suspense>
     </AuthProvider>
   );
 }

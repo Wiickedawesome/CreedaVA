@@ -128,6 +128,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // AI Conversations — chat history for dashboard AI assistant
+    match /ai-conversations/{docId} {
+      allow read, write: if isAdmin();
+    }
+
     // Analytics — validated public create, admin read
     match /analytics/{docId} {
       allow create: if request.resource.data.keys().hasAny(['event', 'page', 'type'])
