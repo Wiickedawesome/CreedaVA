@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -125,6 +126,11 @@ service cloud.firestore {
 
     // AI Worker tasks — admin only
     match /ai-tasks/{docId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // AI Insights - admin only
+    match /ai-insights/{docId} {
       allow read, write: if isAdmin();
     }
 

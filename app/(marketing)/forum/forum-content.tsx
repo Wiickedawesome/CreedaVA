@@ -1,9 +1,19 @@
 "use client";
 
 import { ForumList } from "./forum-list";
-import { ForumAuthProvider, useForumAuth } from "./forum-auth-context";
+import { useForumAuth } from "./forum-auth-context";
 import { useTranslation } from "@/lib/i18n";
 import { useState } from "react";
+import dynamic from "next/dynamic";
+
+const ForumClientProvider = dynamic(
+  () =>
+    import("./forum-client-provider").then((mod) => mod.ForumClientProvider),
+  {
+    ssr: false,
+    loading: () => <div className="min-h-[60vh]" />,
+  }
+);
 
 function ForumHeader() {
   const { t } = useTranslation();
@@ -65,11 +75,11 @@ function ForumBody() {
 
 export function ForumContent() {
   return (
-    <ForumAuthProvider>
+    <ForumClientProvider>
       <div className="min-h-[60vh] bg-gray-10/30">
         <ForumHeader />
         <ForumBody />
       </div>
-    </ForumAuthProvider>
+    </ForumClientProvider>
   );
 }

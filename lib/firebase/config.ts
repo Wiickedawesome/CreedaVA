@@ -1,10 +1,10 @@
 // Firebase configuration
 // Get values from: Firebase Console → Project Settings → Your apps → Web app
 
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
+import { getFirestore, type Firestore } from "firebase/firestore";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
 import {
   getAnalytics,
   logEvent as firebaseLogEvent,
@@ -22,14 +22,18 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
 };
 
-// Initialize Firebase (prevent re-initialization in dev / HMR)
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+let storage: FirebaseStorage;
 
-// Use getFirestore — safe to call multiple times (returns same instance).
-// initializeFirestore + persistentLocalCache crashes on HMR re-init.
-const db = getFirestore(app);
-const storage = getStorage(app);
+// Initialize Firebase only on the client-side
+if (typeof window !== "undefined") {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+    storage = getStorage(app);
+}
 
 // ─── GA4 Analytics ───────────────────────────────────
 // Lazy-init: only in browser, only when supported
@@ -40,6 +44,7 @@ async function getGA4(): Promise<Analytics | null> {
   if (_analytics) return _analytics;
   const supported = await isSupported();
   if (!supported) return null;
+  if (!app) return null;
   _analytics = getAnalytics(app);
   return _analytics;
 }

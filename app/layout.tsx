@@ -61,11 +61,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Preconnect to Firebase services — saves ~200-400ms on first request */}
-        <link rel="preconnect" href="https://firestore.googleapis.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://apis.google.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://www.googleapis.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
       </head>
       <body className={`${roboto.variable} antialiased`}>
         {children}

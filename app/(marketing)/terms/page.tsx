@@ -1,12 +1,4 @@
 import { Container } from "@/components/ui";
-import { getPageSEO } from "@/lib/firebase/seo";
-
-export async function generateMetadata() {
-  return getPageSEO("/terms", {
-    title: "Terms of Service",
-    description: "CreedaVA's terms of service — the rules and guidelines governing the use of our virtual assistant services.",
-  });
-}
 
 export default function TermsPage() {
   return (

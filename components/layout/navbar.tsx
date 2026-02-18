@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -91,9 +91,8 @@ export function Navbar() {
               <Image
                 src="/logo.webp"
                 alt="CreedaVA"
-                width={180}
-                height={52}
-                className="h-14 w-auto"
+                width={80}
+                height={22}
                 priority
               />
             </Link>

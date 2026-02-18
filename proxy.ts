@@ -13,7 +13,7 @@ import type { NextRequest } from "next/server";
  * The actual Firebase Auth token verification still happens client-side
  * in the AdminAuthGate component (app/(admin)/admin/layout.tsx).
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const session = request.cookies.get("__session");
 
   if (!session?.value) {

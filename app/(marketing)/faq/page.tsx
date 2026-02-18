@@ -1,13 +1,14 @@
-import { getPageSEO } from "@/lib/firebase/seo";
-import { FaqContent } from "./faq-content";
+'use client';
 
-export async function generateMetadata() {
-  return getPageSEO("/faq", {
-    title: "FAQ",
-    description: "Frequently asked questions about CreedaVA's virtual assistant services, pricing, onboarding, and more.",
-  });
-}
+import { useTranslation } from "@/lib/i18n";
 
 export default function FAQPage() {
-  return <FaqContent />;
+  const { t } = useTranslation();
+
+  return (
+    <div className="container mx-auto px-6 py-12">
+      <h1 className="text-3xl font-bold">{t.faq.title}</h1>
+      <p className="mt-4">{t.faq.description}</p>
+    </div>
+  );
 }

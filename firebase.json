@@ -1,3 +1,4 @@
+
 {
   "hosting": {
     "public": "out",
@@ -12,10 +13,6 @@
       {
         "source": "/listCalendarEvents",
         "function": "listCalendarEvents"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
       }
     ],
     "headers": [
@@ -31,6 +28,10 @@
       {
         "source": "**",
         "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
           {
             "key": "X-Content-Type-Options",
             "value": "nosniff"
@@ -49,7 +50,7 @@
           },
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://apis.google.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self' https: wss:; frame-src 'self' https://accounts.google.com https://creedava.firebaseapp.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+            "value": "default-src 'self' https: wss: *.cloudworkstations.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: *.cloudworkstations.dev; style-src 'self' 'unsafe-inline' https: *.cloudworkstations.dev; img-src 'self' https: data: blob: *.cloudworkstations.dev; connect-src 'self' https: wss: *.cloudworkstations.dev; font-src 'self' https: data: *.cloudworkstations.dev; manifest-src 'self' https: *.cloudworkstations.dev; frame-src 'self' https://accounts.google.com https://*.firebaseapp.com https://*.cloudworkstations.dev; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
           },
           {
             "key": "Permissions-Policy",

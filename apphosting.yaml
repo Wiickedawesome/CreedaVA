@@ -1,3 +1,4 @@
+
 # Firebase App Hosting configuration
 # https://firebase.google.com/docs/app-hosting/configure
 
@@ -8,17 +9,6 @@ runConfig:
   memoryMiB: 512
   concurrency: 80
 
-# ─── Environment Variables ────────────────────────────────────────────────────
-# NEXT_PUBLIC_* vars are compiled into the client-side JS bundle at build time
-# and are PUBLIC by design. They are NOT secrets.
-#
-# Firebase API keys are safe to expose — security is enforced by:
-#   1. Firestore Security Rules (firestore.rules)
-#   2. Firebase Auth domain restrictions
-#   3. API key restrictions in Google Cloud Console
-#
-# For local development, copy .env.local.example → .env.local
-# ──────────────────────────────────────────────────────────────────────────────
 env:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     value: AIzaSyBGaDhXUnmMfYsjxK9Jh5Tk3vGn78mum3U
@@ -34,9 +24,3 @@ env:
     value: "1:53722795216:web:18065a250c22647774a2d5"
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
     value: G-GSYB90RLF2
-  # App Check — reCAPTCHA Enterprise (set after creating key in GCP Console)
-  # - variable: NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY
-  #   value: YOUR_RECAPTCHA_ENTERPRISE_SITE_KEY
-  # Cloud Messaging — VAPID key (set after generating in Firebase Console)
-  # - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
-  #   value: YOUR_VAPID_KEY
