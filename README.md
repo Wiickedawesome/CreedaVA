@@ -1,17 +1,12 @@
 <p align="center">
-  <img src="docs/assets/banner.svg" alt="CreedaVA — Professional Virtual Assistant Services" width="100%">
-</p>
-
-<p align="center">
   <strong>Marketing website &amp; admin CRM dashboard</strong><br>
   <sub>Built with Next.js 16 &bull; React 19 &bull; Firebase &bull; Tailwind CSS v4 &bull; Gemini AI</sub>
 </p>
 
 <p align="center">
   <a href="https://creedava.com"><img src="https://img.shields.io/badge/live-creedava.com-005148?style=flat-square&logo=google-chrome&logoColor=white" alt="Live Site"></a>
-  <a href="https://wiickedawesome.github.io/CreedaVA/"><img src="https://img.shields.io/badge/demo-GitHub%20Pages-1B2A4A?style=flat-square&logo=github&logoColor=white" alt="Demo"></a>
   <img src="https://img.shields.io/badge/TypeScript-99.6%25-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/tests-67%20passing-22C55E?style=flat-square&logo=vitest&logoColor=white" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-137%20passing-22C55E?style=flat-square&logo=vitest&logoColor=white" alt="Tests">
   <img src="https://img.shields.io/badge/lint-0%20issues-22C55E?style=flat-square&logo=eslint&logoColor=white" alt="Lint">
   <img src="https://img.shields.io/badge/license-proprietary-E8A317?style=flat-square" alt="License">
 </p>
@@ -56,7 +51,7 @@ CreedaVA is a full-stack platform for a Belize-based virtual assistant agency. I
 | **Styling** | Tailwind CSS v4 | Design tokens via `@theme inline` |
 | **Backend** | Firebase 12.9 | Auth, Firestore, Storage, Cloud Functions |
 | **AI** | Gemini 2.5 Flash | Content gen, translation, SEO audits |
-| **Testing** | Vitest + RTL | 67 tests across 8 test files |
+| **Testing** | Vitest + RTL | 137 tests across 17 test files |
 | **Linting** | ESLint 9 | Flat config, 0 warnings/errors |
 
 ## Quick Start
@@ -115,7 +110,7 @@ lib/
 └─ utils/              ← CSV export, LTV calculation
 
 functions/             ← Cloud Functions (Node.js 22)
-docs/                  ← Static demo site (GitHub Pages)
+docs/dev/              ← Architecture, testing, Firebase & contributing guides
 __tests__/             ← Vitest test suite
 ```
 
@@ -136,10 +131,6 @@ Firebase API keys are safe to expose — security is enforced by Firestore Rules
 | `gray-10`…`gray-100` | Scale | Backgrounds, borders, muted text |
 
 Font: **Roboto** (300/400/500/700) via `next/font/google`. Design tokens defined in `globals.css` using Tailwind v4 `@theme inline`.
-
-## Demo
-
-A lightweight static demo with mock data is available at **[wiickedawesome.github.io/CreedaVA](https://wiickedawesome.github.io/CreedaVA/)**. This is served from the `docs/` folder via GitHub Pages and has no Firebase dependency.
 
 ## Deployment
 

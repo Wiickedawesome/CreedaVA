@@ -234,10 +234,10 @@ function AIPromptDialog({
     let cancelled = false;
     (async () => {
       try {
-        const messages = await lazyGetCurrentMessages(user.uid);
-        if (!cancelled && messages.length > 0) {
+        const result = await lazyGetCurrentMessages(user.uid);
+        if (!cancelled && result.messages.length > 0) {
           setChatMessages(
-            messages.map((m: AIMessage) => ({
+            result.messages.map((m: AIMessage) => ({
               role: m.role as "user" | "assistant",
               content: m.content,
             }))
