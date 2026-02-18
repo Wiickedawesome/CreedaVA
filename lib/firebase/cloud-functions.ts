@@ -511,8 +511,19 @@ export interface IntegrationTestResult {
   testedAt: string;
 }
 
+export interface VerifyAllResult {
+  results: IntegrationTestResult[];
+  summary: { total: number; connected: number; failed: number; unconfigured: number };
+}
+
 export async function cloudTestIntegration(provider: string): Promise<IntegrationTestResult> {
   const fn = httpsCallable<{ provider: string }, IntegrationTestResult>(functions, "testIntegration");
   const result = await fn({ provider });
+  return result.data;
+}
+
+export async function cloudVerifyAllIntegrations(): Promise<VerifyAllResult> {
+  const fn = httpsCallable<Record<string, never>, VerifyAllResult>(functions, "verifyAllIntegrations");
+  const result = await fn({});
   return result.data;
 }

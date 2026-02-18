@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useAuth } from "@/lib/firebase";
 import { useCollection } from "@/hooks/useCollection";
-import { createWithId } from "@/lib/firebase/firestore";
-import { cloudTestIntegration } from "@/lib/firebase/cloud-functions";
-import type { IntegrationTestResult } from "@/lib/firebase/cloud-functions";
+import { createWithId, subscribe } from "@/lib/firebase/firestore";
+import { cloudTestIntegration, cloudVerifyAllIntegrations } from "@/lib/firebase/cloud-functions";
+import type { IntegrationTestResult, VerifyAllResult } from "@/lib/firebase/cloud-functions";
 import { PageHeader, useToast } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 
@@ -250,8 +250,7 @@ const PROVIDERS: ProviderConfig[] = [
 export default function SettingsPage() {
   const { user } = useAuth();
   const { data: settings, loading: settingsLoading, add, edit } = useCollection<Setting>("settings");
-  const { data: integrations, loading: integrationsLoading, refetch: refetchIntegrations } = useCollection<Integration>("integrations");
-  const { toast } = useToast();
+const { toast } = useToast();
 
   // ─── General settings state ─────────
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -261,12 +260,32 @@ export default function SettingsPage() {
   const [timezone, setTimezone] = useState("America/Belize");
   const [saving, setSaving] = useState(false);
 
-  // ─── Integrations state ─────────────
+  // ─── Integrations state (REAL-TIME listener) ─────────────
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
+  const [integrationsLoading, setIntegrationsLoading] = useState(true);
   const [expandedProvider, setExpandedProvider] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, Record<string, string>>>({});
   const [savingProvider, setSavingProvider] = useState<string | null>(null);
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, IntegrationTestResult>>({});
+  const [verifyingAll, setVerifyingAll] = useState(false);
+  const hasAutoVerified = useRef(false);
+
+  // ── Real-time listener for integrations collection ──
+  // This ensures test results from Cloud Functions push to the UI immediately
+  useEffect(() => {
+    if (!user || !user.email?.endsWith("@creedava.com")) {
+      setIntegrationsLoading(false);
+      return;
+    }
+
+    const unsubscribe = subscribe<Integration>("integrations", (data) => {
+      setIntegrations(data);
+      setIntegrationsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   // Load general settings
   useEffect(() => {
@@ -283,7 +302,7 @@ export default function SettingsPage() {
     }
   }, [settings]);
 
-  // Pre-fill integration form data
+  // Pre-fill integration form data from live Firestore data
   useEffect(() => {
     const prefilled: Record<string, Record<string, string>> = {};
     for (const integration of integrations) {
@@ -291,6 +310,28 @@ export default function SettingsPage() {
     }
     setFormData(prefilled);
   }, [integrations]);
+
+  // ── Auto-verify all enabled integrations on first load ──
+  // Runs once after integrations load so status badges are always current
+  useEffect(() => {
+    if (integrationsLoading || hasAutoVerified.current) return;
+    const enabledCount = integrations.filter((i) => i.enabled).length;
+    if (enabledCount === 0) return;
+    hasAutoVerified.current = true;
+
+    // Silent background verify — no toast spam
+    cloudVerifyAllIntegrations()
+      .then((res: VerifyAllResult) => {
+        const resultMap: Record<string, IntegrationTestResult> = {};
+        for (const r of res.results) {
+          resultMap[r.provider] = r;
+        }
+        setTestResults(resultMap);
+      })
+      .catch(() => {
+        // Silently fail — user can manually verify
+      });
+  }, [integrationsLoading, integrations]);
 
   // ─── Handlers ──────────────────────
 
@@ -341,25 +382,28 @@ export default function SettingsPage() {
         enabled: true,
         config,
       });
-      refetchIntegrations();
+      // Real-time listener auto-updates UI — no manual refetch needed
       toast(`${providerId} integration saved`);
+
+      // Auto-test after saving to immediately verify connection
+      setTestingProvider(providerId);
+      try {
+        const result = await cloudTestIntegration(providerId);
+        setTestResults((prev) => ({ ...prev, [providerId]: result }));
+        if (result.success) {
+          toast(`${providerId} — ${result.details || "Connected"}`);
+        } else {
+          toast(`${providerId} — ${result.details || result.message}`, "error");
+        }
+      } catch {
+        // Test failed but save succeeded — user can re-test manually
+      } finally {
+        setTestingProvider(null);
+      }
     } catch {
       toast(`Failed to save ${providerId}`, "error");
     } finally {
       setSavingProvider(null);
-    }
-  }
-
-  async function persistTestResult(providerId: string, result: IntegrationTestResult) {
-    try {
-      await createWithId("integrations", providerId, {
-        provider: providerId,
-        lastTestedAt: result.testedAt,
-        lastTestSuccess: result.success,
-        lastTestMessage: result.details || result.message,
-      });
-    } catch {
-      // Cloud function also persists — client-side is a backup
     }
   }
 
@@ -373,9 +417,7 @@ export default function SettingsPage() {
       } else {
         toast(`${providerId} — ${result.details || result.message}`, "error");
       }
-      // Persist test result to Firestore (belt-and-suspenders with cloud function)
-      await persistTestResult(providerId, result);
-      refetchIntegrations();
+      // Cloud Function persists to Firestore → real-time listener picks it up
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Test failed";
       const failResult: IntegrationTestResult = {
@@ -387,10 +429,25 @@ export default function SettingsPage() {
       };
       setTestResults((prev) => ({ ...prev, [providerId]: failResult }));
       toast(`${providerId} — ${msg}`, "error");
-      await persistTestResult(providerId, failResult);
-      refetchIntegrations();
     } finally {
       setTestingProvider(null);
+    }
+  }
+
+  async function handleVerifyAll() {
+    setVerifyingAll(true);
+    try {
+      const res = await cloudVerifyAllIntegrations();
+      const resultMap: Record<string, IntegrationTestResult> = {};
+      for (const r of res.results) {
+        resultMap[r.provider] = r;
+      }
+      setTestResults(resultMap);
+      toast(`Verified: ${res.summary.connected} connected, ${res.summary.failed} failed, ${res.summary.unconfigured} not configured`);
+    } catch {
+      toast("Failed to verify integrations", "error");
+    } finally {
+      setVerifyingAll(false);
     }
   }
 
@@ -402,7 +459,7 @@ export default function SettingsPage() {
         provider: providerId,
         enabled: !existing.enabled,
       });
-      refetchIntegrations();
+      // Real-time listener auto-updates UI
       toast(`${providerId} ${existing.enabled ? "disabled" : "enabled"}`);
     } catch {
       toast(`Failed to toggle ${providerId}`, "error");
@@ -555,7 +612,24 @@ export default function SettingsPage() {
             </svg>
             <h2 className="text-sm font-semibold text-foreground tracking-wide uppercase">Integrations</h2>
           </div>
-          <span className="text-xs text-gray-40">{connectedCount} of {PROVIDERS.length} connected</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-40">{connectedCount} of {PROVIDERS.length} connected</span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleVerifyAll}
+              disabled={verifyingAll}
+            >
+              {verifyingAll ? (
+                <span className="flex items-center gap-1.5">
+                  <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10" strokeDasharray="31.4 31.4" /></svg>
+                  Verifying…
+                </span>
+              ) : (
+                "Verify All"
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Webhook URL */}

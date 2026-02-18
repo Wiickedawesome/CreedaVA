@@ -216,61 +216,116 @@ export const testIntegration = onCall(
       throw new HttpsError("invalid-argument", `Unknown provider: ${provider}`);
     }
 
-    const integration = await getIntegrationConfig(provider);
-    if (!integration) {
-      return {
-        success: false,
-        provider,
-        message: "Not configured",
-        details: "No credentials saved. Fill in the fields and click Connect first.",
-        testedAt: new Date().toISOString(),
-      };
-    }
-
-    if (!integration.enabled) {
-      return {
-        success: false,
-        provider,
-        message: "Disabled",
-        details: "Integration is saved but disabled. Enable it first.",
-        testedAt: new Date().toISOString(),
-      };
-    }
-
-    try {
-      const details = await TESTS[provider](integration.config);
-
-      // Save test result to Firestore
-      await db.collection("integrations").doc(provider).update({
-        lastTestedAt: new Date().toISOString(),
-        lastTestSuccess: true,
-        lastTestMessage: details,
-      });
-
-      return {
-        success: true,
-        provider,
-        message: "Connected",
-        details,
-        testedAt: new Date().toISOString(),
-      };
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-
-      // Save failure to Firestore
-      await db.collection("integrations").doc(provider).update({
-        lastTestedAt: new Date().toISOString(),
-        lastTestSuccess: false,
-        lastTestMessage: errorMsg,
-      }).catch(() => { /* doc might not exist yet */ });
-
-      return {
-        success: false,
-        provider,
-        message: "Connection failed",
-        details: errorMsg,
-        testedAt: new Date().toISOString(),
-      };
-    }
+    return runSingleTest(provider);
   },
 );
+
+// ─── Verify All Integrations ─────────────────────────
+
+interface VerifyAllResult {
+  results: TestResult[];
+  summary: { total: number; connected: number; failed: number; unconfigured: number };
+}
+
+export const verifyAllIntegrations = onCall(
+  { region: "us-east4", timeoutSeconds: 60, memory: "512MiB" },
+  async (request): Promise<VerifyAllResult> => {
+    verifyAdminEmail(request.auth?.token?.email);
+
+    const providers = Object.keys(TESTS);
+    const results: TestResult[] = [];
+
+    // Run all tests in parallel (each has its own timeout handling)
+    const promises = providers.map(async (provider) => {
+      try {
+        return await runSingleTest(provider);
+      } catch (err) {
+        return {
+          success: false,
+          provider,
+          message: "Error",
+          details: err instanceof Error ? err.message : String(err),
+          testedAt: new Date().toISOString(),
+        };
+      }
+    });
+
+    const settled = await Promise.all(promises);
+    results.push(...settled);
+
+    const connected = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success && r.message !== "Not configured" && r.message !== "Disabled").length;
+    const unconfigured = results.filter((r) => r.message === "Not configured" || r.message === "Disabled").length;
+
+    return {
+      results,
+      summary: { total: providers.length, connected, failed, unconfigured },
+    };
+  },
+);
+
+// ─── Shared test runner ──────────────────────────────
+
+async function runSingleTest(provider: string): Promise<TestResult> {
+  const integration = await getIntegrationConfig(provider);
+  if (!integration) {
+    return {
+      success: false,
+      provider,
+      message: "Not configured",
+      details: "No credentials saved. Fill in the fields and click Connect first.",
+      testedAt: new Date().toISOString(),
+    };
+  }
+
+  if (!integration.enabled) {
+    return {
+      success: false,
+      provider,
+      message: "Disabled",
+      details: "Integration is saved but disabled. Enable it first.",
+      testedAt: new Date().toISOString(),
+    };
+  }
+
+  try {
+    const details = await TESTS[provider](integration.config);
+
+    // Save test result to Firestore
+    await db.collection("integrations").doc(provider).set({
+      provider,
+      enabled: true,
+      config: integration.config,
+      lastTestedAt: new Date().toISOString(),
+      lastTestSuccess: true,
+      lastTestMessage: details,
+      configSource: integration.source ?? "firestore",
+    }, { merge: true });
+
+    return {
+      success: true,
+      provider,
+      message: "Connected",
+      details,
+      testedAt: new Date().toISOString(),
+    };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+
+    // Save failure to Firestore
+    await db.collection("integrations").doc(provider).set({
+      provider,
+      lastTestedAt: new Date().toISOString(),
+      lastTestSuccess: false,
+      lastTestMessage: errorMsg,
+    }, { merge: true }).catch(() => { /* doc might not exist yet */ });
+
+    return {
+      success: false,
+      provider,
+      message: "Connection failed",
+      details: errorMsg,
+      testedAt: new Date().toISOString(),
+    };
+  }
+}

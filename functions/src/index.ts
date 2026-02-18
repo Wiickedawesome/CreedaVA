@@ -48,4 +48,4 @@ export { webSearch, competitorSearch, industryTrends } from "./web-search";
 export { submitSatisfaction } from "./satisfaction";
 
 // Integration connectivity tests
-export { testIntegration } from "./test-integration";
+export { testIntegration, verifyAllIntegrations } from "./test-integration";

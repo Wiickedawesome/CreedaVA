@@ -17,6 +17,7 @@ export { PageSkeleton, DashboardSkeleton } from "./skeleton";
 export { AIPromptButton } from "./ai-prompt";
 export type { AIPromptConfig } from "./ai-prompt";
 export { Markdown } from "./markdown";
+export type { CalendarEvent } from "./calendar-view";
 
 // ─── Lazy-loaded heavy components ────────────────────
 // These contain large SVG maps / rich-text editing logic.
@@ -34,4 +35,9 @@ export const CountryMap = dynamic(() => import("./country-map").then((m) => m.Co
 export const RichTextEditor = dynamic(() => import("./rich-text-editor").then((m) => m.RichTextEditor), {
   ssr: false,
   loading: () => <div className="h-40 animate-pulse rounded-xl bg-gray-20 border border-border" />,
+});
+
+export const CalendarView = dynamic(() => import("./calendar-view"), {
+  ssr: false,
+  loading: () => <div className="h-96 animate-pulse rounded-xl bg-gray-20 border border-border" />,
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,
@@ -10,9 +10,10 @@ import {
   StatusBadge,
   Modal,
   AIPromptButton,
+  CalendarView,
   useToast,
 } from "@/components/admin";
-import type { Column } from "@/components/admin";
+import type { Column, CalendarEvent } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { cloudListCalendarEvents } from "@/lib/firebase/cloud-functions";
 import type { Booking } from "@/lib/types/crm";
@@ -32,7 +33,6 @@ export default function BookingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<Booking | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [calendarEvents, setCalendarEvents] = useState<{
     id: string; summary: string; start: string; end: string;
@@ -40,6 +40,85 @@ export default function BookingsPage() {
   }[]>([]);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", service: "", date: "", time: "", notes: "" });
+  const [viewMode, setViewMode] = useState<"table" | "calendar">("table");
+
+  // ─── Calendar data: merge bookings + Google Calendar events ───
+  const fetchCalendarEvents = useCallback(async () => {
+    if (calendarLoading) return;
+    setCalendarLoading(true);
+    try {
+      const events = await cloudListCalendarEvents();
+      setCalendarEvents(events);
+    } catch {
+      // Silently fail — calendar events are optional overlay
+    } finally {
+      setCalendarLoading(false);
+    }
+  }, [calendarLoading]);
+
+  // Load Google Calendar events when switching to calendar view
+  useEffect(() => {
+    if (viewMode === "calendar" && calendarEvents.length === 0) {
+      fetchCalendarEvents();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode]);
+
+  // Map bookings to CalendarEvent format
+  const bookingCalendarEvents: CalendarEvent[] = useMemo(
+    () =>
+      bookings.map((b) => {
+        const color: CalendarEvent["color"] =
+          b.status === "confirmed" ? "teal"
+            : b.status === "completed" ? "green"
+              : b.status === "cancelled" ? "red"
+                : "yellow";
+        return {
+          id: `booking-${b.id}`,
+          title: `${b.service || "Consultation"} — ${b.name}`,
+          date: b.date,
+          time: b.time,
+          color,
+          type: "booking" as const,
+          status: b.status,
+          description: b.notes,
+          link: b.googleCalendarLink,
+          onClick: () => openDetail(b),
+        };
+      }),
+    [bookings],
+  );
+
+  // Map Google Calendar events to CalendarEvent format
+  const googleCalendarEvents: CalendarEvent[] = useMemo(
+    () =>
+      calendarEvents
+        .filter((ev) => {
+          // Skip events that are already represented by a booking
+          return !bookings.some((b) => b.googleCalendarLink && ev.link && b.googleCalendarLink === ev.link);
+        })
+        .map((ev) => {
+          const startDate = new Date(ev.start);
+          return {
+            id: `gcal-${ev.id}`,
+            title: ev.summary,
+            date: startDate.toISOString().split("T")[0],
+            time: startDate.toTimeString().slice(0, 5),
+            endTime: ev.end ? new Date(ev.end).toTimeString().slice(0, 5) : undefined,
+            color: "blue" as const,
+            type: "calendar-event" as const,
+            status: ev.status,
+            description: ev.description,
+            link: ev.link,
+          };
+        }),
+    [calendarEvents, bookings],
+  );
+
+  const allCalendarEvents = useMemo(
+    () => [...bookingCalendarEvents, ...googleCalendarEvents],
+    [bookingCalendarEvents, googleCalendarEvents],
+  );
 
   /** Save AI output — emails go to the Emails collection, analysis goes to booking notes */
   async function handleAIResult(result: string) {
@@ -98,11 +177,11 @@ export default function BookingsPage() {
   }
 
   async function handleViewCalendar() {
+    setViewMode("calendar");
     setCalendarLoading(true);
     try {
       const events = await cloudListCalendarEvents();
       setCalendarEvents(events);
-      setCalendarOpen(true);
     } catch {
       toast("Failed — ensure Google Calendar is configured in Settings → Integrations", "error");
     } finally {
@@ -284,9 +363,24 @@ export default function BookingsPage() {
             }
             onResult={handleAIResult}
           />
-          <Button variant="outline" size="sm" onClick={handleViewCalendar} isLoading={calendarLoading} className="w-full sm:w-auto">
-            <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-            View Calendar
+          <Button variant="outline" size="sm" onClick={() => {
+            if (viewMode === "calendar") {
+              setViewMode("table");
+            } else {
+              handleViewCalendar();
+            }
+          }} isLoading={calendarLoading} className="w-full sm:w-auto">
+            {viewMode === "calendar" ? (
+              <>
+                <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                Table View
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                Calendar View
+              </>
+            )}
           </Button>
           <Button size="sm" onClick={() => { setForm({ name: "", email: "", phone: "", service: "", date: "", time: "", notes: "" }); setCreateOpen(true); }}>
             New Booking
@@ -297,13 +391,42 @@ export default function BookingsPage() {
 
       <AdminTabs tabs={tabs} defaultValue="all" onChange={setTab} />
 
-      <DataTable
-        columns={columns}
-        data={filtered}
-        keyExtractor={(b) => b.id}
-        onRowClick={(b) => openDetail(b)}
-        emptyMessage="No bookings found"
-      />
+      {viewMode === "table" ? (
+        <DataTable
+          columns={columns}
+          data={filtered}
+          keyExtractor={(b) => b.id}
+          onRowClick={(b) => openDetail(b)}
+          emptyMessage="No bookings found"
+        />
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-gray-50">
+              <span className="font-medium text-gray-70">{bookings.length}</span> bookings
+              {googleCalendarEvents.length > 0 && (
+                <>
+                  {" · "}
+                  <span className="font-medium text-gray-70">{googleCalendarEvents.length}</span> calendar events
+                </>
+              )}
+            </div>
+            <Button variant="outline" size="sm" onClick={fetchCalendarEvents} isLoading={calendarLoading}>
+              <svg className="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
+              Refresh Events
+            </Button>
+          </div>
+          <CalendarView
+            events={allCalendarEvents}
+            loading={calendarLoading}
+            onDateClick={(date) => {
+              // Pre-fill the "New Booking" form with the selected date
+              const iso = date.toISOString().split("T")[0];
+              setForm({ name: "", email: "", phone: "", service: "", date: iso, time: "", notes: "" });
+            }}
+          />
+        </div>
+      )}
 
       {/* Create Modal */}
       <Modal
@@ -450,45 +573,6 @@ export default function BookingsPage() {
         </p>
       </Modal>
 
-      {/* Google Calendar Events Modal */}
-      <Modal
-        open={calendarOpen}
-        onClose={() => setCalendarOpen(false)}
-        title="Google Calendar Events"
-        size="lg"
-        footer={
-          <Button variant="outline" size="sm" onClick={() => setCalendarOpen(false)}>
-            Close
-          </Button>
-        }
-      >
-        {calendarEvents.length === 0 ? (
-          <p className="text-sm text-gray-50 text-center py-8">No upcoming calendar events found</p>
-        ) : (
-          <div className="divide-y divide-border max-h-96 overflow-y-auto">
-            {calendarEvents.map((ev) => (
-              <div key={ev.id} className="py-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-90">{ev.summary}</p>
-                    <p className="text-xs text-gray-50 mt-0.5">
-                      {new Date(ev.start).toLocaleString()} — {new Date(ev.end).toLocaleString()}
-                    </p>
-                    {ev.description && (
-                      <p className="text-xs text-gray-40 mt-1 truncate">{ev.description}</p>
-                    )}
-                  </div>
-                  {ev.link && (
-                    <a href={ev.link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline ml-2 shrink-0">
-                      Open
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

@@ -8,7 +8,7 @@
  * {
  *   enabled: true,
  *   config: {
- *     calendarId: "admin@creedava.com",
+ *     calendarId: "c_e686abbcbcc12442a9a588c639e5cfecd0ead1adf814a6a49dd94c6f55acd466@group.calendar.google.com",
  *     serviceAccountEmail: "calendar@creeda-va.iam.gserviceaccount.com",
  *     serviceAccountKey: "{ ... JSON key ... }",
  *   }
@@ -57,7 +57,7 @@ async function getCalendarClient(): Promise<{
   }
 
   const calendar = google.calendar({ version: "v3", auth: authClient });
-  const calendarId = config.calendarId || "primary";
+  const calendarId = config.calendarId || "c_e686abbcbcc12442a9a588c639e5cfecd0ead1adf814a6a49dd94c6f55acd466@group.calendar.google.com";
 
   return { calendar, calendarId };
 }
