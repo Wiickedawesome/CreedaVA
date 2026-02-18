@@ -27,9 +27,25 @@ function LoginForm() {
     setSigningIn(true);
     try {
       await signIn();
-    } catch (err) {
-      setError("Sign-in failed. Make sure you're using a creedava.com account.");
-      console.error(err);
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code;
+      const msg = (err as { message?: string }).message;
+
+      if (code === "auth/unauthorized-domain") {
+        setError(
+          "This domain is not authorized for sign-in. " +
+          "Add it to Firebase Console → Authentication → Settings → Authorized domains.",
+        );
+      } else if (code === "auth/internal-error" || code === "auth/network-request-failed") {
+        setError("Network error. Check your connection and try again.");
+      } else if (code === "auth/user-disabled") {
+        setError("This account has been disabled.");
+      } else {
+        setError(
+          msg || "Sign-in failed. Make sure you're using a creedava.com account.",
+        );
+      }
+      console.error("[Login]", code, msg, err);
     } finally {
       setSigningIn(false);
     }

@@ -350,6 +350,19 @@ export default function SettingsPage() {
     }
   }
 
+  async function persistTestResult(providerId: string, result: IntegrationTestResult) {
+    try {
+      await createWithId("integrations", providerId, {
+        provider: providerId,
+        lastTestedAt: result.testedAt,
+        lastTestSuccess: result.success,
+        lastTestMessage: result.details || result.message,
+      });
+    } catch {
+      // Cloud function also persists — client-side is a backup
+    }
+  }
+
   async function handleTestConnection(providerId: string) {
     setTestingProvider(providerId);
     try {
@@ -360,14 +373,22 @@ export default function SettingsPage() {
       } else {
         toast(`${providerId} — ${result.details || result.message}`, "error");
       }
+      // Persist test result to Firestore (belt-and-suspenders with cloud function)
+      await persistTestResult(providerId, result);
       refetchIntegrations();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Test failed";
-      setTestResults((prev) => ({
-        ...prev,
-        [providerId]: { success: false, provider: providerId, message: "Error", details: msg, testedAt: new Date().toISOString() },
-      }));
+      const failResult: IntegrationTestResult = {
+        success: false,
+        provider: providerId,
+        message: "Error",
+        details: msg,
+        testedAt: new Date().toISOString(),
+      };
+      setTestResults((prev) => ({ ...prev, [providerId]: failResult }));
       toast(`${providerId} — ${msg}`, "error");
+      await persistTestResult(providerId, failResult);
+      refetchIntegrations();
     } finally {
       setTestingProvider(null);
     }

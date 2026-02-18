@@ -50,7 +50,8 @@ export async function checkRedirectResult(): Promise<User | null> {
   try {
     const result = await getRedirectResult(auth);
     return result?.user ?? null;
-  } catch {
+  } catch (error) {
+    console.error("[Auth] Redirect result error:", error);
     return null;
   }
 }
