@@ -11,6 +11,7 @@ interface NavItem {
   href: string;
   icon: React.ReactNode;
   badge?: number;
+  exact?: boolean;
   children?: { label: string; href: string }[];
 }
 
@@ -183,6 +184,7 @@ const analyticsItems: NavItem[] = [
   {
     label: "Analytics",
     href: "/admin/analytics",
+    exact: true,
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="20" x2="18" y2="10" />
@@ -220,8 +222,8 @@ function NavSection({ title, items, onNavigate }: { title?: string; items: NavIt
       <nav className="flex flex-col gap-0.5">
         {items.map((item) => {
           const isActive =
-            item.href === "/admin"
-              ? pathname === "/admin"
+            item.href === "/admin" || item.exact
+              ? pathname === item.href
               : pathname.startsWith(item.href);
 
           return (

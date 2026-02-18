@@ -36,6 +36,19 @@ export async function generateText(prompt: string): Promise<string> {
   return result.response.text() ?? "";
 }
 
+/**
+ * Generate text from a prompt with streaming.
+ * Returns an async generator that yields text chunks as they arrive.
+ */
+export async function* generateTextStream(prompt: string): AsyncGenerator<string, void, unknown> {
+  const model = getModel();
+  const { stream } = await model.generateContentStream(prompt);
+  for await (const chunk of stream) {
+    const text = chunk.text();
+    if (text) yield text;
+  }
+}
+
 /** Generate structured JSON from a prompt. */
 export async function generateJSON<T = unknown>(prompt: string): Promise<T> {
   const raw = await generateText(prompt + "\n\nReturn ONLY valid JSON, no markdown fences.");

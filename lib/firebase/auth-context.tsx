@@ -64,6 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await fetch("/api/session", { method: "DELETE" });
       await signOut();
+      // Clear AI in-memory cache so next user doesn't see stale data
+      import("./ai-lazy").then(({ lazyClearAICache }) => lazyClearAICache()).catch(() => {});
     } catch (error) {
       console.error("Sign-out failed:", error);
       throw error;

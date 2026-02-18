@@ -46,3 +46,6 @@ export { webSearch, competitorSearch, industryTrends } from "./web-search";
 
 // Satisfaction Survey (public customer feedback)
 export { submitSatisfaction } from "./satisfaction";
+
+// Integration connectivity tests
+export { testIntegration } from "./test-integration";

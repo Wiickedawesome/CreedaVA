@@ -4,9 +4,12 @@ import { useState, useRef, useEffect, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { Modal, useToast } from "@/components/admin";
 import { Button } from "@/components/ui";
-import { lazyGenerateText } from "@/lib/firebase/ai-lazy";
+import { lazyGenerateText, lazySendMessageStream, lazyGetCurrentMessages, lazyLogActionToMemory, lazyGetConversationHistory, lazySwitchConversation, lazyNewConversation } from "@/lib/firebase/ai-lazy";
 import { buildTrainedPrompt, getPageContext } from "@/lib/utils/ai-system-prompt";
 import { fetchOne } from "@/lib/firebase/firestore";
+import { useAuth } from "@/lib/firebase/auth-context";
+import { Markdown } from "@/components/admin/markdown";
+import type { AIMessage, AIConversation } from "@/lib/types/ai";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -131,16 +134,30 @@ function AIPromptDialog({
   previewLabel = "Preview Page",
 }: AIPromptDialogProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  // Action mode = one-shot structured generation; Chat mode = persistent memory
+  const isActionMode = !!(onResult || buildPrompt);
 
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [result, setResult] = useState("");
-  const [showResult, setShowResult] = useState(false);
   const [autoContextLoaded, setAutoContextLoaded] = useState(false);
   const [enrichedDataContext, setEnrichedDataContext] = useState(dataContext);
   const [dynamicPresets, setDynamicPresets] = useState<{ label: string; prompt: string }[]>([]);
+
+  // Action mode state (one-shot result)
+  const [result, setResult] = useState("");
+  const [showResult, setShowResult] = useState(false);
+
+  // Chat mode state (persistent memory)
+  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [chatLoaded, setChatLoaded] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [pastConversations, setPastConversations] = useState<AIConversation[]>([]);
+  const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
 
   // Merge dynamic (AI-generated) presets ahead of static presets
   const allPresets = [...dynamicPresets, ...presets];
@@ -211,6 +228,38 @@ function AIPromptDialog({
     return () => { cancelled = true; };
   }, [open]);
 
+  // Chat mode: Load conversation history from unified core
+  useEffect(() => {
+    if (!open || isActionMode || chatLoaded || !user?.uid) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const messages = await lazyGetCurrentMessages(user.uid);
+        if (!cancelled && messages.length > 0) {
+          setChatMessages(
+            messages.map((m: AIMessage) => ({
+              role: m.role as "user" | "assistant",
+              content: m.content,
+            }))
+          );
+        }
+      } catch (err) {
+        console.warn("[AI Prompt] Chat history loading failed:", err);
+      } finally {
+        if (!cancelled) setChatLoaded(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [open, isActionMode, chatLoaded, user?.uid]);
+
+  // Chat mode: Scroll to bottom on new messages and during streaming
+  const lastChatContent = chatMessages[chatMessages.length - 1]?.content;
+  useEffect(() => {
+    if (!isActionMode && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages.length, lastChatContent, isActionMode]);
+
   function handlePreset(presetPrompt: string) {
     setPrompt(presetPrompt);
     textareaRef.current?.focus();
@@ -220,30 +269,72 @@ function AIPromptDialog({
     if (!prompt.trim()) return;
     setGenerating(true);
     try {
-      // Get page-aware context directive
-      const pageContext = getPageContext(pathname);
+      if (isActionMode) {
+        // ─── Action mode: one-shot structured generation ───
+        const pageContext = getPageContext(pathname);
 
-      const fullPrompt = buildPrompt
-        ? buildPrompt(prompt, enrichedDataContext || dataContext)
-        : buildTrainedPrompt(section, prompt, enrichedDataContext || dataContext, {
-            includeCompetitors: true,
-            includeKPIs: true,
-            includeSEOAlgorithms: true,
-            pageContext,
-          });
+        const fullPrompt = buildPrompt
+          ? buildPrompt(prompt, enrichedDataContext || dataContext)
+          : buildTrainedPrompt(section, prompt, enrichedDataContext || dataContext, {
+              includeCompetitors: true,
+              includeKPIs: true,
+              includeSEOAlgorithms: true,
+              pageContext,
+            });
 
-      const raw = await lazyGenerateText(fullPrompt);
+        const raw = await lazyGenerateText(fullPrompt);
 
-      if (onResult) {
-        onResult(raw);
-        onClose();
+        // Log to memory so Creeda AI remembers this action (fire-and-forget)
+        if (user?.uid) {
+          lazyLogActionToMemory(user.uid, prompt, raw, section, pathname).catch(() => {});
+        }
+
+        if (onResult) {
+          onResult(raw);
+          onClose();
+        } else {
+          setResult(raw);
+          setShowResult(true);
+        }
       } else {
-        setResult(raw);
-        setShowResult(true);
+        // ─── Chat mode: persistent memory via unified core (streaming) ───
+        if (!user?.uid) {
+          toast("Please sign in to use AI chat", "error");
+          return;
+        }
+        const userMsg = prompt.trim();
+        setChatMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+        setPrompt("");
+
+        // Add placeholder assistant message for streaming
+        setChatMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+        const stream = lazySendMessageStream(user.uid, userMsg, {
+          pagePath: pathname,
+          dataContext: enrichedDataContext || dataContext,
+          section,
+          includeCompetitors: true,
+          includeKPIs: true,
+        });
+
+        for await (const chunk of stream) {
+          setChatMessages((prev) => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last?.role === "assistant") {
+              updated[updated.length - 1] = { ...last, content: last.content + chunk };
+            }
+            return updated;
+          });
+        }
       }
     } catch (err) {
       console.error("AI generation failed:", err);
       toast("AI generation failed — try again", "error");
+      // Remove optimistic user message + placeholder on chat mode failure
+      if (!isActionMode) {
+        setChatMessages((prev) => prev.slice(0, -2));
+      }
     } finally {
       setGenerating(false);
     }
@@ -252,6 +343,57 @@ function AIPromptDialog({
   function handleCopy() {
     navigator.clipboard.writeText(result);
     toast("Copied to clipboard");
+  }
+
+  function handleCopyChatMessage(content: string) {
+    navigator.clipboard.writeText(content);
+    toast("Copied to clipboard");
+  }
+
+  async function handleToggleHistory() {
+    if (showHistory) {
+      setShowHistory(false);
+      return;
+    }
+    if (!user?.uid) return;
+    try {
+      const convos = await lazyGetConversationHistory(user.uid, 15);
+      setPastConversations(convos);
+    } catch (err) {
+      console.warn("[AI Prompt] History loading failed:", err);
+    }
+    setShowHistory(true);
+  }
+
+  async function handleSwitchConversation(convoId: string) {
+    if (!user?.uid || convoId === activeConvoId) return;
+    try {
+      const result = await lazySwitchConversation(user.uid, convoId);
+      setChatMessages(
+        result.messages.map((m: AIMessage) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        }))
+      );
+      setActiveConvoId(convoId);
+      setShowHistory(false);
+    } catch (err) {
+      console.error("[AI Prompt] Conversation switch failed:", err);
+      toast("Failed to switch conversation", "error");
+    }
+  }
+
+  async function handleNewChat() {
+    if (!user?.uid) return;
+    try {
+      await lazyNewConversation(user.uid);
+      setChatMessages([]);
+      setActiveConvoId(null);
+      setShowHistory(false);
+    } catch (err) {
+      console.error("[AI Prompt] New conversation failed:", err);
+      toast("Failed to start new conversation", "error");
+    }
   }
 
   function handlePreviewPage() {
@@ -288,7 +430,6 @@ function AIPromptDialog({
   }
 
   function handleModify() {
-    // Go back to prompt view with context
     setShowResult(false);
     setPrompt(
       `Modify the following:\n\n${result.slice(0, 500)}${result.length > 500 ? "..." : ""}\n\nChanges requested: `,
@@ -302,8 +443,15 @@ function AIPromptDialog({
     setShowResult(false);
   }
 
-  // ─── Result View ───────────────────────────────────
-  if (showResult) {
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter" && !e.shiftKey && !isActionMode) {
+      e.preventDefault();
+      handleGenerate();
+    }
+  }
+
+  // ─── Action Mode: Result View ──────────────────────
+  if (isActionMode && showResult) {
     return (
       <Modal
         open={open}
@@ -340,7 +488,180 @@ function AIPromptDialog({
     );
   }
 
-  // ─── Prompt View ───────────────────────────────────
+  // ─── Chat Mode: Conversational View ────────────────
+  if (!isActionMode) {
+    return (
+      <Modal
+        open={open}
+        onClose={onClose}
+        title={section}
+        size="lg"
+        footer={
+          <>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {allPresets.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  {visiblePresets.map((p) => {
+                    const isDynamic = dynamicPresets.some((dp) => dp.label === p.label);
+                    return (
+                      <button
+                        key={p.label}
+                        onClick={() => handlePreset(p.prompt)}
+                        className={`flex-1 min-w-0 rounded-full border px-2 py-1 text-xs transition-all duration-300 truncate cursor-pointer ${
+                          isDynamic
+                            ? "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 font-medium"
+                            : "border-border bg-white text-gray-60 hover:border-primary/30 hover:text-primary hover:bg-primary/5"
+                        }`}
+                      >
+                        {isDynamic ? "✦ " : ""}{p.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <Button
+              size="sm"
+              onClick={handleGenerate}
+              isLoading={generating}
+              disabled={!prompt.trim()}
+            >
+              Send
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-col h-[60vh]">
+          {/* Chat toolbar */}
+          <div className="flex items-center justify-end gap-1 pb-2 border-b border-border mb-2 shrink-0">
+            <button
+              onClick={handleToggleHistory}
+              className={`p-1 rounded transition-colors cursor-pointer ${showHistory ? "text-primary bg-primary/10" : "text-gray-40 hover:text-primary"}`}
+              title="Conversation history"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+              </svg>
+            </button>
+            <button
+              onClick={handleNewChat}
+              className="p-1 text-gray-40 hover:text-primary transition-colors cursor-pointer"
+              title="New conversation"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Conversation history dropdown */}
+          {showHistory && (
+            <div className="border border-border rounded-lg bg-white max-h-40 overflow-y-auto mb-2 shrink-0">
+              <div className="px-3 py-1.5 text-[10px] font-medium text-gray-50 uppercase tracking-wider border-b border-border">Past Conversations</div>
+              {pastConversations.length === 0 && (
+                <p className="px-3 py-3 text-xs text-gray-40 text-center">No past conversations</p>
+              )}
+              {pastConversations.map((convo) => (
+                <button
+                  key={convo.id}
+                  onClick={() => handleSwitchConversation(convo.id)}
+                  className={`w-full text-left px-3 py-2 text-xs hover:bg-primary/5 transition-colors cursor-pointer border-b border-border/50 last:border-b-0 ${
+                    convo.id === activeConvoId ? "bg-primary/10 text-primary font-medium" : "text-gray-70"
+                  }`}
+                >
+                  <div className="truncate">{convo.title || "Untitled"}</div>
+                  <div className="text-[10px] text-gray-40 mt-0.5">
+                    {convo.messages?.length || 0} messages
+                    {convo.updatedAt ? ` · ${new Date(typeof convo.updatedAt === "string" ? convo.updatedAt : (convo.updatedAt as { seconds: number }).seconds * 1000).toLocaleDateString()}` : ""}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Chat messages area */}
+          <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
+            {!chatLoaded && (
+              <div className="flex items-center justify-center py-8 text-sm text-gray-40">
+                Loading conversation&hellip;
+              </div>
+            )}
+            {chatLoaded && chatMessages.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                  <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2a4 4 0 014 4v1h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2V6a4 4 0 014-4z" />
+                    <circle cx="9" cy="14" r="1.5" />
+                    <circle cx="15" cy="14" r="1.5" />
+                    <path d="M9 18h6" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-60 max-w-xs">{description}</p>
+                <p className="text-xs text-gray-40 mt-1">I remember our conversations across pages</p>
+              </div>
+            )}
+            {chatMessages.map((msg, i) => (
+              <div
+                key={i}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    msg.role === "user"
+                      ? "bg-primary text-white rounded-br-md"
+                      : "bg-gray-10 text-gray-80 border border-border rounded-bl-md"
+                  }`}
+                >
+                  {msg.role === "assistant" ? (
+                    <Markdown content={msg.content} />
+                  ) : (
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  )}
+                  {msg.role === "assistant" && (
+                    <button
+                      onClick={() => handleCopyChatMessage(msg.content)}
+                      className="mt-1.5 text-xs text-gray-40 hover:text-primary transition-colors cursor-pointer"
+                    >
+                      Copy
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+            {generating && (
+              <div className="flex justify-start">
+                <div className="bg-gray-10 border border-border rounded-2xl rounded-bl-md px-4 py-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input area */}
+          <div className="border-t border-border pt-3">
+            <textarea
+              ref={textareaRef}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value.slice(0, maxChars))}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder || `Ask Creeda AI about ${section.toLowerCase()}\u2026`}
+              className="w-full min-h-16 max-h-32 rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-gray-90 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 resize-none leading-relaxed"
+              disabled={generating}
+              rows={2}
+            />
+            <p className="text-xs text-gray-30 mt-1">Enter to send &middot; Shift+Enter for new line &middot; Memory persists across pages</p>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  // ─── Action Mode: Prompt View ──────────────────────
   return (
     <Modal
       open={open}
@@ -350,7 +671,6 @@ function AIPromptDialog({
       footer={
         <>
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            {/* Preset chips — rotate through suggestions */}
             {allPresets.length > 0 && (
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
                 {visiblePresets.map((p) => {

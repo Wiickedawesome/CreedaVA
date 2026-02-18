@@ -500,3 +500,19 @@ export async function cloudSubmitSatisfaction(params: SubmitSatisfactionParams):
   const result = await fn(params);
   return result.data;
 }
+
+// ─── Integration Test ────────────────────────────────
+
+export interface IntegrationTestResult {
+  success: boolean;
+  provider: string;
+  message: string;
+  details?: string;
+  testedAt: string;
+}
+
+export async function cloudTestIntegration(provider: string): Promise<IntegrationTestResult> {
+  const fn = httpsCallable<{ provider: string }, IntegrationTestResult>(functions, "testIntegration");
+  const result = await fn({ provider });
+  return result.data;
+}

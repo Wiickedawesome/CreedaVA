@@ -41,7 +41,7 @@ function AdminAuthGate({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-gray-10 overflow-hidden">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block w-64 flex-shrink-0 border-r border-border bg-white h-full overflow-y-auto">
+      <div className="hidden lg:block w-64 shrink-0 border-r border-border bg-white h-full overflow-y-auto">
         <MemoSidebar />
       </div>
 

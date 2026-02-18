@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useAuth } from "@/lib/firebase";
 import { useCollection } from "@/hooks/useCollection";
 import { createWithId } from "@/lib/firebase/firestore";
+import { cloudTestIntegration } from "@/lib/firebase/cloud-functions";
+import type { IntegrationTestResult } from "@/lib/firebase/cloud-functions";
 import { PageHeader, useToast } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 
@@ -24,6 +26,9 @@ interface Integration {
   enabled: boolean;
   config: Record<string, string>;
   lastSyncedAt?: string;
+  lastTestedAt?: string;
+  lastTestSuccess?: boolean;
+  lastTestMessage?: string;
 }
 
 interface ProviderConfig {
@@ -260,6 +265,8 @@ export default function SettingsPage() {
   const [expandedProvider, setExpandedProvider] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, Record<string, string>>>({});
   const [savingProvider, setSavingProvider] = useState<string | null>(null);
+  const [testingProvider, setTestingProvider] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<Record<string, IntegrationTestResult>>({});
 
   // Load general settings
   useEffect(() => {
@@ -343,6 +350,29 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleTestConnection(providerId: string) {
+    setTestingProvider(providerId);
+    try {
+      const result = await cloudTestIntegration(providerId);
+      setTestResults((prev) => ({ ...prev, [providerId]: result }));
+      if (result.success) {
+        toast(`${providerId} — ${result.details || "Connected"}`);
+      } else {
+        toast(`${providerId} — ${result.details || result.message}`, "error");
+      }
+      refetchIntegrations();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Test failed";
+      setTestResults((prev) => ({
+        ...prev,
+        [providerId]: { success: false, provider: providerId, message: "Error", details: msg, testedAt: new Date().toISOString() },
+      }));
+      toast(`${providerId} — ${msg}`, "error");
+    } finally {
+      setTestingProvider(null);
+    }
+  }
+
   async function handleToggle(providerId: string) {
     const existing = getIntegration(providerId);
     if (!existing) return;
@@ -359,7 +389,12 @@ export default function SettingsPage() {
   }
 
   const loading = settingsLoading || integrationsLoading;
-  const connectedCount = PROVIDERS.filter((p) => isEnabled(p.id)).length;
+  const connectedCount = PROVIDERS.filter((p) => {
+    const testResult = testResults[p.id];
+    const integration = getIntegration(p.id);
+    // Count as connected only if verified via test
+    return (testResult?.success ?? integration?.lastTestSuccess) === true;
+  }).length;
 
   if (loading) {
     return (
@@ -534,12 +569,46 @@ export default function SettingsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-foreground text-sm">{provider.label}</span>
-                      {enabled && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                          <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6" /></svg>
-                          Connected
-                        </span>
-                      )}
+                      {(() => {
+                        const testResult = testResults[provider.id];
+                        const integration = getIntegration(provider.id);
+                        const lastTestSuccess = testResult?.success ?? integration?.lastTestSuccess;
+                        const isTesting = testingProvider === provider.id;
+
+                        if (isTesting) {
+                          return (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600">
+                              <svg className="w-2.5 h-2.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10" strokeDasharray="31.4 31.4" /></svg>
+                              Testing…
+                            </span>
+                          );
+                        }
+                        if (lastTestSuccess === true) {
+                          return (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                              Verified
+                            </span>
+                          );
+                        }
+                        if (lastTestSuccess === false) {
+                          return (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600">
+                              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                              Failed
+                            </span>
+                          );
+                        }
+                        if (enabled) {
+                          return (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
+                              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6" /></svg>
+                              Untested
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                     <p className="text-xs text-gray-50 truncate">{provider.description}</p>
                   </div>
@@ -580,10 +649,41 @@ export default function SettingsPage() {
                       ))}
                     </div>
 
+                    {/* Test result detail */}
+                    {(() => {
+                      const testResult = testResults[provider.id];
+                      const integration = getIntegration(provider.id);
+                      const result = testResult || (integration?.lastTestMessage ? {
+                        success: integration.lastTestSuccess ?? false,
+                        details: integration.lastTestMessage,
+                        testedAt: integration.lastTestedAt,
+                      } : null);
+                      if (!result) return null;
+                      return (
+                        <div className={`rounded-lg px-3 py-2 text-xs ${
+                          result.success ? "bg-primary/5 text-primary" : "bg-red-50 text-red-700"
+                        }`}>
+                          <p className="font-medium">{result.success ? "✓ Connected" : "✗ Connection failed"}</p>
+                          {result.details && <p className="mt-0.5 opacity-80 break-all">{result.details}</p>}
+                          {result.testedAt && <p className="mt-1 text-[10px] opacity-50">Tested {new Date(result.testedAt).toLocaleString()}</p>}
+                        </div>
+                      );
+                    })()}
+
                     <div className="flex items-center gap-3 pt-1">
                       <Button size="sm" onClick={() => handleSaveIntegration(provider.id)} disabled={savingProvider === provider.id}>
                         {savingProvider === provider.id ? "Saving..." : enabled ? "Update" : "Connect"}
                       </Button>
+                      {enabled && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleTestConnection(provider.id)}
+                          disabled={testingProvider === provider.id}
+                        >
+                          {testingProvider === provider.id ? "Testing..." : "Test Connection"}
+                        </Button>
+                      )}
                       {enabled && (
                         <Button variant="secondary" size="sm" onClick={() => handleToggle(provider.id)}>Disable</Button>
                       )}

@@ -134,3 +134,67 @@ export async function lazyGenerateAndSaveReport(
   const { generateAndSaveReport } = await import("./ai-engine");
   return generateAndSaveReport(type, pagePath);
 }
+
+// ─── Creeda AI Core (unified orchestrator) ───────────
+
+/** Send a message through the unified AI Core with persistent memory */
+export async function lazySendMessage(
+  ...args: Parameters<typeof import("./ai-core").sendMessage>
+) {
+  const { sendMessage } = await import("./ai-core");
+  return sendMessage(...args);
+}
+
+/** Start a new conversation (archives the current one) */
+export async function lazyNewConversation(
+  ...args: Parameters<typeof import("./ai-core").newConversation>
+) {
+  const { newConversation } = await import("./ai-core");
+  return newConversation(...args);
+}
+
+/** Get current conversation messages for display */
+export async function lazyGetCurrentMessages(
+  ...args: Parameters<typeof import("./ai-core").getCurrentMessages>
+) {
+  const { getCurrentMessages } = await import("./ai-core");
+  return getCurrentMessages(...args);
+}
+
+/** Clear AI Core cache (call on sign-out) */
+export async function lazyClearAICache() {
+  const { clearCache } = await import("./ai-core");
+  return clearCache();
+}
+
+/** Log an action-mode generation to conversation memory (fire-and-forget) */
+export async function lazyLogActionToMemory(
+  ...args: Parameters<typeof import("./ai-core").logActionToMemory>
+) {
+  const { logActionToMemory } = await import("./ai-core");
+  return logActionToMemory(...args);
+}
+
+/** Get conversation history list */
+export async function lazyGetConversationHistory(
+  ...args: Parameters<typeof import("./ai-memory").getConversationHistory>
+) {
+  const { getConversationHistory } = await import("./ai-memory");
+  return getConversationHistory(...args);
+}
+
+/** Switch to a previous conversation */
+export async function lazySwitchConversation(
+  ...args: Parameters<typeof import("./ai-core").switchConversation>
+) {
+  const { switchConversation } = await import("./ai-core");
+  return switchConversation(...args);
+}
+
+/** Stream a message through AI Core — yields text chunks, persists when done */
+export async function* lazySendMessageStream(
+  ...args: Parameters<typeof import("./ai-core").sendMessageStream>
+) {
+  const { sendMessageStream } = await import("./ai-core");
+  yield* sendMessageStream(...args);
+}

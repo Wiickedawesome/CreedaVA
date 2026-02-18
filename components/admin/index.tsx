@@ -16,6 +16,7 @@ export { ToastProvider, useToast } from "./toast";
 export { PageSkeleton, DashboardSkeleton } from "./skeleton";
 export { AIPromptButton } from "./ai-prompt";
 export type { AIPromptConfig } from "./ai-prompt";
+export { Markdown } from "./markdown";
 
 // ─── Lazy-loaded heavy components ────────────────────
 // These contain large SVG maps / rich-text editing logic.
