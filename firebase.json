@@ -58,6 +58,9 @@
           }
         ]
       }
+    ],
+    "predeploy": [
+      "npm run build"
     ]
   },
   "functions": [
