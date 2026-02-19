@@ -13,14 +13,14 @@
     "test:coverage": "vitest run --coverage"
   },
   "engines": {
-    "node": ">=18.17.0",
+    "node": "^20.19.0",
     "npm": ">=10.0.0"
   },
   "dependencies": {
     "firebase": "^10.12.2",
-    "next": "^14.2.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "next": "canary",
+    "react": "experimental",
+    "react-dom": "experimental"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0-alpha.16",
@@ -30,8 +30,8 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.3",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "canary",
     "jsdom": "^24.1.0",
     "tailwindcss": "^4.0.0-alpha.16",
     "typescript": "^5.4.5",
