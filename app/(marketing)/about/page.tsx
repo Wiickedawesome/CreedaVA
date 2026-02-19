@@ -1,6 +1,6 @@
 'use client';
 
-import AboutContent from './about-content';
+import { AboutContent } from './about-content';
 
 export default function AboutPage() {
   return <AboutContent />;
