@@ -3,6 +3,9 @@ const nextConfig = {
   experimental: {
     reactCompiler: true,
   },
+  turbopack: {
+    root: '.',
+  },
 };
 
 export default nextConfig;
