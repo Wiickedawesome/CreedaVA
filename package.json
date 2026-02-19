@@ -17,6 +17,7 @@
     "npm": ">=10.0.0"
   },
   "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
     "firebase": "^10.12.2",
     "next": "^14.2.3",
     "react": "^18.2.0",
