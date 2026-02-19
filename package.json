@@ -13,7 +13,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "engines": {
-    "node": "^20.19.0",
+    "node": "^20.19.0 || ^22.13.0 || >=24",
     "npm": ">=10.0.0"
   },
   "dependencies": {
@@ -31,7 +31,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
     "eslint": "^9.0.0",
-    "eslint-config-next": "^14.2.3",
+    "eslint-config-next": "canary",
     "jsdom": "^24.1.0",
     "tailwindcss": "^4.0.0-alpha.16",
     "typescript": "^5.4.5",
