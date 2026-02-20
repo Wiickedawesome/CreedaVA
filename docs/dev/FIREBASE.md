@@ -15,7 +15,7 @@
 | Authentication   | Google sign-in (restricted to creedava.com)|
 | Cloud Firestore  | Primary database (CRM, blog, forum, etc.)  |
 | Cloud Functions  | Server-side integrations (Node.js 22)      |
-| Firebase Hosting | Static site hosting (Next.js export)       |
+| App Hosting      | Next.js SSR & API deployment               |
 | Firebase Storage | File uploads (blog images, attachments)    |
 | Firebase AI      | Gemini 2.5 Flash for content translation   |
 
@@ -135,16 +135,15 @@ firebase deploy --only firestore:rules
 firebase deploy --only firestore:indexes
 ```
 
-### Hosting Configuration
+### App Hosting Configuration
 
-Configured in `firebase.json`:
+Configured in `apphosting.yaml` and `firebase.json`:
 
-- **Output directory**: `out/` (Next.js static export)
-- **Clean URLs**: Enabled (no `.html` extensions)
-- **Trailing slashes**: Disabled
-- **SPA fallback**: All routes rewrite to `index.html`
-- **Cache headers**: Static assets cached for 1 year (`immutable`)
-- **Security headers**: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
+- **Runtime**: Node.js 22 (managed by App Hosting)
+- **Environment**: Secrets managed via Cloud Secret Manager
+- **Backend**: Cloud Run (Next.js SSR)
+
+> **Legacy Note**: References to `hosting` in `firebase.json` are deprecated or minimal.
 
 ---
 

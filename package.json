@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@dataconnect/generated": "file:src/dataconnect-generated",
-    "firebase": "^10.12.2",
+    "firebase": "^12.9.0",
     "next": "^14.2.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -31,11 +31,12 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9.0.0",
     "eslint-config-next": "canary",
     "jsdom": "^24.1.0",
     "tailwindcss": "^4.0.0-alpha.16",
     "typescript": "^5.4.5",
-    "vitest": "^1.6.0"
+    "vitest": "^4.0.18"
   }
 }

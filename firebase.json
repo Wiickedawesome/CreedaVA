@@ -1,69 +1,8 @@
 {
-  "hosting": {
-    "public": "out",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "cleanUrls": true,
-    "trailingSlash": false,
-    "rewrites": [
-      {
-        "source": "/listCalendarEvents",
-        "function": "listCalendarEvents"
-      }
-    ],
-    "headers": [
-      {
-        "source": "**/*.@(js|css|svg|png|jpg|jpeg|gif|ico|woff|woff2|webp)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=31536000, immutable"
-          }
-        ]
-      },
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          },
-          {
-            "key": "X-Content-Type-Options",
-            "value": "nosniff"
-          },
-          {
-            "key": "X-Frame-Options",
-            "value": "DENY"
-          },
-          {
-            "key": "Strict-Transport-Security",
-            "value": "max-age=31536000; includeSubDomains; preload"
-          },
-          {
-            "key": "Referrer-Policy",
-            "value": "strict-origin-when-cross-origin"
-          },
-          {
-            "key": "Content-Security-Policy",
-            "value": "default-src 'self' https: wss: *.cloudworkstations.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: *.cloudworkstations.dev; style-src 'self' 'unsafe-inline' https: *.cloudworkstations.dev; img-src 'self' https: data: blob: *.cloudworkstations.dev; connect-src 'self' https: wss: *.cloudworkstations.dev; font-src 'self' https: data: *.cloudworkstations.dev; manifest-src 'self' https: *.cloudworkstations.dev; frame-src 'self' https://accounts.google.com https://*.firebaseapp.com https://*.cloudworkstations.dev; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-          },
-          {
-            "key": "Permissions-Policy",
-            "value": "camera=(), microphone=(), geolocation=()"
-          }
-        ]
-      }
-    ]
-  },
   "functions": [
     {
       "source": "functions",
       "codebase": "default",
-      "runtime": "nodejs24",
       "ignore": [
         "node_modules",
         ".git",

@@ -22,6 +22,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Cloud Functions compiled output (CommonJS require())
     "functions/lib/**",
+    // Generated Data Connect files (CommonJS/TS)
+    "src/dataconnect-generated/**",
   ]),
 ]);
 

@@ -532,8 +532,9 @@ const { toast } = useToast();
           <Input label="Company Name" value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
           <Input label="Contact Email" type="email" placeholder="hello@creedava.com" value={companyEmail} onChange={(e) => setCompanyEmail(e.target.value)} />
           <div className="sm:col-span-2">
-            <label className="text-xs font-medium text-gray-70 mb-1 block">Timezone</label>
+            <label htmlFor="company-timezone" className="text-xs font-medium text-gray-70 mb-1 block">Timezone</label>
             <select
+              id="company-timezone"
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
               className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
@@ -568,7 +569,7 @@ const { toast } = useToast();
             <button
               type="button"
               role="switch"
-              aria-checked={emailNotifications}
+              aria-checked={emailNotifications ? "true" : "false"}
               className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${emailNotifications ? "bg-primary" : "bg-gray-30"}`}
               onClick={() => setEmailNotifications(!emailNotifications)}
             >
@@ -583,7 +584,7 @@ const { toast } = useToast();
             <button
               type="button"
               role="switch"
-              aria-checked={weeklyDigest}
+              aria-checked={weeklyDigest ? "true" : "false"}
               className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${weeklyDigest ? "bg-primary" : "bg-gray-30"}`}
               onClick={() => setWeeklyDigest(!weeklyDigest)}
             >
