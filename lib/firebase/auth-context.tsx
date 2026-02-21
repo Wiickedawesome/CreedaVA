@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -40,6 +41,10 @@ async function syncSessionCookie(user: User | null) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  // Track the previous UID so we only sync the session cookie when the user
+  // identity actually changes (sign-in / sign-out), not on every silent
+  // hourly token refresh that also triggers onAuthStateChanged.
+  const prevUidRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     // Check for redirect sign-in result (when popup was blocked)
@@ -52,7 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged((firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
-      syncSessionCookie(firebaseUser);
+      const uid = firebaseUser?.uid ?? null;
+      if (uid !== prevUidRef.current) {
+        prevUidRef.current = uid;
+        syncSessionCookie(firebaseUser);
+      }
     });
     return unsubscribe;
   }, []);

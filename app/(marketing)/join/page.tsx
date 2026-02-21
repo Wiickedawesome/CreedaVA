@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo, type FormEvent } from "react";
+import { getToken } from "firebase/app-check";
 import { Container, Input, Button } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
+import { initializeAppCheck } from "@/lib/firebase/app-check";
 import Link from "next/link";
 
 interface Slot {
@@ -11,8 +13,9 @@ interface Slot {
   available: boolean;
 }
 
-const WEBHOOK_URL = "https://us-east4-creeda-va.cloudfunctions.net/handleFormWebhook";
-const SLOTS_URL = "https://us-east4-creeda-va.cloudfunctions.net/getAvailableSlots";
+const FUNCTIONS_BASE = process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://us-east4-creeda-va.cloudfunctions.net";
+const WEBHOOK_URL = `${FUNCTIONS_BASE}/handleFormWebhook`;
+const SLOTS_URL = `${FUNCTIONS_BASE}/getAvailableSlots`;
 
 function formatDate(dateStr: string, locale = "en-US") {
   const d = new Date(dateStr + "T12:00:00");
@@ -109,9 +112,20 @@ export default function JoinPage() {
     setError("");
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      try {
+        const ac = initializeAppCheck();
+        if (ac) {
+          const tokenResult = await getToken(ac, false);
+          headers["X-Firebase-AppCheck"] = tokenResult.token;
+        }
+      } catch {
+        // proceed without App Check header if token unavailable
+      }
+
       const res = await fetch(WEBHOOK_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           formType: "booking",
           name: `${form.firstName} ${form.lastName}`.trim(),

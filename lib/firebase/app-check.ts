@@ -49,10 +49,7 @@ export function initializeAppCheck(): AppCheck | null {
     (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
   }
 
-  const provider =
-    process.env.NODE_ENV === "development"
-      ? new ReCaptchaEnterpriseProvider(siteKey) // Or use a Debug provider if you prefer explicitly
-      : new ReCaptchaEnterpriseProvider(siteKey);
+  const provider = new ReCaptchaEnterpriseProvider(siteKey);
 
   _appCheck = _initializeAppCheck(app, {
     provider,

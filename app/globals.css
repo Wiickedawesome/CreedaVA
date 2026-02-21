@@ -28,7 +28,7 @@
   --error: #DA1E28;
   --error-hover: #B81922;
   --error-active: #8C1016;
-  --info: #005148;
+  --info: #0043CE; /* IBM Blue 70 — distinct from --primary */
 
   /* Section Backgrounds */
   --footer-bg: #1B2A4A;

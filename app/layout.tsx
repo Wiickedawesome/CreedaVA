@@ -26,10 +26,6 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://creedava.com"),
   alternates: {
     canonical: "/",
-    languages: {
-      "en": "/",
-      "es": "/",
-    },
   },
   openGraph: {
     title: "CreedaVA — Virtual Assistant Services",
@@ -60,8 +56,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-      </head>
       <body className={`${roboto.variable} antialiased`}>
         {children}
       </body>

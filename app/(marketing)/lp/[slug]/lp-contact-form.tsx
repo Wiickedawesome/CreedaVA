@@ -23,7 +23,7 @@ export default function LpContactForm({ ctaText, ctaEmail, pageTitle, pageSlug }
 
     try {
       const res = await fetch(
-        "https://us-east4-creeda-va.cloudfunctions.net/handleFormWebhook",
+        `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://us-east4-creeda-va.cloudfunctions.net"}/handleFormWebhook`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

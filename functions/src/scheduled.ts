@@ -6,8 +6,28 @@
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
-import { db, getIntegrationConfig } from "./admin";
-import * as nodemailer from "nodemailer";
+import * as admin from "firebase-admin";
+import { db, getIntegrationConfig, getEmailTransport } from "./admin";
+
+/** Shorthand: convert JS Date to Firestore Timestamp (required for where() comparisons). */
+const TS = admin.firestore.Timestamp.fromDate;
+
+/**
+ * Runs a Firestore count query safely — returns 0 instead of throwing if the
+ * query fails, so a single Firestore issue won't abort the entire digest.
+ */
+async function safeCount(q: Promise<FirebaseFirestore.QuerySnapshot>): Promise<number> {
+  try {
+    return (await q).size;
+  } catch (err) {
+    console.warn("[safeCount] Firestore query failed:", err);
+    return 0;
+  }
+}
+
+/** Empty snapshot fallback used in Promise.all so full snapshot queries also degrade gracefully. */
+const emptySafe = (): FirebaseFirestore.QuerySnapshot =>
+  ({ docs: [], size: 0 } as unknown as FirebaseFirestore.QuerySnapshot);
 
 // ─── Daily Digest ────────────────────────────────────
 // Runs every day at 8 AM Belize time (UTC-6)
@@ -22,29 +42,12 @@ export const dailyDigest = onSchedule(
     const now = new Date();
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    // Gather daily stats
+    // Gather daily stats (each query is independent — a failure returns 0 instead of aborting)
     const [newLeads, newBookings, tasksDone, newContacts] = await Promise.all([
-      db
-        .collection("leads")
-        .where("createdAt", ">=", yesterday)
-        .get()
-        .then((s) => s.size),
-      db
-        .collection("bookings")
-        .where("createdAt", ">=", yesterday)
-        .get()
-        .then((s) => s.size),
-      db
-        .collection("tasks")
-        .where("status", "==", "done")
-        .where("updatedAt", ">=", yesterday)
-        .get()
-        .then((s) => s.size),
-      db
-        .collection("contacts")
-        .where("createdAt", ">=", yesterday)
-        .get()
-        .then((s) => s.size),
+      safeCount(db.collection("leads").where("createdAt", ">=", TS(yesterday)).get()),
+      safeCount(db.collection("bookings").where("createdAt", ">=", TS(yesterday)).get()),
+      safeCount(db.collection("tasks").where("status", "==", "done").where("updatedAt", ">=", TS(yesterday)).get()),
+      safeCount(db.collection("contacts").where("createdAt", ">=", TS(yesterday)).get()),
     ]);
 
     // Get upcoming bookings for today
@@ -107,21 +110,14 @@ export const dailyDigest = onSchedule(
 
     // Try to send via email if configured
     try {
-      const emailConfig = await getIntegrationConfig("email");
-      if (emailConfig?.enabled) {
-        const transport = nodemailer.createTransport({
-          host: emailConfig.config.host || "smtp.gmail.com",
-          port: parseInt(emailConfig.config.port || "587"),
-          secure: emailConfig.config.port === "465",
-          auth: {
-            user: emailConfig.config.user,
-            pass: emailConfig.config.pass,
-          },
-        });
-
+      const [transport, emailConfig] = await Promise.all([
+        getEmailTransport(),
+        getIntegrationConfig("email"),
+      ]);
+      if (transport) {
         await transport.sendMail({
-          from: `"CreedaVA" <${emailConfig.config.user}>`,
-          to: emailConfig.config.user, // Send to admin
+          from: `"CreedaVA" <${emailConfig?.config.user || "admin@creedava.com"}>`,
+          to: emailConfig?.config.user || "admin@creedava.com",
           subject: `CreedaVA Daily Digest — ${now.toLocaleDateString()}`,
           html,
         });
@@ -147,13 +143,13 @@ export const weeklyReport = onSchedule(
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Gather weekly stats
+    // Gather weekly stats (each query degrades gracefully on failure)
     const [leads, bookings, tasks, customers, campaigns] = await Promise.all([
-      db.collection("leads").where("createdAt", ">=", weekAgo).get(),
-      db.collection("bookings").where("createdAt", ">=", weekAgo).get(),
-      db.collection("tasks").where("createdAt", ">=", weekAgo).get(),
-      db.collection("customers").get(),
-      db.collection("campaigns").where("status", "==", "active").get(),
+      db.collection("leads").where("createdAt", ">=", TS(weekAgo)).get().catch(emptySafe),
+      db.collection("bookings").where("createdAt", ">=", TS(weekAgo)).get().catch(emptySafe),
+      db.collection("tasks").where("createdAt", ">=", TS(weekAgo)).get().catch(emptySafe),
+      db.collection("customers").get().catch(emptySafe),
+      db.collection("campaigns").where("status", "==", "active").get().catch(emptySafe),
     ]);
 
     const leadsWon = leads.docs.filter((d) => d.data().status === "won").length;
@@ -224,14 +220,14 @@ export const monthlyReport = onSchedule(
     const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const monthName = prevMonth.toLocaleString("en-US", { month: "long", year: "numeric" });
 
-    // Gather monthly stats
+    // Gather monthly stats (each query degrades gracefully on failure)
     const [leads, bookings, tasks, customers, campaigns, blog] = await Promise.all([
-      db.collection("leads").where("createdAt", ">=", monthAgo).get(),
-      db.collection("bookings").where("createdAt", ">=", monthAgo).get(),
-      db.collection("tasks").where("createdAt", ">=", monthAgo).get(),
-      db.collection("customers").get(),
-      db.collection("campaigns").get(),
-      db.collection("blog").where("createdAt", ">=", monthAgo).get(),
+      db.collection("leads").where("createdAt", ">=", TS(monthAgo)).get().catch(emptySafe),
+      db.collection("bookings").where("createdAt", ">=", TS(monthAgo)).get().catch(emptySafe),
+      db.collection("tasks").where("createdAt", ">=", TS(monthAgo)).get().catch(emptySafe),
+      db.collection("customers").get().catch(emptySafe),
+      db.collection("campaigns").get().catch(emptySafe),
+      db.collection("blog").where("createdAt", ">=", TS(monthAgo)).get().catch(emptySafe),
     ]);
 
     const leadsWon = leads.docs.filter((d) => d.data().status === "won").length;
@@ -312,21 +308,14 @@ export const monthlyReport = onSchedule(
 
     // Try to send monthly email
     try {
-      const emailConfig = await getIntegrationConfig("email");
-      if (emailConfig?.enabled) {
-        const transport = nodemailer.createTransport({
-          host: emailConfig.config.host || "smtp.gmail.com",
-          port: parseInt(emailConfig.config.port || "587"),
-          secure: emailConfig.config.port === "465",
-          auth: {
-            user: emailConfig.config.user,
-            pass: emailConfig.config.pass,
-          },
-        });
-
+      const [transport, emailConfig] = await Promise.all([
+        getEmailTransport(),
+        getIntegrationConfig("email"),
+      ]);
+      if (transport) {
         await transport.sendMail({
-          from: `"CreedaVA" <${emailConfig.config.user}>`,
-          to: emailConfig.config.user,
+          from: `"CreedaVA" <${emailConfig?.config.user || "admin@creedava.com"}>`,
+          to: emailConfig?.config.user || "admin@creedava.com",
           subject: `CreedaVA Monthly Report — ${monthName}`,
           html,
         });
@@ -571,5 +560,30 @@ export const dailyGoogleSync = onSchedule(
     });
 
     console.log("Daily Google sync completed:", results.map((r) => `${r.service}: ${r.status}`).join(", "));
+  },
+);
+
+// ─── Analytics TTL Cleanup ──────────────────────────────────
+// Deletes `analytics` collection docs older than 90 days to control
+// Firestore storage costs. Runs nightly at 2 AM Belize time.
+
+export const cleanupAnalytics = onSchedule(
+  {
+    schedule: "0 2 * * *",
+    timeZone: "America/Belize",
+    region: "us-east4",
+  },
+  async () => {
+    const cutoff = TS(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000));
+    const snap = await db.collection("analytics").where("createdAt", "<", cutoff).get();
+    const BATCH_SIZE = 500;
+    let deleted = 0;
+    for (let i = 0; i < snap.docs.length; i += BATCH_SIZE) {
+      const batch = db.batch();
+      snap.docs.slice(i, i + BATCH_SIZE).forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+      deleted += Math.min(BATCH_SIZE, snap.docs.length - i);
+    }
+    console.log(`Analytics cleanup: deleted ${deleted} docs older than 90 days`);
   },
 );

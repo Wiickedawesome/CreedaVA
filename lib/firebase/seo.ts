@@ -6,6 +6,7 @@
  * Falls back to provided defaults when no Firestore entry exists.
  */
 
+import { unstable_cache } from "next/cache";
 import { fetchAll, where } from "./firestore";
 import type { PageSEO } from "@/lib/types/content";
 import type { Metadata } from "next";
@@ -13,7 +14,7 @@ import type { Metadata } from "next";
 const SITE_NAME = "CreedaVA";
 const SITE_URL = "https://creedava.com";
 
-export async function getPageSEO(
+async function _getPageSEO(
   path: string,
   defaults: { title: string; description: string },
 ): Promise<Metadata> {
@@ -84,3 +85,9 @@ function fallback(
     },
   };
 }
+
+/**
+ * Cached getPageSEO — revalidates every 60 s per (path, defaults) pair.
+ * Avoids a Firestore read on every server render for marketing pages.
+ */
+export const getPageSEO = unstable_cache(_getPageSEO, ["page-seo"], { revalidate: 60 });

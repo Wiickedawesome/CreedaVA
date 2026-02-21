@@ -11,3 +11,4 @@ export { Container } from "./container";
 export type { ContainerProps } from "./container";
 
 export { WorldMap } from "./world-map";
+export { HeroIllustration } from "./hero-illustration";

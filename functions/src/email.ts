@@ -21,8 +21,7 @@
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import * as nodemailer from "nodemailer";
-import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
+import { db, getIntegrationConfig, getEmailTransport, verifyAdminEmail } from "./admin";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -47,24 +46,13 @@ interface BulkEmailRequest {
 
 // ─── SMTP Transport ──────────────────────────────────
 
+/** Thin wrapper that throws an HttpsError on missing/disabled config. */
 async function getTransport() {
-  const integration = await getIntegrationConfig("email");
-  if (!integration || !integration.enabled) {
+  const transport = await getEmailTransport();
+  if (!transport) {
     throw new HttpsError("failed-precondition", "Email integration not enabled. Configure in Admin → Integrations.");
   }
-
-  const { config } = integration;
-
-  // SMTP transport (works with Gmail app passwords, Outlook, etc.)
-  return nodemailer.createTransport({
-    host: config.host || "smtp.gmail.com",
-    port: parseInt(config.port || "587"),
-    secure: config.port === "465",
-    auth: {
-      user: config.user,
-      pass: config.pass,
-    },
-  });
+  return transport;
 }
 
 // ─── Send Single Email ──────────────────────────────

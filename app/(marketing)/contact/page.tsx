@@ -24,8 +24,10 @@ export default function ContactPage() {
     const fd = new FormData(e.currentTarget);
 
     try {
-      const res = await fetch(
-        "https://us-east4-creeda-va.cloudfunctions.net/handleFormWebhook",
+      const functionsBase =
+        process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL ||
+        "https://us-east4-creeda-va.cloudfunctions.net";
+      const res = await fetch(`${functionsBase}/handleFormWebhook`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

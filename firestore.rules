@@ -41,9 +41,19 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Bookings — anyone can create, admin can manage
+    // Bookings — validated public create, admin can manage
+    // Note: 'service' is a reserved keyword in rules — must use bracket notation.
     match /bookings/{bookingId} {
-      allow create: if true;
+      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'service'])
+                    && request.resource.data.name is string
+                    && request.resource.data.email is string
+                    && request.resource.data['service'] is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() <= 200
+                    && request.resource.data.email.size() > 0
+                    && request.resource.data.email.size() <= 320
+                    && request.resource.data['service'].size() > 0
+                    && request.resource.data['service'].size() <= 200;
       allow read, update, delete: if isAdmin();
     }
 
@@ -103,6 +113,8 @@ service cloud.firestore {
     }
 
     // Campaigns — admin only
+    // TODO: Audit whether /campaigns and /email-campaigns are the same collection.
+    // If so, consolidate to one and migrate existing documents.
     match /campaigns/{docId} {
       allow read, write: if isAdmin();
     }
@@ -140,9 +152,12 @@ service cloud.firestore {
     }
 
     // Analytics — validated public create, admin read
+    // App Check (reCAPTCHA Enterprise) is the primary abuse-prevention layer.
     match /analytics/{docId} {
       allow create: if request.resource.data.keys().hasAny(['event', 'page', 'type'])
-                    && request.resource.data.size() <= 20;
+                    && (request.resource.data.get('event', '') is string)
+                    && (request.resource.data.get('page', '') is string)
+                    && request.resource.data.size() <= 15;
       allow read, update, delete: if isAdmin();
     }
 

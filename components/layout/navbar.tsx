@@ -136,7 +136,7 @@ export function Navbar() {
                 {t.nav.signIn}
               </Link>
               <Link
-                href="/contact"
+                href="/join"
                 className="inline-flex items-center px-5 py-2.5 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary-hover transition-colors"
               >
                 {t.nav.getStarted}
@@ -212,7 +212,7 @@ export function Navbar() {
                   {t.nav.signIn}
                 </Link>
                 <Link
-                  href="/contact"
+                  href="/join"
                   className="mx-3 inline-flex items-center justify-center px-5 py-2.5 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary-hover transition-colors"
                   onClick={closeMobileMenu}
                 >

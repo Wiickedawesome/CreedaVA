@@ -8,8 +8,12 @@ import { GtagPageViews } from "@/components/layout/gtag-pageviews";
 import { LanguageProvider } from "@/lib/i18n";
 import { FirebaseInit } from "@/lib/firebase";
 
+// Use the Firebase measurement ID (set in apphosting.yaml) as the single source of truth.
+// NEXT_PUBLIC_GA_MEASUREMENT_ID is accepted as an override for non-Firebase deploys.
 const GA_MEASUREMENT_ID =
-  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-5DC2T0DSDW";
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ||
+  process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID ||
+  "";
 
 /** JSON-LD Organization structured data for Google rich results */
 const organizationJsonLd = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import en from "./en";
 import es from "./es";
 import type { Dictionary } from "./en";
@@ -23,15 +23,18 @@ const I18nContext = createContext<I18nContextValue>({
 
 const STORAGE_KEY = "creedava-lang";
 
-function getInitialLocale(): Locale {
-  if (typeof window === "undefined") return "en";
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "en" || stored === "es") return stored;
-  return "en";
-}
-
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
+  // Always start with "en" so server and first client render match (no hydration mismatch).
+  // The stored preference is applied after mount via useEffect.
+  const [locale, setLocaleState] = useState<Locale>("en");
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
+    if (stored === "en" || stored === "es") {
+      setLocaleState(stored);
+      document.documentElement.lang = stored;
+    }
+  }, []);
 
   const setLocale = (next: Locale) => {
     setLocaleState(next);

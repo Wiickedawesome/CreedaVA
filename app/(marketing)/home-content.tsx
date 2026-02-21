@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { Container } from "@/components/ui";
+import { Container, HeroIllustration } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
 
-const statValues = ["500+", "98%", "24/7", "50+"];
+const DEFAULT_STAT_VALUES = ["500+", "98%", "24/7", "50+"];
 const statKeys = [
   "tasksCompleted",
   "clientSatisfaction",
@@ -14,18 +13,22 @@ const statKeys = [
 ] as const;
 
 const stepIcons = [
-  <svg key="cal" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg key="cal" aria-hidden="true" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>,
-  <svg key="ppl" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg key="ppl" aria-hidden="true" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
   </svg>,
-  <svg key="grow" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg key="grow" aria-hidden="true" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
   </svg>,
 ];
 
-export function HomeContent() {
+export function HomeContent({
+  statValues = DEFAULT_STAT_VALUES,
+}: {
+  statValues?: readonly string[] | string[];
+}) {
   const { t } = useTranslation();
 
   return (
@@ -51,7 +54,7 @@ export function HomeContent() {
                   className="inline-flex items-center justify-center px-8 py-3 bg-primary text-white font-medium rounded-md hover:bg-primary-hover transition-colors text-base"
                 >
                   {t.home.heroCtaPrimary}
-                  <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg aria-hidden="true" className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
@@ -64,14 +67,7 @@ export function HomeContent() {
               </div>
             </div>
             <div className="flex items-center justify-center mt-12 lg:mt-0">
-              <Image
-                src="/logo.webp"
-                alt="CreedaVA — Professional Virtual Assistants"
-                width={380}
-                height={380}
-                className="w-48 sm:w-64 lg:w-3/4 h-auto object-contain"
-                priority
-              />
+              <HeroIllustration className="w-56 sm:w-72 lg:w-full max-w-sm h-auto" />
             </div>
           </div>
         </Container>
@@ -146,7 +142,7 @@ export function HomeContent() {
                 {t.home.whyItems.map((item) => (
                   <div key={item.title} className="flex gap-4">
                     <div className="shrink-0 w-6 h-6 rounded-full bg-success/20 flex items-center justify-center mt-0.5">
-                      <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg aria-hidden="true" className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>

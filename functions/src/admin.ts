@@ -10,6 +10,7 @@
 
 import * as admin from "firebase-admin";
 import { HttpsError } from "firebase-functions/v2/https";
+import * as nodemailer from "nodemailer";
 
 // Initialize Firebase Admin (auto-detects credentials in Cloud Functions)
 if (!admin.apps.length) {
@@ -163,6 +164,25 @@ export function verifyAdminEmail(email: string | undefined): void {
   if (!email?.endsWith("@creedava.com")) {
     throw new HttpsError("permission-denied", "Must be @creedava.com");
   }
+}
+
+/**
+ * Create an SMTP Nodemailer transport from the email integration config.
+ * Returns null if the integration is not configured or not enabled.
+ * Callers that require the transport (e.g. onCall functions) should throw
+ * after checking for null; background triggers should silently return.
+ */
+export async function getEmailTransport(): Promise<nodemailer.Transporter | null> {
+  const integration = await getIntegrationConfig("email");
+  if (!integration?.enabled) return null;
+
+  const { config } = integration;
+  return nodemailer.createTransport({
+    host: config.host || "smtp.gmail.com",
+    port: parseInt(config.port || "587"),
+    secure: config.port === "465",
+    auth: { user: config.user, pass: config.pass },
+  });
 }
 
 /**

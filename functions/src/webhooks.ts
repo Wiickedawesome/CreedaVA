@@ -7,11 +7,25 @@
  */
 
 import { onRequest } from "firebase-functions/v2/https";
-import { db, getIntegrationConfig } from "./admin";
+import { db, getIntegrationConfig, getEmailTransport } from "./admin";
 import cors from "cors";
-import * as nodemailer from "nodemailer";
 
-const corsHandler = cors({ origin: true });
+/** Allow requests from the production domain, localhost (dev), and Firebase App Hosting / Hosting preview URLs. */
+const corsHandler = cors({
+  origin: (origin, callback) => {
+    if (
+      !origin ||
+      origin === "https://creedava.com" ||
+      /^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+      /\.hosted\.app$/.test(origin) ||
+      /\.web\.app$/.test(origin)
+    ) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+});
 
 // ─── Google Forms / Generic Form Webhook ─────────────
 
@@ -56,16 +70,13 @@ export const handleFormWebhook = onRequest(
             // Send notification email
             if (data.notifyEmail) {
               try {
-                const emailConfig = await getIntegrationConfig("email");
-                if (emailConfig?.enabled && emailConfig.config.user && emailConfig.config.pass) {
-                  const transport = nodemailer.createTransport({
-                    host: emailConfig.config.host || "smtp.gmail.com",
-                    port: parseInt(emailConfig.config.port || "587"),
-                    secure: emailConfig.config.port === "465",
-                    auth: { user: emailConfig.config.user, pass: emailConfig.config.pass },
-                  });
+                const [transport, emailConfig] = await Promise.all([
+                  getEmailTransport(),
+                  getIntegrationConfig("email"),
+                ]);
+                if (transport) {
                   await transport.sendMail({
-                    from: `"CreedaVA" <${emailConfig.config.user}>`,
+                    from: `"CreedaVA" <${emailConfig?.config.user || "admin@creedava.com"}>`,
                     to: data.notifyEmail,
                     replyTo: data.email || undefined,
                     subject: `New message from ${data.name || "Contact Form"}`,
@@ -118,19 +129,13 @@ export const handleFormWebhook = onRequest(
             // Send notification email if notifyEmail is specified (landing page forms)
             if (data.notifyEmail) {
               try {
-                const emailConfig = await getIntegrationConfig("email");
-                if (emailConfig?.enabled && emailConfig.config.user && emailConfig.config.pass) {
-                  const transport = nodemailer.createTransport({
-                    host: emailConfig.config.host || "smtp.gmail.com",
-                    port: parseInt(emailConfig.config.port || "587"),
-                    secure: emailConfig.config.port === "465",
-                    auth: {
-                      user: emailConfig.config.user,
-                      pass: emailConfig.config.pass,
-                    },
-                  });
+                const [transport, emailConfig] = await Promise.all([
+                  getEmailTransport(),
+                  getIntegrationConfig("email"),
+                ]);
+                if (transport) {
                   await transport.sendMail({
-                    from: `"CreedaVA" <${emailConfig.config.user}>`,
+                    from: `"CreedaVA" <${emailConfig?.config.user || "admin@creedava.com"}>`,
                     to: data.notifyEmail,
                     subject: `New lead from ${data.pageTitle || "Landing Page"}`,
                     html: `

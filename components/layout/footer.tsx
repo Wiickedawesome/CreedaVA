@@ -121,7 +121,7 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="https://linkedin.com"
+              href="https://linkedin.com/company/creedava"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-50 hover:text-white transition-colors"
@@ -132,7 +132,7 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href="https://facebook.com"
+              href="https://facebook.com/creedava"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-50 hover:text-white transition-colors"
@@ -143,7 +143,7 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href="https://instagram.com"
+              href="https://instagram.com/creedava"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-50 hover:text-white transition-colors"

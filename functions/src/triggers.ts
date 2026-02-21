@@ -14,23 +14,7 @@ import {
   onDocumentCreated,
   onDocumentUpdated,
 } from "firebase-functions/v2/firestore";
-import * as nodemailer from "nodemailer";
-import { db, getIntegrationConfig } from "./admin";
-
-// ─── Helper: get SMTP transport ──────────────────────
-
-async function getTransport() {
-  const integration = await getIntegrationConfig("email");
-  if (!integration?.enabled) return null;
-
-  const { config } = integration;
-  return nodemailer.createTransport({
-    host: config.host || "smtp.gmail.com",
-    port: parseInt(config.port || "587"),
-    secure: config.port === "465",
-    auth: { user: config.user, pass: config.pass },
-  });
-}
+import { db, getIntegrationConfig, getEmailTransport as getTransport } from "./admin";
 
 // ─── New Lead Notification ───────────────────────────
 // Sends an email to admin when a new lead is captured
