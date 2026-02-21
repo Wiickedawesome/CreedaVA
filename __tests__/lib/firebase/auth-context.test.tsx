@@ -113,6 +113,7 @@ describe("AuthProvider", () => {
     // Sign in triggers POST to /api/session
     await act(async () => {
       authCallback?.({
+        uid: "test-uid-123",
         email: "user@creedava.com",
         getIdToken: () => Promise.resolve("test-token"),
       });

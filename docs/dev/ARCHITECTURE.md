@@ -2,7 +2,7 @@
 
 ## Overview
 
-CreedaVA is a virtual assistant services platform built with **Next.js 16** (App Router, React Compiler) + **Firebase** (Auth, Firestore, Cloud Functions, Hosting, Storage) + **Tailwind CSS v4**. The app consists of a public marketing site, an admin CRM dashboard, and serverless cloud functions for integrations.
+CreedaVA is a virtual assistant services platform built with **Next.js 14** (App Router) + **Firebase** (Auth, Firestore, Cloud Functions, App Hosting, Storage) + **Tailwind CSS v4**. The app consists of a public marketing site, an admin CRM dashboard, and serverless cloud functions for integrations.
 
 ---
 
@@ -10,15 +10,15 @@ CreedaVA is a virtual assistant services platform built with **Next.js 16** (App
 
 | Layer           | Technology                         |
 | --------------- | ---------------------------------- |
-| Framework       | Next.js 16 (App Router, Turbopack) |
-| UI              | React 19, Tailwind CSS 4           |
-| Language        | TypeScript 5.9                     |
+| Framework       | Next.js 14 (App Router, Turbopack) |
+| UI              | React 18, Tailwind CSS v4          |
+| Language        | TypeScript 5.4                     |
 | Auth            | Firebase Authentication (Google)   |
 | Database        | Cloud Firestore                    |
 | Storage         | Firebase Storage                   |
 | Functions       | Firebase Cloud Functions (Node 22) |
-| Hosting         | Firebase Hosting (static export)   |
-| AI              | Firebase AI (Gemini 2.5 Flash)     |
+| Hosting         | Firebase App Hosting (SSR/Node)    |
+| AI              | Firebase AI (Gemini 2.0/2.5 Flash) |
 | i18n            | Custom dictionary system (EN/ES)   |
 | Testing         | Vitest + Testing Library           |
 
@@ -225,6 +225,6 @@ All exported via barrel `components/ui/index.ts`.
 2. **Path alias** — `@/*` maps to project root. Always use `@/components/ui`, `@/lib/firebase`, etc.
 3. **HTML entities** — use `&apos;` not `'` in JSX text (React/ESLint enforced)
 4. **No shadcn/ui** — custom primitives only
-5. **React Compiler** — enabled in `next.config.ts`, avoid manual `useMemo`/`useCallback`
+5. **Server-side Firebase** — use `lib/firebase-admin.ts` (Admin SDK) in Server Components and API routes; never import `lib/firebase/config.ts` (client SDK) from server code
 6. **Barrel exports** — all modules use `index.ts` re-exports
 7. **Icons** — inline SVG with `stroke="currentColor"`, no icon library

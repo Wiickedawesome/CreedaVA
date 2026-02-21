@@ -112,9 +112,10 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Campaigns — admin only
-    // TODO: Audit whether /campaigns and /email-campaigns are the same collection.
-    // If so, consolidate to one and migrate existing documents.
+    // Ad/marketing campaigns (Google Ads, Facebook Ads, media buys) — admin only.
+    // DISTINCT from /email-campaigns: this collection stores ad campaign data
+    // (budget, impressions, clicks, conversions) while /email-campaigns stores
+    // email newsletter data. Both are managed on the Marketing → Campaigns page.
     match /campaigns/{docId} {
       allow read, write: if isAdmin();
     }

@@ -4,10 +4,16 @@
  * Collection: "page-seo"
  * Each doc stores { path, title, description, ogTitle, ogDescription, ogImage, keywords, noIndex }.
  * Falls back to provided defaults when no Firestore entry exists.
+ *
+ * IMPORTANT: This file is imported by server components (generateMetadata) and
+ * must use the Firebase Admin SDK — NOT the client Firebase SDK. The client SDK
+ * (lib/firebase/config.ts) only initializes `db` inside `if (typeof window !== "undefined")`,
+ * so `db` is always `undefined` on the server. The Admin SDK (lib/firebase-admin.ts)
+ * uses Application Default Credentials and works in any server context.
  */
 
 import { unstable_cache } from "next/cache";
-import { fetchAll, where } from "./firestore";
+import { adminDb } from "@/lib/firebase-admin";
 import type { PageSEO } from "@/lib/types/content";
 import type { Metadata } from "next";
 
@@ -19,11 +25,13 @@ async function _getPageSEO(
   defaults: { title: string; description: string },
 ): Promise<Metadata> {
   try {
-    const docs = await fetchAll<PageSEO>(
-      "page-seo",
-      where("path", "==", path),
-    );
-    const seo = docs[0];
+    const snapshot = await adminDb
+      .collection("page-seo")
+      .where("path", "==", path)
+      .limit(1)
+      .get();
+
+    const seo = snapshot.empty ? null : (snapshot.docs[0].data() as PageSEO);
     if (!seo) return fallback(path, defaults);
 
     const title = seo.title || defaults.title;

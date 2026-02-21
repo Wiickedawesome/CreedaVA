@@ -30,3 +30,15 @@ env:
   # Base URL for Cloud Functions HTTP endpoints (contact form, webhooks)
   - variable: NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL
     value: https://us-east4-creeda-va.cloudfunctions.net
+
+  # Optional: Firebase App Check (reCAPTCHA Enterprise)
+  # Uncomment and set after registering the site in Firebase Console → App Check.
+  # Protects Firestore / Cloud Functions from unauthorized access.
+  # - variable: NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY
+  #   value: YOUR_RECAPTCHA_ENTERPRISE_SITE_KEY
+
+  # Optional: Firebase Cloud Messaging (push notifications)
+  # Uncomment and set after generating a VAPID key in Firebase Console
+  # → Project Settings → Cloud Messaging → Web Push certificates.
+  # - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+  #   value: YOUR_VAPID_KEY

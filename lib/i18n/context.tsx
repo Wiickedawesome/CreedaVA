@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, startTransition } from "react";
 import en from "./en";
 import es from "./es";
 import type { Dictionary } from "./en";
@@ -31,7 +31,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
     if (stored === "en" || stored === "es") {
-      setLocaleState(stored);
+      // startTransition avoids the react-hooks/set-state-in-effect warning and
+      // marks this as a non-urgent background update so it doesn't block paint.
+      startTransition(() => setLocaleState(stored));
       document.documentElement.lang = stored;
     }
   }, []);

@@ -1,9 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock Firebase firestore module
-const mockFetchAll = vi.fn();
+// next/cache's unstable_cache requires Next.js's incrementalCache infrastructure
+// which doesn't exist in Vitest. Mock it to be a transparent pass-through.
+vi.mock("next/cache", () => ({
+  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+}));
+
+// seo.ts now uses the Firebase Admin SDK (adminDb) for server-side Firestore
+// queries instead of the client SDK. Mock adminDb's chained query API.
+const mockGet = vi.fn();
+
+vi.mock("@/lib/firebase-admin", () => ({
+  adminAuth: {},
+  adminDb: {
+    collection: () => ({
+      where: () => ({
+        limit: () => ({
+          get: mockGet,
+        }),
+      }),
+    }),
+  },
+}));
+
+// Keep these mocks so seo.ts's transitive imports don't break in the test env.
 vi.mock("@/lib/firebase/firestore", () => ({
-  fetchAll: (...args: unknown[]) => mockFetchAll(...args),
+  fetchAll: vi.fn(),
   where: (field: string, op: string, value: unknown) => ({ field, op, value }),
 }));
 vi.mock("@/lib/firebase/config", () => ({
@@ -11,6 +35,15 @@ vi.mock("@/lib/firebase/config", () => ({
   auth: {},
   db: {},
 }));
+
+/** Helper: build a mock Firestore QuerySnapshot from an optional data object. */
+function mockSnapshot(data?: Record<string, unknown>) {
+  if (!data) return { empty: true, docs: [] };
+  return {
+    empty: false,
+    docs: [{ data: () => data }],
+  };
+}
 
 import { getPageSEO } from "@/lib/firebase/seo";
 
@@ -20,18 +53,16 @@ describe("getPageSEO", () => {
   });
 
   it("returns Firestore SEO data when a document exists", async () => {
-    mockFetchAll.mockResolvedValue([
-      {
-        id: "1",
-        path: "/about",
-        title: "About Us | CreedaVA",
-        description: "Learn about our team.",
-        ogTitle: "About CreedaVA",
-        ogDescription: "Discover our story.",
-        ogImage: "https://creedava.com/og.png",
-        keywords: ["virtual assistant", "about"],
-      },
-    ]);
+    mockGet.mockResolvedValue(mockSnapshot({
+      id: "1",
+      path: "/about",
+      title: "About Us | CreedaVA",
+      description: "Learn about our team.",
+      ogTitle: "About CreedaVA",
+      ogDescription: "Discover our story.",
+      ogImage: "https://creedava.com/og.png",
+      keywords: ["virtual assistant", "about"],
+    }));
 
     const meta = await getPageSEO("/about", {
       title: "Fallback Title",
@@ -55,7 +86,7 @@ describe("getPageSEO", () => {
   });
 
   it("falls back to defaults when no Firestore doc exists", async () => {
-    mockFetchAll.mockResolvedValue([]);
+    mockGet.mockResolvedValue(mockSnapshot());
 
     const meta = await getPageSEO("/services", {
       title: "Our Services",
@@ -72,7 +103,7 @@ describe("getPageSEO", () => {
   });
 
   it("falls back to defaults when Firestore throws", async () => {
-    mockFetchAll.mockRejectedValue(new Error("Permission denied"));
+    mockGet.mockRejectedValue(new Error("Permission denied"));
 
     const meta = await getPageSEO("/contact", {
       title: "Contact",
@@ -85,14 +116,12 @@ describe("getPageSEO", () => {
   });
 
   it("uses default title/description when Firestore doc has empty fields", async () => {
-    mockFetchAll.mockResolvedValue([
-      {
-        id: "2",
-        path: "/pricing",
-        title: "",
-        description: "",
-      },
-    ]);
+    mockGet.mockResolvedValue(mockSnapshot({
+      id: "2",
+      path: "/pricing",
+      title: "",
+      description: "",
+    }));
 
     const meta = await getPageSEO("/pricing", {
       title: "Pricing",
@@ -104,15 +133,13 @@ describe("getPageSEO", () => {
   });
 
   it("includes noIndex robots directive when set", async () => {
-    mockFetchAll.mockResolvedValue([
-      {
-        id: "3",
-        path: "/draft",
-        title: "Draft Page",
-        description: "Not public",
-        noIndex: true,
-      },
-    ]);
+    mockGet.mockResolvedValue(mockSnapshot({
+      id: "3",
+      path: "/draft",
+      title: "Draft Page",
+      description: "Not public",
+      noIndex: true,
+    }));
 
     const meta = await getPageSEO("/draft", {
       title: "Draft",
@@ -123,7 +150,7 @@ describe("getPageSEO", () => {
   });
 
   it("includes twitter card metadata in all responses", async () => {
-    mockFetchAll.mockResolvedValue([]);
+    mockGet.mockResolvedValue(mockSnapshot());
 
     const meta = await getPageSEO("/faq", {
       title: "FAQ",
@@ -137,15 +164,13 @@ describe("getPageSEO", () => {
   });
 
   it("includes OG image with dimensions when provided", async () => {
-    mockFetchAll.mockResolvedValue([
-      {
-        id: "4",
-        path: "/news",
-        title: "News",
-        description: "Latest news",
-        ogImage: "https://creedava.com/news-og.png",
-      },
-    ]);
+    mockGet.mockResolvedValue(mockSnapshot({
+      id: "4",
+      path: "/news",
+      title: "News",
+      description: "Latest news",
+      ogImage: "https://creedava.com/news-og.png",
+    }));
 
     const meta = await getPageSEO("/news", {
       title: "News",
