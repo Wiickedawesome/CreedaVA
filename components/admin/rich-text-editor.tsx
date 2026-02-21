@@ -179,7 +179,7 @@ export function RichTextEditor({
             type="button"
             onClick={() => setMode(mode === "edit" ? "preview" : "edit")}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-              mode === "preview" ? "bg-primary text-white" : "bg-white text-gray-60 border border-border hover:bg-gray-10"
+              mode === "preview" ? "bg-primary text-white" : "bg-card text-gray-60 border border-border hover:bg-gray-10"
             }`}
           >
             {mode === "preview" ? (
@@ -200,7 +200,7 @@ export function RichTextEditor({
         {mode === "edit" ? (
           <textarea
             ref={ref}
-            className="w-full px-4 py-3 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none resize-y font-mono bg-white"
+            className="w-full px-4 py-3 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none resize-y font-mono bg-card"
             style={{ minHeight }}
             value={value}
             onChange={(e) => onChange(e.target.value)}
@@ -208,7 +208,7 @@ export function RichTextEditor({
           />
         ) : (
           <div
-            className="px-4 py-3 prose prose-sm max-w-none text-sm text-gray-80 overflow-auto bg-white"
+            className="px-4 py-3 prose prose-sm max-w-none text-sm text-gray-80 overflow-auto bg-card"
             style={{ minHeight }}
             dangerouslySetInnerHTML={{ __html: value || `<p class="text-gray-40">${placeholder}</p>` }}
           />

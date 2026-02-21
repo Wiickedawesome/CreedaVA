@@ -610,7 +610,7 @@ export default function EmailsPage() {
               key={be.value}
               onClick={() => { setInboxFilter(inboxFilter === be.value ? "all" : be.value); setTab("inbox"); }}
               className={`rounded-lg border p-3 text-left transition-colors ${
-                inboxFilter === be.value ? "border-primary bg-primary/5" : "border-border bg-white hover:border-gray-30"
+                inboxFilter === be.value ? "border-primary bg-primary/10" : "border-border bg-card hover:border-gray-30"
               }`}
             >
               <p className="text-xs text-gray-50 truncate">{be.value.split("@")[0]}</p>
@@ -627,7 +627,7 @@ export default function EmailsPage() {
 
       {/* System Templates — pinned */}
       {surveyTemplate && (
-        <div className="rounded-xl border border-border bg-white overflow-hidden">
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="px-4 py-2.5 bg-gray-10 border-b border-border">
             <p className="text-xs font-medium text-gray-50 uppercase tracking-wider">System Templates</p>
           </div>
@@ -642,7 +642,7 @@ export default function EmailsPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300">Active</span>
               <button
                 onClick={() => setSurveyPreviewOpen(true)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary hover:text-primary-light hover:bg-primary/5 rounded-lg transition-colors"
@@ -867,7 +867,11 @@ export default function EmailsPage() {
                 {form.images.map((url, i) => (
                   <div key={i} className="relative group w-full h-20">
                     <Image src={url} alt="" fill className="rounded-lg object-cover" />
-                    <button onClick={() => removeEmailImage(i)} className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => removeEmailImage(i)}
+                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Remove image"
+                    >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>
                   </div>
@@ -898,7 +902,11 @@ export default function EmailsPage() {
                       <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                       <span className="truncate">{att.name}</span>
                     </a>
-                    <button onClick={() => removeEmailAttachment(i)} className="text-gray-40 hover:text-red-500 shrink-0 ml-2">
+                    <button
+                      onClick={() => removeEmailAttachment(i)}
+                      className="text-gray-40 hover:text-red-500 shrink-0 ml-2"
+                      aria-label="Remove attachment"
+                    >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>
                   </div>
@@ -953,7 +961,7 @@ export default function EmailsPage() {
           <div>
             <label className="text-xs font-medium text-gray-50 uppercase tracking-wide">Recipients</label>
             <textarea
-              className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="mt-1 w-full rounded-lg border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               rows={4}
               placeholder={"email1@example.com\nemail2@example.com"}
               value={bulkRecipients}
@@ -995,7 +1003,7 @@ export default function EmailsPage() {
               <p className="text-sm font-medium text-gray-90">{surveyTemplate.subject}</p>
             </div>
             <div
-              className="rounded-lg border border-border bg-white p-6"
+              className="rounded-lg border border-border bg-card p-6"
               dangerouslySetInnerHTML={{ __html: surveyTemplate.body
                 .replace(/\{\{CUSTOMER_NAME\}\}/g, "John Doe")
                 .replace(/\{\{SURVEY_LINK\}\}/g, "/satisfaction/demo")

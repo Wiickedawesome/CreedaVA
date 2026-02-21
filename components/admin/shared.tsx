@@ -14,7 +14,7 @@ export function DashboardSection({
   className = "",
 }: DashboardSectionProps) {
   return (
-    <div className={`rounded-lg border border-border bg-white p-4 shadow-sm ${className}`}>
+    <div className={`rounded-lg border border-border bg-card p-4 shadow-sm ${className}`}>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h3 className="text-base font-bold text-gray-90">{title}</h3>
         {action}

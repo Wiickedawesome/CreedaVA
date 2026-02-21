@@ -258,7 +258,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-30 flex h-full flex-col border-r border-border bg-white transition-all duration-200 ${
+      className={`fixed left-0 top-0 z-30 flex h-full flex-col border-r border-border bg-gray-20 transition-all duration-200 ${
         collapsed ? "w-16" : "w-full lg:w-64"
       }`}
     >

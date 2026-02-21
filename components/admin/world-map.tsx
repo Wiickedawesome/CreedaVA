@@ -88,7 +88,7 @@ export function WorldMap({ countryData }: WorldMapProps) {
 
   if (countryData.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-white p-6">
+      <div className="rounded-lg border border-border bg-card p-6">
         <div className="h-87.5 flex flex-col items-center justify-center text-gray-40">
           <svg className="w-16 h-16 mb-4 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="12" cy="12" r="10" />
@@ -101,7 +101,7 @@ export function WorldMap({ countryData }: WorldMapProps) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-white p-5">
+    <div className="rounded-lg border border-border bg-card p-5">
       <div className="mb-4">
         <h3 className="text-base font-semibold text-gray-90 flex items-center gap-2">
           <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

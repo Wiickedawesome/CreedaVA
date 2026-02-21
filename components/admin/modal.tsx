@@ -51,7 +51,7 @@ export function Modal({
         aria-hidden="true"
       />
       <div
-        className={`relative z-10 flex w-full flex-col ${sizeStyles[size]} rounded-xl border border-border bg-white shadow-xl max-h-[90vh]`}
+        className={`relative z-10 flex w-full flex-col ${sizeStyles[size]} rounded-xl border border-border bg-card shadow-xl max-h-[90vh]`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
@@ -78,7 +78,7 @@ export function Modal({
 
         {/* Footer */}
         {footer && (
-          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 border-t border-border px-6 py-4 bg-gray-50/50 rounded-b-xl shrink-0">
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 border-t border-border px-6 py-4 bg-muted/50 rounded-b-xl shrink-0">
             {footer}
           </div>
         )}

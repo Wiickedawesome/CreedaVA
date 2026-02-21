@@ -756,7 +756,7 @@ export default function ProjectDetailPage() {
         <div className="space-y-4">
           <div className="flex gap-2">
             <textarea
-              className="flex-1 rounded-lg border border-border bg-white px-3 py-2 text-sm text-gray-80 min-h-20 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="flex-1 rounded-lg border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 min-h-20 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
               value={noteInput}
               onChange={(e) => setNoteInput(e.target.value)}
               placeholder="Add a note..."
@@ -764,7 +764,7 @@ export default function ProjectDetailPage() {
           </div>
           <Button size="sm" onClick={handleAddNote} disabled={!noteInput.trim()}>Add Note</Button>
           {project.notes ? (
-            <div className="rounded-xl border border-border bg-white p-5">
+            <div className="rounded-xl border border-border bg-card p-5">
               <pre className="text-sm text-gray-80 whitespace-pre-wrap font-sans leading-relaxed">{project.notes}</pre>
             </div>
           ) : (
@@ -802,13 +802,13 @@ export default function ProjectDetailPage() {
           </div>
 
           {!project.driveFolderId ? (
-            <div className="rounded-xl border border-border bg-white p-8 text-center">
+            <div className="rounded-xl border border-border bg-card p-8 text-center">
               <svg className="w-12 h-12 text-gray-30 mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
               <p className="text-sm text-gray-50 mb-1">No Drive folder linked to this project</p>
               <p className="text-xs text-gray-40">Create a folder to store client files, proposals, and deliverables</p>
             </div>
           ) : driveFiles.length > 0 ? (
-            <div className="rounded-xl border border-border bg-white divide-y divide-border">
+            <div className="rounded-xl border border-border bg-card divide-y divide-border">
               {driveFiles.map((f) => (
                 <div key={f.id} className="flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -830,7 +830,7 @@ export default function ProjectDetailPage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-border bg-white p-8 text-center">
+            <div className="rounded-xl border border-border bg-card p-8 text-center">
               <p className="text-sm text-gray-50">Click &quot;Browse Files&quot; to load files from Drive</p>
             </div>
           )}
@@ -920,7 +920,7 @@ export default function ProjectDetailPage() {
           <div>
             <label className="block text-sm font-medium text-gray-70 mb-1">Notes</label>
             <textarea
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm min-h-16 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm min-h-16 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
               value={goalForm.notes}
               onChange={(e) => setGoalForm({ ...goalForm, notes: e.target.value })}
               placeholder="Additional notes..."

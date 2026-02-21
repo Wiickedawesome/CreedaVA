@@ -33,7 +33,7 @@ export function ReportCategoryCard({
     : null;
 
   return (
-    <div className="group rounded-xl border border-border bg-white p-5 hover:border-primary/20 hover:shadow-md transition-all duration-200">
+    <div className="group rounded-xl border border-border bg-card p-5 hover:border-primary/20 hover:shadow-md transition-all duration-200">
       <div className="flex items-start gap-4">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           {icon}
@@ -102,13 +102,13 @@ export function ScheduledReportCard({
     : null;
 
   const freshness = !lastDate
-    ? { label: "Never run", color: "text-gray-40 bg-gray-10" }
+    ? { label: "Never run", color: "text-gray-60 bg-gray-20" }
     : isStale
-      ? { label: "Stale", color: "text-amber-600 bg-amber-50" }
-      : { label: "Fresh", color: "text-emerald-600 bg-emerald-50" };
+      ? { label: "Stale", color: "text-amber-500 bg-amber-500/10" }
+      : { label: "Fresh", color: "text-emerald-500 bg-emerald-500/10" };
 
   return (
-    <div className="rounded-xl border border-border bg-white p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center justify-between mb-3">
         <div>
           <h4 className="text-sm font-semibold text-gray-90">{periodLabels[period]}</h4>
@@ -181,10 +181,10 @@ interface InsightCardProps {
 }
 
 const severityStyles: Record<string, { bg: string; icon: string; border: string }> = {
-  positive: { bg: "bg-emerald-50", icon: "text-emerald-600", border: "border-emerald-200" },
-  info: { bg: "bg-blue-50", icon: "text-blue-600", border: "border-blue-200" },
-  warning: { bg: "bg-amber-50", icon: "text-amber-600", border: "border-amber-200" },
-  critical: { bg: "bg-red-50", icon: "text-red-600", border: "border-red-200" },
+  positive: { bg: "bg-emerald-500/10", icon: "text-emerald-500", border: "border-emerald-500/20" },
+  info: { bg: "bg-blue-500/10", icon: "text-blue-500", border: "border-blue-500/20" },
+  warning: { bg: "bg-amber-500/10", icon: "text-amber-500", border: "border-amber-500/20" },
+  critical: { bg: "bg-red-500/10", icon: "text-red-500", border: "border-red-500/20" },
 };
 
 const severityIcons: Record<string, ReactNode> = {
@@ -230,7 +230,7 @@ export function InsightCard({ insight, onPin, onDismiss }: InsightCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h5 className="text-sm font-medium text-gray-90">{insight.title}</h5>
-            <span className="text-[10px] text-gray-40 capitalize rounded-full bg-white/60 px-2 py-0.5">
+            <span className="text-[10px] text-gray-40 capitalize rounded-full bg-card/60 px-2 py-0.5">
               {insight.area}
             </span>
             {insight.pinned && (
@@ -245,7 +245,7 @@ export function InsightCard({ insight, onPin, onDismiss }: InsightCardProps) {
           {onPin && (
             <button
               onClick={onPin}
-              className="p-1 rounded hover:bg-white/60 text-gray-40 hover:text-primary transition-colors cursor-pointer"
+              className="p-1 rounded hover:bg-card/60 text-gray-40 hover:text-primary transition-colors cursor-pointer"
               title={insight.pinned ? "Unpin" : "Pin"}
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -257,7 +257,7 @@ export function InsightCard({ insight, onPin, onDismiss }: InsightCardProps) {
           {onDismiss && (
             <button
               onClick={onDismiss}
-              className="p-1 rounded hover:bg-white/60 text-gray-40 hover:text-gray-70 transition-colors cursor-pointer"
+              className="p-1 rounded hover:bg-card/60 text-gray-40 hover:text-gray-70 transition-colors cursor-pointer"
               title="Dismiss"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -302,7 +302,7 @@ export function BusinessPulse({ score, areas }: BusinessPulseProps) {
         : "text-red-600";
 
   return (
-    <div className="rounded-xl border border-border bg-white p-6">
+    <div className="rounded-xl border border-border bg-card p-6">
       <h3 className="text-sm font-semibold text-gray-90 mb-4">Business Pulse</h3>
 
       {score === null ? (

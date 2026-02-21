@@ -395,7 +395,7 @@ export default function ForumPage() {
           <input
             type="text"
             placeholder="Search threads…"
-            className="w-full rounded-lg border border-border bg-white py-2 pl-10 pr-3 text-sm text-gray-80 placeholder:text-gray-40 focus:border-primary focus:outline-none"
+            className="w-full rounded-lg border border-border bg-gray-10/50 py-2 pl-10 pr-3 text-sm text-gray-80 placeholder:text-gray-40 focus:border-primary focus:outline-none"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -505,7 +505,8 @@ export default function ForumPage() {
                       <Image src={url} alt="" fill className="rounded-lg object-cover" />
                       <button
                         onClick={() => removeDetailImage(i)}
-                        className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Remove image"
                       >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                       </button>
@@ -543,7 +544,11 @@ export default function ForumPage() {
                         <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
                         <span className="truncate">{url}</span>
                       </a>
-                      <button onClick={() => removeDetailLink(i)} className="text-gray-40 hover:text-red-500 shrink-0 ml-2">
+                      <button
+                        onClick={() => removeDetailLink(i)}
+                        className="text-gray-40 hover:text-red-500 shrink-0 ml-2"
+                        aria-label="Remove link"
+                      >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                       </button>
                     </div>
@@ -640,7 +645,7 @@ export default function ForumPage() {
                     <Image src={url} alt="" fill className="rounded-lg object-cover" />
                     <button
                       onClick={() => removeForumImage(i)}
-                      className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>

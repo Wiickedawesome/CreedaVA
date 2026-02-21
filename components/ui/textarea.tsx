@@ -25,7 +25,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           id={textareaId}
           className={`
             w-full px-4 py-2.5 rounded-md
-            border border-gray-40 bg-white text-gray-100
+            border border-gray-40 bg-card text-gray-100
             placeholder:text-gray-50
             focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
             disabled:bg-gray-20 disabled:text-gray-50 disabled:cursor-not-allowed
@@ -33,7 +33,6 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             ${error ? "border-error focus:ring-error" : ""}
             ${className}
           `}
-          aria-invalid={error ? "true" : "false"}
           aria-describedby={
             error ? `${textareaId}-error` : helperText ? `${textareaId}-helper` : undefined
           }

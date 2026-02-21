@@ -25,14 +25,13 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           id={selectId}
           className={`
             w-full px-4 py-2.5 rounded-md
-            border border-border bg-white text-gray-100
+            border border-border bg-card text-gray-100
             focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
             disabled:bg-gray-20 disabled:text-gray-50 disabled:cursor-not-allowed
             transition-colors duration-150 cursor-pointer
             ${error ? "border-error focus:ring-error" : ""}
             ${className}
           `}
-          aria-invalid={error ? "true" : undefined}
           {...props}
         >
           {placeholder && (

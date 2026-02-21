@@ -510,7 +510,7 @@ function AIPromptDialog({
                         className={`flex-1 min-w-0 rounded-full border px-2 py-1 text-xs transition-all duration-300 truncate cursor-pointer ${
                           isDynamic
                             ? "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 font-medium"
-                            : "border-border bg-white text-gray-60 hover:border-primary/30 hover:text-primary hover:bg-primary/5"
+                            : "border-border bg-card text-gray-60 hover:border-primary/30 hover:text-primary hover:bg-primary/5"
                         }`}
                       >
                         {isDynamic ? "✦ " : ""}{p.label}
@@ -556,7 +556,7 @@ function AIPromptDialog({
 
           {/* Conversation history dropdown */}
           {showHistory && (
-            <div className="border border-border rounded-lg bg-white max-h-40 overflow-y-auto mb-2 shrink-0">
+            <div className="border border-border rounded-lg bg-card max-h-40 overflow-y-auto mb-2 shrink-0">
               <div className="px-3 py-1.5 text-[10px] font-medium text-gray-50 uppercase tracking-wider border-b border-border">Past Conversations</div>
               {pastConversations.length === 0 && (
                 <p className="px-3 py-3 text-xs text-gray-40 text-center">No past conversations</p>
@@ -650,7 +650,7 @@ function AIPromptDialog({
               onChange={(e) => setPrompt(e.target.value.slice(0, maxChars))}
               onKeyDown={handleKeyDown}
               placeholder={placeholder || `Ask Creeda AI about ${section.toLowerCase()}\u2026`}
-              className="w-full min-h-16 max-h-32 rounded-lg border border-border bg-white px-4 py-2.5 text-sm text-gray-90 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 resize-none leading-relaxed"
+              className="w-full min-h-16 max-h-32 rounded-lg border border-border bg-gray-10/50 px-4 py-2.5 text-sm text-gray-90 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 resize-none leading-relaxed"
               disabled={generating}
               rows={2}
             />
@@ -682,7 +682,7 @@ function AIPromptDialog({
                       className={`flex-1 min-w-0 rounded-full border px-2 py-1 text-xs transition-all duration-300 truncate cursor-pointer ${
                         isDynamic
                           ? "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 font-medium"
-                          : "border-border bg-white text-gray-60 hover:border-primary/30 hover:text-primary hover:bg-primary/5"
+                          : "border-border bg-gray-10/60 text-gray-70 hover:border-primary/30 hover:text-primary hover:bg-primary/5"
                       }`}
                     >
                       {isDynamic ? "✦ " : ""}{p.label}
@@ -713,7 +713,7 @@ function AIPromptDialog({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value.slice(0, maxChars))}
           placeholder={placeholder || `What would you like to create or analyze for ${section.toLowerCase()}?`}
-          className="w-full min-h-48 max-h-[50vh] rounded-lg border border-border bg-white px-4 py-3 text-sm text-gray-90 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 resize-y leading-relaxed"
+          className="w-full min-h-48 max-h-[50vh] rounded-lg border border-border bg-gray-10/50 px-4 py-3 text-sm text-gray-90 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 resize-y leading-relaxed"
           disabled={generating}
         />
       </div>

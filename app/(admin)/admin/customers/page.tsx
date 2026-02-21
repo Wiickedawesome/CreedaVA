@@ -607,9 +607,9 @@ export default function CustomersPage() {
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs font-medium text-gray-40 uppercase tracking-wide">Health Score</span>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                avgHealthScore >= 70 ? "bg-green-50 text-green-700" :
-                avgHealthScore >= 40 ? "bg-yellow-50 text-yellow-700" :
-                "bg-red-50 text-red-700"
+                avgHealthScore >= 70 ? "bg-emerald-500/10 text-emerald-300" :
+                avgHealthScore >= 40 ? "bg-amber-500/10 text-amber-300" :
+                "bg-red-500/10 text-red-300"
               }`}>{avgHealthScore}%</span>
             </div>
             {contactHealthData.map((seg) => {
@@ -843,7 +843,7 @@ export default function CustomersPage() {
           <div>
             <label className="block text-sm font-medium text-gray-70 mb-1">Notes</label>
             <textarea
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm min-h-16 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm min-h-16 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               placeholder="Additional notes..."
@@ -938,7 +938,7 @@ export default function CustomersPage() {
       >
         <div className="space-y-4">
           {surveyTemplate && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 text-green-700 text-xs">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-300 text-xs">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
               Template loaded from Emails → Drafts. Changes here update the template.
             </div>
@@ -964,7 +964,7 @@ export default function CustomersPage() {
           <div>
             <label className="block text-sm font-medium text-gray-70 mb-1">Email Body (HTML)</label>
             <textarea
-              className="w-full rounded-md border border-border bg-white px-3 py-2 min-h-48 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono text-xs"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 min-h-48 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono text-xs"
               value={surveyEmail.html}
               onChange={(e) => setSurveyEmail({ ...surveyEmail, html: e.target.value })}
             />
@@ -975,7 +975,7 @@ export default function CustomersPage() {
           <div>
             <label className="block text-sm font-medium text-gray-70 mb-1">Preview</label>
             <div
-              className="border border-border rounded-lg p-4 bg-white max-h-64 overflow-y-auto"
+              className="border border-border rounded-lg p-4 bg-card max-h-64 overflow-y-auto"
               dangerouslySetInnerHTML={{
                 __html: surveyEmail.html
                   .replace(/\{\{CUSTOMER_NAME\}\}/g, selected?.name || "Customer")

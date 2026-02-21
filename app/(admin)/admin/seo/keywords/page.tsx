@@ -396,9 +396,10 @@ export default function KeywordsPage() {
           <div>
             <label className="block text-xs font-medium text-gray-70 mb-1">Search Intent</label>
             <select
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-80"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80"
               value={createForm.searchIntent}
               onChange={(e) => setCreateForm({ ...createForm, searchIntent: e.target.value })}
+              aria-label="Search intent"
             >
               <option value="informational">Informational</option>
               <option value="commercial">Commercial</option>
@@ -409,9 +410,10 @@ export default function KeywordsPage() {
           <div>
             <label className="block text-xs font-medium text-gray-70 mb-1">Difficulty</label>
             <select
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-80"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80"
               value={createForm.difficulty}
               onChange={(e) => setCreateForm({ ...createForm, difficulty: e.target.value })}
+              aria-label="Difficulty"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -447,9 +449,10 @@ export default function KeywordsPage() {
           <div>
             <label className="block text-xs font-medium text-gray-70 mb-1">Search Intent</label>
             <select
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-80"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80"
               value={editForm.searchIntent}
               onChange={(e) => setEditForm({ ...editForm, searchIntent: e.target.value })}
+              aria-label="Search intent"
             >
               <option value="informational">Informational</option>
               <option value="commercial">Commercial</option>
@@ -460,9 +463,10 @@ export default function KeywordsPage() {
           <div>
             <label className="block text-xs font-medium text-gray-70 mb-1">Difficulty</label>
             <select
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-80"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80"
               value={editForm.difficulty}
               onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
+              aria-label="Difficulty"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>

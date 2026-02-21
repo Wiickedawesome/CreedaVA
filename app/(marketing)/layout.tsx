@@ -1,7 +1,15 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import Script from "next/script";
+import { Suspense } from "react";
+
+import { ForceTheme } from "@/components/layout/force-theme";
+import { GtagPageViews } from "@/components/layout/gtag-pageviews";
 import { LanguageProvider } from "@/lib/i18n";
 import { FirebaseInit } from "@/lib/firebase";
+
+const GA_MEASUREMENT_ID =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-5DC2T0DSDW";
 
 /** JSON-LD Organization structured data for Google rich results */
 const organizationJsonLd = {
@@ -36,6 +44,24 @@ export default function MarketingLayout({
   return (
     <LanguageProvider>
       <FirebaseInit />
+      <Script id="marketing-force-theme" strategy="beforeInteractive">
+        {"document.documentElement.dataset.theme = 'light';"}
+      </Script>
+      <ForceTheme theme="light" />
+
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="gtag-init" strategy="afterInteractive">
+        {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_MEASUREMENT_ID}');`}
+      </Script>
+      <Suspense fallback={null}>
+        <GtagPageViews gaId={GA_MEASUREMENT_ID} />
+      </Suspense>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}

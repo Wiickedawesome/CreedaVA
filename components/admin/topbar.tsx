@@ -16,7 +16,7 @@ export function AdminTopbar() {
   return (
     <>
       {/* Mobile topbar — hidden on desktop (sidebar visible there) */}
-      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-white px-4 lg:hidden">
+      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-gray-20 px-4 lg:hidden">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(true)}
@@ -35,7 +35,10 @@ export function AdminTopbar() {
 
         <div className="flex items-center gap-1">
           {/* Notifications */}
-          <button className="relative rounded-lg p-2 text-gray-60 hover:bg-gray-20 hover:text-gray-90">
+          <button
+            className="relative rounded-lg p-2 text-gray-60 hover:bg-gray-20 hover:text-gray-90"
+            aria-label="View notifications"
+          >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 01-3.46 0" />
@@ -69,7 +72,7 @@ export function AdminTopbar() {
             className="absolute inset-0 bg-black/30"
             onClick={() => setSidebarOpen(false)}
           />
-          <div className="relative z-50 h-full w-64 bg-white shadow-xl transition-transform duration-300 transform translate-x-0">
+          <div className="relative z-50 h-full w-64 bg-card shadow-xl transition-transform duration-300 transform translate-x-0">
              <AdminSidebar onNavigate={handleNavigate} />
           </div>
         </div>

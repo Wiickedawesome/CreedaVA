@@ -45,7 +45,7 @@ function GaugeChart({ value, label }: { value: number; label: string }) {
           x="100"
           y="95"
           textAnchor="middle"
-          style={{ fontSize: "32px", fontWeight: 700, fill: "var(--gray-90)" }}
+          className="gauge-value-text"
         >
           {value}%
         </text>
@@ -170,7 +170,7 @@ function TrafficAreaChart({
               x={pts[i].x}
               y={h + 14}
               textAnchor="middle"
-              style={{ fontSize: "9px", fill: "var(--gray-50)" }}
+              className="traffic-label-text"
             >
               {d.label}
             </text>

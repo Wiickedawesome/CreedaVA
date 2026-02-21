@@ -501,7 +501,7 @@ export default function CampaignsPage() {
         <button
           onClick={() => setSection("ads")}
           className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            section === "ads" ? "bg-white text-gray-90 shadow-sm" : "text-gray-50 hover:text-gray-70"
+            section === "ads" ? "bg-gray-20 text-gray-90 shadow-sm" : "text-gray-50 hover:text-gray-70"
           }`}
         >
           <svg className="w-4 h-4 inline mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -512,7 +512,7 @@ export default function CampaignsPage() {
         <button
           onClick={() => setSection("email")}
           className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            section === "email" ? "bg-white text-gray-90 shadow-sm" : "text-gray-50 hover:text-gray-70"
+            section === "email" ? "bg-gray-20 text-gray-90 shadow-sm" : "text-gray-50 hover:text-gray-70"
           }`}
         >
           <svg className="w-4 h-4 inline mr-1.5 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -537,7 +537,7 @@ export default function CampaignsPage() {
           { label: "Total Clicks", value: campaigns.reduce((s, c) => s + c.clicks, 0).toLocaleString() },
           { label: "Total Conversions", value: campaigns.reduce((s, c) => s + c.conversions, 0).toLocaleString() },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-lg border border-border bg-white p-4">
+          <div key={stat.label} className="rounded-lg border border-border bg-card p-4">
             <p className="text-xs text-gray-50">{stat.label}</p>
             <p className="text-lg font-semibold text-gray-90 mt-1">{stat.value}</p>
           </div>
@@ -603,9 +603,10 @@ export default function CampaignsPage() {
           <div>
             <label className="block text-xs font-medium text-gray-70 mb-1">Platform</label>
             <select
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-80"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80"
               value={platform}
               onChange={(e) => setPlatform(e.target.value)}
+              aria-label="Campaign platform"
             >
               <option value="google">Google Ads</option>
               <option value="facebook">Facebook / Meta</option>
@@ -699,7 +700,7 @@ export default function CampaignsPage() {
               { label: "Total Sent", value: emailCampaigns.reduce((s, ec) => s + ec.stats.sent, 0).toLocaleString() },
               { label: "Total Opened", value: emailCampaigns.reduce((s, ec) => s + ec.stats.opened, 0).toLocaleString() },
             ].map((stat) => (
-              <div key={stat.label} className="rounded-lg border border-border bg-white p-4">
+              <div key={stat.label} className="rounded-lg border border-border bg-card p-4">
                 <p className="text-xs text-gray-50">{stat.label}</p>
                 <p className="text-lg font-semibold text-gray-90 mt-1">{stat.value}</p>
               </div>
@@ -778,9 +779,10 @@ export default function CampaignsPage() {
                 <div>
                   <label className="block text-xs font-medium text-gray-70 mb-1">Recipient Source</label>
                   <select
-                    className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-80"
+                    className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80"
                     value={ecForm.recipientSource}
                     onChange={(e) => setEcForm({ ...ecForm, recipientSource: e.target.value })}
+                    aria-label="Recipient source"
                   >
                     <option value="manual">Manual Entry</option>
                     <option value="leads">Leads</option>

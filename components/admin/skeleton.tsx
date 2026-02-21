@@ -24,7 +24,7 @@ export function PageSkeleton() {
       </div>
 
       {/* Table rows */}
-      <div className="rounded-xl border border-border bg-white overflow-hidden">
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
         {/* Header */}
         <div className="flex gap-4 border-b border-border px-4 py-3">
           <Pulse className="h-4 w-32" />
@@ -58,7 +58,7 @@ export function DashboardSkeleton() {
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-border bg-white p-5 space-y-3">
+          <div key={i} className="rounded-xl border border-border bg-card p-5 space-y-3">
             <Pulse className="h-4 w-24" />
             <Pulse className="h-8 w-16" />
             <Pulse className="h-3 w-20" />
@@ -68,11 +68,11 @@ export function DashboardSkeleton() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <Pulse className="h-4 w-24 mb-4" />
           <Pulse className="h-32 w-full rounded-lg" />
         </div>
-        <div className="rounded-xl border border-border bg-white p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <Pulse className="h-4 w-28 mb-4" />
           <Pulse className="h-32 w-full rounded-lg" />
         </div>

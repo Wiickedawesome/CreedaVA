@@ -385,7 +385,7 @@ export default function LandingPagesPage() {
       <AdminTabs tabs={tabs} defaultValue="all" onChange={setTab} />
 
       {/* System Pages — Satisfaction Survey */}
-      <div className="rounded-xl border border-border bg-white overflow-hidden">
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-4 py-2.5 bg-gray-10 border-b border-border">
           <p className="text-xs font-medium text-gray-50 uppercase tracking-wider">System Pages</p>
         </div>
@@ -400,7 +400,7 @@ export default function LandingPagesPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Active</span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300">Active</span>
             <button
               onClick={() => setSurveyPreviewOpen(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary hover:text-primary-light hover:bg-primary/5 rounded-lg transition-colors"
@@ -531,7 +531,8 @@ export default function LandingPagesPage() {
             <select
               value={form.ctaEmail}
               onChange={(e) => setForm({ ...form, ctaEmail: e.target.value })}
-              className="w-full rounded-lg border border-gray-20 bg-white px-3 py-2 text-sm text-gray-90 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              className="w-full rounded-lg border border-gray-20 bg-gray-10/50 px-3 py-2 text-sm text-gray-90 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              aria-label="Send inquiries to"
             >
               <option value="contact@creedava.com">contact@creedava.com</option>
               <option value="sales@creedava.com">sales@creedava.com</option>
@@ -565,7 +566,8 @@ export default function LandingPagesPage() {
                     <Image src={url} alt="" fill className="rounded-lg object-cover" />
                     <button
                       onClick={() => removeLpImage(i)}
-                      className="absolute top-1 right-1 bg-white/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Remove image"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>
@@ -595,7 +597,11 @@ export default function LandingPagesPage() {
                       <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                       <span className="truncate">{att.name}</span>
                     </a>
-                    <button onClick={() => removeLpAttachment(i)} className="text-gray-40 hover:text-red-500 shrink-0 ml-2">
+                    <button
+                      onClick={() => removeLpAttachment(i)}
+                      className="text-gray-40 hover:text-red-500 shrink-0 ml-2"
+                      aria-label="Remove attachment"
+                    >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>
                   </div>

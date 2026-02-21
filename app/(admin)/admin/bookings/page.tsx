@@ -457,7 +457,7 @@ export default function BookingsPage() {
           <div>
             <label className="block text-xs font-medium text-gray-70 mb-1">Notes</label>
             <textarea
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-80 min-h-20"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 min-h-20"
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               placeholder="Booking notes"
@@ -500,7 +500,7 @@ export default function BookingsPage() {
             <div>
               <label className="block text-xs font-medium text-gray-70 mb-1">Notes</label>
               <textarea
-                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-80 min-h-20"
+                className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 min-h-20"
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 placeholder="Booking notes"

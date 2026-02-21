@@ -435,7 +435,7 @@ export default function SeoContentPage() {
               Meta Description <span className="text-gray-40">({editForm.description.length}/160)</span>
             </label>
             <textarea
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-90 placeholder:text-gray-40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-90 placeholder:text-gray-40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               rows={3}
               value={editForm.description}
               onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
@@ -464,7 +464,7 @@ export default function SeoContentPage() {
           <div>
             <label className="block text-xs font-medium text-gray-50 mb-1">OG Description (optional)</label>
             <textarea
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-90 placeholder:text-gray-40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-90 placeholder:text-gray-40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               rows={2}
               value={editForm.ogDescription}
               onChange={(e) => setEditForm((f) => ({ ...f, ogDescription: e.target.value }))}
@@ -491,7 +491,7 @@ export default function SeoContentPage() {
 
           {/* Search preview */}
           <DashboardSection title="Google Search Preview">
-            <div className="rounded-lg bg-white border border-border p-4">
+            <div className="rounded-lg bg-card border border-border p-4">
               <p className="text-lg text-[#1a0dab] font-medium truncate">
                 {editForm.title || "Page Title"} | CreedaVA
               </p>

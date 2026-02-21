@@ -428,7 +428,7 @@ function AIChatBox({ allData }: { allData: AllCollections }) {
   ];
 
   return (
-    <div className="rounded-xl border border-border bg-white flex flex-col h-full min-h-0 overflow-hidden">
+    <div className="rounded-xl border border-border bg-card flex flex-col h-full min-h-0 overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border shrink-0">
         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
@@ -559,6 +559,7 @@ function AIChatBox({ allData }: { allData: AllCollections }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about your website..."
+            aria-label="Ask about your website"
             disabled={generating}
             className="flex-1 rounded-lg border border-border bg-gray-10 px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-colors disabled:opacity-50"
           />
@@ -566,6 +567,7 @@ function AIChatBox({ allData }: { allData: AllCollections }) {
             type="submit"
             disabled={!input.trim() || generating}
             className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white hover:bg-primary-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+            aria-label="Send question"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="22" y1="2" x2="11" y2="13" />
@@ -937,7 +939,7 @@ export default function AIReportsDashboard() {
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18" /></svg>
               Export to Sheets
             </Button>
-            <div className="absolute right-0 top-full mt-1 z-20 hidden group-hover:block w-48 rounded-lg border border-border bg-white shadow-lg py-1">
+            <div className="absolute right-0 top-full mt-1 z-20 hidden group-hover:block w-48 rounded-lg border border-border bg-card shadow-lg py-1">
               {(["leads", "customers", "contacts", "bookings", "tasks", "campaigns", "blog"] as const).map((c) => (
                 <button key={c} className="w-full text-left px-3 py-1.5 text-sm text-gray-70 hover:bg-gray-10 capitalize" onClick={() => handleExportToSheets(c)}>
                   {c}
@@ -1077,7 +1079,7 @@ export default function AIReportsDashboard() {
           </div>
 
           {/* Scheduled report history */}
-          <div className="rounded-xl border border-border bg-white p-5">
+          <div className="rounded-xl border border-border bg-card p-5">
             <h4 className="text-sm font-semibold text-gray-90 mb-3">Scheduled Report History</h4>
             <DataTable
               columns={columns}
@@ -1115,7 +1117,7 @@ export default function AIReportsDashboard() {
           </div>
 
           {/* On-demand history */}
-          <div className="rounded-xl border border-border bg-white p-5">
+          <div className="rounded-xl border border-border bg-card p-5">
             <h4 className="text-sm font-semibold text-gray-90 mb-3">On-Demand Report History</h4>
             <DataTable
               columns={columns}
@@ -1288,17 +1290,19 @@ export default function AIReportsDashboard() {
                 {editForm.highlights.map((h, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <input
-                      className="flex-1 rounded-md border border-border bg-white px-3 py-1.5 text-sm text-gray-80"
+                      className="flex-1 rounded-md border border-border bg-gray-10/50 px-3 py-1.5 text-sm text-gray-80"
                       value={h}
                       onChange={(e) => {
                         const updated = [...editForm.highlights];
                         updated[i] = e.target.value;
                         setEditForm({ ...editForm, highlights: updated });
                       }}
+                      aria-label={`Highlight ${i + 1}`}
                     />
                     <button
                       className="text-gray-30 hover:text-red-500 transition-colors"
                       onClick={() => setEditForm({ ...editForm, highlights: editForm.highlights.filter((_, j) => j !== i) })}
+                      aria-label={`Remove highlight ${i + 1}`}
                     >
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>
@@ -1323,17 +1327,19 @@ export default function AIReportsDashboard() {
                 {editForm.recommendations.map((r, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <input
-                      className="flex-1 rounded-md border border-border bg-white px-3 py-1.5 text-sm text-gray-80"
+                      className="flex-1 rounded-md border border-border bg-gray-10/50 px-3 py-1.5 text-sm text-gray-80"
                       value={r}
                       onChange={(e) => {
                         const updated = [...editForm.recommendations];
                         updated[i] = e.target.value;
                         setEditForm({ ...editForm, recommendations: updated });
                       }}
+                      aria-label={`Recommendation ${i + 1}`}
                     />
                     <button
                       className="text-gray-30 hover:text-red-500 transition-colors"
                       onClick={() => setEditForm({ ...editForm, recommendations: editForm.recommendations.filter((_, j) => j !== i) })}
+                      aria-label={`Remove recommendation ${i + 1}`}
                     >
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>

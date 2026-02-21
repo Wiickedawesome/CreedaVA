@@ -286,7 +286,7 @@ export default function SocialMediaPage() {
                   </Button>
                 </div>
                 <textarea
-                  className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full rounded-lg border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   rows={3}
                   value={p.content}
                   onChange={(e) => {
@@ -295,13 +295,14 @@ export default function SocialMediaPage() {
                 />
                 <div className="mt-2">
                   <input
-                    className="w-full rounded-lg border border-border bg-white px-3 py-1.5 text-xs text-primary placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full rounded-lg border border-border bg-gray-10/50 px-3 py-1.5 text-xs text-primary placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     value={p.hashtags.map(h => `#${h}`).join(" ")}
                     onChange={(e) => {
                       const tags = e.target.value.split(/[\s,]+/).map(h => h.replace(/^#/, "")).filter(Boolean);
                       setPreviews(prev => prev.map((item, i) => i === idx ? { ...item, hashtags: tags } : item));
                     }}
                     placeholder="#hashtag1 #hashtag2"
+                    aria-label="Hashtags for this post"
                   />
                 </div>
               </div>
@@ -350,7 +351,7 @@ export default function SocialMediaPage() {
             <div>
               <label className="block text-xs font-medium text-gray-70 mb-1">Content</label>
               <textarea
-                className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full rounded-lg border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 rows={4}
                 value={editForm.content}
                 onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
@@ -359,10 +360,11 @@ export default function SocialMediaPage() {
             <div>
               <label className="block text-xs font-medium text-gray-70 mb-1">Hashtags (comma-separated)</label>
               <input
-                className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full rounded-lg border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 value={editForm.hashtags}
                 onChange={(e) => setEditForm({ ...editForm, hashtags: e.target.value })}
                 placeholder="e.g. VirtualAssistant, Productivity, Business"
+                aria-label="Hashtags (comma-separated)"
               />
             </div>
           </div>
@@ -389,9 +391,10 @@ export default function SocialMediaPage() {
           <div>
             <label className="block text-xs font-medium text-gray-70 mb-1">Platform</label>
             <select
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-gray-80"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80"
               value={createForm.platform}
               onChange={(e) => setCreateForm({ ...createForm, platform: e.target.value })}
+              aria-label="Platform"
             >
               <option value="linkedin">LinkedIn</option>
               <option value="twitter">Twitter / X</option>
@@ -402,7 +405,7 @@ export default function SocialMediaPage() {
           <div>
             <label className="block text-xs font-medium text-gray-70 mb-1">Content</label>
             <textarea
-              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full rounded-lg border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               rows={4}
               value={createForm.content}
               onChange={(e) => setCreateForm({ ...createForm, content: e.target.value })}

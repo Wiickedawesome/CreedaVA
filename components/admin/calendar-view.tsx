@@ -66,12 +66,12 @@ function getMonthDays(year: number, month: number): Date[] {
 }
 
 const EVENT_COLORS: Record<CalendarEvent["color"], { bg: string; text: string; dot: string }> = {
-  teal: { bg: "bg-teal-50", text: "text-teal-700", dot: "bg-teal-500" },
-  blue: { bg: "bg-blue-50", text: "text-blue-700", dot: "bg-blue-500" },
-  green: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-500" },
-  yellow: { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-500" },
-  red: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500" },
-  gray: { bg: "bg-gray-50", text: "text-gray-600", dot: "bg-gray-400" },
+  teal: { bg: "bg-teal-500/10", text: "text-teal-500", dot: "bg-teal-500" },
+  blue: { bg: "bg-blue-500/10", text: "text-blue-500", dot: "bg-blue-500" },
+  green: { bg: "bg-green-500/10", text: "text-green-500", dot: "bg-green-500" },
+  yellow: { bg: "bg-amber-500/10", text: "text-amber-500", dot: "bg-amber-500" },
+  red: { bg: "bg-red-500/10", text: "text-red-500", dot: "bg-red-500" },
+  gray: { bg: "bg-gray-500/10", text: "text-gray-400", dot: "bg-gray-400" },
 };
 
 // ─── Component ───────────────────────────────────────
@@ -171,7 +171,7 @@ export default function CalendarView({ events, onDateClick, loading }: CalendarV
                 className={[
                   "relative min-h-18 sm:min-h-22.5 p-1.5 text-left border-b border-r border-border transition-colors",
                   "hover:bg-gray-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
-                  isCurrentMonth ? "bg-white" : "bg-gray-10/50",
+                  isCurrentMonth ? "bg-card" : "bg-gray-10/50",
                   isSelected ? "ring-2 ring-primary ring-inset bg-primary/5" : "",
                 ].join(" ")}
               >
@@ -225,7 +225,7 @@ export default function CalendarView({ events, onDateClick, loading }: CalendarV
 
       {/* Selected day detail pane */}
       {selectedDate && (
-        <div className="rounded-lg border border-border p-4 bg-white">
+        <div className="rounded-lg border border-border p-4 bg-card">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-semibold text-gray-90">
               {selectedDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
@@ -251,43 +251,46 @@ export default function CalendarView({ events, onDateClick, loading }: CalendarV
                   return (
                     <div
                       key={ev.id}
-                      className={`flex items-start gap-3 rounded-lg p-3 ${colors.bg} cursor-pointer hover:opacity-90 transition-opacity`}
-                      onClick={() => ev.onClick?.()}
-                      role={ev.onClick ? "button" : undefined}
-                      tabIndex={ev.onClick ? 0 : undefined}
+                      className={`flex w-full items-start gap-3 rounded-lg p-3 ${colors.bg} hover:opacity-90 transition-opacity`}
                     >
-                      <div className={`w-1 self-stretch rounded-full ${colors.dot} shrink-0`} />
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium ${colors.text}`}>{ev.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {ev.time && (
-                            <span className="text-xs text-gray-50">
-                              {ev.time}{ev.endTime ? ` – ${ev.endTime}` : ""}
-                            </span>
-                          )}
-                          {ev.status && (
-                            <span className="text-[10px] uppercase tracking-wider font-medium text-gray-40">
-                              {ev.status}
-                            </span>
-                          )}
-                          {ev.type === "calendar-event" && (
-                            <span className="text-[10px] text-gray-40">
-                              <svg className="w-3 h-3 inline mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                              Google Calendar
-                            </span>
+                      <button
+                        type="button"
+                        className="contents text-left"
+                        onClick={() => ev.onClick?.()}
+                        disabled={!ev.onClick}
+                      >
+                        <div className={`w-1 self-stretch rounded-full ${colors.dot} shrink-0`} />
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium ${colors.text}`}>{ev.title}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {ev.time && (
+                              <span className="text-xs text-gray-50">
+                                {ev.time}{ev.endTime ? ` – ${ev.endTime}` : ""}
+                              </span>
+                            )}
+                            {ev.status && (
+                              <span className="text-[10px] uppercase tracking-wider font-medium text-gray-40">
+                                {ev.status}
+                              </span>
+                            )}
+                            {ev.type === "calendar-event" && (
+                              <span className="text-[10px] text-gray-40">
+                                <svg className="w-3 h-3 inline mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                                Google Calendar
+                              </span>
+                            )}
+                          </div>
+                          {ev.description && (
+                            <p className="text-xs text-gray-50 mt-1 line-clamp-2">{ev.description}</p>
                           )}
                         </div>
-                        {ev.description && (
-                          <p className="text-xs text-gray-50 mt-1 line-clamp-2">{ev.description}</p>
-                        )}
-                      </div>
+                      </button>
                       {ev.link && (
                         <a
                           href={ev.link}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs text-primary hover:underline shrink-0"
-                          onClick={(e) => e.stopPropagation()}
                         >
                           Open
                         </a>

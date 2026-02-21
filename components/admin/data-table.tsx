@@ -22,14 +22,14 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   if (data.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-white p-12 text-center">
+      <div className="rounded-lg border border-border bg-card p-12 text-center">
         <p className="text-sm text-gray-50">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full overflow-hidden rounded-lg border border-border bg-white">
+    <div className="w-full overflow-hidden rounded-lg border border-border bg-card">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead>

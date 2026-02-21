@@ -8,7 +8,6 @@
  * @see https://firebase.google.com/docs/cloud-messaging/js/receive
  */
 
-/* eslint-disable no-undef */
 importScripts("https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/12.9.0/firebase-messaging-compat.js");
 

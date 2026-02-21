@@ -115,7 +115,7 @@ export function Navbar() {
               ))}
             </div>
 
-            {/* Desktop CTA + Language Switcher */}
+            {/* Desktop CTA + Language & Theme Switcher */}
             <div className="hidden lg:flex items-center gap-4">
               {/* Language Toggle */}
               <button
@@ -163,7 +163,6 @@ export function Navbar() {
                 className="p-2 text-gray-70 hover:text-gray-100"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-                aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-menu"
               >
                 {mobileMenuOpen ? (

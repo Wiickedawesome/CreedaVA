@@ -40,6 +40,8 @@
   /* Semantic */
   --background: #FFFFFF;
   --foreground: #002D72;
+  --card: #FFFFFF; /* Card background for light mode */
+  --card-bg: #FFFFFF;
   --muted: #F2F4F8;
   --muted-foreground: #697077;
   --border: #DDE1E6;
@@ -90,9 +92,45 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
+/* Global Dark Theme (applies when data-theme="dark" on <html>) */
+:root[data-theme="dark"] {
+  /* Backgrounds (slightly lighter, still VS Code-inspired) */
+  --background: #202124; /* Main app background */
+  --foreground: #e5e7eb; /* Light gray text */
+
+  /* Inverted Gray Scale tuned for dark UI */
+  --gray-10: #202124;  /* Base Background */
+  --gray-20: #26272b;  /* Sidebar / Card Background */
+  --gray-30: #303136;  /* Headers / Separators */
+  --gray-40: #555b66;  /* Muted captions / subtle text */
+  --gray-50: #8b949e;
+  --gray-60: #a5b3ce;  /* Brighter muted text */
+    --gray-70: #a5b3ce;
+    --gray-80: #cccccc;
+    --gray-90: #d4d4d4;  /* Primary Text */
+    --gray-100: #ffffff; /* Brightest Text */
+
+    /* Semantic */
+    --muted: #26272b;
+    --muted-foreground: #a5b3ce; /* Lighter for readability */
+    --border: #3c3e44;   /* Subtle border */
+    --card: #26272b;     /* Card background for dark mode */
+    --card-bg: #26272b;  /* Backup variable */
+    
+    /* Re-map Brand Colors for Dark Mode Visibility */
+    --primary: #2dd4bf;       /* Teal-400 (bright teal) */
+    --primary-light: #5eead4; /* Teal-300 */
+    --primary-hover: #14b8a6; /* Teal-500 */
+    
+    /* Footer */
+    --footer-bg: #181818; 
+    
+    color-scheme: dark;
+}
+
 /* Tailwind v4 theme integration */
 @theme inline {
-  --color-background: var(--background);
+  --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-light: var(--primary-light);

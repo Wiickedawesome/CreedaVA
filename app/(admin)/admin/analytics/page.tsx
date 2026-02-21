@@ -632,7 +632,7 @@ export default function AnalyticsPage() {
                     className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                       period === p
                         ? "bg-primary text-white"
-                        : "bg-white text-gray-60 hover:bg-gray-10"
+                        : "bg-gray-10 text-gray-60 hover:bg-gray-20"
                     }`}
                     onClick={() => setPeriod(p)}
                   >
@@ -660,7 +660,7 @@ export default function AnalyticsPage() {
       />
 
       {error && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200">
           {error}
         </div>
       )}
@@ -1042,7 +1042,7 @@ export default function AnalyticsPage() {
           onClick={() => setSelectedEvent(null)}
         >
           <div
-            className="bg-white rounded-xl shadow-xl border border-border w-full max-w-lg mx-4 max-h-[80vh] flex flex-col"
+            className="bg-card rounded-xl shadow-xl border border-border w-full max-w-lg mx-4 max-h-[80vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-10">

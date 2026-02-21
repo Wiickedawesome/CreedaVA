@@ -488,7 +488,7 @@ const { toast } = useToast();
       <PageHeader title="Settings" description="Profile, preferences, and integrations" />
 
       {/* ─── Profile ──────────────────────────────────── */}
-      <section className="rounded-xl border border-border bg-white p-6">
+      <section className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-3 mb-5">
           <svg className="w-5 h-5 text-gray-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -520,7 +520,7 @@ const { toast } = useToast();
       </section>
 
       {/* ─── Business Information ─────────────────────── */}
-      <section className="rounded-xl border border-border bg-white p-6">
+      <section className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-3 mb-5">
           <svg className="w-5 h-5 text-gray-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -537,7 +537,7 @@ const { toast } = useToast();
               id="company-timezone"
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border bg-gray-10/50 px-3 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
             >
               <option value="America/Belize">America / Belize (CST)</option>
               <option value="America/New_York">America / New York (EST)</option>
@@ -552,7 +552,7 @@ const { toast } = useToast();
       </section>
 
       {/* ─── Notifications ────────────────────────────── */}
-      <section className="rounded-xl border border-border bg-white p-6">
+      <section className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-3 mb-5">
           <svg className="w-5 h-5 text-gray-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -566,30 +566,42 @@ const { toast } = useToast();
               <p className="text-sm text-gray-80">Email Notifications</p>
               <p className="text-xs text-gray-40">Alerts for new leads and bookings</p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={emailNotifications ? "true" : "false"}
+            <span
               className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${emailNotifications ? "bg-primary" : "bg-gray-30"}`}
-              onClick={() => setEmailNotifications(!emailNotifications)}
             >
-              <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${emailNotifications ? "translate-x-5" : "translate-x-0"}`} />
-            </button>
+              <input
+                type="checkbox"
+                checked={emailNotifications}
+                onChange={(e) => setEmailNotifications(e.target.checked)}
+                className="sr-only"
+                aria-label="Email notifications"
+              />
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-card shadow-sm transition-transform ${emailNotifications ? "translate-x-5" : "translate-x-0"}`}
+              />
+            </span>
           </label>
           <label className="flex items-center justify-between cursor-pointer">
             <div>
               <p className="text-sm text-gray-80">Weekly Digest</p>
               <p className="text-xs text-gray-40">Weekly summary of CRM activity</p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={weeklyDigest ? "true" : "false"}
+            <span
               className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${weeklyDigest ? "bg-primary" : "bg-gray-30"}`}
-              onClick={() => setWeeklyDigest(!weeklyDigest)}
             >
-              <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${weeklyDigest ? "translate-x-5" : "translate-x-0"}`} />
-            </button>
+              <input
+                type="checkbox"
+                checked={weeklyDigest}
+                onChange={(e) => setWeeklyDigest(e.target.checked)}
+                className="sr-only"
+                aria-label="Weekly digest"
+              />
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-card shadow-sm transition-transform ${weeklyDigest ? "translate-x-5" : "translate-x-0"}`}
+              />
+            </span>
           </label>
         </div>
       </section>
@@ -636,7 +648,7 @@ const { toast } = useToast();
         {/* Webhook URL */}
         <div className="rounded-lg border border-border bg-gray-10 px-4 py-3 mb-5 flex flex-wrap items-center gap-2 text-sm">
           <span className="font-medium text-gray-70">Webhook URL</span>
-          <code className="bg-white border border-border px-2 py-0.5 rounded text-xs font-mono text-gray-60">
+          <code className="bg-gray-10/80 border border-border px-2 py-0.5 rounded text-xs font-mono text-gray-60">
             https://us-east4-creeda-va.cloudfunctions.net/handleFormWebhook
           </code>
         </div>
@@ -652,7 +664,7 @@ const { toast } = useToast();
                 key={provider.id}
                 className={`rounded-xl border transition-all ${
                   expanded ? "border-primary/30 shadow-sm" : "border-border"
-                } bg-white`}
+                } bg-card`}
               >
                 {/* Header row */}
                 <button
@@ -673,7 +685,7 @@ const { toast } = useToast();
 
                         if (isTesting) {
                           return (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-300">
                               <svg className="w-2.5 h-2.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10" strokeDasharray="31.4 31.4" /></svg>
                               Testing…
                             </span>
@@ -689,7 +701,7 @@ const { toast } = useToast();
                         }
                         if (lastTestSuccess === false) {
                           return (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-300">
                               <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                               Failed
                             </span>
@@ -697,7 +709,7 @@ const { toast } = useToast();
                         }
                         if (enabled) {
                           return (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
                               <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6" /></svg>
                               Untested
                             </span>
@@ -757,7 +769,7 @@ const { toast } = useToast();
                       if (!result) return null;
                       return (
                         <div className={`rounded-lg px-3 py-2 text-xs ${
-                          result.success ? "bg-primary/5 text-primary" : "bg-red-50 text-red-700"
+                          result.success ? "bg-primary/10 text-primary" : "bg-red-500/10 text-red-300"
                         }`}>
                           <p className="font-medium">{result.success ? "✓ Connected" : "✗ Connection failed"}</p>
                           {result.details && <p className="mt-0.5 opacity-80 break-all">{result.details}</p>}
@@ -798,7 +810,7 @@ const { toast } = useToast();
       </section>
 
       {/* ─── Danger Zone ──────────────────────────────── */}
-      <section className="rounded-xl border border-red-200 bg-white p-6">
+      <section className="rounded-xl border border-red-500/60 bg-red-500/5 p-6">
         <div className="flex items-center gap-3 mb-2">
           <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
