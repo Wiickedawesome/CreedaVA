@@ -42,3 +42,73 @@ env:
   # → Project Settings → Cloud Messaging → Web Push certificates.
   # - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
   #   value: YOUR_VAPID_KEY
+
+# Cache headers
+# Static Next.js assets have content hashes → cache forever (immutable)
+# Prerendered marketing pages → CDN cache 1 h, stale-while-revalidate 24 h
+# Images / fonts → CDN cache 7 days
+headers:
+  - glob: "/_next/static/**"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=31536000, immutable"
+
+  - glob: "/**.webp"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400"
+
+  - glob: "/**.png"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400"
+
+  - glob: "/about"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+
+  - glob: "/contact"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+
+  - glob: "/faq"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+
+  - glob: "/forum"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+
+  - glob: "/news"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+
+  - glob: "/pricing"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+
+  - glob: "/privacy"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+
+  - glob: "/services"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+
+  - glob: "/terms"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+
+  - glob: "/"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
