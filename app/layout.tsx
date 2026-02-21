@@ -44,8 +44,8 @@ export const metadata: Metadata = {
     site: "@creedava",
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: "/logo.webp",
+    apple: "/logo.webp",
   },
 };
 

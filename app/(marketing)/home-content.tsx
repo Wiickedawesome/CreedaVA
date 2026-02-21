@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Container, HeroIllustration } from "@/components/ui";
+import Image from "next/image";
+import { Container } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
 
 const DEFAULT_STAT_VALUES = ["500+", "98%", "24/7", "50+"];
@@ -67,7 +68,14 @@ export function HomeContent({
               </div>
             </div>
             <div className="flex items-center justify-center mt-12 lg:mt-0">
-              <HeroIllustration className="w-64 sm:w-80 lg:w-full max-w-md h-auto drop-shadow-sm" />
+              <Image
+                src="/creedava-logo-B-axbjNY.webp"
+                alt="CreedaVA"
+                width={420}
+                height={420}
+                priority
+                className="w-64 sm:w-80 lg:w-full max-w-md h-auto"
+              />
             </div>
           </div>
         </Container>
