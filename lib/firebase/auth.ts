@@ -1,4 +1,5 @@
 import {
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   GoogleAuthProvider,
@@ -23,10 +24,25 @@ googleProvider.setCustomParameters({
  * handle redirects poorly (e.g. embedded WebViews).
  */
 export async function signInWithGoogle(): Promise<User> {
-  // Redirect is the reliable default: no cross-site iframe required.
-  await signInWithRedirect(auth, googleProvider);
-  // Page will reload; getRedirectResult() in checkRedirectResult picks up the user.
-  return new Promise(() => {});
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
+  } catch (error: unknown) {
+    const code = (error as { code?: string }).code;
+
+    // Fallback for environments where popups are blocked or unsupported.
+    if (
+      code === "auth/popup-blocked" ||
+      code === "auth/web-storage-unsupported" ||
+      code === "auth/operation-not-supported-in-this-environment"
+    ) {
+      await signInWithRedirect(auth, googleProvider);
+      // Browser navigates away; keep current call pending until unload.
+      return new Promise(() => {});
+    }
+
+    throw error;
+  }
 }
 
 /**
