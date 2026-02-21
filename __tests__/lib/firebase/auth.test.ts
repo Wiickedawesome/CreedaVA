@@ -1,14 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ── Mock Firebase Auth ───────────────────────────────
-const mockSignInWithPopup = vi.fn();
 const mockSignInWithRedirect = vi.fn();
 const mockGetRedirectResult = vi.fn();
 const mockFirebaseSignOut = vi.fn();
 const mockOnAuthStateChanged = vi.fn();
 
 vi.mock("firebase/auth", () => ({
-  signInWithPopup: (...args: unknown[]) => mockSignInWithPopup(...args),
   signInWithRedirect: (...args: unknown[]) => mockSignInWithRedirect(...args),
   getRedirectResult: (...args: unknown[]) => mockGetRedirectResult(...args),
   GoogleAuthProvider: class {
@@ -30,58 +28,19 @@ beforeEach(() => {
 
 describe("Auth module", () => {
   describe("signInWithGoogle", () => {
-    it("signs in with popup successfully", async () => {
-      const mockUser = { email: "user@creedava.com", uid: "123" };
-      mockSignInWithPopup.mockResolvedValue({ user: mockUser });
-
-      const { signInWithGoogle } = await import("@/lib/firebase/auth");
-      const user = await signInWithGoogle();
-
-      expect(user).toBe(mockUser);
-      expect(mockSignInWithPopup).toHaveBeenCalled();
-      expect(mockSignInWithRedirect).not.toHaveBeenCalled();
-    });
-
-    it("falls back to redirect when popup is blocked", async () => {
-      mockSignInWithPopup.mockRejectedValue({ code: "auth/popup-blocked" });
+    it("initiates redirect sign-in and returns a never-resolving promise", async () => {
       mockSignInWithRedirect.mockResolvedValue(undefined);
 
       const { signInWithGoogle } = await import("@/lib/firebase/auth");
 
-      // signInWithRedirect causes navigation, returns a never-resolving promise
-      // Use Promise.race with a timeout to handle this
+      // signInWithRedirect navigates away — the returned promise never resolves
       const result = await Promise.race([
         signInWithGoogle(),
-        new Promise((resolve) => setTimeout(() => resolve("timeout"), 50)),
+        new Promise((resolve) => setTimeout(() => resolve("navigating"), 50)),
       ]);
 
-      expect(result).toBe("timeout");
+      expect(result).toBe("navigating");
       expect(mockSignInWithRedirect).toHaveBeenCalled();
-    });
-
-    it("falls back to redirect when popup is closed", async () => {
-      mockSignInWithPopup.mockRejectedValue({ code: "auth/popup-closed-by-user" });
-      mockSignInWithRedirect.mockResolvedValue(undefined);
-
-      const { signInWithGoogle } = await import("@/lib/firebase/auth");
-
-      const result = await Promise.race([
-        signInWithGoogle(),
-        new Promise((resolve) => setTimeout(() => resolve("timeout"), 50)),
-      ]);
-
-      expect(result).toBe("timeout");
-      expect(mockSignInWithRedirect).toHaveBeenCalled();
-    });
-
-    it("rethrows non-popup errors", async () => {
-      const authError = { code: "auth/network-request-failed", message: "Network error" };
-      mockSignInWithPopup.mockRejectedValue(authError);
-
-      const { signInWithGoogle } = await import("@/lib/firebase/auth");
-
-      await expect(signInWithGoogle()).rejects.toEqual(authError);
-      expect(mockSignInWithRedirect).not.toHaveBeenCalled();
     });
   });
 
