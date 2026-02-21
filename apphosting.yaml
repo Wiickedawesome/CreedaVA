@@ -27,7 +27,8 @@ env:
   # Mirrors FIREBASE_MEASUREMENT_ID — used by the GA4 <Script> tag in marketing layout
   - variable: NEXT_PUBLIC_GA_MEASUREMENT_ID
     value: G-GSYB90RLF2
-  # Base URL for Cloud Functions HTTP endpoints (contact form, webhooks)
+  # Cloud Functions origin used by Next.js rewrites for same-origin client calls
+  # (browser requests stay on https://creedava.com)
   - variable: NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL
     value: https://us-east4-creeda-va.cloudfunctions.net
 

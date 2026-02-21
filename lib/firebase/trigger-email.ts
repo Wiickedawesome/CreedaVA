@@ -148,7 +148,7 @@ export async function queueTemplateEmail(
             <p>Hi ${d.name || "there"},</p>
             <p>We&apos;d love to hear about your experience with CreedaVA. Your feedback helps us improve our services.</p>
             <p style="margin-top: 24px;">
-              <a href="https://creedava.com/satisfaction${d.token ? `?token=${d.token}` : ""}" style="background: #005148; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">Take Survey (2 min)</a>
+              <a href="https://creedava.com/satisfaction/${d.token || "demo"}" style="background: #005148; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">Take Survey (2 min)</a>
             </p>
           </div>
         </div>`,

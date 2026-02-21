@@ -21,18 +21,10 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Contact form submissions from website — validated public create, admin read
+    // Legacy contact-submissions collection (deprecated).
+    // Canonical intake path is now Cloud Function -> /contacts.
     match /contact-submissions/{docId} {
-      allow create: if request.resource.data.keys().hasAll(['name', 'email', 'message'])
-                    && request.resource.data.name is string
-                    && request.resource.data.email is string
-                    && request.resource.data.message is string
-                    && request.resource.data.name.size() > 0
-                    && request.resource.data.name.size() <= 200
-                    && request.resource.data.email.size() > 0
-                    && request.resource.data.email.size() <= 320
-                    && request.resource.data.message.size() > 0
-                    && request.resource.data.message.size() <= 5000;
+      allow create: if false;
       allow read, update, delete: if isAdmin();
     }
 

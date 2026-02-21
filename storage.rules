@@ -1,0 +1,28 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuth() && request.auth.token.email.matches('.*@creedava[.]com$');
+    }
+
+    // Publicly readable marketing/media assets, admin managed.
+    match /blog/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /landing-pages/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Everything else defaults to admin-only.
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

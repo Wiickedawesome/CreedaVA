@@ -649,7 +649,7 @@ const { toast } = useToast();
         <div className="rounded-lg border border-border bg-gray-10 px-4 py-3 mb-5 flex flex-wrap items-center gap-2 text-sm">
           <span className="font-medium text-gray-70">Webhook URL</span>
           <code className="bg-gray-10/80 border border-border px-2 py-0.5 rounded text-xs font-mono text-gray-60">
-            https://us-east4-creeda-va.cloudfunctions.net/handleFormWebhook
+            https://creedava.com/handleFormWebhook
           </code>
         </div>
 

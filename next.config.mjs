@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
+const rawFunctionsBase = process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://us-east4-creeda-va.cloudfunctions.net";
+const functionsBase = rawFunctionsBase.replace(/\/$/, "");
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -39,6 +42,19 @@ const nextConfig = {
         headers: [
           { key: "Cache-Control", value: "no-store, must-revalidate" },
         ],
+      },
+    ];
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: "/handleFormWebhook",
+        destination: `${functionsBase}/handleFormWebhook`,
+      },
+      {
+        source: "/getAvailableSlots",
+        destination: `${functionsBase}/getAvailableSlots`,
       },
     ];
   },

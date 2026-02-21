@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo, type FormEvent } from "react";
-import { getToken } from "firebase/app-check";
 import { Container, Input, Button } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
-import { initializeAppCheck } from "@/lib/firebase/app-check";
+import { getAppCheckHeaders } from "@/lib/firebase/app-check";
 import Link from "next/link";
 
 interface Slot {
@@ -13,9 +12,8 @@ interface Slot {
   available: boolean;
 }
 
-const FUNCTIONS_BASE = process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://us-east4-creeda-va.cloudfunctions.net";
-const WEBHOOK_URL = `${FUNCTIONS_BASE}/handleFormWebhook`;
-const SLOTS_URL = `${FUNCTIONS_BASE}/getAvailableSlots`;
+const WEBHOOK_URL = "/handleFormWebhook";
+const SLOTS_URL = "/getAvailableSlots";
 
 function formatDate(dateStr: string, locale = "en-US") {
   const d = new Date(dateStr + "T12:00:00");
@@ -64,7 +62,8 @@ export default function JoinPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(SLOTS_URL);
+        const appCheckHeaders = await getAppCheckHeaders();
+        const res = await fetch(SLOTS_URL, { headers: appCheckHeaders });
         if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
         setSlots(data.slots || []);
@@ -112,16 +111,10 @@ export default function JoinPage() {
     setError("");
 
     try {
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      try {
-        const ac = initializeAppCheck();
-        if (ac) {
-          const tokenResult = await getToken(ac, false);
-          headers["X-Firebase-AppCheck"] = tokenResult.token;
-        }
-      } catch {
-        // proceed without App Check header if token unavailable
-      }
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...(await getAppCheckHeaders()),
+      };
 
       const res = await fetch(WEBHOOK_URL, {
         method: "POST",
@@ -247,6 +240,8 @@ export default function JoinPage() {
                         <div className="flex items-center justify-between mb-4">
                           <button
                             type="button"
+                            aria-label="Previous month"
+                            title="Previous month"
                             onClick={() =>
                               setCalMonth((m) => {
                                 const d = new Date(m.year, m.month - 1, 1);
@@ -262,6 +257,8 @@ export default function JoinPage() {
                           </h3>
                           <button
                             type="button"
+                            aria-label="Next month"
+                            title="Next month"
                             onClick={() =>
                               setCalMonth((m) => {
                                 const d = new Date(m.year, m.month + 1, 1);
@@ -427,8 +424,12 @@ export default function JoinPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-70 mb-1">{t.join.service}</label>
+                    <label htmlFor="service-select" className="block text-sm font-medium text-gray-70 mb-1">{t.join.service}</label>
                     <select
+                      id="service-select"
+                      name="service"
+                      aria-label={t.join.service}
+                      title={t.join.service}
                       value={form.service}
                       onChange={(e) => setForm({ ...form, service: e.target.value })}
                       className="w-full rounded-lg border border-gray-20 bg-white px-3 py-2.5 text-sm text-gray-90 focus:border-primary focus:ring-1 focus:ring-primary outline-none"

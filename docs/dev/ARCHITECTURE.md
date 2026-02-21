@@ -2,7 +2,7 @@
 
 ## Overview
 
-CreedaVA is a virtual assistant services platform built with **Next.js 14** (App Router) + **Firebase** (Auth, Firestore, Cloud Functions, App Hosting, Storage) + **Tailwind CSS v4**. The app consists of a public marketing site, an admin CRM dashboard, and serverless cloud functions for integrations.
+CreedaVA is a virtual assistant services platform built with **Next.js 16** (App Router) + **Firebase** (Auth, Firestore, Cloud Functions, App Hosting, Storage) + **Tailwind CSS v4**. The app consists of a public marketing site, an admin CRM dashboard, and serverless cloud functions for integrations.
 
 ---
 
@@ -10,9 +10,9 @@ CreedaVA is a virtual assistant services platform built with **Next.js 14** (App
 
 | Layer           | Technology                         |
 | --------------- | ---------------------------------- |
-| Framework       | Next.js 14 (App Router, Turbopack) |
-| UI              | React 18, Tailwind CSS v4          |
-| Language        | TypeScript 5.4                     |
+| Framework       | Next.js 16 (App Router, Turbopack) |
+| UI              | React 19, Tailwind CSS v4          |
+| Language        | TypeScript 5.9                     |
 | Auth            | Firebase Authentication (Google)   |
 | Database        | Cloud Firestore                    |
 | Storage         | Firebase Storage                   |

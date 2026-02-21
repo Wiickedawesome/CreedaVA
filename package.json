@@ -1,12 +1,18 @@
 {
   "name": "creedava",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "packageManager": "npm@10.9.4",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "smoke:prod": "node scripts/smoke-check.mjs",
+    "smoke:emulator:e2e": "node scripts/run-emulator-smoke.mjs scripts/emulator-e2e-smoke.mjs",
+    "smoke:emulator:functions-load": "node scripts/run-emulator-smoke.mjs scripts/emulator-functions-load-smoke.mjs",
+    "smoke:emulator:security": "node scripts/run-emulator-smoke.mjs scripts/emulator-security-smoke.mjs",
+    "check:preflight": "npm run lint && npm test && npm run build && npm --prefix functions run build && npm run smoke:emulator:functions-load && npm run smoke:emulator:security && npm run smoke:emulator:e2e",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
@@ -15,33 +21,32 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "engines": {
-    "node": "^20.19.0 || ^22.13.0 || >=24",
-    "npm": ">=10.0.0"
+    "node": "22.x",
+    "npm": "10.x"
   },
   "dependencies": {
-    "@dataconnect/generated": "file:src/dataconnect-generated",
     "firebase": "^12.9.0",
     "firebase-admin": "^13.6.1",
     "jose": "^6.1.3",
-    "next": "^14.2.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.2.0",
-    "@testing-library/jest-dom": "^6.4.5",
-    "@testing-library/react": "^16.0.0",
-    "@types/node": "^20.12.12",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^25.3.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
     "@vitest/coverage-v8": "^4.0.18",
-    "eslint": "^9.0.0",
+    "eslint": "^9.39.3",
     "eslint-config-next": "^16.1.6",
-    "jsdom": "^24.1.0",
+    "jsdom": "^28.1.0",
     "tailwindcss": "^4.2.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
 }

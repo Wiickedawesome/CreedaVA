@@ -16,6 +16,7 @@
 import {
   initializeAppCheck as _initializeAppCheck,
   ReCaptchaEnterpriseProvider,
+  getToken,
   type AppCheck,
 } from "firebase/app-check";
 import { app } from "./config";
@@ -57,4 +58,21 @@ export function initializeAppCheck(): AppCheck | null {
   });
 
   return _appCheck;
+}
+
+/**
+ * Returns App Check headers for HTTP requests to protected endpoints.
+ * If App Check is unavailable, returns an empty header object.
+ */
+export async function getAppCheckHeaders(): Promise<Record<string, string>> {
+  const appCheck = initializeAppCheck();
+  if (!appCheck) return {};
+
+  try {
+    const tokenResult = await getToken(appCheck, false);
+    if (!tokenResult.token) return {};
+    return { "X-Firebase-AppCheck": tokenResult.token };
+  } catch {
+    return {};
+  }
 }

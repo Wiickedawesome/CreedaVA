@@ -21,8 +21,26 @@ import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/fire
 import { google, calendar_v3 } from "googleapis";
 import { getIntegrationConfig } from "./admin";
 import cors from "cors";
+import * as admin from "firebase-admin";
 
 const corsHandler = cors({ origin: true });
+const APP_CHECK_HEADER = "x-firebase-appcheck";
+
+async function verifyAppCheckToken(req: Parameters<typeof corsHandler>[0]): Promise<boolean> {
+  if (process.env.FUNCTIONS_EMULATOR === "true") return true;
+  if (process.env.APP_CHECK_REQUIRED === "false") return true;
+
+  const header = req.headers[APP_CHECK_HEADER];
+  const token = Array.isArray(header) ? header[0] : header;
+  if (!token || typeof token !== "string") return false;
+
+  try {
+    await admin.appCheck().verifyToken(token);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // ─── Auth helper ─────────────────────────────────────
 
@@ -240,6 +258,12 @@ export const getAvailableSlots = onRequest(
     corsHandler(req, res, async () => {
       if (req.method !== "GET") {
         res.status(405).json({ error: "Method not allowed" });
+        return;
+      }
+
+      const appCheckOk = await verifyAppCheckToken(req);
+      if (!appCheckOk) {
+        res.status(401).json({ error: "Missing or invalid App Check token" });
         return;
       }
 

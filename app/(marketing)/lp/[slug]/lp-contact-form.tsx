@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui";
+import { getAppCheckHeaders } from "@/lib/firebase/app-check";
 
 interface Props {
   ctaText: string;
@@ -22,11 +23,12 @@ export default function LpContactForm({ ctaText, ctaEmail, pageTitle, pageSlug }
     const fd = new FormData(e.currentTarget);
 
     try {
+      const appCheckHeaders = await getAppCheckHeaders();
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://us-east4-creeda-va.cloudfunctions.net"}/handleFormWebhook`,
+        "/handleFormWebhook",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...appCheckHeaders },
           body: JSON.stringify({
             formType: "lead",
             name: fd.get("name"),

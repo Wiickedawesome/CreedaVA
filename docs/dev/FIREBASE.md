@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js ≥ 20
+- Node.js 22.x
 - Firebase CLI: `npm install -g firebase-tools`
 - Firebase project created at [console.firebase.google.com](https://console.firebase.google.com)
 

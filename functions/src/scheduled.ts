@@ -6,11 +6,11 @@
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
-import * as admin from "firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 import { db, getIntegrationConfig, getEmailTransport } from "./admin";
 
 /** Shorthand: convert JS Date to Firestore Timestamp (required for where() comparisons). */
-const TS = admin.firestore.Timestamp.fromDate;
+const TS = Timestamp.fromDate;
 
 /**
  * Runs a Firestore count query safely — returns 0 instead of throwing if the

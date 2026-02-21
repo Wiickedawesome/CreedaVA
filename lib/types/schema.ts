@@ -30,9 +30,9 @@
 
 import type { FirestoreDoc } from "./crm";
 
-// ─── Contact Submissions ─────────────────────────────
+// ─── Contact Submissions (Legacy) ───────────────────
 // Collection: contact-submissions
-// Public create (validated), admin read/update/delete.
+// Deprecated: canonical intake now writes to /contacts via Cloud Function.
 
 export interface ContactSubmission extends FirestoreDoc {
   /** Full name (first + last concatenated) */
@@ -167,8 +167,8 @@ export const COLLECTION_MAP = {
   "bookings":          "Booking",
   "notes":             "Note",
 
-  // Public intake
-  "contact-submissions": "ContactSubmission",
+  // Public intake (legacy)
+  "contact-submissions": "ContactSubmission (legacy/deprecated)",
   "analytics":           "AnalyticsEventDoc",
   "satisfaction-tokens": "SatisfactionToken",
 

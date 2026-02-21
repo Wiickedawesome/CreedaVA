@@ -7,6 +7,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { google } from "googleapis";
+import * as admin from "firebase-admin";
 import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 // ─── Auth helper ─────────────────────────────────────
@@ -201,12 +202,12 @@ export const generateReportSheet = onCall(
       // Gather last 7 days of key metrics
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
-      const weekAgoISO = weekAgo.toISOString();
+      const weekAgoTs = admin.firestore.Timestamp.fromDate(weekAgo);
 
       const [leadsSnap, bookingsSnap, contactsSnap] = await Promise.all([
-        db.collection("leads").where("createdAt", ">=", weekAgoISO).get(),
-        db.collection("bookings").where("createdAt", ">=", weekAgoISO).get(),
-        db.collection("contacts").where("createdAt", ">=", weekAgoISO).get(),
+        db.collection("leads").where("createdAt", ">=", weekAgoTs).get(),
+        db.collection("bookings").where("createdAt", ">=", weekAgoTs).get(),
+        db.collection("contacts").where("createdAt", ">=", weekAgoTs).get(),
       ]);
 
       const sheetTitle = `Week of ${weekAgo.toISOString().split("T")[0]}`;

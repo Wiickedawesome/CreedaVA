@@ -11,7 +11,7 @@
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { db, getIntegrationConfig } from "./admin";
+import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -73,9 +73,7 @@ export const webSearch = onCall<
 >(
   { region: "us-east4" },
   async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "Must be logged in");
-    }
+    verifyAdminEmail(request.auth?.token?.email);
 
     const { query, numResults = 5 } = request.data;
     if (!query || typeof query !== "string") {
@@ -119,9 +117,7 @@ export const competitorSearch = onCall<
 >(
   { region: "us-east4" },
   async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "Must be logged in");
-    }
+    verifyAdminEmail(request.auth?.token?.email);
 
     const targetCompetitors = request.data.competitor
       ? [request.data.competitor]
@@ -152,9 +148,7 @@ export const industryTrends = onCall<
 >(
   { region: "us-east4" },
   async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "Must be logged in");
-    }
+    verifyAdminEmail(request.auth?.token?.email);
 
     const [trends, keywords] = await Promise.all([
       googleSearch("virtual assistant services industry trends 2026", 5),

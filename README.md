@@ -1,6 +1,6 @@
 <p align="center">
   <strong>Marketing website &amp; admin CRM dashboard</strong><br>
-  <sub>Built with Next.js 14 &bull; React 18 &bull; Firebase &bull; Tailwind CSS v4 &bull; Gemini AI</sub>
+  <sub>Built with Next.js 16 &bull; React 19 &bull; Firebase &bull; Tailwind CSS v4 &bull; Gemini AI</sub>
 </p>
 
 <p align="center">
@@ -46,8 +46,8 @@ CreedaVA is a full-stack platform for a Belize-based virtual assistant agency. I
 
 | Layer | Technology | Details |
 |:--|:--|:--|
-| **Framework** | Next.js 14 | App Router, Turbopack |
-| **UI** | React 18 + TypeScript 5.4 | Server & Client Components |
+| **Framework** | Next.js 16 | App Router, Turbopack |
+| **UI** | React 19 + TypeScript 5.9 | Server & Client Components |
 | **Styling** | Tailwind CSS v4 | Design tokens via `@theme inline` |
 | **Backend** | Firebase 12.9 | Auth, Firestore, Storage, Cloud Functions |
 | **AI** | Gemini 2.0/2.5 Flash | Content gen, translation, SEO audits |
@@ -74,7 +74,7 @@ npm run dev          # → http://localhost:3000
 
 #### Prerequisites
 
-- **Node.js** ≥ 20.19 (LTS)
+- **Node.js** 22.x
 - **npm** ≥ 10
 - Firebase project with Auth, Firestore, and Storage enabled
 
@@ -148,6 +148,7 @@ firebase deploy
 | [Architecture](docs/dev/ARCHITECTURE.md) | System design, Firebase architecture, design system |
 | [Testing](docs/dev/TESTING.md) | Test setup, mocking Firebase, CI integration |
 | [Firebase](docs/dev/FIREBASE.md) | Firebase setup, deployment, security rules |
+| [Production Runbook](docs/dev/PRODUCTION_RUNBOOK.md) | Release, smoke checks, rollback checklist for creedava.com |
 | [Contributing](docs/dev/CONTRIBUTING.md) | Dev workflow, code style, adding pages/components |
 
 ## License

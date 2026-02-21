@@ -20,7 +20,25 @@ npm run test:ui
 
 # Coverage report
 npm run test:coverage
+
+# End-to-end workflow smoke against local emulators
+npm run smoke:emulator:e2e
+
+# Fast check that Functions emulator loaded routes correctly
+npm run smoke:emulator:functions-load
+
+# Webhook validation + method security baseline checks
+npm run smoke:emulator:security
+
+# Full local release gate
+npm run check:preflight
 ```
+
+This command starts Firestore + Functions emulators on temporary non-default ports, submits sample `contact` / `lead` / `booking` payloads to `handleFormWebhook`, verifies Firestore writes, and checks booking calendar-sync metadata side effects.
+
+- `smoke:emulator:functions-load` verifies the webhook route is mounted and correctly returns `405` for disallowed methods.
+- `smoke:emulator:security` verifies request validation/method restrictions (`400`/`405`) for malformed webhook inputs.
+- App Check `401` enforcement is not asserted in emulator mode because Functions emulator bypasses strict App Check token verification.
 
 ---
 

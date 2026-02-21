@@ -6,7 +6,6 @@
 # Clone and install
 git clone https://github.com/Wiickedawesome/CreedaVA.git
 cd CreedaVA
-git checkout firebase-migration
 npm install
 
 # Set up environment
@@ -21,13 +20,13 @@ npm run dev
 
 ## Development Workflow
 
-1. Create a feature branch from `firebase-migration`
+1. Create a feature branch from `main`
 2. Make changes
 3. Run lint: `npm run lint`
 4. Run tests: `npm test`
 5. Build check: `npm run build`
 6. Commit and push
-7. Open a pull request against `firebase-migration`
+7. Open a pull request against `main`
 
 ---
 

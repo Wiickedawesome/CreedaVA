@@ -1,6 +1,7 @@
 {
   "name": "creedava-functions",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "packageManager": "npm@10.9.4",
   "description": "CreedaVA Cloud Functions — email, calendar, ads, search console integrations",
   "main": "lib/index.js",
   "scripts": {
@@ -13,23 +14,23 @@
     "logs": "firebase functions:log"
   },
   "engines": {
-    "node": "22"
+    "node": "22.x",
+    "npm": "10.x"
   },
   "dependencies": {
     "@types/mailparser": "^3.4.6",
-    "cors": "^2.8.5",
-    "firebase-admin": "^13.0.0",
-    "firebase-functions": "^6.3.0",
-    "googleapis": "^148.0.0",
-    "imapflow": "^1.2.9",
+    "cors": "^2.8.6",
+    "firebase-admin": "^13.6.1",
+    "firebase-functions": "^7.0.5",
+    "googleapis": "^171.4.0",
+    "imapflow": "^1.2.10",
     "mailparser": "^3.9.3",
-    "nodemailer": "^7.0.0"
+    "nodemailer": "^8.0.1"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/imapflow": "^1.0.23",
-    "@types/nodemailer": "^6.4.17",
-    "typescript": "^5.7.0"
+    "@types/cors": "^2.8.19",
+    "@types/nodemailer": "^7.0.11",
+    "typescript": "^5.9.3"
   },
   "private": true
 }
