@@ -1,15 +1,15 @@
 /**
- * HeroIllustration — "Global Connection"
+ * HeroIllustration — CreedaVA "C" brand mark
  *
- * Orthographic globe (Atlantic-centred, lon₀ = −60°, lat₀ = 0°).
- * Node positions computed from real geo-coordinates:
- *   Belize     (−87.5°, 17.2°)  → svg (122, 144)  ← origin / teal glow
- *   New York   (−74.0°, 40.7°)  → svg (162,  89)
- *   London     (− 0.1°, 51.5°)  → svg (274,  69)
- *   Buenos Ar. (−58.4°,−34.6°)  → svg (194, 278)
- *   Madrid     (− 3.7°, 40.4°)  → svg (288,  90)
+ * A large geometric C letterform built entirely from SVG paths.
+ * Uses the brand teal gradient (#007A6D → #003D36) on a soft background.
+ * No external assets, no runtime dependencies.
  *
- * All values are pure SVG — no external assets, no runtime dependencies.
+ * Geometry:
+ *   ViewBox   380 × 380, centre (190, 190)
+ *   Outer arc  r = 135
+ *   Inner arc  r = 92  (thickness = 43 px)
+ *   Opening    ±38° from the right axis (C spans 284°)
  */
 export function HeroIllustration({ className = "" }: { className?: string }) {
   return (
@@ -19,122 +19,72 @@ export function HeroIllustration({ className = "" }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       role="img"
-      aria-label="Global network map showing CreedaVA's reach from Belize to clients worldwide"
+      aria-label="CreedaVA brand mark"
     >
+      {/*
+        Geometry reference:
+          centre         = (190, 190)
+          outer radius   = 135  → endpoints at cos(±38°)·135 = ±106.4, sin(±38°)·135 = ±83.1
+            upper outer  = (296.4, 106.9)   lower outer = (296.4, 273.1)
+          inner radius   =  92  → endpoints at cos(±38°)·92  =  ±72.5, sin(±38°)·92  = ±56.6
+            upper inner  = (262.5, 133.4)   lower inner = (262.5, 246.6)
+          C path: outer arc CCW (large, sweep=0) → line → inner arc CW (large, sweep=1) → close
+      */}
       <defs>
-        {/* Clip to globe circle */}
-        <clipPath id="hero-globe-clip">
-          <circle cx="190" cy="190" r="155" />
-        </clipPath>
+        {/* C fill: lighter teal at top, dark teal at bottom */}
+        <linearGradient id="lm-c-fill" x1="190" y1="55" x2="190" y2="325" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#26B5A4" />
+          <stop offset="50%"  stopColor="#007A6D" />
+          <stop offset="100%" stopColor="#003D36" />
+        </linearGradient>
 
-        {/* Soft radial fill — teal-tinted white */}
-        <radialGradient id="hero-globe-bg" cx="36%" cy="30%" r="68%">
-          <stop offset="0%" stopColor="#EDFAF8" />
-          <stop offset="100%" stopColor="#C5E8E3" />
+        {/* Soft teal background */}
+        <radialGradient id="lm-bg" cx="45%" cy="40%" r="60%">
+          <stop offset="0%"   stopColor="#E8F7F5" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#C2E5E1" stopOpacity="0.45" />
         </radialGradient>
 
-        {/* Belize pulsing halo gradient */}
-        <radialGradient id="hero-belize-halo" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#005148" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#005148" stopOpacity="0" />
-        </radialGradient>
+        {/* Glow behind the C */}
+        <filter id="lm-glow" x="-25%" y="-25%" width="150%" height="150%">
+          <feGaussianBlur stdDeviation="14" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
 
-      {/* ── Globe body ─────────────────────────────────────── */}
-      <circle cx="190" cy="190" r="155" fill="url(#hero-globe-bg)" />
+      {/* ── Background ─────────────────────────────────────── */}
+      <circle cx="190" cy="190" r="172" fill="url(#lm-bg)" />
 
-      {/* ── Grid lines (clipped inside globe) ──────────────── */}
-      <g
-        clipPath="url(#hero-globe-clip)"
-        stroke="#007A6D"
-        strokeOpacity="0.18"
-        strokeWidth="1"
-        fill="none"
-      >
-        {/* Latitude parallels (ellipses; ry ≈ r·0.075 for 3-D feel) */}
-        <ellipse cx="190" cy="190" rx="155" ry="12" />  {/* Equator   */}
-        <ellipse cx="190" cy="113" rx="134" ry="10" />  {/* 30 °N     */}
-        <ellipse cx="190" cy="267" rx="134" ry="10" />  {/* 30 °S     */}
-        <ellipse cx="190" cy="56"  rx="78"  ry="6"  />  {/* 60 °N     */}
-        <ellipse cx="190" cy="324" rx="78"  ry="6"  />  {/* 60 °S     */}
-
-        {/* Longitude meridians — half-ellipse arcs through (190,35)→(190,345)
-            sweep-flag 1 = right half, 0 = left half                         */}
-        <line x1="190" y1="35" x2="190" y2="345" />                  {/* lon −60° (centre)   */}
-        <path d="M190,35 A78,155 0 0 1 190,345" />                    {/* lon −30° right      */}
-        <path d="M190,35 A134,155 0 0 1 190,345" />                   {/* lon   0° right      */}
-        <path d="M190,35 A78,155 0 0 0 190,345" />                    {/* lon −90° left       */}
-        <path d="M190,35 A134,155 0 0 0 190,345" />                   {/* lon−120° left       */}
-      </g>
-
-      {/* ── Globe border ───────────────────────────────────── */}
+      {/* Subtle dashed orbit ring */}
       <circle
-        cx="190" cy="190" r="155"
-        stroke="#007A6D" strokeWidth="1.5" strokeOpacity="0.3"
-        fill="none"
+        cx="190" cy="190" r="163"
+        stroke="#005148" strokeWidth="0.6" strokeOpacity="0.1"
+        fill="none" strokeDasharray="4 9"
       />
 
-      {/* ── Connection arcs (great-circle approximations) ──── */}
-      <g stroke="#005148" strokeWidth="1.5" strokeOpacity="0.5" fill="none" strokeDasharray="5 3">
-        {/* Belize → New York      */}
-        <path d="M122,144 Q132,102 162,89" />
-        {/* Belize → London        */}
-        <path d="M122,144 Q200,88 274,69" />
-        {/* Belize → Buenos Aires  */}
-        <path d="M122,144 Q152,214 194,278" />
-        {/* Belize → Madrid        */}
-        <path d="M122,144 Q208,100 288,90" />
-      </g>
-
-      {/* ── Secondary city nodes ───────────────────────────── */}
-      {/* New York */}
-      <circle cx="162" cy="89" r="5.5" fill="#002D72" fillOpacity="0.72" />
-      <circle cx="162" cy="89" r="2.8" fill="#F9FBFF" />
-      {/* London */}
-      <circle cx="274" cy="69"  r="5.5" fill="#002D72" fillOpacity="0.72" />
-      <circle cx="274" cy="69"  r="2.8" fill="#F9FBFF" />
-      {/* Buenos Aires */}
-      <circle cx="194" cy="278" r="5.5" fill="#002D72" fillOpacity="0.72" />
-      <circle cx="194" cy="278" r="2.8" fill="#F9FBFF" />
-      {/* Madrid */}
-      <circle cx="288" cy="90"  r="5.5" fill="#002D72" fillOpacity="0.72" />
-      <circle cx="288" cy="90"  r="2.8" fill="#F9FBFF" />
-
-      {/* ── Belize — origin node with animated pulse halo ──── */}
-      {/* Outer animated ring */}
-      <circle cx="122" cy="144" r="14" fill="url(#hero-belize-halo)">
-        <animate
-          attributeName="r"
-          values="14;26;14"
-          dur="3s"
-          repeatCount="indefinite"
-        />
-        <animate
-          attributeName="fillOpacity"
-          attributeType="XML"
-          values="1;0;1"
-          dur="3s"
-          repeatCount="indefinite"
-        />
-      </circle>
-      {/* Static inner glow */}
-      <circle cx="122" cy="144" r="12" fill="#005148" fillOpacity="0.15" />
-      {/* Dot */}
-      <circle cx="122" cy="144" r="8"   fill="#005148" />
-      <circle cx="122" cy="144" r="5"   fill="#007A6D" />
-      <circle cx="122" cy="144" r="2.5" fill="white"   />
-
-      {/* ── Outer decorative orbit rings ───────────────────── */}
-      <circle
-        cx="190" cy="190" r="170"
-        stroke="#007A6D" strokeWidth="0.75" strokeOpacity="0.12"
-        fill="none" strokeDasharray="3 6"
+      {/* ── Glow layer (blurred copy) ───────────────────────── */}
+      <path
+        d="M296.4,106.9 A135,135 0 1 0 296.4,273.1 L262.5,246.6 A92,92 0 1 1 262.5,133.4 Z"
+        fill="#007A6D" fillOpacity="0.28" filter="url(#lm-glow)"
       />
-      <circle
-        cx="190" cy="190" r="182"
-        stroke="#007A6D" strokeWidth="0.5" strokeOpacity="0.07"
-        fill="none" strokeDasharray="1 8"
+
+      {/* ── Primary C shape ─────────────────────────────────── */}
+      <path
+        d="M296.4,106.9 A135,135 0 1 0 296.4,273.1 L262.5,246.6 A92,92 0 1 1 262.5,133.4 Z"
+        fill="url(#lm-c-fill)"
       />
+
+      {/* ── Outer-edge shimmer ──────────────────────────────── */}
+      <path
+        d="M296.4,106.9 A135,135 0 1 0 296.4,273.1"
+        stroke="white" strokeWidth="1.5" strokeOpacity="0.18" fill="none"
+      />
+
+      {/* ── Terminal accent dots (ends of the C opening) ────── */}
+      <circle cx="296.4" cy="106.9" r="5.5" fill="#26B5A4" fillOpacity="0.65" />
+      <circle cx="296.4" cy="273.1" r="5.5" fill="#26B5A4" fillOpacity="0.65" />
     </svg>
   );
 }

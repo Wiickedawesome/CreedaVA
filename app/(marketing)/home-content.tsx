@@ -67,7 +67,7 @@ export function HomeContent({
               </div>
             </div>
             <div className="flex items-center justify-center mt-12 lg:mt-0">
-              <HeroIllustration className="w-56 sm:w-72 lg:w-full max-w-sm h-auto" />
+              <HeroIllustration className="w-64 sm:w-80 lg:w-full max-w-md h-auto drop-shadow-sm" />
             </div>
           </div>
         </Container>
