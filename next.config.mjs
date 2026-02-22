@@ -43,11 +43,26 @@ const nextConfig = {
           { key: "Cache-Control", value: "no-store, must-revalidate" },
         ],
       },
+      {
+        // Firebase Auth iframe must be frameable — override the DENY above.
+        // This rule must come AFTER the catch-all so it wins for duplicate keys.
+        source: "/__/auth/(.*)",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        ],
+      },
     ];
   },
 
   async rewrites() {
     return [
+      {
+        // Proxy Firebase Auth helper routes so they run first-party on creedava.com.
+        // Required because authDomain=creedava.com — without this, browsers block
+        // the firebaseapp.com iframe as a third-party (storage partitioning).
+        source: "/__/auth/:path*",
+        destination: "https://creeda-va.firebaseapp.com/__/auth/:path*",
+      },
       {
         source: "/handleFormWebhook",
         destination: `${functionsBase}/handleFormWebhook`,
