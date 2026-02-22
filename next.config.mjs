@@ -43,24 +43,11 @@ const nextConfig = {
           { key: "Cache-Control", value: "no-store, must-revalidate" },
         ],
       },
-      {
-        // Firebase Auth helper endpoints must be frameable for the redirect flow.
-        // MUST come LAST so it overrides the catch-all X-Frame-Options: DENY above.
-        source: "/__/auth/(.*)",
-        headers: [
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-        ],
-      },
     ];
   },
 
   async rewrites() {
     return [
-      {
-        // Firebase Auth redirect helper endpoints (handler/iframe)
-        source: "/__/auth/:path*",
-        destination: "https://creeda-va.firebaseapp.com/__/auth/:path*",
-      },
       {
         source: "/handleFormWebhook",
         destination: `${functionsBase}/handleFormWebhook`,
