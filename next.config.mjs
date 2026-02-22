@@ -36,7 +36,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.googletagmanager.com https://www.google.com https://www.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net; frame-src 'self' https://*.firebaseapp.com https://creedava.com https://accounts.google.com https://www.google.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline';",
+            value: "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https:; frame-src 'self' https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline';",
           },
         ],
       },

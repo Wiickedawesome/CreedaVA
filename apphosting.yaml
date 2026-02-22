@@ -11,9 +11,9 @@ runConfig:
 
 env:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: AIzaSyBGaDhXUnmMfYsjxK9Jh5Tk3vGn78mum3U
+    value: AIzaSyA9vlgSQIIWzSmfLRzZchtuYrw3jpLzBLE
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    value: creeda-va.firebaseapp.com
+    value: creedava.com
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     value: creeda-va
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET

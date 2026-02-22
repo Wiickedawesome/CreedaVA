@@ -9,10 +9,13 @@ import { auth } from "./config";
 
 const googleProvider = new GoogleAuthProvider();
 
-googleProvider.setCustomParameters({
-  hd: "creedava.com",
-  prompt: "select_account",
-});
+// IMPORTANT: Do NOT set "hd: creedava.com" here unless you have G Suite (Google Workspace)
+// and want to restrict sign-ins to ONLY that organization's accounts within the Google prompt itself.
+// Many standard gmail accounts will fail if this parameter is present and incorrect.
+// Instead, we can restrict domains in the signInWithGoogle function logic or Firestore rules.
+  googleProvider.setCustomParameters({
+    prompt: "select_account",
+  });
 
 /**
  * Sign in with a Google popup.
