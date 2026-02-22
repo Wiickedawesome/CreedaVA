@@ -7,23 +7,19 @@ import { Container, Button } from "@/components/ui";
 import { AuthProvider, useAuth } from "@/lib/firebase/auth-context";
 
 function LoginForm() {
-  const { user, loading, redirectError, signIn } = useAuth();
+  const { user, loading, signIn } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
-  // Combine local sign-in errors with errors returned from the redirect flow
-  const displayError = error || redirectError;
   const [signingIn, setSigningIn] = useState(false);
-
-  // Redirect destination set by middleware (defaults to /admin)
-  const redirectTo = searchParams.get("from") || "/admin";
   const [redirecting, setRedirecting] = useState(false);
+
+  const redirectTo = searchParams.get("from") || "/admin";
 
   useEffect(() => {
     if (!loading && user && !redirecting) {
       setRedirecting(true);
-      // Ensure the session cookie is set BEFORE navigating
-      // Otherwise middleware will redirect back to /login (no cookie yet)
+      // Set session cookie before navigating — proxy.ts checks this cookie
       (async () => {
         try {
           const token = await user.getIdToken();
@@ -50,29 +46,18 @@ function LoginForm() {
       const code = (err as { code?: string }).code;
       const msg = (err as { message?: string }).message;
 
-      // User dismissed the popup — not an error worth showing
       if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
         return;
       }
 
       if (code === "auth/popup-blocked") {
-        setError(
-          "The sign-in popup was blocked by your browser. " +
-          "Please allow popups for this site and try again.",
-        );
+        setError("Sign-in popup was blocked. Allow popups for this site and try again.");
       } else if (code === "auth/unauthorized-domain") {
-        setError(
-          "This domain is not authorized for sign-in. " +
-          "Add it to Firebase Console → Authentication → Settings → Authorized domains.",
-        );
-      } else if (code === "auth/internal-error" || code === "auth/network-request-failed") {
-        setError("Network error. Check your connection and try again.");
+        setError("This domain is not authorized. Contact your administrator.");
       } else if (code === "auth/user-disabled") {
         setError("This account has been disabled.");
       } else {
-        setError(
-          msg || "Sign-in failed. Make sure you're using a creedava.com account.",
-        );
+        setError(msg || "Sign-in failed. Make sure you're using a creedava.com account.");
       }
       console.error("[Login]", code, msg, err);
     } finally {
@@ -110,9 +95,9 @@ function LoginForm() {
             </p>
           </div>
 
-          {displayError && (
+          {error && (
             <div className="mb-4 rounded-lg bg-error/10 p-3 text-sm text-error">
-              {displayError}
+              {error}
             </div>
           )}
 

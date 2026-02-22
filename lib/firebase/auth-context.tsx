@@ -8,13 +8,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { onAuthStateChanged, signInWithGoogle, signOut, checkRedirectResult, type User } from "./auth";
+import { onAuthStateChanged, signInWithGoogle, signOut, type User } from "./auth";
 import { FirebaseInit } from "./firebase-init";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  redirectError: string | null;
   signIn: () => Promise<void>;
   logOut: () => Promise<void>;
 }
@@ -42,36 +41,12 @@ async function syncSessionCookie(user: User | null) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [redirectError, setRedirectError] = useState<string | null>(null);
   // Track the previous UID so we only sync the session cookie when the user
   // identity actually changes (sign-in / sign-out), not on every silent
   // hourly token refresh that also triggers onAuthStateChanged.
   const prevUidRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
-    // Check for redirect sign-in result
-    checkRedirectResult()
-      .then((redirectUser) => {
-        if (redirectUser) {
-          syncSessionCookie(redirectUser);
-        }
-      })
-      .catch((error: unknown) => {
-        const code = (error as { code?: string }).code;
-        const msg = (error as { message?: string }).message;
-        console.error("[Auth] Redirect result error:", error);
-        if (code === "auth/unauthorized-domain") {
-          setRedirectError(
-            "This domain is not authorized for sign-in. " +
-            "Add it to Firebase Console → Authentication → Settings → Authorized domains."
-          );
-        } else if (code === "auth/user-disabled") {
-          setRedirectError("This account has been disabled.");
-        } else if (code) {
-          setRedirectError(msg || "Sign-in failed. Please try again.");
-        }
-      });
-
     const unsubscribe = onAuthStateChanged((firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
@@ -106,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, redirectError, signIn, logOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, logOut }}>
       <FirebaseInit />
       {children}
     </AuthContext.Provider>
