@@ -1,5 +1,5 @@
 export { app, auth, db, storage, getGA4, logGA4Event } from "./config";
-export { signInWithGoogle, signOut, onAuthStateChanged, checkRedirectResult } from "./auth";
+export { signInWithGoogle, signOut, onAuthStateChanged } from "./auth";
 export type { User } from "./auth";
 export { AuthProvider, useAuth } from "./auth-context";
 export {
