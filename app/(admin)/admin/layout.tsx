@@ -1,43 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, Suspense, memo } from "react";
-import { AuthProvider, useAuth } from "@/lib/firebase/auth-context";
+import { Suspense, memo } from "react";
+import { AuthProvider } from "@/lib/firebase/auth-context";
 import { AdminSidebar, AdminTopbar, ToastProvider, PageSkeleton } from "@/components/admin";
 
 const MemoSidebar = memo(AdminSidebar);
 
-const ALLOWED_DOMAIN = "creedava.com";
-
-function isAdminUser(email: string | null | undefined): boolean {
-  return !!email && email.endsWith(`@${ALLOWED_DOMAIN}`);
-}
-
-function AdminAuthGate({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && (!user || !isAdminUser(user.email))) {
-      router.replace("/login");
-    }
-  }, [user, loading, router]);
-
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-10">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="text-sm text-gray-60">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user || !isAdminUser(user.email)) {
-    return null;
-  }
-
+function AdminLayout_Inner({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-gray-10 overflow-hidden">
       {/* Desktop sidebar */}
@@ -68,7 +37,7 @@ export default function AdminLayout({
   return (
     <AuthProvider>
       <ToastProvider>
-        <AdminAuthGate>{children}</AdminAuthGate>
+        <AdminLayout_Inner>{children}</AdminLayout_Inner>
       </ToastProvider>
     </AuthProvider>
   );
