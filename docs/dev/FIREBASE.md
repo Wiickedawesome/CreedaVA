@@ -41,6 +41,8 @@ Fill in values from Firebase Console → Project Settings → Your apps → Web 
 | `NEXT_PUBLIC_FIREBASE_APP_ID`         | App ID                   |
 | `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` | Google Analytics ID      |
 
+Production note: when serving on `https://creedava.com`, set `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=creedava.com` so Firebase Auth runs first-party on the same origin. Using `*.firebaseapp.com` here can trigger browser storage partitioning and break login completion on custom domains.
+
 ### 2. Cloud Functions
 
 Cloud functions use Firebase Admin SDK which auto-authenticates in the Firebase environment. For local development, set up a service account:
