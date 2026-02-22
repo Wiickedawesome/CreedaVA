@@ -19,6 +19,13 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Firebase Auth helper endpoints must be frameable for redirect flow
+        source: "/__/auth/(.*)",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        ],
+      },
+      {
         // Apply security headers to all routes
         source: "/(.*)",
         headers: [
@@ -48,6 +55,11 @@ const nextConfig = {
 
   async rewrites() {
     return [
+      {
+        // Firebase Auth redirect helper endpoints (handler/iframe)
+        source: "/__/auth/:path*",
+        destination: "https://creeda-va.firebaseapp.com/__/auth/:path*",
+      },
       {
         source: "/handleFormWebhook",
         destination: `${functionsBase}/handleFormWebhook`,
