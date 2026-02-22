@@ -22,7 +22,7 @@ let _model: GenerativeModel | null = null;
 function getModel(): GenerativeModel {
   if (!_model) {
     const ai = getAI(app, { backend: new GoogleAIBackend() });
-    _model = getGenerativeModel(ai, { model: "gemini-1.5-flash" });
+    _model = getGenerativeModel(ai, { model: "gemini-2.5-flash" });
   }
   return _model;
 }

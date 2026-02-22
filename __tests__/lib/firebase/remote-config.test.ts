@@ -58,12 +58,12 @@ describe("Remote Config", () => {
   it("getConfigString returns string value", async () => {
     const fakeRC = { settings: {}, defaultConfig: {} };
     mockGetRemoteConfig.mockReturnValue(fakeRC);
-    mockGetValue.mockReturnValue({ asString: () => "gemini-2.0-pro" });
+    mockGetValue.mockReturnValue({ asString: () => "gemini-2.5-flash" });
 
     const { getConfigString } = await import("@/lib/firebase/remote-config");
     const val = getConfigString("ai_model");
 
-    expect(val).toBe("gemini-2.0-pro");
+    expect(val).toBe("gemini-2.5-flash");
     expect(mockGetValue).toHaveBeenCalledWith(fakeRC, "ai_model");
   });
 

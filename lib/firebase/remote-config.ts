@@ -35,7 +35,7 @@ const DEFAULTS = {
   feature_live_chat: false,
 
   // AI configuration
-  ai_model: "gemini-2.0-flash",
+  ai_model: "gemini-2.5-flash",
   ai_max_tokens: 8192,
 
   // Marketing / CTA
