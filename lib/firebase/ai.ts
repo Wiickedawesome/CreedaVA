@@ -1,17 +1,16 @@
 /**
  * Firebase AI (Gemini) service — client-side wrapper
  *
- * Uses firebase/ai (Firebase AI Logic) which proxies Gemini through
- * the Firebase project, requiring no separate API key in the client.
+ * Uses @google/generative-ai to call the Gemini API directly,
+ * bypassing the Firebase AI Logic proxy which requires App Check.
  *
  * Prerequisites:
- *   1. Firebase project with AI Logic enabled in the console
- *   2. Gemini Developer API provider selected
+ *   1. NEXT_PUBLIC_GEMINI_API_KEY set in .env.local
+ *   2. Key must have generativelanguage.googleapis.com enabled
  */
 
-import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
-import type { GenerativeModel } from "firebase/ai";
-import { app } from "@/lib/firebase/config";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { GenerativeModel } from "@google/generative-ai";
 
 import { buildContentPrompt, buildLandingPagePrompt } from "@/lib/utils/ai-system-prompt";
 
@@ -21,8 +20,14 @@ let _model: GenerativeModel | null = null;
 
 function getModel(): GenerativeModel {
   if (!_model) {
-    const ai = getAI(app, { backend: new GoogleAIBackend() });
-    _model = getGenerativeModel(ai, { model: "gemini-2.5-flash" });
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error(
+        "NEXT_PUBLIC_GEMINI_API_KEY is not set. Add it to .env.local.",
+      );
+    }
+    const genAI = new GoogleGenerativeAI(apiKey);
+    _model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   }
   return _model;
 }
@@ -42,8 +47,8 @@ export async function generateText(prompt: string): Promise<string> {
  */
 export async function* generateTextStream(prompt: string): AsyncGenerator<string, void, unknown> {
   const model = getModel();
-  const { stream } = await model.generateContentStream(prompt);
-  for await (const chunk of stream) {
+  const result = await model.generateContentStream(prompt);
+  for await (const chunk of result.stream) {
     const text = chunk.text();
     if (text) yield text;
   }
