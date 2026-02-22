@@ -19,13 +19,6 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Firebase Auth helper endpoints must be frameable for redirect flow
-        source: "/__/auth/(.*)",
-        headers: [
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-        ],
-      },
-      {
         // Apply security headers to all routes
         source: "/(.*)",
         headers: [
@@ -48,6 +41,14 @@ const nextConfig = {
         source: "/api/(.*)",
         headers: [
           { key: "Cache-Control", value: "no-store, must-revalidate" },
+        ],
+      },
+      {
+        // Firebase Auth helper endpoints must be frameable for the redirect flow.
+        // MUST come LAST so it overrides the catch-all X-Frame-Options: DENY above.
+        source: "/__/auth/(.*)",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
         ],
       },
     ];
