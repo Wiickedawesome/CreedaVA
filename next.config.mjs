@@ -57,6 +57,12 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        // Firebase App Hosting does not natively serve /__/auth routes.
+        // Proxy them to firebaseapp.com so the redirect handler and iframe exist.
+        source: "/__/auth/:path*",
+        destination: "https://creeda-va.firebaseapp.com/__/auth/:path*",
+      },
+      {
         source: "/handleFormWebhook",
         destination: `${functionsBase}/handleFormWebhook`,
       },
