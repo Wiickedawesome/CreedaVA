@@ -57,13 +57,6 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        // Proxy Firebase Auth helper routes so they run first-party on creedava.com.
-        // Required because authDomain=creedava.com — without this, browsers block
-        // the firebaseapp.com iframe as a third-party (storage partitioning).
-        source: "/__/auth/:path*",
-        destination: "https://creeda-va.firebaseapp.com/__/auth/:path*",
-      },
-      {
         source: "/handleFormWebhook",
         destination: `${functionsBase}/handleFormWebhook`,
       },
