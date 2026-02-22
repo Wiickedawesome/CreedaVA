@@ -39,6 +39,7 @@ function LoginForm() {
   }, [user, loading, router, redirectTo, redirecting]);
 
   async function handleSignIn() {
+    if (signingIn) return;
     setError(null);
     setSigningIn(true);
     try {

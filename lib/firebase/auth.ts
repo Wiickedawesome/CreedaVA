@@ -1,5 +1,4 @@
 import {
-  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   GoogleAuthProvider,
@@ -18,31 +17,14 @@ googleProvider.setCustomParameters({
 });
 
 /**
- * Sign in with Google — uses redirect flow as primary to avoid third-party
- * cookie/iframe blocking in modern browsers (Firefox, Chrome with
- * Privacy Sandbox). Popup is kept as fallback for environments that
- * handle redirects poorly (e.g. embedded WebViews).
+ * Sign in with Google using redirect flow only.
+ *
+ * Popup auth is intentionally avoided because modern browser privacy policies
+ * can block popup/iframe handshakes and produce intermittent internal errors
+ * on production domains.
  */
-export async function signInWithGoogle(): Promise<User> {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
-  } catch (error: unknown) {
-    const code = (error as { code?: string }).code;
-
-    // Fallback for environments where popups are blocked or unsupported.
-    if (
-      code === "auth/popup-blocked" ||
-      code === "auth/web-storage-unsupported" ||
-      code === "auth/operation-not-supported-in-this-environment"
-    ) {
-      await signInWithRedirect(auth, googleProvider);
-      // Browser navigates away; keep current call pending until unload.
-      return new Promise(() => {});
-    }
-
-    throw error;
-  }
+export async function signInWithGoogle(): Promise<void> {
+  await signInWithRedirect(auth, googleProvider);
 }
 
 /**

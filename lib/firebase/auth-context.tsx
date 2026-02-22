@@ -68,8 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn() {
     try {
-      const firebaseUser = await signInWithGoogle();
-      await syncSessionCookie(firebaseUser);
+      await signInWithGoogle();
     } catch (error) {
       console.error("Sign-in failed:", error);
       throw error;

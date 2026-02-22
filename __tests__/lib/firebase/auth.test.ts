@@ -1,14 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ── Mock Firebase Auth ───────────────────────────────
-const mockSignInWithPopup = vi.fn();
 const mockSignInWithRedirect = vi.fn();
 const mockGetRedirectResult = vi.fn();
 const mockFirebaseSignOut = vi.fn();
 const mockOnAuthStateChanged = vi.fn();
 
 vi.mock("firebase/auth", () => ({
-  signInWithPopup: (...args: unknown[]) => mockSignInWithPopup(...args),
   signInWithRedirect: (...args: unknown[]) => mockSignInWithRedirect(...args),
   getRedirectResult: (...args: unknown[]) => mockGetRedirectResult(...args),
   GoogleAuthProvider: class {
@@ -30,31 +28,12 @@ beforeEach(() => {
 
 describe("Auth module", () => {
   describe("signInWithGoogle", () => {
-    it("returns user when popup sign-in succeeds", async () => {
-      const mockUser = { email: "user@creedava.com", uid: "123" };
-      mockSignInWithPopup.mockResolvedValue({ user: mockUser });
-
-      const { signInWithGoogle } = await import("@/lib/firebase/auth");
-      const user = await signInWithGoogle();
-
-      expect(user).toBe(mockUser);
-      expect(mockSignInWithPopup).toHaveBeenCalled();
-      expect(mockSignInWithRedirect).not.toHaveBeenCalled();
-    });
-
-    it("falls back to redirect when popup is blocked", async () => {
-      mockSignInWithPopup.mockRejectedValue({ code: "auth/popup-blocked" });
+    it("starts redirect sign-in", async () => {
       mockSignInWithRedirect.mockResolvedValue(undefined);
 
       const { signInWithGoogle } = await import("@/lib/firebase/auth");
+      await signInWithGoogle();
 
-      const result = await Promise.race([
-        signInWithGoogle(),
-        new Promise((resolve) => setTimeout(() => resolve("navigating"), 50)),
-      ]);
-
-      expect(result).toBe("navigating");
-      expect(mockSignInWithPopup).toHaveBeenCalled();
       expect(mockSignInWithRedirect).toHaveBeenCalled();
     });
   });
