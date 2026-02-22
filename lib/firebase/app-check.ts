@@ -32,11 +32,28 @@ export function initializeAppCheck(): AppCheck | null {
   if (typeof window === "undefined") return null;
   if (_appCheck) return _appCheck;
 
-  // Allow explicit enable/disable via environment variable
-  // Set NEXT_PUBLIC_ENABLE_APP_CHECK=true to enable
+  const isDev = process.env.NODE_ENV === "development";
   const appCheckEnabled = process.env.NEXT_PUBLIC_ENABLE_APP_CHECK === "true";
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY;
 
+  // In development: always initialize with Firebase debug token mode.
+  // Firebase will print a UUID to the console — register it once in
+  // Firebase Console → App Check → Apps → Manage debug tokens.
+  // This allows AI / Firestore / Functions calls to work on localhost.
+  if (isDev) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    // ReCaptchaEnterpriseProvider is required by the SDK even in debug mode.
+    // The key is never sent to Google when debug token overrides it.
+    const devKey = siteKey || "debug-placeholder-not-used";
+    _appCheck = _initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider(devKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+    return _appCheck;
+  }
+
+  // Production: require both the enable flag and a real reCAPTCHA key.
   if (!appCheckEnabled) {
     console.warn(
       "[App Check] Disabled via NEXT_PUBLIC_ENABLE_APP_CHECK. " +
@@ -48,23 +65,13 @@ export function initializeAppCheck(): AppCheck | null {
   if (!siteKey) {
     console.warn(
       "[App Check] NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY is not set. " +
-        "App Check is disabled. Set it in .env.local or apphosting.yaml.",
+        "App Check is disabled. Set it in apphosting.yaml.",
     );
     return null;
   }
 
-  // In development, enable debug mode so localhost requests aren't blocked.
-  // The debug token is logged to the console — register it in Firebase Console
-  // under App Check → Apps → Manage debug tokens.
-  if (process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-  }
-
-  const provider = new ReCaptchaEnterpriseProvider(siteKey);
-
   _appCheck = _initializeAppCheck(app, {
-    provider,
+    provider: new ReCaptchaEnterpriseProvider(siteKey),
     isTokenAutoRefreshEnabled: true,
   });
 
