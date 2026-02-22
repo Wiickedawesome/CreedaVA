@@ -32,7 +32,18 @@ export function initializeAppCheck(): AppCheck | null {
   if (typeof window === "undefined") return null;
   if (_appCheck) return _appCheck;
 
+  // Allow explicit enable/disable via environment variable
+  // Set NEXT_PUBLIC_ENABLE_APP_CHECK=true to enable
+  const appCheckEnabled = process.env.NEXT_PUBLIC_ENABLE_APP_CHECK === "true";
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY;
+
+  if (!appCheckEnabled) {
+    console.warn(
+      "[App Check] Disabled via NEXT_PUBLIC_ENABLE_APP_CHECK. " +
+        "Enable it after registering your app in Firebase Console → App Check.",
+    );
+    return null;
+  }
 
   if (!siteKey) {
     console.warn(

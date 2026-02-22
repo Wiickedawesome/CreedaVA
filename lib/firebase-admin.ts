@@ -15,7 +15,20 @@ function getAdminApp(): admin.app.App {
   if (admin.apps.length > 0) {
     return admin.apps[0]!;
   }
-  return admin.initializeApp();
+
+  // For local development, use environment variables if available
+  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+    : undefined;
+
+  const credential = serviceAccount
+    ? admin.credential.cert(serviceAccount)
+    : admin.credential.applicationDefault();
+
+  return admin.initializeApp({
+    credential,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  });
 }
 
 const app = getAdminApp();

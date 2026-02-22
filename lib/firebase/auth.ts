@@ -18,15 +18,24 @@ googleProvider.setCustomParameters({
 });
 
 export async function signInWithGoogle(): Promise<void> {
+  // For localhost, use redirect-based sign-in to avoid third-party cookie issues
+  // with the Firebase Auth iframe. For production domains, popup would work.
+  const isLocalhost = typeof window !== "undefined" && 
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+  if (isLocalhost) {
+    // Use redirect for localhost to avoid iframe/cookie blocking issues
+    await signInWithRedirect(auth, googleProvider);
+    return;
+  }
+
   try {
-    // Primary path: popup-based sign in. This is what the app
-    // originally used and is more reliable for most users.
+    // Production: use popup-based sign in
     await signInWithPopup(auth, googleProvider);
   } catch (error: unknown) {
     const code = (error as { code?: string }).code;
 
-    // If the popup was blocked or closed, fall back to the
-    // redirect flow so sign-in can still complete.
+    // If the popup was blocked or closed, fall back to redirect
     if (code === "auth/popup-blocked" || code === "auth/popup-closed-by-user") {
       await signInWithRedirect(auth, googleProvider);
       return;

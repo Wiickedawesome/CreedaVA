@@ -43,25 +43,12 @@ const nextConfig = {
           { key: "Cache-Control", value: "no-store, must-revalidate" },
         ],
       },
-      {
-        // Firebase Auth iframe must be frameable — override the DENY above.
-        // This rule must come AFTER the catch-all so it wins for duplicate keys.
-        source: "/__/auth/(.*)",
-        headers: [
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-        ],
-      },
+
     ];
   },
 
   async rewrites() {
     return [
-      {
-        // Firebase App Hosting does not natively serve /__/auth routes.
-        // Proxy them to firebaseapp.com so the redirect handler and iframe exist.
-        source: "/__/auth/:path*",
-        destination: "https://creeda-va.firebaseapp.com/__/auth/:path*",
-      },
       {
         source: "/handleFormWebhook",
         destination: `${functionsBase}/handleFormWebhook`,
