@@ -1,12 +1,36 @@
 "use client";
 
-import { Suspense, memo } from "react";
-import { AuthProvider } from "@/lib/firebase/auth-context";
+import { Suspense, memo, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { AuthProvider, useAuth } from "@/lib/firebase/auth-context";
 import { AdminSidebar, AdminTopbar, ToastProvider, PageSkeleton } from "@/components/admin";
 
 const MemoSidebar = memo(AdminSidebar);
 
 function AdminLayout_Inner({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      const from = encodeURIComponent(pathname);
+      router.replace(`/login?from=${from}`);
+    }
+  }, [user, loading, router, pathname]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <PageSkeleton />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect
+  }
+
   return (
     <div className="flex h-screen bg-gray-10 overflow-hidden">
       {/* Desktop sidebar */}
