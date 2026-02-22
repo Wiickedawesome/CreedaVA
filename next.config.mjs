@@ -39,7 +39,7 @@ const nextConfig = {
           {
             key: "Content-Security-Policy",
             // Added frame-ancestors to allow localhost and the production domain to frame itself
-            value: "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https:; frame-src 'self' https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; frame-ancestors 'self' https://creedava.com http://localhost:*; https://creeda-va.firebaseapp.com;",
+            value: "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https:; frame-src 'self' https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; frame-ancestors 'self' https://creedava.com http://localhost:* https://creeda-va.firebaseapp.com;",
           },
         ],
       },
@@ -56,6 +56,10 @@ const nextConfig = {
 
   async rewrites() {
     return [
+      {
+        source: "/__/auth/(.*)",
+        destination: "https://creeda-va.firebaseapp.com/__/auth/$1",
+      },
       {
         source: "/handleFormWebhook",
         destination: `${functionsBase}/handleFormWebhook`,
