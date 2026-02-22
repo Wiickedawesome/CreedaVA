@@ -1,6 +1,5 @@
 import {
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged as firebaseOnAuthStateChanged,
@@ -17,23 +16,19 @@ googleProvider.setCustomParameters({
 });
 
 export async function signInWithGoogle(): Promise<void> {
-  // Always use redirect-based sign-in. Popup-based sign-in fails on production
-  // domains because modern browsers (Firefox dynamic state partitioning, Chrome
-  // third-party cookie restrictions) block the Firebase Auth iframe hosted on
-  // creeda-va.firebaseapp.com from accessing its cookies, producing
-  // auth/internal-error. Redirect-based sign-in navigates the full page to
-  // Google and back, so it never touches third-party cookies.
-  await signInWithRedirect(auth, googleProvider);
+  // Use popup-based sign-in. authDomain is set to the custom domain (creedava.com)
+  // so the popup runs in a first-party context — no third-party cookie restrictions
+  // and no dependency on the /__/auth/ reverse-proxy that Firebase Hosting
+  // provides but App Hosting does not configure automatically.
+  await signInWithPopup(auth, googleProvider);
 }
 
 /**
- * Check for redirect result on page load.
- * Call this once in the auth state listener setup.
- * Throws on Firebase auth errors so callers can surface them to the user.
+ * No-op kept for interface compatibility.
+ * Redirect sign-in is no longer used — this always returns null.
  */
 export async function checkRedirectResult(): Promise<User | null> {
-  const result = await getRedirectResult(auth);
-  return result?.user ?? null;
+  return null;
 }
 
 export async function signOut(): Promise<void> {

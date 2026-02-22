@@ -50,7 +50,17 @@ function LoginForm() {
       const code = (err as { code?: string }).code;
       const msg = (err as { message?: string }).message;
 
-      if (code === "auth/unauthorized-domain") {
+      // User dismissed the popup — not an error worth showing
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
+        return;
+      }
+
+      if (code === "auth/popup-blocked") {
+        setError(
+          "The sign-in popup was blocked by your browser. " +
+          "Please allow popups for this site and try again.",
+        );
+      } else if (code === "auth/unauthorized-domain") {
         setError(
           "This domain is not authorized for sign-in. " +
           "Add it to Firebase Console → Authentication → Settings → Authorized domains.",
