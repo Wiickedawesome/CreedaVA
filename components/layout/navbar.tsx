@@ -130,7 +130,7 @@ export function Navbar() {
                 {locale === "en" ? "ES" : "EN"}
               </button>
               <Link
-                href="/login"
+                href="/admin"
                 className="text-sm font-medium text-gray-70 hover:text-primary transition-colors"
               >
                 {t.nav.signIn}
@@ -205,7 +205,7 @@ export function Navbar() {
                 ))}
                 <hr className="border-border my-2" />
                 <Link
-                  href="/login"
+                  href="/admin"
                   className="px-3 py-2 text-sm font-medium text-gray-70 hover:text-primary"
                   onClick={closeMobileMenu}
                 >
