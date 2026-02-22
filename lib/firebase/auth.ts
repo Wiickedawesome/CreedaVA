@@ -1,5 +1,4 @@
 import {
-  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   GoogleAuthProvider,
@@ -18,46 +17,23 @@ googleProvider.setCustomParameters({
 });
 
 export async function signInWithGoogle(): Promise<void> {
-  // For localhost, use redirect-based sign-in to avoid third-party cookie issues
-  // with the Firebase Auth iframe. For production domains, popup would work.
-  const isLocalhost = typeof window !== "undefined" && 
-    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-
-  if (isLocalhost) {
-    // Use redirect for localhost to avoid iframe/cookie blocking issues
-    await signInWithRedirect(auth, googleProvider);
-    return;
-  }
-
-  try {
-    // Production: use popup-based sign in
-    await signInWithPopup(auth, googleProvider);
-  } catch (error: unknown) {
-    const code = (error as { code?: string }).code;
-
-    // If the popup was blocked or closed, fall back to redirect
-    if (code === "auth/popup-blocked" || code === "auth/popup-closed-by-user") {
-      await signInWithRedirect(auth, googleProvider);
-      return;
-    }
-
-    console.error("[Auth] Popup sign-in failed:", error);
-    throw error;
-  }
+  // Always use redirect-based sign-in. Popup-based sign-in fails on production
+  // domains because modern browsers (Firefox dynamic state partitioning, Chrome
+  // third-party cookie restrictions) block the Firebase Auth iframe hosted on
+  // creeda-va.firebaseapp.com from accessing its cookies, producing
+  // auth/internal-error. Redirect-based sign-in navigates the full page to
+  // Google and back, so it never touches third-party cookies.
+  await signInWithRedirect(auth, googleProvider);
 }
 
 /**
  * Check for redirect result on page load.
  * Call this once in the auth state listener setup.
+ * Throws on Firebase auth errors so callers can surface them to the user.
  */
 export async function checkRedirectResult(): Promise<User | null> {
-  try {
-    const result = await getRedirectResult(auth);
-    return result?.user ?? null;
-  } catch (error) {
-    console.error("[Auth] Redirect result error:", error);
-    return null;
-  }
+  const result = await getRedirectResult(auth);
+  return result?.user ?? null;
 }
 
 export async function signOut(): Promise<void> {

@@ -7,10 +7,12 @@ import { Container, Button } from "@/components/ui";
 import { AuthProvider, useAuth } from "@/lib/firebase/auth-context";
 
 function LoginForm() {
-  const { user, loading, signIn } = useAuth();
+  const { user, loading, redirectError, signIn } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+  // Combine local sign-in errors with errors returned from the redirect flow
+  const displayError = error || redirectError;
   const [signingIn, setSigningIn] = useState(false);
 
   // Redirect destination set by middleware (defaults to /admin)
@@ -98,9 +100,9 @@ function LoginForm() {
             </p>
           </div>
 
-          {error && (
+          {displayError && (
             <div className="mb-4 rounded-lg bg-error/10 p-3 text-sm text-error">
-              {error}
+              {displayError}
             </div>
           )}
 
