@@ -23,8 +23,9 @@ const nextConfig = {
         source: "/(.*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
-          // X-Frame-Options cannot be DENY if we use Firebase Auth iframe for silent refresh or persistence
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          // X-Frame-Options: SAMEORIGIN prevents localhost from framing creedava.com for auth.
+          // We remove it or set it to ALLOWALL if we rely on CSP 'frame-ancestors' instead.
+          // { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-XSS-Protection", value: "1; mode=block" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
@@ -37,7 +38,8 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https:; frame-src 'self' https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline';",
+            // Added frame-ancestors to allow localhost and the production domain to frame itself
+            value: "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https:; frame-src 'self' https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; frame-ancestors 'self' https://creedava.com http://localhost:*; https://creeda-va.firebaseapp.com;",
           },
         ],
       },

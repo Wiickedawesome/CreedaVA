@@ -1,14 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ── Mock Firebase Auth ───────────────────────────────
-const mockSignInWithRedirect = vi.fn();
-const mockGetRedirectResult = vi.fn();
+const mockSignInWithPopup = vi.fn();
 const mockFirebaseSignOut = vi.fn();
 const mockOnAuthStateChanged = vi.fn();
 
 vi.mock("firebase/auth", () => ({
-  signInWithRedirect: (...args: unknown[]) => mockSignInWithRedirect(...args),
-  getRedirectResult: (...args: unknown[]) => mockGetRedirectResult(...args),
+  signInWithPopup: (...args: unknown[]) => mockSignInWithPopup(...args),
   GoogleAuthProvider: class {
     setCustomParameters = vi.fn();
   },
@@ -28,43 +26,13 @@ beforeEach(() => {
 
 describe("Auth module", () => {
   describe("signInWithGoogle", () => {
-    it("starts redirect sign-in", async () => {
-      mockSignInWithRedirect.mockResolvedValue(undefined);
+    it("starts popup sign-in", async () => {
+      mockSignInWithPopup.mockResolvedValue(undefined);
 
       const { signInWithGoogle } = await import("@/lib/firebase/auth");
       await signInWithGoogle();
 
-      expect(mockSignInWithRedirect).toHaveBeenCalled();
-    });
-  });
-
-  describe("checkRedirectResult", () => {
-    it("returns user from redirect result", async () => {
-      const mockUser = { email: "user@creedava.com", uid: "456" };
-      mockGetRedirectResult.mockResolvedValue({ user: mockUser });
-
-      const { checkRedirectResult } = await import("@/lib/firebase/auth");
-      const user = await checkRedirectResult();
-
-      expect(user).toBe(mockUser);
-    });
-
-    it("returns null when no redirect result", async () => {
-      mockGetRedirectResult.mockResolvedValue(null);
-
-      const { checkRedirectResult } = await import("@/lib/firebase/auth");
-      const user = await checkRedirectResult();
-
-      expect(user).toBeNull();
-    });
-
-    it("returns null on error", async () => {
-      mockGetRedirectResult.mockRejectedValue(new Error("Redirect error"));
-
-      const { checkRedirectResult } = await import("@/lib/firebase/auth");
-      const user = await checkRedirectResult();
-
-      expect(user).toBeNull();
+      expect(mockSignInWithPopup).toHaveBeenCalled();
     });
   });
 

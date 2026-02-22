@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ── Mock Firebase ────────────────────────────────────
 const mockInitAppCheck = vi.fn().mockReturnValue({ name: "app-check-instance" });
@@ -11,6 +11,7 @@ vi.mock("firebase/app-check", () => ({
       mockReCaptchaEnterpriseProvider(siteKey);
     }
   },
+  getToken: vi.fn(),
 }));
 
 vi.mock("@/lib/firebase/config", () => ({
@@ -18,14 +19,24 @@ vi.mock("@/lib/firebase/config", () => ({
 }));
 
 // Reset module cache between tests to clear the singleton
+const originalEnv = process.env;
+
 beforeEach(() => {
   vi.clearAllMocks();
   vi.resetModules();
+  process.env = { ...originalEnv };
+  // Default state: missing enablement flag
+  delete process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY;
+  delete process.env.NEXT_PUBLIC_ENABLE_APP_CHECK;
+});
+
+afterEach(() => {
+  process.env = originalEnv;
 });
 
 describe("initializeAppCheck", () => {
-  it("returns null when RECAPTCHA key is not set", async () => {
-    delete process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY;
+  it("returns null when enablement flag is missing", async () => {
+    process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY = "test-site-key";
 
     const { initializeAppCheck } = await import("@/lib/firebase/app-check");
     const result = initializeAppCheck();
@@ -34,7 +45,19 @@ describe("initializeAppCheck", () => {
     expect(mockInitAppCheck).not.toHaveBeenCalled();
   });
 
-  it("initializes App Check when key is set", async () => {
+  it("returns null when RECAPTCHA key is not set", async () => {
+    // Only set enable flag
+    process.env.NEXT_PUBLIC_ENABLE_APP_CHECK = "true";
+    
+    const { initializeAppCheck } = await import("@/lib/firebase/app-check");
+    const result = initializeAppCheck();
+
+    expect(result).toBeNull();
+    expect(mockInitAppCheck).not.toHaveBeenCalled();
+  });
+
+  it("initializes App Check when key is set and enabled", async () => {
+    process.env.NEXT_PUBLIC_ENABLE_APP_CHECK = "true";
     process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY = "test-site-key";
 
     const { initializeAppCheck } = await import("@/lib/firebase/app-check");
@@ -49,6 +72,7 @@ describe("initializeAppCheck", () => {
   });
 
   it("returns cached instance on second call", async () => {
+    process.env.NEXT_PUBLIC_ENABLE_APP_CHECK = "true";
     process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY = "test-site-key";
 
     const { initializeAppCheck } = await import("@/lib/firebase/app-check");
@@ -60,8 +84,9 @@ describe("initializeAppCheck", () => {
   });
 
   it("enables debug token in development", async () => {
+    process.env.NEXT_PUBLIC_ENABLE_APP_CHECK = "true";
     process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY = "test-site-key";
-    const origEnv = process.env.NODE_ENV;
+    
     // @ts-expect-error - overriding read-only for test
     process.env.NODE_ENV = "development";
 
@@ -70,8 +95,5 @@ describe("initializeAppCheck", () => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect((globalThis as any).FIREBASE_APPCHECK_DEBUG_TOKEN).toBe(true);
-
-    // @ts-expect-error - restoring
-    process.env.NODE_ENV = origEnv;
   });
 });
