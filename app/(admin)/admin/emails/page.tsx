@@ -48,7 +48,7 @@ const emptyForm = {
 
 const SURVEY_TEMPLATE_BODY = `<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#002D72;">
   <div style="text-align:center;padding:24px 0;">
-    <img src="/logo.webp" alt="CreedaVA" width="120" style="margin-bottom:12px;" />
+    <img src="/logo.webp" alt="CreedaVA" width="120" style="margin-bottom:12px;height: auto;" />
   </div>
   <div style="background:#f9fbff;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
     <h2 style="margin:0 0 8px;color:#005148;font-size:22px;">How are we doing?</h2>

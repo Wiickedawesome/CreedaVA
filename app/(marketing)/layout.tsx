@@ -48,10 +48,6 @@ export default function MarketingLayout({
   return (
     <LanguageProvider>
       <FirebaseInit />
-      <Script id="marketing-force-theme" strategy="beforeInteractive">
-        {"document.documentElement.dataset.theme = 'light';"}
-      </Script>
-      <ForceTheme theme="light" />
 
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
@@ -70,9 +66,11 @@ gtag('config', '${GA_MEASUREMENT_ID}');`}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
-      <Navbar />
-      <main id="main-content" className="min-h-screen">{children}</main>
-      <Footer />
+      <div data-theme="light">
+        <Navbar />
+        <main id="main-content" className="min-h-screen">{children}</main>
+        <Footer />
+      </div>
     </LanguageProvider>
   );
 }

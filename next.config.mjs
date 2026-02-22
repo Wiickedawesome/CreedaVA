@@ -34,6 +34,10 @@ const nextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
+          {
+            key: "Content-Security-Policy",
+            value: "script-src 'self' https://www.googletagmanager.com https://www.google.com 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://firebasevertexai.googleapis.com;",
+          },
         ],
       },
       {

@@ -17,7 +17,7 @@ test.describe("Login page", () => {
 
   test("shows authorization notice", async ({ page }) => {
     await expect(
-      page.getByText(/authorized creeda/i),
+      page.getByText(/Sign in to access your CreedaVA dashboard/i),
     ).toBeVisible();
   });
 });

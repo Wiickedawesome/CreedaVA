@@ -32,7 +32,7 @@ test.describe("Contact Form", () => {
     await page.getByRole("button", { name: /send|submit/i }).click();
 
     // Success panel should appear (contains a checkmark SVG and success heading)
-    await expect(page.locator(".bg-success\\/10, [class*='bg-success']")).toBeVisible({
+    await expect(page.getByRole('heading', { name: /message sent/i })).toBeVisible({
       timeout: 10_000,
     });
   });

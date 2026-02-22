@@ -11,11 +11,7 @@ export default function AdminGroupLayout({
 }) {
   // Apply min-h-screen to ensure full height background for the darker theme
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Script id="admin-force-theme" strategy="beforeInteractive">
-        {"document.documentElement.dataset.theme = 'dark';"}
-      </Script>
-      <ForceTheme theme="dark" />
+    <div className="min-h-screen bg-background text-foreground" data-theme="dark">
       {children}
     </div>
   );
