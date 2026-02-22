@@ -12,9 +12,14 @@ import {
   type Analytics,
 } from "firebase/analytics";
 
+// For production on modern hosting (Vercel/App Hosting), force the use of
+// the firebaseapp.com domain for auth to avoid rewrite issues & 404s.
+// The custom domain logic only works if hosting rewrites are perfectly configured
+// to proxy /__/auth/handler, which is often broken.
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
+  // FORCE the native Firebase domain for auth handler to bypass custom domain rewrite issues
+  authDomain: "creeda-va.firebaseapp.com",
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
