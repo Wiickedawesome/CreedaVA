@@ -1,4 +1,5 @@
 import {
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   GoogleAuthProvider,
@@ -16,15 +17,24 @@ googleProvider.setCustomParameters({
   prompt: "select_account",
 });
 
-/**
- * Sign in with Google using redirect flow only.
- *
- * Popup auth is intentionally avoided because modern browser privacy policies
- * can block popup/iframe handshakes and produce intermittent internal errors
- * on production domains.
- */
 export async function signInWithGoogle(): Promise<void> {
-  await signInWithRedirect(auth, googleProvider);
+  try {
+    // Primary path: popup-based sign in. This is what the app
+    // originally used and is more reliable for most users.
+    await signInWithPopup(auth, googleProvider);
+  } catch (error: unknown) {
+    const code = (error as { code?: string }).code;
+
+    // If the popup was blocked or closed, fall back to the
+    // redirect flow so sign-in can still complete.
+    if (code === "auth/popup-blocked" || code === "auth/popup-closed-by-user") {
+      await signInWithRedirect(auth, googleProvider);
+      return;
+    }
+
+    console.error("[Auth] Popup sign-in failed:", error);
+    throw error;
+  }
 }
 
 /**
