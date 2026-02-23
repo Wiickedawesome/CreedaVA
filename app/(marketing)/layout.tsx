@@ -67,6 +67,7 @@ gtag('config', '${GA_MEASUREMENT_ID}');`}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
       <div data-theme="light">
+        <ForceTheme theme="light" />
         <Navbar />
         <main id="main-content" className="min-h-screen">{children}</main>
         <Footer />
