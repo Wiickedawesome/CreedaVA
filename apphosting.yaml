@@ -11,7 +11,7 @@ runConfig:
 
 env:
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: AIzaSyCqmTgivoGfkQ7NihOXZ-kQveAx2udW5JA
+    value: AIzaSyAiYry9qMyo7PWFa-1VNbyOKUyYDOABBqA
   - variable: NEXT_PUBLIC_GEMINI_API_KEY
     value: AIzaSyCqmTgivoGfkQ7NihOXZ-kQveAx2udW5JA
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
