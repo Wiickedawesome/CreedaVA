@@ -3,6 +3,9 @@ const rawFunctionsBase = process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "http
 const functionsBase = rawFunctionsBase.replace(/\/$/, "");
 
 const nextConfig = {
+  // firebase-admin uses native modules (grpc, etc.) that must not be bundled
+  serverExternalPackages: ["firebase-admin"],
+
   images: {
     remotePatterns: [
       {

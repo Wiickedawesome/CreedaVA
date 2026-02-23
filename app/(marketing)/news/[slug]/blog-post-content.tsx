@@ -5,18 +5,42 @@ import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
+import { fetchAll, where } from "@/lib/firebase/firestore";
 import { ensureBlogTranslated, getTranslatedTitle, getTranslatedContent } from "@/lib/firebase/translate";
 import type { BlogPost } from "@/lib/types/content";
 
 interface BlogPostContentProps {
-  initialPost: (BlogPost & { id: string }) | null;
   slug: string;
 }
 
-export function BlogPostContent({ initialPost }: BlogPostContentProps) {
+export function BlogPostContent({ slug }: BlogPostContentProps) {
   const { t, locale } = useTranslation();
-  const [post, setPost] = useState<(BlogPost & { id: string }) | null>(initialPost);
+  const [post, setPost] = useState<(BlogPost & { id: string }) | null>(null);
+  const [loading, setLoading] = useState(true);
   const translatingRef = useRef(false);
+
+  // Fetch the post client-side
+  useEffect(() => {
+    let mounted = true;
+
+    async function load() {
+      try {
+        const posts = await fetchAll<BlogPost>(
+          "blog",
+          where("slug", "==", slug),
+          where("status", "==", "published"),
+        );
+        if (mounted) setPost(posts[0] || null);
+      } catch (err) {
+        console.error("Failed to fetch post:", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => { mounted = false; };
+  }, [slug]);
 
   // On-demand: translate blog post if missing translations for current locale
   useEffect(() => {
@@ -48,6 +72,22 @@ export function BlogPostContent({ initialPost }: BlogPostContentProps) {
 
     return () => { mounted = false; };
   }, [post, locale]);
+
+  if (loading) {
+    return (
+      <section className="py-20 lg:py-28">
+        <Container size="md">
+          <div className="text-center">
+            <div className="animate-pulse space-y-4 max-w-2xl mx-auto">
+              <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto" />
+              <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto" />
+              <div className="h-64 bg-gray-200 rounded-2xl mt-8" />
+            </div>
+          </div>
+        </Container>
+      </section>
+    );
+  }
 
   if (!post) {
     return (
