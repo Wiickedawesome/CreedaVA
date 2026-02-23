@@ -1,18 +1,17 @@
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import type { Metadata } from "next";
-import { fetchAll } from "@/lib/firebase/firestore";
-import { where } from "firebase/firestore";
+import { fetchAllServer, serverWhere } from "@/lib/firebase/firestore-server";
 import type { BlogPost } from "@/lib/types/content";
 import { BlogPostContent } from "./blog-post-content";
 
-// Use server cache for the fetch request
+// Use server cache for the fetch request (Admin SDK — works server-side)
 const getPost = cache(async (slug: string) => {
   try {
-    const posts = await fetchAll<BlogPost>(
+    const posts = await fetchAllServer<BlogPost>(
       "blog",
-      where("slug", "==", slug),
-      where("status", "==", "published"),
+      serverWhere("slug", "==", slug),
+      serverWhere("status", "==", "published"),
     );
     return posts[0] || null;
   } catch (error) {

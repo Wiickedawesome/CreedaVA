@@ -2,8 +2,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import type { Metadata } from "next";
 import { Container } from "@/components/ui";
-import { fetchAll } from "@/lib/firebase/firestore";
-import { where } from "firebase/firestore";
+import { fetchAllServer, serverWhere } from "@/lib/firebase/firestore-server";
 import type { LandingPage } from "@/lib/types/content";
 import LpContactForm from "./lp-contact-form";
 
@@ -12,10 +11,10 @@ interface Props {
 }
 
 const getPage = cache(async (slug: string): Promise<(LandingPage & { id: string }) | null> => {
-  const pages = await fetchAll<LandingPage>(
+  const pages = await fetchAllServer<LandingPage>(
     "landing-pages",
-    where("slug", "==", slug),
-    where("status", "==", "published"),
+    serverWhere("slug", "==", slug),
+    serverWhere("status", "==", "published"),
   );
   return pages[0] || null;
 });
