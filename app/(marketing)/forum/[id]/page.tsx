@@ -321,6 +321,7 @@ function ThreadContent() {
             <div className="flex flex-col items-center gap-1 shrink-0 w-12">
               <button
                 onClick={handleLikeThread}
+                aria-label="Like thread"
                 className={`p-1 rounded transition-colors ${
                   threadLiked ? "text-primary" : "text-gray-40 hover:text-primary"
                 }`}
@@ -552,6 +553,7 @@ function ThreadContent() {
                     <div className="flex flex-col items-center gap-1 shrink-0 w-10">
                       <button
                         onClick={() => handleLikeReply(reply.id)}
+                        aria-label="Like reply"
                         className={`p-1 rounded transition-colors ${
                           liked
                             ? "text-primary"

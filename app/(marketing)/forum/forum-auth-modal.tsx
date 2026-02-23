@@ -154,6 +154,7 @@ export function ForumAuthModal({
                 <select
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
+                  aria-label={t.forum.country}
                   className={`${inputClass} ${!country ? "text-gray-40" : ""}`}
                 >
                   <option value="" disabled>
