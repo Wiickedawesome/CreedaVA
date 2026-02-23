@@ -627,6 +627,153 @@ const es: Dictionary = {
     ] as const,
   },
 
+  // ─── Privacy Policy ─────────────────────────────
+  privacy: {
+    heroTitle: "Pol\u00edtica de Privacidad",
+    lastUpdated: "\u00daltima actualizaci\u00f3n: 14 de febrero de 2026",
+    sections: [
+      {
+        title: "1. Informaci\u00f3n que Recopilamos",
+        paragraphs: [
+          "Recopilamos la informaci\u00f3n que nos proporcionas directamente, como cuando llenas un formulario de contacto, solicitas una consulta o creas una cuenta. Esto puede incluir:",
+        ],
+        list: [
+          "Nombre, direcci\u00f3n de correo electr\u00f3nico y n\u00famero de tel\u00e9fono",
+          "Nombre de la empresa y cargo",
+          "Informaci\u00f3n de facturaci\u00f3n y pago",
+          "Cualquier otra informaci\u00f3n que elijas proporcionar",
+        ],
+      },
+      {
+        title: "2. C\u00f3mo Usamos Tu Informaci\u00f3n",
+        paragraphs: [
+          "Usamos la informaci\u00f3n que recopilamos para:",
+        ],
+        list: [
+          "Proporcionar, mantener y mejorar nuestros servicios",
+          "Procesar transacciones y enviar informaci\u00f3n relacionada",
+          "Enviar comunicaciones promocionales (puedes cancelar en cualquier momento)",
+          "Responder a tus comentarios, preguntas y solicitudes de servicio al cliente",
+          "Monitorear y analizar tendencias, uso y actividades en relaci\u00f3n con nuestros servicios",
+        ],
+      },
+      {
+        title: "3. Compartir Informaci\u00f3n",
+        paragraphs: [
+          "No vendemos, intercambiamos ni transferimos tu informaci\u00f3n personal a terceros sin tu consentimiento, excepto cuando sea necesario para proporcionar nuestros servicios o seg\u00fan lo requiera la ley. Podemos compartir informaci\u00f3n con proveedores de servicios de confianza que nos ayudan a operar nuestro negocio, siempre que acepten mantener tu informaci\u00f3n confidencial.",
+        ],
+      },
+      {
+        title: "4. Seguridad de Datos",
+        paragraphs: [
+          "Implementamos medidas de seguridad apropiadas para proteger tu informaci\u00f3n personal contra acceso no autorizado, alteraci\u00f3n, divulgaci\u00f3n o destrucci\u00f3n. Todos los asistentes virtuales firman acuerdos de confidencialidad (NDAs), y utilizamos canales de comunicaci\u00f3n encriptados para todas las interacciones con clientes.",
+        ],
+      },
+      {
+        title: "5. Cookies y Rastreo",
+        paragraphs: [
+          "Nuestro sitio web puede usar cookies y tecnolog\u00edas de rastreo similares para mejorar tu experiencia, analizar el tr\u00e1fico del sitio y comprender de d\u00f3nde provienen nuestros visitantes. Puedes controlar las preferencias de cookies a trav\u00e9s de la configuraci\u00f3n de tu navegador.",
+        ],
+      },
+      {
+        title: "6. Tus Derechos",
+        paragraphs: [
+          "Tienes derecho a acceder, corregir o eliminar tu informaci\u00f3n personal en cualquier momento. Tambi\u00e9n puedes optar por no recibir comunicaciones de marketing de nuestra parte. Para ejercer cualquiera de estos derechos, cont\u00e1ctanos en",
+        ],
+        contactEmail: "privacy@creedava.com",
+      },
+      {
+        title: "7. Cambios a Esta Pol\u00edtica",
+        paragraphs: [
+          "Podemos actualizar esta pol\u00edtica de privacidad de vez en cuando. Te notificaremos de cualquier cambio publicando la nueva pol\u00edtica en esta p\u00e1gina y actualizando la fecha de \"\u00daltima actualizaci\u00f3n\". Te recomendamos revisar esta p\u00e1gina peri\u00f3dicamente para ver cualquier cambio.",
+        ],
+      },
+      {
+        title: "8. Cont\u00e1ctanos",
+        paragraphs: [
+          "Si tienes preguntas o inquietudes sobre esta pol\u00edtica de privacidad, cont\u00e1ctanos en",
+        ],
+        contactEmail: "privacy@creedava.com",
+      },
+    ],
+  },
+
+  // ─── Terms of Service ─────────────────────────
+  terms: {
+    heroTitle: "T\u00e9rminos de Servicio",
+    lastUpdated: "\u00daltima actualizaci\u00f3n: 14 de febrero de 2026",
+    sections: [
+      {
+        title: "1. Aceptaci\u00f3n de T\u00e9rminos",
+        paragraphs: [
+          "Al acceder o usar los servicios de CreedaVA, aceptas estar sujeto a estos T\u00e9rminos de Servicio. Si no est\u00e1s de acuerdo con estos t\u00e9rminos, por favor no uses nuestros servicios. Nos reservamos el derecho de modificar estos t\u00e9rminos en cualquier momento, y tu uso continuado de nuestros servicios constituye la aceptaci\u00f3n de cualquier cambio.",
+        ],
+      },
+      {
+        title: "2. Servicios",
+        paragraphs: [
+          "CreedaVA proporciona servicios de asistentes virtuales que incluyen, entre otros, soporte administrativo, servicio al cliente, gesti\u00f3n de redes sociales, entrada de datos, contabilidad, soporte inmobiliario, procesamiento de seguros y soluciones empresariales. El alcance espec\u00edfico de los servicios se definir\u00e1 en tu acuerdo de servicio.",
+        ],
+      },
+      {
+        title: "3. Responsabilidades del Cliente",
+        paragraphs: [
+          "Como cliente, aceptas:",
+        ],
+        list: [
+          "Proporcionar instrucciones claras y los recursos necesarios para completar las tareas",
+          "Responder a las comunicaciones de manera oportuna",
+          "Realizar los pagos seg\u00fan el calendario acordado",
+          "No solicitar a nuestros AVs que realicen actividades ilegales o no \u00e9ticas",
+          "Mantener la confidencialidad de cualquier credencial de acceso compartida",
+        ],
+      },
+      {
+        title: "4. T\u00e9rminos de Pago",
+        paragraphs: [
+          "El pago se debe realizar seg\u00fan los t\u00e9rminos especificados en tu plan de servicio. Aceptamos tarjetas de cr\u00e9dito principales y transferencias bancarias. Los pagos atrasados pueden resultar en la suspensi\u00f3n de servicios. Todas las tarifas no son reembolsables a menos que se indique lo contrario en tu acuerdo de servicio.",
+        ],
+      },
+      {
+        title: "5. Confidencialidad",
+        paragraphs: [
+          "Todos los asistentes virtuales firman acuerdos de confidencialidad (NDAs) para proteger la informaci\u00f3n de tu negocio. Tratamos todos los datos de los clientes como confidenciales y no los compartiremos con terceros sin tu consentimiento expl\u00edcito, excepto seg\u00fan lo requiera la ley.",
+        ],
+      },
+      {
+        title: "6. Propiedad Intelectual",
+        paragraphs: [
+          "Todo el trabajo creado por nuestros asistentes virtuales en tu nombre se convierte en tu propiedad intelectual una vez realizado el pago. CreedaVA no retiene ning\u00fan derecho sobre el trabajo creado espec\u00edficamente para los clientes.",
+        ],
+      },
+      {
+        title: "7. Limitaci\u00f3n de Responsabilidad",
+        paragraphs: [
+          "La responsabilidad de CreedaVA se limita al monto pagado por los servicios en el per\u00edodo de 30 d\u00edas anterior. No somos responsables por da\u00f1os indirectos, incidentales, consecuentes o punitivos que surjan del uso de nuestros servicios. Haremos esfuerzos razonables para garantizar la calidad y precisi\u00f3n, pero no podemos garantizar un servicio libre de errores.",
+        ],
+      },
+      {
+        title: "8. Terminaci\u00f3n",
+        paragraphs: [
+          "Cualquiera de las partes puede terminar los servicios con 14 d\u00edas de aviso por escrito. CreedaVA se reserva el derecho de terminar los servicios inmediatamente si el cliente viola estos t\u00e9rminos. Al terminar, cualquier saldo pendiente se vuelve inmediatamente exigible, y devolveremos todos los materiales y datos del cliente.",
+        ],
+      },
+      {
+        title: "9. Resoluci\u00f3n de Disputas",
+        paragraphs: [
+          "Cualquier disputa que surja de estos t\u00e9rminos o nuestros servicios se abordar\u00e1 primero a trav\u00e9s de negociaci\u00f3n de buena fe. Si no se puede llegar a una resoluci\u00f3n, el asunto se someter\u00e1 a arbitraje vinculante de acuerdo con las leyes aplicables.",
+        ],
+      },
+      {
+        title: "10. Contacto",
+        paragraphs: [
+          "Para preguntas sobre estos T\u00e9rminos de Servicio, cont\u00e1ctanos en",
+        ],
+        contactEmail: "legal@creedava.com",
+      },
+    ],
+  },
+
   // ─── Common ────────────────────────────────────
   common: {
     contactUs: "Cont\u00e1ctanos",

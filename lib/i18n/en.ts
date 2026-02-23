@@ -628,6 +628,153 @@ const en = {
     ] as const,
   },
 
+  // ─── Privacy Policy ─────────────────────────────
+  privacy: {
+    heroTitle: "Privacy Policy",
+    lastUpdated: "Last updated: February 14, 2026",
+    sections: [
+      {
+        title: "1. Information We Collect",
+        paragraphs: [
+          "We collect information you provide directly to us, such as when you fill out a contact form, request a consultation, or create an account. This may include:",
+        ],
+        list: [
+          "Name, email address, and phone number",
+          "Company name and job title",
+          "Billing and payment information",
+          "Any other information you choose to provide",
+        ],
+      },
+      {
+        title: "2. How We Use Your Information",
+        paragraphs: [
+          "We use the information we collect to:",
+        ],
+        list: [
+          "Provide, maintain, and improve our services",
+          "Process transactions and send related information",
+          "Send promotional communications (you can opt out at any time)",
+          "Respond to your comments, questions, and customer service requests",
+          "Monitor and analyze trends, usage, and activities in connection with our services",
+        ],
+      },
+      {
+        title: "3. Information Sharing",
+        paragraphs: [
+          "We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as necessary to provide our services or as required by law. We may share information with trusted service providers who assist us in operating our business, provided they agree to keep your information confidential.",
+        ],
+      },
+      {
+        title: "4. Data Security",
+        paragraphs: [
+          "We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. All virtual assistants sign non-disclosure agreements (NDAs), and we use encrypted communication channels for all client interactions.",
+        ],
+      },
+      {
+        title: "5. Cookies and Tracking",
+        paragraphs: [
+          "Our website may use cookies and similar tracking technologies to enhance your experience, analyze site traffic, and understand where our visitors come from. You can control cookie preferences through your browser settings.",
+        ],
+      },
+      {
+        title: "6. Your Rights",
+        paragraphs: [
+          "You have the right to access, correct, or delete your personal information at any time. You may also opt out of receiving marketing communications from us. To exercise any of these rights, please contact us at",
+        ],
+        contactEmail: "privacy@creedava.com",
+      },
+      {
+        title: "7. Changes to This Policy",
+        paragraphs: [
+          "We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the \"Last updated\" date. We encourage you to review this page periodically for any changes.",
+        ],
+      },
+      {
+        title: "8. Contact Us",
+        paragraphs: [
+          "If you have questions or concerns about this privacy policy, please contact us at",
+        ],
+        contactEmail: "privacy@creedava.com",
+      },
+    ],
+  },
+
+  // ─── Terms of Service ─────────────────────────
+  terms: {
+    heroTitle: "Terms of Service",
+    lastUpdated: "Last updated: February 14, 2026",
+    sections: [
+      {
+        title: "1. Acceptance of Terms",
+        paragraphs: [
+          "By accessing or using CreedaVA\u2019s services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services. We reserve the right to modify these terms at any time, and your continued use of our services constitutes acceptance of any changes.",
+        ],
+      },
+      {
+        title: "2. Services",
+        paragraphs: [
+          "CreedaVA provides virtual assistant services including but not limited to administrative support, customer service, social media management, data entry, bookkeeping, real estate support, insurance processing, and enterprise solutions. The specific scope of services will be defined in your service agreement.",
+        ],
+      },
+      {
+        title: "3. Client Responsibilities",
+        paragraphs: [
+          "As a client, you agree to:",
+        ],
+        list: [
+          "Provide clear instructions and necessary resources for task completion",
+          "Respond to communications in a timely manner",
+          "Make payments according to the agreed-upon schedule",
+          "Not request our VAs to perform illegal or unethical activities",
+          "Maintain the confidentiality of any login credentials shared",
+        ],
+      },
+      {
+        title: "4. Payment Terms",
+        paragraphs: [
+          "Payment is due according to the terms specified in your service plan. We accept major credit cards and bank transfers. Late payments may result in suspension of services. All fees are non-refundable unless otherwise stated in your service agreement.",
+        ],
+      },
+      {
+        title: "5. Confidentiality",
+        paragraphs: [
+          "All virtual assistants sign non-disclosure agreements (NDAs) to protect your business information. We treat all client data as confidential and will not share it with third parties without your explicit consent, except as required by law.",
+        ],
+      },
+      {
+        title: "6. Intellectual Property",
+        paragraphs: [
+          "All work product created by our virtual assistants on your behalf becomes your intellectual property upon payment. CreedaVA retains no rights to work created specifically for clients.",
+        ],
+      },
+      {
+        title: "7. Limitation of Liability",
+        paragraphs: [
+          "CreedaVA\u2019s liability is limited to the amount paid for services in the preceding 30-day period. We are not liable for any indirect, incidental, consequential, or punitive damages arising from the use of our services. We will make reasonable efforts to ensure quality and accuracy but cannot guarantee error-free service.",
+        ],
+      },
+      {
+        title: "8. Termination",
+        paragraphs: [
+          "Either party may terminate services with 14 days\u2019 written notice. CreedaVA reserves the right to terminate services immediately if the client violates these terms. Upon termination, any outstanding balances become immediately due, and we will return all client materials and data.",
+        ],
+      },
+      {
+        title: "9. Dispute Resolution",
+        paragraphs: [
+          "Any disputes arising from these terms or our services will first be addressed through good-faith negotiation. If a resolution cannot be reached, the matter will be submitted to binding arbitration in accordance with applicable laws.",
+        ],
+      },
+      {
+        title: "10. Contact",
+        paragraphs: [
+          "For questions about these Terms of Service, please contact us at",
+        ],
+        contactEmail: "legal@creedava.com",
+      },
+    ],
+  },
+
   // ─── Common ────────────────────────────────────
   common: {
     contactUs: "Contact Us",
