@@ -376,7 +376,7 @@ export default function ForumPage() {
                 }
               }}
               buildPrompt={(input) =>
-                buildTrainedPrompt("Forum", `Generate a forum discussion thread about: "${input}"\n\nReturn ONLY valid JSON with:\n- title: engaging discussion title (a question or provocative statement)\n- content: opening post body in plain text (3-5 paragraphs, ask questions to spark discussion, include actionable insights)\n- tags: array of 3-5 relevant tags (lowercase, no spaces — use hyphens)\n\nReturn ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true })
+                buildTrainedPrompt("Forum", `Generate a forum discussion thread about: "${input}"\n\nReturn ONLY valid JSON with:\n- title: engaging discussion title (a question or provocative statement)\n- content: opening post body as rich HTML. Use <h3>, <p>, <strong>, <em>, <ul>, <li>, <blockquote> tags for structure.\n  Include: a compelling hook paragraph, 3-5 sections with bold subheadings, bullet lists for key points,\n  a blockquote with an insight or stat, and a closing paragraph with a discussion question.\n  Use inline styles for visual flair: colored borders on blockquotes (border-left:4px solid #005148),\n  highlighted key phrases (<strong style="color:#005148">), and well-spaced sections (margin-bottom:16px on paragraphs).\n- tags: array of 3-5 relevant tags (lowercase, no spaces — use hyphens)\n\nReturn ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, includeForumRules: true })
               }
             />
             <Button size="sm" onClick={() => setCreateOpen(true)}>

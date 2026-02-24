@@ -372,9 +372,21 @@ function ThreadContent({ id }: { id: string }) {
               </div>
 
               {/* Content */}
-              <div className="text-sm text-gray-80 leading-relaxed whitespace-pre-wrap">
-                {getTranslatedContent(thread, locale).replace(/<[^>]*>/g, "")}
-              </div>
+              {/<[a-z][\s\S]*>/i.test(getTranslatedContent(thread, locale)) ? (
+                <div
+                  className="text-sm leading-relaxed prose prose-sm max-w-none prose-headings:text-gray-100 prose-headings:font-bold prose-p:text-gray-80 prose-p:leading-relaxed prose-a:text-primary prose-strong:text-gray-90 prose-li:text-gray-80"
+                  dangerouslySetInnerHTML={{
+                    __html: getTranslatedContent(thread, locale)
+                      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+                      .replace(/on\w+="[^"]*"/gi, "")
+                      .replace(/<iframe\b[^>]*>/gi, ""),
+                  }}
+                />
+              ) : (
+                <div className="text-sm text-gray-80 leading-relaxed whitespace-pre-wrap">
+                  {getTranslatedContent(thread, locale)}
+                </div>
+              )}
               {thread.translations && thread.lang && thread.lang !== locale && thread.translations[locale] && (
                 <span className="inline-block mt-2 text-[10px] text-gray-40 italic">
                   {t.forum.autoTranslated}

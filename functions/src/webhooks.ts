@@ -107,14 +107,22 @@ async function verifyAppCheckToken(req: Parameters<typeof corsHandler>[0]): Prom
   const header = req.headers[APP_CHECK_HEADER];
   const token = Array.isArray(header) ? header[0] : header;
 
+  // Best-effort: if no token is provided, allow the request.
+  // Public endpoints (contact form, booking, etc.) rely on rate limiting
+  // for abuse protection. App Check is a bonus layer, not a gate.
+  // Tokens may be absent when reCAPTCHA is blocked by ad blockers,
+  // corporate firewalls, or browser privacy features (e.g. Firefox TCP).
   if (!token || typeof token !== "string") {
-    return false;
+    console.warn("[App Check] No token provided — allowing request (best-effort mode)");
+    return true;
   }
 
   try {
     await admin.appCheck().verifyToken(token);
     return true;
   } catch {
+    // Token was provided but is invalid — reject to prevent spoofing.
+    console.warn("[App Check] Invalid token provided — rejecting request");
     return false;
   }
 }

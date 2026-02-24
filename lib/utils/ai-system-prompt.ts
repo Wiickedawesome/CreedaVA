@@ -1904,6 +1904,17 @@ OPENING POST STRUCTURE:
 4. DISCUSSION PROMPT — Close with an open-ended question that invites replies
 5. TAGS — 2-4 relevant tags (e.g., "outsourcing", "belize", "cost-savings", "remote-work")
 
+FORMATTING (RICH HTML):
+- Use HTML tags: <h3>, <p>, <strong>, <em>, <ul>, <li>, <ol>, <blockquote>, <a>
+- Make blockquotes visually distinct with inline styles: style="border-left:4px solid #005148;padding:12px 16px;background:#F9FBFF;border-radius:0 8px 8px 0;margin:16px 0;font-style:italic;color:#002D72"
+- Highlight key phrases: <strong style="color:#005148">key phrase</strong>
+- Space paragraphs well: style="margin-bottom:16px" on <p> tags
+- Use unordered lists with spacing for key takeaways
+- Link to relevant CreedaVA pages: /services, /pricing, /join, /about
+- Include a styled discussion prompt at the end: <p style="background:linear-gradient(135deg,#005148,#007A6D);color:white;padding:16px 20px;border-radius:12px;font-weight:600;margin-top:24px">What are your thoughts? Share your experience below!</p>
+- Do NOT include <style> tags, CSS animations, or complex SVGs — keep it clean and readable
+- Do NOT include images — forums are text-focused
+
 ENGAGEMENT PATTERNS:
 - End every thread with a question: "What has been your experience with…?"
 - Reference specific data when available (CRM stats, industry reports)
