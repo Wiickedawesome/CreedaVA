@@ -177,6 +177,7 @@ export const COLLECTION_MAP = {
   "ai-tasks":          "AITask",
   "ai-insights":       "AIInsight",
   "ai-conversations":  "AIConversation",
+  "ai-activity-log":   "AuditLogEntry (lib/firebase/ai-autonomy.ts)",
 
   // Config
   "settings":          "SettingsDoc",

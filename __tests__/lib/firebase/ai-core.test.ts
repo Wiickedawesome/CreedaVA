@@ -9,6 +9,31 @@ const mockFormatHistoryForPrompt = vi.fn();
 const mockSwitchToConversation = vi.fn();
 const mockGenerateText = vi.fn();
 const mockGenerateTextStream = vi.fn();
+const mockGenerateContent = vi.fn();
+
+vi.mock("@google/generative-ai", () => {
+  const mockModel = {
+    generateContent: (...args: unknown[]) => mockGenerateContent(...args),
+  };
+  return {
+    GoogleGenerativeAI: vi.fn(function () {
+      return { getGenerativeModel: vi.fn(() => mockModel) };
+    }),
+    FunctionCallingMode: { AUTO: "AUTO", ANY: "ANY", NONE: "NONE" },
+    SchemaType: { STRING: "STRING", NUMBER: "NUMBER", INTEGER: "INTEGER", BOOLEAN: "BOOLEAN", ARRAY: "ARRAY" },
+  };
+});
+
+vi.mock("@/lib/firebase/ai-tools", () => ({
+  ALL_TOOLS: { functionDeclarations: [] },
+  TOOL_REGISTRY: {},
+}));
+
+vi.mock("@/lib/firebase/ai-tool-executor", () => ({
+  executeTool: vi.fn(),
+  confirmAction: vi.fn(),
+  rejectAction: vi.fn(),
+}));
 
 vi.mock("@/lib/firebase/ai-memory", () => ({
   getActiveConversation: (...args: unknown[]) => mockGetActiveConversation(...args),
@@ -61,7 +86,22 @@ const makeConvo = (overrides = {}) => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  process.env.NEXT_PUBLIC_GEMINI_API_KEY = "test-key";
   clearCache(); // Ensure cache is clean between tests
+
+  // Default mock: model returns text with no function calls
+  mockGenerateContent.mockResolvedValue({
+    response: {
+      text: () => "AI reply",
+      candidates: [
+        {
+          content: {
+            parts: [{ text: "AI reply" }],
+          },
+        },
+      ],
+    },
+  });
 });
 
 // ─── sendMessage ─────────────────────────────────────
@@ -76,7 +116,6 @@ describe("sendMessage", () => {
       memorySummary: undefined,
     }));
     mockFormatHistoryForPrompt.mockReturnValue("");
-    mockGenerateText.mockResolvedValue("AI reply");
 
     const result = await sendMessage("u1", "Hello");
 
@@ -84,7 +123,7 @@ describe("sendMessage", () => {
     expect(result.conversationId).toBe("conv-1");
     expect(result.messageCount).toBe(2); // user + assistant
     expect(mockAddMessage).toHaveBeenCalledTimes(2); // user msg + AI msg
-    expect(mockGenerateText).toHaveBeenCalledOnce();
+    expect(mockGenerateContent).toHaveBeenCalledOnce();
   });
 
   it("includes data context when provided", async () => {
@@ -96,11 +135,10 @@ describe("sendMessage", () => {
       memorySummary: undefined,
     }));
     mockFormatHistoryForPrompt.mockReturnValue("");
-    mockGenerateText.mockResolvedValue("OK");
 
     await sendMessage("u1", "Question", { dataContext: "Some data" });
 
-    expect(mockGenerateText).toHaveBeenCalledOnce();
+    expect(mockGenerateContent).toHaveBeenCalledOnce();
   });
 });
 
@@ -204,7 +242,6 @@ describe("clearCache", () => {
       memorySummary: undefined,
     }));
     mockFormatHistoryForPrompt.mockReturnValue("");
-    mockGenerateText.mockResolvedValue("OK");
 
     await sendMessage("u1", "Test");
     expect(mockGetActiveConversation).toHaveBeenCalledTimes(1);

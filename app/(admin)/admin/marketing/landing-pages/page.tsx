@@ -28,7 +28,7 @@ const emptyForm = {
   ctaText: "Get Started",
   ctaEmail: "contact@creedava.com",
   bodyHtml: "",
-  status: "draft" as "draft" | "published",
+  status: "draft" as "draft" | "scheduled" | "published",
   images: [] as string[],
   attachments: [] as { name: string; url: string; type: string }[],
 };

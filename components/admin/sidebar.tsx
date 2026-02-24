@@ -205,6 +205,20 @@ const analyticsItems: NavItem[] = [
       </svg>
     ),
   },
+  {
+    label: "AI Activity",
+    href: "/admin/analytics/ai",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 8V4H8" />
+        <rect x="2" y="2" width="20" height="20" rx="2" />
+        <path d="M2 12h20" />
+        <path d="M12 2v20" />
+        <path d="M17 17h.01" />
+        <path d="M7 17h.01" />
+      </svg>
+    ),
+  },
 ];
 
 

@@ -48,6 +48,8 @@ export interface CreeaAICoreOptions {
   includeSEOAlgorithms?: boolean;
   /** Any additional prompt modules */
   includeWebMastery?: boolean;
+  /** Include citation rules for factual claims */
+  includeCitationRules?: boolean;
   /** Custom instructions appended to prompt */
   customInstructions?: string;
 }

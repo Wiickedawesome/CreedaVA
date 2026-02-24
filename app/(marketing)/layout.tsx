@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import Script from "next/script";
@@ -14,6 +15,19 @@ const GA_MEASUREMENT_ID =
   process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ||
   process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID ||
   "";
+
+const SITE = "https://creedava.com";
+
+/** Bilingual hreflang alternates — every marketing page serves EN & ES */
+export const metadata: Metadata = {
+  alternates: {
+    languages: {
+      "en-US": SITE,
+      "es-US": `${SITE}?lang=es`,
+      "x-default": SITE,
+    },
+  },
+};
 
 /** JSON-LD Organization structured data for Google rich results */
 const organizationJsonLd = {

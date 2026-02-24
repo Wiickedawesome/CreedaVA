@@ -379,38 +379,190 @@ CreedaVA serves both English and Spanish-speaking clients.
 
 // ─── Design System ───────────────────────────────────
 
-export const DESIGN_SYSTEM = `CREEDAVA DESIGN SYSTEM — Brand identity rules for all generated content:
+export const DESIGN_SYSTEM = `CREEDAVA DESIGN SYSTEM — Complete brand identity and CSS reference for all generated content:
 
-BRAND PALETTE (use these EXACT hex values in inline styles):
-- Primary Teal:    #005148  — CTAs, accents, section backgrounds, icon fills
-- Primary Light:   #007A6D  — hover states, gradient endpoints, secondary accents
-- Navy:            #002D72  — headings, body text, strong emphasis
-- Light BG:        #F9FBFF  — alternating section backgrounds, card fills
-- White:           #FFFFFF  — text on dark backgrounds, card surfaces
-- Soft Gray:       #DDE1E6  — borders, dividers, subtle backgrounds
-- Medium Gray:     #697077  — secondary text, captions, muted content
-- Success Green:   #198038  — positive indicators, checkmarks
-- Warm Accent:     #FF6B35  — sparingly for attention-grabbing highlights
+═══════════════════════════════════
+1. COLOR SYSTEM (CSS Variables)
+═══════════════════════════════════
 
-APPROVED GRADIENTS:
+COOLGRAY PALETTE (Navy-tinted neutrals — use var() names or hex in inline styles):
+| Token       | Light Mode  | Dark Mode   | Usage                              |
+|-------------|-------------|-------------|------------------------------------|
+| --gray-100  | #002D72     | #ffffff     | Headings, strong emphasis          |
+| --gray-90   | #1B3A5C     | #d4d4d4     | Primary text                       |
+| --gray-80   | #4D5358     | #cccccc     | Secondary text                     |
+| --gray-70   | #697077     | #a5b3ce     | Muted captions                     |
+| --gray-60   | #878D96     | #a5b3ce     | Disabled labels                    |
+| --gray-50   | #A2A9B0     | #8b949e     | Placeholder text                   |
+| --gray-40   | #C1C7CD     | #555b66     | Disabled backgrounds               |
+| --gray-30   | #DDE1E6     | #303136     | Borders, dividers, separators      |
+| --gray-20   | #F2F4F8     | #26272b     | Card/sidebar background, code bg   |
+| --gray-10   | #F9FBFF     | #202124     | Alt section bg, base background    |
+
+BRAND COLORS:
+| Token            | Light Mode  | Dark Mode   | Usage                          |
+|------------------|-------------|-------------|--------------------------------|
+| --primary        | #005148     | #2dd4bf     | CTAs, accents, section bgs     |
+| --primary-light  | #007A6D     | #5eead4     | Hover states, gradient ends    |
+| --primary-hover  | #003D36     | #14b8a6     | Button hover                   |
+| --primary-active | #00332C     | —           | Button active/pressed          |
+| --accent         | #00685C     | #00685C     | Selection highlight, rings     |
+
+SEMANTIC COLORS:
+| Token              | Value       | Usage                              |
+|--------------------|-------------|------------------------------------|
+| --success          | #24A148     | Positive indicators, check marks   |
+| --warning          | #F1C21B     | Caution banners, pending states    |
+| --error            | #DA1E28     | Errors, destructive actions        |
+| --error-hover      | #B81922     | Error button hover                 |
+| --info             | #0043CE     | Info badges, links                 |
+| --background       | #FFFFFF / #202124 | Page background              |
+| --foreground       | #002D72 / #e5e7eb | Default text color            |
+| --card / --card-bg | #FFFFFF / #26272b | Card surfaces                 |
+| --muted            | #F2F4F8 / #26272b | Muted backgrounds             |
+| --muted-foreground | #697077 / #a5b3ce | Secondary text                |
+| --border           | #DDE1E6 / #3c3e44 | Borders                       |
+| --ring             | #007A6D     | Focus ring outline                 |
+| --footer-bg        | #1B2A4A / #181818 | Footer background             |
+
+APPROVED GRADIENTS (inline style values):
 - Teal to Navy:    linear-gradient(135deg, #005148, #002D72)
 - Light to White:  linear-gradient(180deg, #F9FBFF, #FFFFFF)
 - Teal Fade:       linear-gradient(135deg, #005148, #007A6D)
 - Navy Depth:      linear-gradient(180deg, #002D72, #001845)
 - Subtle Warmth:   linear-gradient(135deg, #F9FBFF, #E8F5F3)
+- Warm Accent:     #FF6B35 — use sparingly for attention highlights
 
-TYPOGRAPHY SCALE:
-- Font family: Roboto (inherits from page — do NOT specify font-family)
-- Display:     48px, weight 700, line-height 1.1  (for hero stats / key numbers)
-- Heading 1:   36px, weight 700, line-height 1.2
-- Heading 2:   28px, weight 700, line-height 1.3
-- Heading 3:   22px, weight 600, line-height 1.4
-- Lead Text:   20px, weight 400, line-height 1.6, color #697077
-- Body:        16px, weight 400, line-height 1.7
-- Small:       14px, weight 400, line-height 1.5
-- Caption:     12px, weight 500, letter-spacing 1px, text-transform uppercase
+═══════════════════════════════════
+2. TYPOGRAPHY SCALE
+═══════════════════════════════════
 
-Use VARIED font sizes to create visual hierarchy and rhythm.`;
+Font family: Roboto (inherited from page — NEVER set font-family in generated content)
+
+CSS Variable Scale:
+| Token               | Size    | Weight | Line-Height | Usage                |
+|---------------------|---------|--------|-------------|----------------------|
+| --font-size-h1      | 54px    | 700    | 1.2         | Page hero headings   |
+| --font-size-h2      | 42px    | 700    | 1.2         | Section headings     |
+| --font-size-h3      | 32px    | 700    | 1.2         | Sub-section heads    |
+| --font-size-h4      | 24px    | 500    | 1.5         | Card titles          |
+| --font-size-h5      | 20px    | 500    | 1.5         | Lead text, subtitles |
+| --font-size-h6      | 18px    | 500    | 1.5         | Small headings       |
+| --font-size-body-lg | 18px    | 400    | 1.5         | Enhanced body text   |
+| --font-size-body    | 16px    | 400    | 1.5         | Default body         |
+| --font-size-body-sm | 14px    | 400    | 1.5         | Small text, labels   |
+| --font-size-caption | 12px    | 500    | 1.5         | Captions, uppercase  |
+
+For inline styles, use px directly: style="font-size: 48px; font-weight: 700; line-height: 1.1"
+Use VARIED sizes within content (display numbers, lead paragraphs, body, captions) to create visual hierarchy.
+
+═══════════════════════════════════
+3. SPACING SCALE (4px base grid)
+═══════════════════════════════════
+
+| Token      | Value   | Pixels | Common Use                          |
+|------------|---------|--------|-------------------------------------|
+| --space-1  | 0.25rem | 4px    | Tight gaps, icon margin             |
+| --space-2  | 0.5rem  | 8px    | Inline spacing, pill padding        |
+| --space-3  | 0.75rem | 12px   | Compact padding, list gaps          |
+| --space-4  | 1rem    | 16px   | Default padding, paragraph gaps     |
+| --space-5  | 1.25rem | 20px   | Card inner padding                  |
+| --space-6  | 1.5rem  | 24px   | Section inner padding               |
+| --space-8  | 2rem    | 32px   | Major section gaps                  |
+| --space-10 | 2.5rem  | 40px   | Section vertical padding            |
+| --space-12 | 3rem    | 48px   | Top-level section spacing           |
+| --space-16 | 4rem    | 64px   | Hero/banner vertical space          |
+| --space-20 | 5rem    | 80px   | Major page section padding          |
+| --space-24 | 6rem    | 96px   | Hero section full padding           |
+
+═══════════════════════════════════
+4. BORDER RADIUS & SHADOWS
+═══════════════════════════════════
+
+BORDER RADIUS:
+| Token          | Value   | Usage                              |
+|----------------|---------|-------------------------------------|
+| --radius-sm    | 4px     | Small badges, chips, inputs        |
+| --radius-md    | 8px     | Cards, buttons, modals             |
+| --radius-lg    | 12px    | Large cards, containers            |
+| --radius-xl    | 16px    | Hero sections, featured cards      |
+| --radius-full  | 9999px  | Avatars, pills, circular buttons   |
+
+SHADOWS:
+| Token       | Value                                                       | Usage                |
+|-------------|-------------------------------------------------------------|----------------------|
+| --shadow-sm | 0 1px 2px rgba(0,0,0,0.05)                                 | Subtle elevation     |
+| --shadow-md | 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1) | Cards, dropdowns |
+| --shadow-lg | 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1) | Modals, popups |
+| --shadow-xl | 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1) | Featured hero  |
+
+═══════════════════════════════════
+5. COMPONENT PATTERNS
+═══════════════════════════════════
+
+BUTTON (5 variants × 3 sizes):
+| Variant   | Background       | Text        | Hover              | Active               |
+|-----------|------------------|-------------|--------------------|-----------------------|
+| primary   | --primary        | white       | --primary-hover    | --primary-active      |
+| secondary | --gray-20        | --gray-100  | --gray-30          | --gray-40             |
+| outline   | transparent      | --primary   | --primary + white  | --primary-hover       |
+| ghost     | transparent      | --primary   | --gray-20          | --gray-30             |
+| danger    | --error          | white       | --error-hover      | --error-active        |
+
+Sizes: sm (h-8, px-4, text-sm), md (h-10, px-6, text-base), lg (h-12, px-8, text-lg)
+All buttons: rounded-md, font-medium, transition-colors, focus-visible ring
+
+CARD PATTERN:
+- Background: var(--card) or #FFFFFF
+- Border: 1px solid var(--border)
+- Radius: var(--radius-md) = 8px
+- Padding: 20-24px (var(--space-5) to var(--space-6))
+- Shadow: var(--shadow-sm) default, var(--shadow-md) on hover
+- Hover: translateY(-2px) + shadow-md for interactive cards
+
+STAT CARD (Admin):
+- Background: var(--card)
+- Border: 1px solid var(--border)
+- Rounded: var(--radius-lg)
+- Icon: 40×40 circle with bg-primary/10 teal tint
+- Value: 36px font-weight-700 var(--gray-100)
+- Label: 14px var(--muted-foreground)
+- Trend: colored badge (green ↑ or red ↓)
+
+ICON CONVENTION:
+- Inline SVGs only — no icon libraries
+- Size: 20×20 (w-5 h-5) default, 24×24 for accent
+- Stroke: stroke="currentColor" stroke-width="2"
+- Fill: fill="none" (outline icons) or fill="currentColor" (solid)
+- Color: inherits from parent text color
+
+═══════════════════════════════════
+6. VISUAL LANGUAGE DIFFERENCES
+═══════════════════════════════════
+
+MARKETING PAGES (public):
+- Light backgrounds: #FFFFFF and #F9FBFF alternating sections
+- Hero sections: gradient backgrounds (teal-to-navy), large typography (48-54px)
+- Wave SVG dividers between sections
+- Warm accent (#FF6B35) used sparingly for CTAs
+- Images: Unsplash photos with gradient overlays
+- Aspect ratios: hero 16:9, thumbnails 4:3, avatars 1:1
+- Maximum content width: 1280px (Container component)
+
+ADMIN PAGES (dark theme):
+- Dark backgrounds: #202124 (base), #26272b (cards/sidebar), #303136 (headers)
+- Text: #e5e7eb (primary), #a5b3ce (muted), #d4d4d4 (secondary)
+- Primary accent remaps to bright teal (#2dd4bf) for visibility
+- Compact spacing, data-dense layouts
+- No decorative elements (no waves, no gradients, no animations)
+- Charts: use brand teal palette, high-contrast on dark bg
+
+PHOTO GUIDELINES:
+- Approved Unsplash sources only (images.unsplash.com)
+- Use ?w=800&q=80 query params for performance
+- Wrap in <div> with border-radius and overflow:hidden
+- Add subtle gradient overlay on hero images
+- Alt text is REQUIRED on every <img> tag`;
 
 // ─── Creative HTML Design Framework ──────────────────
 
@@ -1726,6 +1878,107 @@ REPORT QUALITY RULES:
 - Score meaning: 0-39 Critical, 40-69 Needs Improvement, 70-89 Good, 90-100 Excellent
 - Highlight quick wins (high impact, low effort) separately`;
 
+// ─── Forum Content Rules ─────────────────────────────
+
+export const FORUM_CONTENT_RULES = `FORUM CONTENT GENERATION & MODERATION RULES:
+
+The CreedaVA Community Forum is a bilingual (EN/ES) knowledge base for virtual assistant industry discussion.
+Content published here serves dual purpose: user engagement AND SEO authority building.
+
+═══════════════════════════════════
+THREAD CREATION
+═══════════════════════════════════
+
+TITLE RULES:
+- SEO-optimized: include primary keyword naturally, front-load the topic
+- 5–12 words, compelling and specific — avoid vague titles ("Question about VA services")
+- Good: "How to Reduce Admin Costs by 60% With a Virtual Assistant"
+- Good: "5 Signs Your Business Needs an Offshore VA in Belize"
+- Bad: "VA Services Discussion" / "Help with outsourcing"
+- Use question format for informational intent, how-to for transactional pages
+
+OPENING POST STRUCTURE:
+1. HOOK — Opening sentence with a surprising stat, bold claim, or relatable problem
+2. CONTEXT — 2-3 sentences framing the topic with industry context
+3. KEY POINTS — 3-5 structured insights using H3 headings or bold/numbered lists
+4. DISCUSSION PROMPT — Close with an open-ended question that invites replies
+5. TAGS — 2-4 relevant tags (e.g., "outsourcing", "belize", "cost-savings", "remote-work")
+
+ENGAGEMENT PATTERNS:
+- End every thread with a question: "What has been your experience with…?"
+- Reference specific data when available (CRM stats, industry reports)
+- Mention related threads for internal linking: "As we discussed in [topic]…"
+- Include at least one CreedaVA service link where naturally relevant (/services, /pricing, /join)
+
+═══════════════════════════════════
+REPLY GENERATION
+═══════════════════════════════════
+
+- Conversational, professional tone — helpful expert sharing knowledge
+- Directly address the thread topic and any specific questions asked
+- Cite context from the original post: "Building on your point about X…"
+- Add NEW information — never repeat the original post verbatim
+- Suggest related threads or CreedaVA resources when relevant
+- Keep replies concise: 2-5 paragraphs, no fluff
+- If replying as CreedaVA, sign off naturally: "— The CreedaVA Team" or "Hope this helps!"
+
+═══════════════════════════════════
+MODERATION
+═══════════════════════════════════
+
+FLAG CRITERIA (set status to "flagged"):
+- Spam: promotional content, irrelevant links, bot patterns
+- Inappropriate: offensive language, personal attacks, discrimination
+- Off-topic: content completely unrelated to VA/business topics
+- Self-promotion: excessive links to non-CreedaVA commercial services
+
+CLOSE CRITERIA (set status to "closed"):
+- Resolved: original question has been answered satisfactorily
+- Duplicate: another thread covers the same topic (reference the original)
+- Outdated: information is no longer relevant (6+ months with no activity)
+
+When flagging/closing, always provide a reason in the reply.
+
+═══════════════════════════════════
+TOPIC SUGGESTIONS
+═══════════════════════════════════
+
+Generate topic ideas based on:
+- Trending keywords from Search Console data (high impressions, low CTR = content gap)
+- Competitor blog topics our forum doesn't cover yet
+- Seasonal business events (tax season, Q4 planning, new year goals)
+- Common lead questions from CRM data
+- FAQ page topics that need deeper discussion
+
+TARGET: 2-3 new threads per week for consistent freshness signals.
+
+═══════════════════════════════════
+BILINGUAL (EN/ES) GUIDELINES
+═══════════════════════════════════
+
+- Default language: English (lang: "en")
+- Create Spanish translations for high-value threads (>10 views or strategic topics)
+- Translation uses the translate tool — do NOT manually translate within content generation
+- Spanish thread titles should be natural translations, not literal word-for-word
+- Store translations in the \`translations\` field: \`{ "es": { title, content } }\`
+- Never mix languages within a single post — one language per content field
+
+═══════════════════════════════════
+STRUCTURED DATA
+═══════════════════════════════════
+
+Forum content enables DiscussionForumPosting JSON-LD:
+- @type: "DiscussionForumPosting"
+- headline: thread title
+- author: { @type: "Person", name: author }
+- datePublished: createdAt ISO
+- text: first 200 chars of content
+- comment: array of ForumReply as Comment objects
+- interactionStatistic: { @type: "InteractionCounter", userInteractionCount: replies }
+
+This is generated automatically by the structured-data helper — but the AI should ensure
+thread content is structured to maximize schema richness (clear title, attribution, replies).`;
+
 // ─── Landing Page Generation ─────────────────────────
 
 export const LANDING_PAGE_RULES = `LANDING PAGE GENERATION RULES — Create BEAUTIFUL, conversion-optimized pages:
@@ -1733,7 +1986,11 @@ export const LANDING_PAGE_RULES = `LANDING PAGE GENERATION RULES — Create BEAU
 CONTEXT: The page already renders a HERO section (headline + subheadline + CTA form) ABOVE
 your bodyHtml and a CTA section with form BELOW it. Your bodyHtml is the engaging content between.
 
-REQUIRED STRUCTURE (bodyHtml — be creative with visual design!):
+═══════════════════════════════════
+REQUIRED STRUCTURE
+═══════════════════════════════════
+
+(bodyHtml — be creative with visual design!)
 1. IMPACT OPENING — Bold animated stat banner, eye-catching visual, or compelling value statement
 2. BENEFITS — 3-4 benefits with SVG checkmark icons, use grid or alternating icon+text rows
 3. HOW IT WORKS — 3-step process with number circles, visual flow, staggered animations
@@ -1742,22 +1999,96 @@ REQUIRED STRUCTURE (bodyHtml — be creative with visual design!):
 6. MID-PAGE CTA — Gradient banner with CTA button linking to /join
 7. FAQ — 2-3 common questions, cleanly formatted
 
-CREATIVE REQUIREMENTS:
+═══════════════════════════════════
+DESIGN SYSTEM INTEGRATION
+═══════════════════════════════════
+
+Use these CSS variables in inline styles for brand consistency:
+- Backgrounds: var(--background) #FFFFFF, var(--gray-20) #F5F5F7 for alternating sections
+- Text: var(--foreground) #1A1A2E, var(--muted-foreground) #6B7280 for secondary
+- Brand: var(--primary) #005148 (teal), var(--accent) #E8A838 (gold)
+- Cards: var(--card) #FFFFFF with var(--shadow-md) for elevation
+- Borders: var(--border) #E5E7EB, var(--radius-lg) 0.75rem for card corners
+
+APPROVED GRADIENTS (use for stat banners, CTA sections, hero accents):
+- Primary: linear-gradient(135deg, #005148, #007A6E) — teal depth
+- Accent: linear-gradient(135deg, #E8A838, #F5C563) — gold warmth
+- Hero: linear-gradient(135deg, #005148 0%, #007A6E 50%, #E8A838 100%) — full brand
+- Subtle: linear-gradient(180deg, #FFFFFF, #F5F5F7) — section separator
+
+TYPOGRAPHY SCALE (inline style font sizes):
+- Display: 48px / font-weight 700 — stat counters, hero numbers
+- H2: 32px / font-weight 700 — section headings
+- H3: 24px / font-weight 600 — card titles, subheadings
+- Lead: 20px / font-weight 400 — section intros
+- Body: 16px / line-height 1.75 — paragraph text
+- Small: 14px — captions, labels
+
+SPACING (use these for consistent padding/margins):
+- Section padding: 80px 0 (desktop), 48px 16px (mobile)
+- Card padding: 32px
+- Content max-width: 1200px with margin: 0 auto
+- Grid gap: 24px (cards), 32px (sections)
+
+═══════════════════════════════════
+CREATIVE REQUIREMENTS
+═══════════════════════════════════
+
 - Start with a <style> tag containing: @keyframes animations, @property counters, flip-card classes, hover-lift classes, progress bars, responsive @media queries (use cv- prefix)
 - Use SVG elements: wave dividers, gradient blobs, hexagon accents, decorative shapes, draw-on animations
-- Create visual rhythm: alternate section backgrounds (#FFFFFF and #F9FBFF)
-- Use VARIED font sizes: display (48px) for key stats, heading (28px), lead (20px), body (16px)
+- Create visual rhythm: alternate section backgrounds (#FFFFFF and #F5F5F7)
 - Apply staggered animation delays for sequential reveal effects (cv-fade-up-d1, d2, d3)
 - Include at minimum ONE gradient stat banner and ONE testimonial section
 - Use INTERACTIVE elements: <details>/<summary> for FAQ, hover-flip cards, animated counters, progress bars
-- Add hover effects using cv-lift class for cards (shadow, transform)
+- Add hover effects using cv-lift class for cards (box-shadow: 0 10px 25px rgba(0,0,0,0.1), transform: translateY(-4px))
 - Use wave SVG dividers between major sections for visual flow
 - Include 1-2 Unsplash photos at strategic points (hero area, testimonials)
 - Use CONVERSION PATTERNS: pricing tables, ROI comparisons, guarantee sections, urgency banners
 - Mix layouts: grids, icon+text rows, centered blocks, stat banners, flip cards
 - Include responsive @media queries for mobile rendering
 
-CONTENT RULES:
+═══════════════════════════════════
+RESPONSIVE DESIGN
+═══════════════════════════════════
+
+ALL landing pages MUST be mobile-first responsive. Include these breakpoints in the <style> tag:
+- @media (max-width: 768px): Stack 2-3 column grids to single column, reduce section padding, scale fonts down 15-20%
+- @media (max-width: 480px): Reduce display text to 32px, full-width buttons, hide decorative SVGs
+
+CV- HELPER CLASSES (define in <style>):
+- .cv-grid-2, .cv-grid-3: Grid layouts that stack on mobile
+- .cv-stat-banner: Full-width gradient stat section
+- .cv-hero-text: Large display text that scales down
+- .cv-section-pad: Consistent section padding with mobile override
+- .cv-hide-mobile: display:none on max-width:768px for decorative elements
+- .cv-card: Consistent card (bg white, rounded corners, shadow, hover lift)
+- .cv-cta-btn: CTA button style (brand gradient bg, white text, rounded, hover darken)
+
+═══════════════════════════════════
+CONVERSION OPTIMIZATION
+═══════════════════════════════════
+
+- Place the first CTA (mid-page) after the SOCIAL PROOF section — users decide after seeing proof
+- Use a SINGLE, clear call-to-action action per page (e.g., "Get Started" or "Book a Call")
+- Repeat the CTA phrase in at least 2 locations in bodyHtml (plus the page's own CTA section)
+- Apply urgency where genuine: "Limited onboarding slots this month", "Free trial ends [date]"
+- Use guarantee/trust badges: SSL badge SVG, "30-Day Money-Back Guarantee", "No Long-Term Contracts"
+- Social proof numbers: "500+ businesses served", "4.9/5 client rating", "20+ hours saved weekly"
+- Reduce friction: FAQ section addressing objections (cost, quality, timezone, security)
+
+A/B VARIANT GENERATION:
+When asked to generate LP variants, create variations that differ in:
+- Headline angle (pain point vs. aspiration vs. social proof)
+- CTA text (action verb vs. benefit vs. urgency)
+- Section ordering (social proof first vs. benefits first)
+- Visual treatment (minimal/clean vs. rich/animated)
+- Keep the core value proposition identical — only vary the presentation
+- Name variants clearly: "Variant A: Pain-Point Lead", "Variant B: Social-Proof Lead"
+
+═══════════════════════════════════
+CONTENT RULES
+═══════════════════════════════════
+
 - headline: Under 10 words, action-oriented, speaks to a pain point
 - subheadline: 1-2 sentences, expands on value proposition
 - ctaText: Action verb + benefit ("Start Saving Time Today")
@@ -1767,7 +2098,22 @@ CONTENT RULES:
 - Include mid-content CTA links to /join
 - Keep paragraphs to 2-3 sentences max
 
-TECHNICAL RULES:
+═══════════════════════════════════
+SEO & STRUCTURED DATA
+═══════════════════════════════════
+
+Landing pages support WebPage JSON-LD (generated automatically). Ensure:
+- metaTitle: <60 chars, primary keyword + brand name
+- metaDescription: 150-160 chars, value prop + CTA
+- slug: 2-4 keyword-rich words, hyphenated (e.g., "virtual-assistant-belize")
+- Include primary keyword in H2 headings and first paragraph
+- Use alt text on all images with target keywords
+- Internal links: /services, /pricing, /about, /join as relevant
+
+═══════════════════════════════════
+TECHNICAL RULES
+═══════════════════════════════════
+
 - ALL styles must be inline (style="...") — content renders via dangerouslySetInnerHTML
 - CSS @keyframes, @property, animation classes, hover/flip classes, and @media queries go in ONE <style> tag at TOP
 - Use semantic HTML: <section>, <h2>, <h3>, <p>, <ul>, <li>, <details>/<summary>
@@ -1776,30 +2122,34 @@ TECHNICAL RULES:
 - CTA links go to /join — do NOT include <form> HTML (page already has CTA forms)
 - Do NOT include nav, header, or footer (layout provides those)
 - English only — translation service handles other languages
-- Output pure HTML — no markdown fences
-- Add responsive @media queries to <style> for proper mobile rendering
-- Use cv- prefixed helper classes for responsive breakpoints (cv-grid-2, cv-grid-3, cv-stat-banner, cv-hero-text, cv-section-pad, cv-hide-mobile)`;
+- Output pure HTML — no markdown fences`;
 
 // ─── Blog & Article Content Rules ────────────────────
 
-export const BLOG_CONTENT_RULES = `BLOG & ARTICLE CONTENT GENERATION RULES — Create visually rich, engaging articles:
+export const BLOG_CONTENT_RULES = `BLOG & ARTICLE CONTENT GENERATION RULES — Create visually rich, SEO-optimized articles:
 
 Blog content renders via dangerouslySetInnerHTML inside a "prose" container.
 There is NO built-in CTA section — include CTA sections directly in your HTML.
 
-VISUAL DESIGN:
+═══════════════════════════════════
+VISUAL DESIGN
+═══════════════════════════════════
+
 - Start with a <style> tag for CSS animations, @property counters, hover classes, and @media responsive queries (cv- prefix)
 - Break up long text with visual elements: stat highlights, callout boxes, icon lists, SVG accents
 - Use varied font sizes via inline styles to create visual hierarchy
 - Add wave SVG dividers between major article sections
-- Include highlighted callout boxes (left-border accent in teal) for key insights
+- Include highlighted callout boxes (left-border accent in teal #005148) for key insights
 - Use testimonial/quote cards with SVG quote marks for expert opinions
 - Use interactive <details>/<summary> for FAQ or expandable sections
 - Include 1-2 Unsplash stock photos at key points (use approved photo IDs from CREATIVE FRAMEWORK)
 - Add advanced SVG illustrations: gradient blobs, shield badges, draw-on animated paths
 - Use conversion patterns as appropriate: ROI comparisons, guarantee badges, urgency banners
 
-CONTENT STRUCTURE:
+═══════════════════════════════════
+CONTENT STRUCTURE
+═══════════════════════════════════
+
 1. OPENING HOOK — Compelling first paragraph with bold statement or surprising stat
 2. KEY SECTIONS — Each H2 section with rich formatting: icon lists, callout boxes, stat highlights
 3. DATA/EVIDENCE — Use gradient stat banners for key numbers, highlighted data points
@@ -1807,16 +2157,195 @@ CONTENT STRUCTURE:
 5. ACTIONABLE TAKEAWAYS — SVG checkmark icon list of key points
 6. CTA SECTION — Gradient background card linking to /join at the end
 
-FORMATTING:
+═══════════════════════════════════
+FEATURED SNIPPET OPTIMIZATION
+═══════════════════════════════════
+
+Every blog post MUST include a concise answer paragraph near the top (within first 300 words):
+- Direct answer to the target query in 40-60 words
+- Place immediately after the H1 or opening hook
+- Use a clear, factual tone: "A virtual assistant is a remote professional who..."
+- This paragraph targets Google's Featured Snippet (Position 0)
+- Format as a definition, list, or step-by-step depending on search intent
+
+For listicle posts, use an ordered/unordered list with concise items — these win list snippets.
+For how-to posts, use numbered steps — these win step-by-step snippets.
+
+═══════════════════════════════════
+INTERNAL LINKING
+═══════════════════════════════════
+
+Every blog post MUST include internal links to relevant CreedaVA pages:
+- Service pages: /services (general), /services#administrative, /services#customer-service, etc.
+- Pricing: /pricing — link when discussing cost, value, ROI
+- Join/CTA: /join — link in CTA sections and when discussing getting started
+- About: /about — link when discussing CreedaVA's credentials, team, Belize operations
+- Contact: /contact — link when inviting questions or consultations
+- FAQ: /faq — link when referencing common questions
+- Other blog posts: link to related articles by slug (/news/[slug])
+- Forum threads: link to relevant discussions (/forum/[id])
+- Landing pages: link to targeted LPs (/lp/[slug])
+
+CONTENT CLUSTER RULES:
+- Each blog post belongs to a content cluster (pillar topic)
+- Pillar topics: "Virtual Assistant Services", "Outsourcing to Belize", "Business Productivity", "Remote Team Management"
+- Link UP to the pillar page and ACROSS to sibling articles in the same cluster
+- Link DOWN to more specific forum threads that discuss subtopics
+- Aim for 3-5 internal links per 1000 words of content
+
+═══════════════════════════════════
+READABILITY
+═══════════════════════════════════
+
+Target: Flesch-Kincaid Grade Level 8-10 (accessible to business professionals, not academic)
+- Sentences: 15-20 words average, vary between short (8 words) and medium (25 words)
+- Paragraphs: 2-3 sentences max — single-sentence paragraphs OK for emphasis
+- Use active voice: "We handle your admin tasks" not "Your admin tasks are handled by us"
+- Avoid jargon unless defining it for the reader
+- Use transition words: "However", "In addition", "For example", "As a result"
+- Break complex ideas into bullet point lists
+
+═══════════════════════════════════
+JSON-LD STRUCTURED DATA
+═══════════════════════════════════
+
+Blog posts support BlogPosting JSON-LD (generated automatically by structured-data helper):
+- @type: "BlogPosting"
+- headline: post title (max 110 chars)
+- description: metaDescription
+- author: { @type: "Organization", name: "CreedaVA" }
+- publisher: { @type: "Organization", name: "CreedaVA" }
+- datePublished: publishedAt ISO date
+- dateModified: updatedAt ISO date
+- image: featuredImage URL
+- mainEntityOfPage: canonical URL
+
+The AI should ensure content structure maximizes schema richness:
+- Use clear H2/H3 hierarchy for article sections
+- Include a meta description (150-160 chars) that summarizes the post
+- Write title tags under 60 chars with primary keyword
+- Include the target keyword in the first 100 words
+
+═══════════════════════════════════
+FORMATTING & TECHNICAL
+═══════════════════════════════════
+
 - Use inline styles for visual enhancements beyond prose defaults
 - Keep paragraphs concise (2-3 sentences)
 - H2 for main sections, H3 for subsections
-- Include internal links to CreedaVA pages (/services, /pricing, /about, /join)
-- Write for SEO: target keywords naturally, include FAQ section for featured snippets
-- <img> tags allowed ONLY from Unsplash (images.unsplash.com) — max 1-2 per blog post
+- Include FAQ section using <details>/<summary> for PAA (People Also Ask) targeting
+- <img> tags allowed ONLY from Unsplash (images.unsplash.com) — max 1-2 per blog post, with descriptive alt text
 - Output pure HTML only (no markdown, no code fences)
-- English only — translation is handled automatically
-- Include responsive @media queries for mobile-friendly rendering`;
+- English only — translation is handled automatically via translations field
+- Include responsive @media queries for mobile-friendly rendering
+- ALL images need alt="" with keyword-rich descriptive text`;
+
+// ─── Citation & Reference Rules ──────────────────────
+
+export const CITATION_RULES = `CITATION & REFERENCE RULES — Back up claims with verifiable sources:
+
+When making factual claims, providing statistics, or referencing market data, you MUST include proper source attribution.
+
+═══════════════════════════════════
+INLINE CITATION FORMAT
+═══════════════════════════════════
+
+- Web sources: [Source: Article Title | https://example.com/article]
+- Industry reports: [Source: Grand View Research, 2025]
+- CRM data: [Source: CreedaVA CRM — Leads data]
+- Google Analytics: [Source: CreedaVA GA4 — last 30 days]
+- Search Console: [Source: Google Search Console — Q1 2025]
+- General knowledge: [Source: Industry standard / widely reported]
+
+EXAMPLES:
+✓ "The VA industry grew 41% in 2025 [Source: Grand View Research, 2025]"
+✓ "Your lead conversion rate is 23% [Source: CreedaVA CRM — Leads data]"
+✓ "Belize has the lowest operating costs in Central America [Source: World Bank, 2024]"
+
+═══════════════════════════════════
+SOURCING RULES
+═══════════════════════════════════
+
+1. VERIFY before citing — only cite sources you have data for (web search results, CRM data, analytics)
+2. If you cannot verify a claim, HEDGE: "Industry estimates suggest...", "Approximately...", "Based on available data..."
+3. NEVER fabricate statistics — if no source exists, say "Specific data not available; based on general industry trends"
+4. Prefer recent data (within 2 years) over older statistics
+5. When web search results are provided, cite them with full URL
+6. When CRM data is provided, reference the specific data collection
+
+═══════════════════════════════════
+CONFIDENCE TIERS
+═══════════════════════════════════
+
+Use these prefixes to signal confidence level:
+- HIGH: Direct data (CRM, Analytics, Search Console) → state as fact with [Source: ...]
+- MEDIUM: Web search results, industry reports → "According to [Source], ..."
+- LOW: General knowledge, estimates → "Industry estimates suggest..." / "Typically, ..."
+- NONE: No source available → "While specific data is not available, general practice suggests..."
+
+═══════════════════════════════════
+LONG-FORM RESPONSE CITATIONS
+═══════════════════════════════════
+
+For reports, blog posts, and detailed analyses:
+- Use numbered inline references: "...grew 41% in 2025 [1]"
+- Include a SOURCES section at the end:
+  --- Sources ---
+  [1] Grand View Research — VA Industry Report 2025
+  [2] CreedaVA CRM — Lead Pipeline (last 90 days)
+  [3] Google Search Console — Organic Traffic Report
+  
+For blog/LP HTML, use <cite> tags:
+  <cite>Source: Grand View Research, 2025</cite>
+
+═══════════════════════════════════
+WEB SEARCH GROUNDING
+═══════════════════════════════════
+
+When web search results are available in the context:
+- Cross-reference multiple sources before stating facts
+- Prefer authoritative sources (.gov, .edu, major publications, industry leaders)
+- Note when sources conflict: "Sources vary — X reports 30% while Y reports 35%"
+- Always include the search result URL in the citation
+- Treat web search results as MEDIUM confidence unless from authoritative domains`;
+
+// ─── Tool Use Guidelines ─────────────────────────────
+
+export const TOOL_USE_GUIDELINES = `FUNCTION CALLING — Gemini Tool Use Rules:
+
+You have access to real tools that interact with CreedaVA's live systems. Follow these rules:
+
+## When to Use Tools
+- Use tools when the user asks to DO something (create, send, fetch, search, update) — not just talk about it.
+- Use read-only tools (list_calendar_events, read_inbox, search_leads, fetch_analytics_report) freely to gather data for better answers.
+- Combine multiple read-only tool calls to build a complete picture before answering.
+- If the user's question can be answered from context you already have, do NOT call a tool unnecessarily.
+
+## Risk Awareness
+- **Read-only tools** (list, fetch, search, get): Auto-execute. No side effects.
+- **Draft tools** (create_blog_draft, create_landing_page_draft, create_social_draft): Auto-execute. Content is saved as draft — user can review before publishing.
+- **Auto tools** (create_task, create_forum_thread, reply_to_thread, update_lead_status): Auto-execute. Low-risk write operations.
+- **Destructive tools** (send_email, send_bulk_email, publish_blog_post, flag_thread, close_thread): STOP and ask for user confirmation. Clearly describe what will happen before executing.
+
+## Tool Calling Best Practices
+- Always include all required parameters. Infer values from context when possible.
+- For content creation (blog posts, landing pages, social posts), generate complete, high-quality content — never placeholder text.
+- When creating SEO content, include keywords naturally, write compelling meta descriptions, and follow CreedaVA's brand voice.
+- When creating forum threads or replies, use a professional but friendly tone appropriate for knowledge-base content.
+- If a tool call fails, explain the error clearly and suggest alternatives.
+- After executing a write tool, confirm what was done with specific details (document ID, title, etc.).
+
+## Multi-Step Operations
+- For complex requests like "write a blog post about X and share it on social media", break into steps:
+  1. Create blog draft → get post ID
+  2. Create social draft referencing the blog post
+  3. Report both results to the user
+- Always complete one step before starting the next when steps depend on each other.
+
+## Data Integrity
+- Never fabricate CRM data. If asked about a lead/customer and you don't have the data, use the search tool first.
+- Never modify or delete data without the user's explicit request.
+- When in doubt about the user's intent for a destructive action, ask for clarification instead of executing.`;
 
 // ─── Shared Report Prompts ───────────────────────────
 
@@ -1850,6 +2379,14 @@ Compare metrics against our KPI targets. Flag any anomalies or risks at the top.
  * @param dataContext - Live business data context string
  * @param options - Additional prompt configuration
  */
+/** Shape returned by all prompt builders — separates system from user content */
+export interface TrainedPrompt {
+  /** Goes into Gemini's systemInstruction — identity, expertise, rules */
+  systemInstruction: string;
+  /** Goes into Gemini's contents — data, history, user message */
+  userContent: string;
+}
+
 export function buildTrainedPrompt(
   section: string,
   userPrompt: string,
@@ -1860,6 +2397,8 @@ export function buildTrainedPrompt(
     includeCreativeFramework?: boolean;
     includeLandingPageRules?: boolean;
     includeBlogRules?: boolean;
+    includeForumRules?: boolean;
+    includeCitationRules?: boolean;
     includeReportFormat?: boolean;
     includeKPIs?: boolean;
     includeSEOAlgorithms?: boolean;
@@ -1873,56 +2412,49 @@ export function buildTrainedPrompt(
     includeAuthority?: boolean;
     includeCRO?: boolean;
     includeWebMastery?: boolean;
+    includeToolGuidelines?: boolean;
     pageContext?: string;
     webSearchResults?: string;
     customInstructions?: string;
   } = {},
-): string {
-  const parts: string[] = [CREEDA_IDENTITY];
+): TrainedPrompt {
+  // ── System instruction: identity + expertise modules ──
+  const systemParts: string[] = [CREEDA_IDENTITY];
 
-  if (options.includeDesignSystem) parts.push(DESIGN_SYSTEM);
-  if (options.includeCreativeFramework) parts.push(CREATIVE_HTML_FRAMEWORK);
-  if (options.includeCompetitors) parts.push(COMPETITOR_CONTEXT);
-  if (options.includeKPIs) parts.push(STRATEGIC_KPIS);
-  if (options.includeSEOAlgorithms !== false) parts.push(SEO_ALGORITHMS);
-  if (options.includeMarketIntel) parts.push(MARKET_INTELLIGENCE);
-  if (options.includeLandingPageRules) parts.push(LANDING_PAGE_RULES);
-  if (options.includeBlogRules) parts.push(BLOG_CONTENT_RULES);
-  if (options.includeReportFormat) parts.push(REPORT_FORMATS);
+  if (options.includeDesignSystem) systemParts.push(DESIGN_SYSTEM);
+  if (options.includeCreativeFramework) systemParts.push(CREATIVE_HTML_FRAMEWORK);
+  if (options.includeCompetitors) systemParts.push(COMPETITOR_CONTEXT);
+  if (options.includeKPIs) systemParts.push(STRATEGIC_KPIS);
+  if (options.includeSEOAlgorithms !== false) systemParts.push(SEO_ALGORITHMS);
+  if (options.includeMarketIntel) systemParts.push(MARKET_INTELLIGENCE);
+  if (options.includeLandingPageRules) systemParts.push(LANDING_PAGE_RULES);
+  if (options.includeBlogRules) systemParts.push(BLOG_CONTENT_RULES);
+  if (options.includeForumRules) systemParts.push(FORUM_CONTENT_RULES);
+  if (options.includeCitationRules) systemParts.push(CITATION_RULES);
+  if (options.includeReportFormat) systemParts.push(REPORT_FORMATS);
 
   // ─── Web Mastery Modules ───────────────────────────
   // includeWebMastery=true is a shortcut to include ALL web expertise modules
   const wm = options.includeWebMastery;
-  if (wm || options.includeAIO) parts.push(AIO_EXPERTISE);
-  if (wm || options.includeGEO) parts.push(GEO_EXPERTISE);
-  if (wm || options.includeSERP) parts.push(SERP_EXPERTISE);
-  if (wm || options.includeSEM) parts.push(SEM_EXPERTISE);
-  if (wm || options.includeAnalytics) parts.push(ANALYTICS_EXPERTISE);
-  if (wm || options.includeTechnicalSEO) parts.push(TECHNICAL_SEO_EXPERTISE);
-  if (wm || options.includeAuthority) parts.push(AUTHORITY_SIGNALS);
-  if (wm || options.includeCRO) parts.push(CRO_EXPERTISE);
+  if (wm || options.includeAIO) systemParts.push(AIO_EXPERTISE);
+  if (wm || options.includeGEO) systemParts.push(GEO_EXPERTISE);
+  if (wm || options.includeSERP) systemParts.push(SERP_EXPERTISE);
+  if (wm || options.includeSEM) systemParts.push(SEM_EXPERTISE);
+  if (wm || options.includeAnalytics) systemParts.push(ANALYTICS_EXPERTISE);
+  if (wm || options.includeTechnicalSEO) systemParts.push(TECHNICAL_SEO_EXPERTISE);
+  if (wm || options.includeAuthority) systemParts.push(AUTHORITY_SIGNALS);
+  if (wm || options.includeCRO) systemParts.push(CRO_EXPERTISE);
 
-  if (options.customInstructions) parts.push(options.customInstructions);
+  if (options.includeToolGuidelines) systemParts.push(TOOL_USE_GUIDELINES);
+
+  if (options.customInstructions) systemParts.push(options.customInstructions);
 
   // Page-aware context — tells the AI which admin page the user is on
   if (options.pageContext) {
-    parts.push(`\n--- CURRENT PAGE CONTEXT ---\n${options.pageContext}`);
+    systemParts.push(`\n--- CURRENT PAGE CONTEXT ---\n${options.pageContext}`);
   }
 
-  parts.push(`\n--- SECTION: ${section} ---`);
-
-  if (dataContext) {
-    parts.push(`\n--- LIVE BUSINESS DATA ---\n${dataContext}`);
-  }
-
-  // Web search results for real-time market intelligence
-  if (options.webSearchResults) {
-    parts.push(`\n--- REAL-TIME MARKET DATA ---\n${options.webSearchResults}`);
-  }
-
-  parts.push(`\n--- USER REQUEST ---\n${userPrompt}`);
-
-  parts.push(`\n--- RESPONSE GUIDELINES ---
+  systemParts.push(`\n--- RESPONSE GUIDELINES ---
 1. Reference specific data points from the LIVE BUSINESS DATA above
 2. Compare against KPI targets and competitor benchmarks
 3. Every recommendation must include: action, owner, timeline, expected impact
@@ -1931,7 +2463,26 @@ export function buildTrainedPrompt(
 6. Prioritize recommendations by ROI (impact vs effort)
 7. Flag any anomalies, risks, or urgent items at the top`);
 
-  return parts.join("\n\n");
+  // ── User content: section, data, web results, user message ──
+  const userParts: string[] = [];
+
+  userParts.push(`--- SECTION: ${section} ---`);
+
+  if (dataContext) {
+    userParts.push(`--- LIVE BUSINESS DATA ---\n${dataContext}`);
+  }
+
+  // Web search results for real-time market intelligence
+  if (options.webSearchResults) {
+    userParts.push(`--- REAL-TIME MARKET DATA ---\n${options.webSearchResults}`);
+  }
+
+  userParts.push(`--- USER REQUEST ---\n${userPrompt}`);
+
+  return {
+    systemInstruction: systemParts.join("\n\n"),
+    userContent: userParts.join("\n\n"),
+  };
 }
 
 /**
@@ -1942,7 +2493,7 @@ export function buildReportPrompt(
   promptTemplate: string,
   dataContext: string,
   webSearchResults?: string,
-): string {
+): TrainedPrompt {
   return buildTrainedPrompt(
     `Reports — ${reportType}`,
     promptTemplate,
@@ -1967,7 +2518,7 @@ export function buildReportPrompt(
 /**
  * Build a landing page generation prompt with full design context.
  */
-export function buildLandingPagePrompt(userInput: string): string {
+export function buildLandingPagePrompt(userInput: string): TrainedPrompt {
   return buildTrainedPrompt(
     "Landing Page AI",
     `Create a VISUALLY STUNNING landing page about: "${userInput}"
@@ -2007,12 +2558,13 @@ export function buildContentPrompt(
   section: string,
   userInput: string,
   dataContext: string = "",
-  options: { isBlog?: boolean } = {},
-): string {
+  options: { isBlog?: boolean; isForum?: boolean } = {},
+): TrainedPrompt {
   return buildTrainedPrompt(section, userInput, dataContext, {
     includeDesignSystem: options.isBlog,
     includeCreativeFramework: options.isBlog,
     includeBlogRules: options.isBlog,
+    includeForumRules: options.isForum,
     includeCompetitors: true,
     includeKPIs: false,
     includeSEOAlgorithms: true,

@@ -10,6 +10,7 @@ import {
   buildReportPrompt,
   DAILY_STATUS_PROMPT,
 } from "@/lib/utils/ai-system-prompt";
+import type { TrainedPrompt } from "@/lib/utils/ai-system-prompt";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -42,7 +43,7 @@ const DEBOUNCE_MS = 5 * 60 * 1000; // 5 minutes between checks
 
 // ─── Report prompt templates ─────────────────────────
 
-function getPromptForPeriod(period: SchedulePeriod, context: string): string {
+function getPromptForPeriod(period: SchedulePeriod, context: string): TrainedPrompt {
   // Use the shared trained prompt for daily — ensures parity with the dashboard button
   // and the on-demand reports page. Weekly/monthly also use the trained prompt builder.
   const periodPrompts: Record<SchedulePeriod, string> = {

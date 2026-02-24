@@ -20,7 +20,7 @@ export interface BlogPost extends FirestoreDoc {
   content: string;           // HTML content
   tags: string[];
   metaDescription: string;
-  status: "draft" | "published";
+  status: "draft" | "scheduled" | "published";
   publishedAt?: string;       // ISO date
   author?: string;
   featuredImage?: string;     // URL from Firebase Storage
@@ -28,6 +28,8 @@ export interface BlogPost extends FirestoreDoc {
   attachments?: { name: string; url: string; type: string }[];
   lang?: string;              // original language code
   translations?: Record<string, ContentTranslation>;
+  scheduledAt?: string;        // ISO date — auto-publish at this time
+  unpublishAt?: string;        // ISO date — auto-unpublish (sunset) at this time
 }
 
 export type BlogPostFormData = Omit<BlogPost, keyof FirestoreDoc>;
@@ -154,11 +156,13 @@ export interface LandingPage extends FirestoreDoc {
   ctaText: string;
   ctaEmail: string;
   bodyHtml: string;
-  status: "draft" | "published";
+  status: "draft" | "scheduled" | "published";
   views: number;
   conversions: number;
   images?: string[];
   attachments?: { name: string; url: string; type: string }[];
+  scheduledAt?: string;        // ISO date — auto-publish at this time
+  unpublishAt?: string;        // ISO date — auto-unpublish (sunset) at this time
 }
 
 export type LandingPageFormData = Omit<LandingPage, keyof FirestoreDoc>;
@@ -186,6 +190,8 @@ export interface ForumThread extends FirestoreDoc {
   links?: string[];            // external URLs
   lang?: string;               // original language code (e.g. "en", "es")
   translations?: Record<string, ContentTranslation>;
+  scheduledAt?: string;        // ISO date — auto-publish at this time
+  unpublishAt?: string;        // ISO date — auto-close at this time
 }
 
 // ─── Forum Reply ─────────────────────────────────────

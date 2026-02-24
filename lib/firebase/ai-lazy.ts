@@ -81,6 +81,22 @@ export async function lazyGenerateWithWebContext(
   return generateWithWebContext(...args);
 }
 
+/** Lazy-load grounded generation (Gemini Google Search grounding) */
+export async function lazyGenerateTextGrounded(
+  ...args: Parameters<typeof import("./ai").generateTextGrounded>
+) {
+  const { generateTextGrounded } = await import("./ai");
+  return generateTextGrounded(...args);
+}
+
+/** Lazy-load grounding source formatter */
+export async function lazyFormatGroundingSources(
+  ...args: Parameters<typeof import("./ai").formatGroundingSources>
+) {
+  const { formatGroundingSources } = await import("./ai");
+  return formatGroundingSources(...args);
+}
+
 /** Lazy-load the full AI Engine for advanced operations */
 export async function lazyGetAIEngine() {
   const { aiEngine } = await import("./ai-engine");
@@ -197,4 +213,20 @@ export async function* lazySendMessageStream(
 ) {
   const { sendMessageStream } = await import("./ai-core");
   yield* sendMessageStream(...args);
+}
+
+/** Confirm a pending destructive action (user clicked "Confirm") */
+export async function lazyConfirmAction(
+  ...args: Parameters<typeof import("./ai-core").confirmAction>
+) {
+  const { confirmAction } = await import("./ai-core");
+  return confirmAction(...args);
+}
+
+/** Reject a pending destructive action (user clicked "Reject") */
+export async function lazyRejectAction(
+  ...args: Parameters<typeof import("./ai-core").rejectAction>
+) {
+  const { rejectAction } = await import("./ai-core");
+  return rejectAction(...args);
 }

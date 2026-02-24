@@ -139,6 +139,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // AI Activity Log — audit trail for autonomous AI actions (admin read-only, written by client SDK)
+    match /ai-activity-log/{docId} {
+      allow read, write: if isAdmin();
+    }
+
     // AI Conversations — chat history for dashboard AI assistant
     match /ai-conversations/{docId} {
       allow read, write: if isAdmin();

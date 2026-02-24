@@ -10,10 +10,13 @@
  * - Token-aware compression when history grows large
  * - Page-aware context auto-loading
  * - Unified identity across all surfaces
+ * - Function calling: Gemini can invoke real tools (CRM, email, blog, etc.)
  *
  * Based on: https://docs.cloud.google.com/architecture/choose-design-pattern-agentic-ai-system
  */
 
+import { GoogleGenerativeAI, FunctionCallingMode } from "@google/generative-ai";
+import type { GenerativeModel, Content, Part } from "@google/generative-ai";
 import { generateText, generateTextStream } from "./ai";
 import {
   getActiveConversation,
@@ -28,7 +31,46 @@ import {
   getPageContext,
 } from "@/lib/utils/ai-system-prompt";
 import { loadPageAwareContext } from "@/lib/utils/ai-page-context";
+import { ALL_TOOLS } from "./ai-tools";
+import {
+  executeTool,
+  confirmAction as execConfirm,
+  rejectAction as execReject,
+  type ToolExecutionResult,
+  type PendingAction,
+} from "./ai-tool-executor";
 import type { AIMessage, AIConversation, CreeaAICoreOptions } from "@/lib/types/ai";
+
+// ─── Tool-Aware Model ────────────────────────────────
+
+/**
+ * Separate model instance for tool-enabled calls.
+ * The base `ai.ts` model doesn't support tools — this one does.
+ */
+let _toolModel: GenerativeModel | null = null;
+
+function getToolModel(): GenerativeModel {
+  if (!_toolModel) {
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("NEXT_PUBLIC_GEMINI_API_KEY is not set.");
+    }
+    const genAI = new GoogleGenerativeAI(apiKey);
+    _toolModel = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+      tools: [ALL_TOOLS],
+      toolConfig: {
+        functionCallingConfig: {
+          mode: FunctionCallingMode.AUTO,
+        },
+      },
+    });
+  }
+  return _toolModel;
+}
+
+/** Max function call rounds to prevent infinite loops */
+const MAX_TOOL_ROUNDS = 8;
 
 // ─── Orchestrator State ──────────────────────────────
 
@@ -57,6 +99,7 @@ async function getConvo(userId: string): Promise<AIConversation & { id: string }
 function invalidateCache() {
   _cachedConvo = null;
   _cachedUserId = null;
+  _toolModel = null;
 }
 
 // ─── Core: Send Message ──────────────────────────────
@@ -65,19 +108,24 @@ export interface SendMessageResult {
   response: string;
   conversationId: string;
   messageCount: number;
+  /** Tools that were invoked during this exchange */
+  toolsUsed?: ToolExecutionResult[];
+  /** Actions waiting for user confirmation */
+  pendingActions?: PendingAction[];
 }
 
 /**
- * Send a message to Creeda AI with full context awareness and memory.
+ * Send a message to Creeda AI with full context awareness, memory, and tools.
  *
  * This is THE single entry point for all AI interactions:
  * 1. Loads (or creates) the active conversation from Firestore
  * 2. Appends the user message to history
  * 3. Compresses history if needed (token budget)
  * 4. Builds a fully-trained prompt with identity + data + history + user message
- * 5. Calls Gemini
- * 6. Appends the AI response to history
- * 7. Persists everything back to Firestore
+ * 5. Calls Gemini with function calling enabled
+ * 6. If Gemini returns function calls, executes them and re-prompts (up to MAX_TOOL_ROUNDS)
+ * 7. Appends the AI response to history
+ * 8. Persists everything back to Firestore
  *
  * @param userId - Firebase Auth UID
  * @param userMessage - The user's message text
@@ -116,8 +164,6 @@ export async function sendMessage(
 
   // 4. Build the conversation history block
   const historyBlock = formatHistoryForPrompt(
-    // Include all messages except the last one (that's the current user message,
-    // which goes in the USER REQUEST section)
     compressedMessages.slice(0, -1),
     memorySummary,
   );
@@ -133,13 +179,15 @@ export async function sendMessage(
     }
   }
 
-  // 6. Build the fully-trained prompt with memory
+  // 6. Build the fully-trained prompt with memory + tool guidelines
   const pageContext = getPageContext(pagePath);
-  const fullPrompt = buildTrainedPrompt(section, userMessage, dataContext, {
+  const trained = buildTrainedPrompt(section, userMessage, dataContext, {
     includeCompetitors: options.includeCompetitors ?? true,
     includeKPIs: options.includeKPIs ?? true,
     includeSEOAlgorithms: options.includeSEOAlgorithms ?? true,
     includeWebMastery: options.includeWebMastery,
+    includeCitationRules: options.includeCitationRules ?? true,
+    includeToolGuidelines: true,
     pageContext: [
       pageContext,
       historyBlock,
@@ -150,13 +198,96 @@ export async function sendMessage(
     customInstructions: options.customInstructions,
   });
 
-  // 7. Generate response
-  const response = await generateText(fullPrompt);
+  // 7. Call Gemini with function calling support
+  const model = getToolModel();
+  const contents: Content[] = [
+    { role: "user", parts: [{ text: trained.userContent }] },
+  ];
 
-  // 8. Add AI response to conversation
+  let response = await model.generateContent({
+    systemInstruction: trained.systemInstruction,
+    contents,
+  });
+
+  // 8. Tool-call loop: execute function calls, feed results back to Gemini
+  const toolsUsed: ToolExecutionResult[] = [];
+  const pendingConfirmations: PendingAction[] = [];
+  let rounds = 0;
+
+  while (rounds < MAX_TOOL_ROUNDS) {
+    const candidate = response.response.candidates?.[0];
+    if (!candidate) break;
+
+    // Check for function calls in the response
+    const functionCalls = candidate.content?.parts?.filter(
+      (p): p is Part & { functionCall: { name: string; args: Record<string, unknown> } } =>
+        "functionCall" in p && p.functionCall !== undefined,
+    );
+
+    if (!functionCalls || functionCalls.length === 0) break;
+
+    console.info(
+      `[Creeda AI Core] Tool round ${rounds + 1}: ${functionCalls.map((fc) => fc.functionCall.name).join(", ")}`,
+    );
+
+    // Add the model's function call response to the conversation
+    contents.push({
+      role: "model",
+      parts: candidate.content?.parts ?? [],
+    });
+
+    // Execute each function call
+    const functionResponses: Part[] = [];
+    for (const fc of functionCalls) {
+      const result = await executeTool(fc.functionCall, convo.id);
+      toolsUsed.push(result);
+
+      if (result.requiresConfirmation) {
+        pendingConfirmations.push({
+          id: (result.response as Record<string, unknown>).actionId as string,
+          toolName: result.name,
+          args: fc.functionCall.args as Record<string, unknown>,
+          impactSummary: result.impactSummary ?? `Execute ${result.name}`,
+          conversationId: convo.id,
+          createdAt: new Date(),
+        });
+      }
+
+      functionResponses.push({
+        functionResponse: {
+          name: result.name,
+          response: result.response,
+        },
+      });
+    }
+
+    // Feed function responses back to Gemini
+    contents.push({
+      role: "user",
+      parts: functionResponses,
+    });
+
+    response = await model.generateContent({
+      systemInstruction: trained.systemInstruction,
+      contents,
+    });
+
+    rounds++;
+  }
+
+  // 9. Extract the final text response
+  const finalText = response.response.text() ?? "";
+
+  // 10. Build tool usage summary for the memory log
+  const toolSummary =
+    toolsUsed.length > 0
+      ? `\n[Tools used: ${toolsUsed.map((t) => t.name).join(", ")}]`
+      : "";
+
+  // 11. Add AI response to conversation
   const aiMsg: AIMessage = {
     role: "assistant",
-    content: response,
+    content: finalText + toolSummary,
     timestamp: new Date().toISOString(),
     page: pagePath,
   };
@@ -167,9 +298,11 @@ export async function sendMessage(
   _cachedConvo = convo;
 
   return {
-    response,
+    response: finalText,
     conversationId: convo.id,
     messageCount: messagesAfterAI.length,
+    toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined,
+    pendingActions: pendingConfirmations.length > 0 ? pendingConfirmations : undefined,
   };
 }
 
@@ -288,6 +421,10 @@ export async function logActionToMemory(
  * Same memory management as `sendMessage`, but streams the AI response
  * in real-time for a better UX. The full response is persisted to Firestore
  * once the stream completes.
+ *
+ * NOTE: Streaming mode does NOT support function calling (Gemini limitation
+ * with multi-turn tool loops). If the AI needs to call tools, use
+ * `sendMessage` instead. The streaming variant is for pure text responses.
  */
 export async function* sendMessageStream(
   userId: string,
@@ -337,11 +474,13 @@ export async function* sendMessageStream(
   }
 
   const pageContext = getPageContext(pagePath);
-  const fullPrompt = buildTrainedPrompt(section, userMessage, dataContext, {
+  const trained = buildTrainedPrompt(section, userMessage, dataContext, {
     includeCompetitors: options.includeCompetitors ?? true,
     includeKPIs: options.includeKPIs ?? true,
     includeSEOAlgorithms: options.includeSEOAlgorithms ?? true,
     includeWebMastery: options.includeWebMastery,
+    includeCitationRules: options.includeCitationRules ?? true,
+    includeToolGuidelines: true,
     pageContext: [
       pageContext,
       historyBlock,
@@ -354,7 +493,7 @@ export async function* sendMessageStream(
 
   // 5. Stream the response, accumulating full text
   let fullResponse = "";
-  for await (const chunk of generateTextStream(fullPrompt)) {
+  for await (const chunk of generateTextStream(trained)) {
     fullResponse += chunk;
     yield chunk;
   }
@@ -375,4 +514,22 @@ export async function* sendMessageStream(
     conversationId: convo.id,
     messageCount: messagesAfterAI.length,
   };
+}
+
+// ─── Tool Action Confirmation ────────────────────────
+
+/**
+ * Confirm a pending destructive action (e.g., send email, publish post).
+ * Call this when the user clicks "Confirm" on a pending action card.
+ */
+export async function confirmAction(actionId: string): Promise<ToolExecutionResult> {
+  return execConfirm(actionId);
+}
+
+/**
+ * Reject a pending destructive action.
+ * Call this when the user clicks "Reject" on a pending action card.
+ */
+export function rejectAction(actionId: string): ToolExecutionResult {
+  return execReject(actionId);
 }

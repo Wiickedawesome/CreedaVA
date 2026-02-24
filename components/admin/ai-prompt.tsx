@@ -4,12 +4,15 @@ import { useState, useRef, useEffect, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { Modal, useToast } from "@/components/admin";
 import { Button } from "@/components/ui";
-import { lazyGenerateText, lazySendMessageStream, lazyGetCurrentMessages, lazyLogActionToMemory, lazyGetConversationHistory, lazySwitchConversation, lazyNewConversation } from "@/lib/firebase/ai-lazy";
+import { lazyGenerateText, lazySendMessage, lazyGetCurrentMessages, lazyLogActionToMemory, lazyGetConversationHistory, lazySwitchConversation, lazyNewConversation, lazyConfirmAction, lazyRejectAction } from "@/lib/firebase/ai-lazy";
 import { buildTrainedPrompt, getPageContext } from "@/lib/utils/ai-system-prompt";
+import type { TrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { fetchOne } from "@/lib/firebase/firestore";
 import { useAuth } from "@/lib/firebase/auth-context";
 import { Markdown } from "@/components/admin/markdown";
 import type { AIMessage, AIConversation } from "@/lib/types/ai";
+import type { ToolExecutionResult, PendingAction } from "@/lib/firebase/ai-tool-executor";
+import type { PromptInput } from "@/lib/firebase/ai";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -33,7 +36,7 @@ export interface AIPromptConfig {
    * Build the full prompt from user input + data context.
    * If not provided, uses a default that includes the section context.
    */
-  buildPrompt?: (input: string, dataContext: string) => string;
+  buildPrompt?: (input: string, dataContext: string) => PromptInput;
   /**
    * Custom handler for the result. If provided, called instead of showing
    * the generic result view. Use for structured results (blog posts, etc.).
@@ -153,11 +156,16 @@ function AIPromptDialog({
   const [showResult, setShowResult] = useState(false);
 
   // Chat mode state (persistent memory)
-  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string; toolsUsed?: ToolExecutionResult[] }[]>([]);
   const [chatLoaded, setChatLoaded] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [pastConversations, setPastConversations] = useState<AIConversation[]>([]);
   const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
+
+  // Tool calling state
+  const [pendingActions, setPendingActions] = useState<PendingAction[]>([]);
+  const [activeToolName, setActiveToolName] = useState<string | null>(null);
+  const [confirmingActionId, setConfirmingActionId] = useState<string | null>(null);
 
   // Merge dynamic (AI-generated) presets ahead of static presets
   const allPresets = [...dynamicPresets, ...presets];
@@ -297,7 +305,7 @@ function AIPromptDialog({
           setShowResult(true);
         }
       } else {
-        // ─── Chat mode: persistent memory via unified core (streaming) ───
+        // ─── Chat mode: persistent memory via unified core (with tool calling) ───
         if (!user?.uid) {
           toast("Please sign in to use AI chat", "error");
           return;
@@ -306,34 +314,39 @@ function AIPromptDialog({
         setChatMessages((prev) => [...prev, { role: "user", content: userMsg }]);
         setPrompt("");
 
-        // Add placeholder assistant message for streaming
-        setChatMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-
-        const stream = lazySendMessageStream(user.uid, userMsg, {
+        // Use sendMessage (non-streaming) to support tool-call loop
+        setActiveToolName("thinking");
+        const msgResult = await lazySendMessage(user.uid, userMsg, {
           pagePath: pathname,
           dataContext: enrichedDataContext || dataContext,
           section,
           includeCompetitors: true,
           includeKPIs: true,
         });
+        setActiveToolName(null);
 
-        for await (const chunk of stream) {
-          setChatMessages((prev) => {
-            const updated = [...prev];
-            const last = updated[updated.length - 1];
-            if (last?.role === "assistant") {
-              updated[updated.length - 1] = { ...last, content: last.content + chunk };
-            }
-            return updated;
-          });
+        // Add assistant message with tools metadata
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: msgResult.response,
+            toolsUsed: msgResult.toolsUsed,
+          },
+        ]);
+
+        // Store any pending actions for confirmation UI
+        if (msgResult.pendingActions?.length) {
+          setPendingActions((prev) => [...prev, ...msgResult.pendingActions!]);
         }
       }
     } catch (err) {
       console.error("AI generation failed:", err);
       toast("AI generation failed — try again", "error");
-      // Remove optimistic user message + placeholder on chat mode failure
+      // Remove optimistic user message on chat mode failure
       if (!isActionMode) {
-        setChatMessages((prev) => prev.slice(0, -2));
+        setChatMessages((prev) => prev.slice(0, -1));
+        setActiveToolName(null);
       }
     } finally {
       setGenerating(false);
@@ -394,6 +407,26 @@ function AIPromptDialog({
       console.error("[AI Prompt] New conversation failed:", err);
       toast("Failed to start new conversation", "error");
     }
+  }
+
+  async function handleConfirmAction(actionId: string) {
+    setConfirmingActionId(actionId);
+    try {
+      const result = await lazyConfirmAction(actionId);
+      toast(`Action confirmed: ${result.name}`, "success");
+      setPendingActions((prev) => prev.filter((a) => a.id !== actionId));
+    } catch (err) {
+      console.error("Confirm action failed:", err);
+      toast("Failed to confirm action", "error");
+    } finally {
+      setConfirmingActionId(null);
+    }
+  }
+
+  function handleRejectAction(actionId: string) {
+    lazyRejectAction(actionId);
+    setPendingActions((prev) => prev.filter((a) => a.id !== actionId));
+    toast("Action rejected", "info");
   }
 
   function handlePreviewPage() {
@@ -617,7 +650,25 @@ function AIPromptDialog({
                   ) : (
                     <div className="whitespace-pre-wrap">{msg.content}</div>
                   )}
-                  {msg.role === "assistant" && (
+                  {/* Tool usage badges */}
+                  {msg.role === "assistant" && msg.toolsUsed && msg.toolsUsed.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-border/50">
+                      <span className="text-[10px] text-gray-40 mr-1 self-center">Tools:</span>
+                      {msg.toolsUsed.map((tool, ti) => (
+                        <span
+                          key={ti}
+                          className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary text-[10px] px-2 py-0.5 font-medium"
+                          title={JSON.stringify(tool.response, null, 2).slice(0, 300)}
+                        >
+                          <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
+                          </svg>
+                          {tool.name.replace(/_/g, " ")}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {msg.role === "assistant" && msg.content && (
                     <button
                       onClick={() => handleCopyChatMessage(msg.content)}
                       className="mt-1.5 text-xs text-gray-40 hover:text-primary transition-colors cursor-pointer"
@@ -628,13 +679,61 @@ function AIPromptDialog({
                 </div>
               </div>
             ))}
+            {/* Pending action confirmation cards */}
+            {pendingActions.length > 0 && (
+              <div className="space-y-2">
+                {pendingActions.map((action) => (
+                  <div
+                    key={action.id}
+                    className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-50/10 p-3"
+                  >
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-amber-600">Action requires confirmation</p>
+                      <p className="text-xs text-gray-60 mt-0.5">{action.impactSummary}</p>
+                      <p className="text-[10px] text-gray-40 mt-1 font-mono">{action.toolName.replace(/_/g, " ")}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleConfirmAction(action.id)}
+                          isLoading={confirmingActionId === action.id}
+                          className="text-xs! px-3! py-1! h-auto!"
+                        >
+                          Confirm
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRejectAction(action.id)}
+                          className="text-xs! px-3! py-1! h-auto!"
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             {generating && (
               <div className="flex justify-start">
                 <div className="bg-gray-10 border border-border rounded-2xl rounded-bl-md px-4 py-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce [animation-delay:0ms]" />
+                      <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce [animation-delay:150ms]" />
+                      <span className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce [animation-delay:300ms]" />
+                    </div>
+                    {activeToolName && activeToolName !== "thinking" && (
+                      <span className="text-[10px] text-primary/70 font-medium animate-pulse">
+                        Using {activeToolName.replace(/_/g, " ")}…
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -654,7 +753,7 @@ function AIPromptDialog({
               disabled={generating}
               rows={2}
             />
-            <p className="text-xs text-gray-30 mt-1">Enter to send &middot; Shift+Enter for new line &middot; Memory persists across pages</p>
+            <p className="text-xs text-gray-30 mt-1">Enter to send &middot; Shift+Enter for new line &middot; Can use tools &middot; Memory persists</p>
           </div>
         </div>
       </Modal>

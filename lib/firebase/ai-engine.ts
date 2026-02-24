@@ -15,6 +15,7 @@
 
 import { generateText } from "./ai";
 import { create, createWithId } from "./firestore";
+import { cloudWebSearch } from "./cloud-functions";
 import {
   buildTrainedPrompt,
   buildReportPrompt,
@@ -23,6 +24,34 @@ import {
 import {
   loadPageAwareContext,
 } from "@/lib/utils/ai-page-context";
+
+// ─── Web Search Helpers ──────────────────────────────
+
+/**
+ * Fetch real-time web data for a set of queries and format as a string
+ * that can be injected into the AI prompt as `webSearchResults`.
+ * Fails silently — returns empty string if the cloud function is unavailable.
+ */
+async function fetchWebContext(queries: string[]): Promise<string> {
+  try {
+    const results = await Promise.allSettled(
+      queries.map((q) => cloudWebSearch(q, 5)),
+    );
+    const sections: string[] = [];
+    for (let i = 0; i < queries.length; i++) {
+      const r = results[i];
+      if (r.status === "fulfilled" && r.value.success && r.value.results.length > 0) {
+        const items = r.value.results
+          .map((sr) => `  - ${sr.title}: ${sr.snippet} (${sr.link})`)
+          .join("\n");
+        sections.push(`[${queries[i]}]\n${items}`);
+      }
+    }
+    return sections.length > 0 ? sections.join("\n\n") : "";
+  } catch {
+    return "";
+  }
+}
 
 // ─── Core: Context-Aware Generation ──────────────────
 
@@ -48,6 +77,8 @@ interface AnalyzeOptions {
   includeCRO?: boolean;
   includeWebMastery?: boolean;
   customInstructions?: string;
+  /** Pre-fetched web search results formatted as text (injected into prompt) */
+  webSearchResults?: string;
 }
 
 /**
@@ -91,7 +122,7 @@ export async function analyzeAndRespond(
   const ctx = await loadPageAwareContext(pagePath);
   const auto = autoDetectWebModules(pagePath);
 
-  const fullPrompt = buildTrainedPrompt(
+  const trained = buildTrainedPrompt(
     ctx.section,
     userPrompt,
     ctx.dataContext,
@@ -114,10 +145,11 @@ export async function analyzeAndRespond(
       includeWebMastery: options.includeWebMastery ?? false,
       pageContext: ctx.pageContext,
       customInstructions: options.customInstructions,
+      webSearchResults: options.webSearchResults,
     },
   );
 
-  return generateText(fullPrompt);
+  return generateText(trained);
 }
 
 /**
@@ -131,7 +163,7 @@ export async function analyzeAndRespondJSON<T = unknown>(
   const ctx = await loadPageAwareContext(pagePath);
   const auto = autoDetectWebModules(pagePath);
 
-  const fullPrompt = buildTrainedPrompt(
+  const trained = buildTrainedPrompt(
     ctx.section,
     userPrompt + "\n\nReturn ONLY valid JSON, no markdown fences.",
     ctx.dataContext,
@@ -154,10 +186,11 @@ export async function analyzeAndRespondJSON<T = unknown>(
       includeWebMastery: options.includeWebMastery ?? false,
       pageContext: ctx.pageContext,
       customInstructions: options.customInstructions,
+      webSearchResults: options.webSearchResults,
     },
   );
 
-  const raw = await generateText(fullPrompt);
+  const raw = await generateText(trained);
   const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
   return JSON.parse(cleaned) as T;
 }
@@ -184,6 +217,13 @@ export interface SEOAnalysisResult {
  * and competitor intelligence to produce actionable recommendations.
  */
 export async function runSEOAnalysis(): Promise<SEOAnalysisResult> {
+  // Fetch real-time competitive SEO data
+  const webData = await fetchWebContext([
+    "virtual assistant services SEO best practices 2025",
+    "Belize BPO outsourcing industry trends",
+    "bilingual virtual assistant market analysis",
+  ]);
+
   return analyzeAndRespondJSON<SEOAnalysisResult>(
     "/admin/seo/keywords",
     `Run a comprehensive SEO analysis for CreedaVA. Analyze our current content library, keyword coverage, technical SEO health, and competitive positioning. Identify the top content gaps where competitors rank but we don't. Provide a prioritized action plan to reach page 1 for our target keywords.
@@ -202,7 +242,7 @@ Return JSON with this exact structure:
   "contentGaps": [{ "keyword": string, "searchVolume": string, "difficulty": string, "suggestedContent": string }],
   "prioritizedActions": [{ "rank": number, "action": string, "owner": string, "timeline": string, "impact": string }]
 }`,
-    { includeSEOAlgorithms: true, includeMarketIntel: true, includeAIO: true, includeGEO: true, includeSERP: true, includeTechnicalSEO: true, includeAuthority: true },
+    { includeSEOAlgorithms: true, includeMarketIntel: true, includeAIO: true, includeGEO: true, includeSERP: true, includeTechnicalSEO: true, includeAuthority: true, webSearchResults: webData },
   );
 }
 
@@ -221,6 +261,13 @@ export interface MarketIntelReport {
  * trends, and opportunities in the VA industry.
  */
 export async function generateMarketIntelReport(): Promise<MarketIntelReport> {
+  // Fetch real-time market intelligence
+  const webData = await fetchWebContext([
+    "virtual assistant industry news 2025",
+    "BPO outsourcing market trends Latin America",
+    "remote staffing agency competitors",
+  ]);
+
   return analyzeAndRespondJSON<MarketIntelReport>(
     "/admin/analytics",
     `Generate a comprehensive market intelligence report for CreedaVA. Analyze:
@@ -240,7 +287,7 @@ Return JSON with:
   "threats": [{ "threat": string, "severity": "high"|"medium"|"low", "mitigation": string }],
   "trendAlert": [{ "trend": string, "relevance": string, "recommendation": string }]
 }`,
-    { includeMarketIntel: true, includeCompetitors: true },
+    { includeMarketIntel: true, includeCompetitors: true, webSearchResults: webData },
   );
 }
 
@@ -268,6 +315,13 @@ export async function generateSEOBlogPost(
   topic: string,
   targetKeyword?: string,
 ): Promise<GeneratedBlogPost> {
+  // Fetch real-time search data for the topic to ground the content
+  const searchQueries = [
+    `${targetKeyword || topic} best practices 2025`,
+    `${topic} virtual assistant outsourcing`,
+  ];
+  const webData = await fetchWebContext(searchQueries);
+
   return analyzeAndRespondJSON<GeneratedBlogPost>(
     "/admin/blog",
     `Write a VISUALLY STUNNING, SEO-optimized blog post about: "${topic}"
@@ -315,6 +369,7 @@ Return JSON:
       includeAIO: true,
       includeGEO: true,
       includeSERP: true,
+      webSearchResults: webData,
     },
   );
 }
@@ -363,17 +418,23 @@ export async function generateAndSaveReport(
     market: "Generate a market analysis report with industry trends and growth opportunities.",
   };
 
-  const report = await analyzeAndRespondJSON<{
+  // Use buildReportPrompt directly with generateText — avoids double-wrapping
+  // that happened when the old string prompt was re-wrapped by analyzeAndRespondJSON
+  const reportPrompt = buildReportPrompt(type, promptMap[type] || promptMap.weekly, ctx.dataContext);
+  // Append JSON instruction to user content
+  const jsonPrompt = {
+    systemInstruction: reportPrompt.systemInstruction,
+    userContent: reportPrompt.userContent + "\n\nReturn ONLY valid JSON, no markdown fences.",
+  };
+  const raw = await generateText(jsonPrompt);
+  const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
+  const report = JSON.parse(cleaned) as {
     title: string;
     summaryHtml: string;
     highlights: string[];
     recommendations: string[];
     score?: number;
-  }>(
-    pagePath,
-    buildReportPrompt(type, promptMap[type] || promptMap.weekly, ctx.dataContext),
-    { includeMarketIntel: type === "market" || type === "competitor" },
-  );
+  };
 
   const id = await create("reports", {
     ...report,
@@ -609,6 +670,12 @@ export interface ContentStrategy {
  * competitor analysis, and current content performance.
  */
 export async function generateContentStrategy(weeks: number = 4): Promise<ContentStrategy> {
+  // Fetch current content marketing trends
+  const webData = await fetchWebContext([
+    "content marketing strategy virtual assistants 2025",
+    "bilingual content SEO strategy",
+  ]);
+
   return analyzeAndRespondJSON<ContentStrategy>(
     "/admin/blog",
     `Create a ${weeks}-week content strategy for CreedaVA that maximizes organic traffic growth.
@@ -628,7 +695,7 @@ Return JSON:
   "contentGaps": [{ "topic": string, "competitorsCovering": number, "searchDemand": string, "recommendation": string }],
   "suggestions": ["strategic recommendations"]
 }`,
-    { includeSEOAlgorithms: true, includeMarketIntel: true },
+    { includeSEOAlgorithms: true, includeMarketIntel: true, webSearchResults: webData },
   );
 }
 

@@ -1,5 +1,14 @@
 import { adminDb } from "@/lib/firebase-admin";
+import { getPageSEO } from "@/lib/firebase/seo";
+import { websiteJsonLd } from "@/lib/utils/structured-data";
 import { HomeContent } from "./home-content";
+
+export async function generateMetadata() {
+  return getPageSEO("/", {
+    title: "CreedaVA — Bilingual Virtual Assistants for Your Business",
+    description: "Hire dedicated bilingual virtual assistants from Belize. Save 20+ hours per week on admin, customer service, and more.",
+  });
+}
 
 const DEFAULT_STATS = ["500+", "98%", "24/7", "50+"];
 
@@ -20,5 +29,13 @@ async function getHomepageStats(): Promise<string[]> {
 
 export default async function HomePage() {
   const statValues = await getHomepageStats();
-  return <HomeContent statValues={statValues} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
+      />
+      <HomeContent statValues={statValues} />
+    </>
+  );
 }

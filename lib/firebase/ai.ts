@@ -10,9 +10,21 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { GenerativeModel } from "@google/generative-ai";
+import type { GenerativeModel, CountTokensRequest } from "@google/generative-ai";
 
 import { buildContentPrompt, buildLandingPagePrompt } from "@/lib/utils/ai-system-prompt";
+import type { TrainedPrompt } from "@/lib/utils/ai-system-prompt";
+
+/** Input to all generation functions — either a plain string or a split prompt */
+export type PromptInput = string | TrainedPrompt;
+
+// ─── Token Budget ────────────────────────────────────
+
+/**
+ * Gemini 2.5 Flash has a 1,048,576 token context window.
+ * We leave a 100K token margin for the response + safety.
+ */
+const TOKEN_BUDGET = 900_000;
 
 // ─── Singleton model instance ────────────────────────
 
@@ -32,12 +44,68 @@ function getModel(): GenerativeModel {
   return _model;
 }
 
+// ─── Internal: Build Gemini request from PromptInput ─
+
+/**
+ * Convert a PromptInput to the correct generateContent params.
+ * - string: passed as plain user content (legacy behavior)
+ * - TrainedPrompt: system instruction separated from user content
+ */
+function buildRequest(input: PromptInput) {
+  if (typeof input === "string") {
+    return {
+      request: input,
+      logLabel: `plain(${input.length} chars)`,
+    };
+  }
+  return {
+    request: {
+      systemInstruction: input.systemInstruction,
+      contents: [{ role: "user" as const, parts: [{ text: input.userContent }] }],
+    },
+    logLabel: `split(sys:${input.systemInstruction.length}, user:${input.userContent.length} chars)`,
+  };
+}
+
+/**
+ * Count tokens and warn if over budget. Returns true if safe to proceed.
+ */
+async function validateTokenBudget(input: PromptInput): Promise<boolean> {
+  try {
+    const model = getModel();
+    let countRequest: CountTokensRequest;
+    if (typeof input === "string") {
+      countRequest = { contents: [{ role: "user", parts: [{ text: input }] }] };
+    } else {
+      // SDK types lag behind API — systemInstruction is supported at runtime
+      countRequest = {
+        contents: [{ role: "user", parts: [{ text: input.userContent }] }],
+        systemInstruction: { role: "model", parts: [{ text: input.systemInstruction }] },
+      } as CountTokensRequest;
+    }
+    const { totalTokens } = await model.countTokens(countRequest);
+    console.info(`[AI] Token count: ${totalTokens.toLocaleString()} / ${TOKEN_BUDGET.toLocaleString()} budget`);
+    if (totalTokens > TOKEN_BUDGET) {
+      console.warn(`[AI] ⚠️ Token count ${totalTokens} exceeds budget ${TOKEN_BUDGET} — request may fail`);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    // Token counting failed — proceed optimistically
+    console.warn("[AI] Token counting failed, proceeding without validation:", err);
+    return true;
+  }
+}
+
 // ─── Low-level helpers ───────────────────────────────
 
 /** Generate text from a prompt. Returns the text string. */
-export async function generateText(prompt: string): Promise<string> {
+export async function generateText(input: PromptInput): Promise<string> {
   const model = getModel();
-  const result = await model.generateContent(prompt);
+  const { request, logLabel } = buildRequest(input);
+  await validateTokenBudget(input);
+  console.info(`[AI] generateText — ${logLabel}`);
+  const result = await model.generateContent(request);
   return result.response.text() ?? "";
 }
 
@@ -45,18 +113,119 @@ export async function generateText(prompt: string): Promise<string> {
  * Generate text from a prompt with streaming.
  * Returns an async generator that yields text chunks as they arrive.
  */
-export async function* generateTextStream(prompt: string): AsyncGenerator<string, void, unknown> {
+export async function* generateTextStream(input: PromptInput): AsyncGenerator<string, void, unknown> {
   const model = getModel();
-  const result = await model.generateContentStream(prompt);
+  const { request, logLabel } = buildRequest(input);
+  await validateTokenBudget(input);
+  console.info(`[AI] generateTextStream — ${logLabel}`);
+  const result = await model.generateContentStream(request);
   for await (const chunk of result.stream) {
     const text = chunk.text();
     if (text) yield text;
   }
 }
 
+// ─── Grounded Generation (Google Search) ─────────────
+
+/** Source reference extracted from Gemini grounding metadata */
+export interface GroundingSource {
+  title: string;
+  url: string;
+}
+
+/**
+ * Extract grounding sources from a Gemini response's grounding metadata.
+ * Returns an array of { title, url } objects for citation.
+ */
+export function extractGroundingSources(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  response: any,
+): GroundingSource[] {
+  try {
+    const candidate = response?.candidates?.[0];
+    const metadata = candidate?.groundingMetadata;
+    if (!metadata?.groundingChunks) return [];
+
+    return metadata.groundingChunks
+      .filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (chunk: any) => chunk.web?.uri,
+      )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((chunk: any) => ({
+        title: chunk.web.title || "Source",
+        url: chunk.web.uri,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Format grounding sources as a citation footer.
+ * Returns empty string if no sources available.
+ */
+export function formatGroundingSources(sources: GroundingSource[]): string {
+  if (sources.length === 0) return "";
+  const lines = sources.map(
+    (s, i) => `[${i + 1}] ${s.title} | ${s.url}`,
+  );
+  return `\n\n--- Sources ---\n${lines.join("\n")}`;
+}
+
+/**
+ * Generate text with Google Search grounding enabled.
+ * Gemini will use real-time web search to ground factual responses.
+ * Returns { text, sources } where sources are extracted from grounding metadata.
+ */
+export async function generateTextGrounded(
+  input: PromptInput,
+): Promise<{ text: string; sources: GroundingSource[] }> {
+  const model = getModel();
+  const { logLabel } = buildRequest(input);
+  await validateTokenBudget(input);
+  console.info(`[AI] generateTextGrounded — ${logLabel}`);
+
+  // Build request with Google Search grounding tool
+  let request;
+  if (typeof input === "string") {
+    request = {
+      contents: [{ role: "user" as const, parts: [{ text: input }] }],
+      tools: [{ googleSearchRetrieval: { dynamicRetrievalConfig: { mode: "MODE_DYNAMIC" as const } } }],
+    };
+  } else {
+    request = {
+      systemInstruction: input.systemInstruction,
+      contents: [{ role: "user" as const, parts: [{ text: input.userContent }] }],
+      tools: [{ googleSearchRetrieval: { dynamicRetrievalConfig: { mode: "MODE_DYNAMIC" as const } } }],
+    };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result = await model.generateContent(request as any);
+  const text = result.response.text() ?? "";
+  const sources = extractGroundingSources(result.response);
+
+  if (sources.length > 0) {
+    console.info(`[AI] Grounding found ${sources.length} source(s)`);
+  }
+
+  return { text, sources };
+}
+
 /** Generate structured JSON from a prompt. */
-export async function generateJSON<T = unknown>(prompt: string): Promise<T> {
-  const raw = await generateText(prompt + "\n\nReturn ONLY valid JSON, no markdown fences.");
+export async function generateJSON<T = unknown>(input: PromptInput): Promise<T> {
+  // Append JSON instruction to user content
+  let adjusted: PromptInput;
+  if (typeof input === "string") {
+    adjusted = input + "\n\nReturn ONLY valid JSON, no markdown fences.";
+  } else {
+    adjusted = {
+      systemInstruction: input.systemInstruction,
+      userContent: input.userContent + "\n\nReturn ONLY valid JSON, no markdown fences.",
+    };
+  }
+  const raw = await generateText(adjusted);
   // Strip potential markdown fences the model might still add
   const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
   return JSON.parse(cleaned) as T;
@@ -66,7 +235,7 @@ export async function generateJSON<T = unknown>(prompt: string): Promise<T> {
 
 /** Generate a blog post draft with creative visual design */
 export async function generateBlogPost(topic: string, tone = "professional", length = "800 words") {
-  const prompt = buildContentPrompt(
+  const trained = buildContentPrompt(
     "Blog Content AI",
     `Write a visually engaging blog post about: "${topic}"
 
@@ -98,7 +267,7 @@ Return ONLY valid JSON, no markdown fences.`,
     content: string;
     tags: string[];
     metaDescription: string;
-  }>(prompt);
+  }>(trained);
 }
 
 /** Generate SEO keyword suggestions for a topic */
@@ -224,7 +393,7 @@ Return JSON with:
 
 /** Generate landing page content with creative visual design */
 export async function generateLandingPage(topic: string, cta: string = "Get Started") {
-  const prompt = buildLandingPagePrompt(topic);
+  const trained = buildLandingPagePrompt(topic);
 
   // Override cta in the prompt result if custom cta provided
   const result = await generateJSON<{
@@ -234,7 +403,7 @@ export async function generateLandingPage(topic: string, cta: string = "Get Star
     subheadline: string;
     ctaText: string;
     bodyHtml: string;
-  }>(prompt);
+  }>(trained);
 
   // Use the provided CTA if it differs from default
   if (cta !== "Get Started") {
@@ -327,7 +496,7 @@ export async function generateFullContext(
     }
   }
 
-  const fullPrompt = buildTrainedPrompt(
+  const trained = buildTrainedPrompt(
     ctx.section,
     userPrompt,
     ctx.dataContext,
@@ -341,5 +510,5 @@ export async function generateFullContext(
     },
   );
 
-  return generateText(fullPrompt);
+  return generateText(trained);
 }
