@@ -80,17 +80,20 @@ export function initializeAppCheck(): AppCheck | null {
 
 /**
  * Returns App Check headers for HTTP requests to protected endpoints.
- * If App Check is unavailable, returns an empty header object.
+ * If App Check is unavailable or fails for any reason, returns an empty
+ * header object so callers are never blocked by reCAPTCHA issues.
  */
 export async function getAppCheckHeaders(): Promise<Record<string, string>> {
-  const appCheck = initializeAppCheck();
-  if (!appCheck) return {};
-
   try {
+    const appCheck = initializeAppCheck();
+    if (!appCheck) return {};
     const tokenResult = await getToken(appCheck, false);
     if (!tokenResult.token) return {};
     return { "X-Firebase-AppCheck": tokenResult.token };
   } catch {
+    // Silently degrade — App Check is an optional security layer.
+    // Forms must work even when reCAPTCHA is blocked by ad-blockers,
+    // corporate firewalls, or browser privacy settings.
     return {};
   }
 }

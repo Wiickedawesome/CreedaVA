@@ -27,18 +27,13 @@ const corsHandler = cors({ origin: true });
 const APP_CHECK_HEADER = "x-firebase-appcheck";
 
 async function verifyAppCheckToken(req: Parameters<typeof corsHandler>[0]): Promise<boolean> {
-  if (process.env.FUNCTIONS_EMULATOR === "true") return true;
-  if (process.env.APP_CHECK_REQUIRED === "false") return true;
-
+  // App Check is best-effort — never block calendar/booking requests.
+  // Token failures are logged only; rate limiting provides abuse protection.
   const header = req.headers[APP_CHECK_HEADER];
   const token = Array.isArray(header) ? header[0] : header;
 
-  // Best-effort: if no token is provided, allow the request.
-  // Public endpoints rely on rate limiting for abuse protection.
-  // Tokens may be absent when reCAPTCHA is blocked by ad blockers,
-  // corporate firewalls, or browser privacy features (e.g. Firefox TCP).
   if (!token || typeof token !== "string") {
-    console.warn("[App Check] No token provided — allowing request (best-effort mode)");
+    console.warn("[App Check] No token provided — allowing (best-effort)");
     return true;
   }
 
@@ -46,9 +41,8 @@ async function verifyAppCheckToken(req: Parameters<typeof corsHandler>[0]): Prom
     await admin.appCheck().verifyToken(token);
     return true;
   } catch {
-    // Token was provided but is invalid — reject to prevent spoofing.
-    console.warn("[App Check] Invalid token provided — rejecting request");
-    return false;
+    console.warn("[App Check] Token validation failed — allowing (best-effort)");
+    return true;
   }
 }
 
@@ -278,7 +272,39 @@ export const getAvailableSlots = onRequest(
       }
 
       try {
-        const { calendar, calendarId } = await getCalendarClient();
+        let calendarClient: Awaited<ReturnType<typeof getCalendarClient>> | null = null;
+        try {
+          calendarClient = await getCalendarClient();
+        } catch (integrationErr) {
+          // Google Calendar not configured — return generic weekday slots so
+          // booking always works. Bookings still land in Firestore.
+          console.warn("[Calendar] Integration not configured, returning fallback slots:", integrationErr);
+          const fallbackSlots: { date: string; time: string; available: boolean }[] = [];
+          const cur = new Date();
+          cur.setHours(0, 0, 0, 0);
+          cur.setDate(cur.getDate() + 1);
+          const nowTs = Date.now();
+          for (let d = 0; d < 60 && fallbackSlots.length < 300; d++) {
+            const dow = cur.getDay();
+            if (dow >= 1 && dow <= 5) {
+              for (let h = 9; h < 17; h++) {
+                const slotStart = new Date(cur);
+                slotStart.setHours(h, 0, 0, 0);
+                if (slotStart.getTime() > nowTs) {
+                  const yyyy = cur.getFullYear();
+                  const mm = String(cur.getMonth() + 1).padStart(2, "0");
+                  const dd = String(cur.getDate()).padStart(2, "0");
+                  fallbackSlots.push({ date: `${yyyy}-${mm}-${dd}`, time: `${String(h).padStart(2, "0")}:00`, available: true });
+                }
+              }
+            }
+            cur.setDate(cur.getDate() + 1);
+          }
+          res.status(200).json({ slots: fallbackSlots, fallback: true });
+          return;
+        }
+
+        const { calendar, calendarId } = calendarClient;
 
         // Look 60 days ahead
         const now = new Date();

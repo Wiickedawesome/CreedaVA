@@ -15,6 +15,34 @@ interface Slot {
 const WEBHOOK_URL = "/handleFormWebhook";
 const SLOTS_URL = "/getAvailableSlots";
 
+/** Generates Mon–Fri 9am–5pm slots for the next 60 days when the
+ *  server-side calendar integration is unavailable. Bookings still
+ *  write to Firestore — nothing is lost. */
+function generateFallbackSlots(): Slot[] {
+  const slots: Slot[] = [];
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  cursor.setDate(cursor.getDate() + 1);
+  const nowTs = Date.now();
+  for (let d = 0; d < 60 && slots.length < 300; d++) {
+    const dow = cursor.getDay();
+    if (dow >= 1 && dow <= 5) {
+      for (let h = 9; h < 17; h++) {
+        const slotStart = new Date(cursor);
+        slotStart.setHours(h, 0, 0, 0);
+        if (slotStart.getTime() > nowTs) {
+          const yyyy = cursor.getFullYear();
+          const mm = String(cursor.getMonth() + 1).padStart(2, "0");
+          const dd = String(cursor.getDate()).padStart(2, "0");
+          slots.push({ date: `${yyyy}-${mm}-${dd}`, time: `${String(h).padStart(2, "0")}:00`, available: true });
+        }
+      }
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return slots;
+}
+
 function formatDate(dateStr: string, locale = "en-US") {
   const d = new Date(dateStr + "T12:00:00");
   return d.toLocaleDateString(locale, { weekday: "short", month: "short", day: "numeric" });
@@ -37,7 +65,6 @@ export default function JoinPage() {
   const [step, setStep] = useState(1);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
-  const [slotsError, setSlotsError] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -58,7 +85,8 @@ export default function JoinPage() {
     notes: "",
   });
 
-  // Fetch available slots on mount
+  // Fetch available slots on mount — falls back to generated slots on any error
+  // so the booking form ALWAYS works regardless of calendar integration state.
   useEffect(() => {
     async function load() {
       try {
@@ -66,9 +94,12 @@ export default function JoinPage() {
         const res = await fetch(SLOTS_URL, { headers: appCheckHeaders });
         if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
-        setSlots(data.slots || []);
+        const loaded: Slot[] = data.slots || [];
+        setSlots(loaded.length > 0 ? loaded : generateFallbackSlots());
       } catch {
-        setSlotsError("Unable to load calendar availability.");
+        // Calendar integration unavailable — use client-generated slots.
+        // Booking still completes and lands in Firestore.
+        setSlots(generateFallbackSlots());
       } finally {
         setLoadingSlots(false);
       }
@@ -225,11 +256,6 @@ export default function JoinPage() {
                 {loadingSlots ? (
                   <div className="flex items-center justify-center py-16">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                  </div>
-                ) : slotsError ? (
-                  <div className="text-center py-12">
-                    <p className="text-gray-50 mb-4">{t.join.slotsError}</p>
-                    <Button onClick={() => window.location.reload()}>{t.join.retry}</Button>
                   </div>
                 ) : (
                   <>

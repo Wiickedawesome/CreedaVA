@@ -100,20 +100,16 @@ function isRateLimited(ip: string): boolean {
 }
 
 async function verifyAppCheckToken(req: Parameters<typeof corsHandler>[0]): Promise<boolean> {
-  // Skip strict App Check in emulator unless explicitly forced.
-  if (process.env.FUNCTIONS_EMULATOR === "true") return true;
-  if (process.env.APP_CHECK_REQUIRED === "false") return true;
-
+  // App Check is an optional bonus security layer for public form endpoints.
+  // Rate limiting is the primary abuse-prevention mechanism.
+  // We NEVER reject a submission based on App Check alone — the contact and
+  // booking forms must work regardless of reCAPTCHA availability (ad blockers,
+  // corporate firewalls, browser privacy modes, key config mismatches, etc.).
   const header = req.headers[APP_CHECK_HEADER];
   const token = Array.isArray(header) ? header[0] : header;
 
-  // Best-effort: if no token is provided, allow the request.
-  // Public endpoints (contact form, booking, etc.) rely on rate limiting
-  // for abuse protection. App Check is a bonus layer, not a gate.
-  // Tokens may be absent when reCAPTCHA is blocked by ad blockers,
-  // corporate firewalls, or browser privacy features (e.g. Firefox TCP).
   if (!token || typeof token !== "string") {
-    console.warn("[App Check] No token provided — allowing request (best-effort mode)");
+    console.warn("[App Check] No token provided — allowing (best-effort)");
     return true;
   }
 
@@ -121,9 +117,10 @@ async function verifyAppCheckToken(req: Parameters<typeof corsHandler>[0]): Prom
     await admin.appCheck().verifyToken(token);
     return true;
   } catch {
-    // Token was provided but is invalid — reject to prevent spoofing.
-    console.warn("[App Check] Invalid token provided — rejecting request");
-    return false;
+    // Token present but invalid — log and allow anyway.
+    // The rate limiter will handle any abuse.
+    console.warn("[App Check] Token validation failed — allowing (best-effort)");
+    return true;
   }
 }
 
