@@ -92,13 +92,23 @@ export const syncCampaignData = onCall(
         LIMIT 50
       `;
 
-      const results = await fetchGoogleAdsData(integration.config, query);
+      const streamChunks = await fetchGoogleAdsData(integration.config, query);
+
+      // Google Ads streaming API returns [{results: [row, row, ...]}, ...]
+      // Flatten all chunks into a single list of campaign rows.
+      const results: unknown[] = [];
+      if (Array.isArray(streamChunks)) {
+        for (const chunk of streamChunks) {
+          const rows = (chunk as Record<string, unknown>).results;
+          if (Array.isArray(rows)) results.push(...rows);
+        }
+      }
 
       // Sync to Firestore campaigns collection
       const batch = db.batch();
       let synced = 0;
 
-      if (Array.isArray(results)) {
+      if (results.length > 0) {
         for (const row of results) {
           const campaign = (row as Record<string, unknown>).campaign as Record<string, unknown>;
           const metrics = (row as Record<string, unknown>).metrics as Record<string, unknown>;

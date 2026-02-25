@@ -14,7 +14,10 @@ import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 async function getSheetsClient() {
   const integration = await getIntegrationConfig("google-sheets");
-  const config = integration?.config ?? {};
+  if (!integration?.enabled) {
+    throw new HttpsError("failed-precondition", "Google Sheets integration not enabled. Configure in Admin → Integrations.");
+  }
+  const config = integration.config;
 
   let authClient;
   if (config.serviceAccountKey) {

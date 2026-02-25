@@ -161,6 +161,19 @@ export async function cloudListCalendarEvents(): Promise<CalendarEvent[]> {
   return result.data.events;
 }
 
+interface RetrySyncResult {
+  synced: boolean;
+  created?: boolean;
+  updated?: boolean;
+  link?: string;
+}
+
+export async function cloudRetrySyncBooking(bookingId: string): Promise<RetrySyncResult> {
+  const fn = httpsCallable<{ bookingId: string }, RetrySyncResult>(functions, "retrySyncBooking");
+  const result = await fn({ bookingId });
+  return result.data;
+}
+
 // ─── Google Ads ──────────────────────────────────────
 
 interface AdsSyncResult {

@@ -9,7 +9,7 @@
 export { sendEmail, sendBulkEmail } from "./email";
 
 // Google Calendar
-export { syncBookingToCalendar, updateCalendarOnBookingChange, listCalendarEvents, getAvailableSlots } from "./calendar";
+export { syncBookingToCalendar, updateCalendarOnBookingChange, retrySyncBooking, listCalendarEvents, getAvailableSlots } from "./calendar";
 
 // Google Ads
 export { syncCampaignData } from "./ads";

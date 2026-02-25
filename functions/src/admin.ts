@@ -141,7 +141,8 @@ export async function getIntegrationConfig(
     for (const [k, v] of Object.entries(firestoreConfig)) {
       if (v) merged[k] = v; // Firestore value takes precedence
     }
-    return { enabled: firestoreEnabled || true, config: merged, source: "merged" };
+    // Firestore enabled flag wins — disabling via the UI must always take effect.
+    return { enabled: firestoreEnabled, config: merged, source: "merged" };
   }
 
   if (firestoreConfig) {

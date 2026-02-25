@@ -106,9 +106,12 @@ export const sendEmail = onCall(
       sentBy: request.auth.token.email,
     });
 
-    // Optionally update the email draft status
+    // Mark related email draft as sent if saveToCollection ID was provided
     if (data.saveToCollection) {
-      // Mark email as sent in the emails collection
+      try {
+        const docRef = db.collection("emails").doc(data.saveToCollection);
+        await docRef.update({ status: "sent", sentAt: new Date(), messageId: result.messageId });
+      } catch { /* doc may not exist — ignore */ }
     }
 
     return { success: true, messageId: result.messageId };

@@ -15,7 +15,7 @@ import {
 } from "@/components/admin";
 import type { Column, CalendarEvent } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
-import { cloudListCalendarEvents } from "@/lib/firebase/cloud-functions";
+import { cloudListCalendarEvents, cloudRetrySyncBooking } from "@/lib/firebase/cloud-functions";
 import type { Booking } from "@/lib/types/crm";
 import { statusVariant, BOOKING_STATUSES } from "@/lib/types/crm";
 import type { EmailDraft } from "@/lib/types/content";
@@ -34,6 +34,7 @@ export default function BookingsPage() {
   const [selected, setSelected] = useState<Booking | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [calendarEvents, setCalendarEvents] = useState<{
     id: string; summary: string; start: string; end: string;
     description?: string; link?: string; status?: string;
@@ -61,6 +62,14 @@ export default function BookingsPage() {
     if (viewMode === "calendar" && calendarEvents.length === 0) {
       fetchCalendarEvents();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode]);
+
+  // Auto-refresh Google Calendar events every 60 seconds while in calendar view
+  useEffect(() => {
+    if (viewMode !== "calendar") return;
+    const id = setInterval(() => { fetchCalendarEvents(); }, 60_000);
+    return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode]);
 
@@ -186,6 +195,23 @@ export default function BookingsPage() {
       toast("Failed — ensure Google Calendar is configured in Settings → Integrations", "error");
     } finally {
       setCalendarLoading(false);
+    }
+  }
+
+  async function handleRetrySync() {
+    if (!selected) return;
+    setSyncing(true);
+    try {
+      const result = await cloudRetrySyncBooking(selected.id);
+      toast("Synced to Google Calendar", "success");
+      setSelected({ ...selected, syncedToCalendar: true, googleCalendarLink: result.link || selected.googleCalendarLink });
+      // Refresh calendar events if in calendar view
+      if (viewMode === "calendar") fetchCalendarEvents();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Sync failed";
+      toast(msg.includes("not enabled") ? "Google Calendar integration not configured in Settings" : msg, "error");
+    } finally {
+      setSyncing(false);
     }
   }
 
@@ -534,7 +560,18 @@ export default function BookingsPage() {
                     )}
                   </p>
                 ) : (
-                  <p className="text-xs text-gray-40 mt-0.5">Not synced yet</p>
+                  <p className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-gray-40">Not synced yet</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleRetrySync}
+                      isLoading={syncing}
+                      className="text-xs h-6 px-2 py-0"
+                    >
+                      Sync Now
+                    </Button>
+                  </p>
                 )}
               </div>
             </div>

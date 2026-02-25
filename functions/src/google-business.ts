@@ -13,7 +13,10 @@ import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 
 async function getBusinessClient() {
   const integration = await getIntegrationConfig("google-business");
-  const config = integration?.config ?? {};
+  if (!integration?.enabled) {
+    throw new HttpsError("failed-precondition", "Google Business Profile integration not enabled. Configure in Admin → Integrations.");
+  }
+  const config = integration.config;
 
   let authClient;
   if (config.serviceAccountKey) {

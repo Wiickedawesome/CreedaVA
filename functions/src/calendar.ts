@@ -213,6 +213,55 @@ export const updateCalendarOnBookingChange = onDocumentUpdated(
   },
 );
 
+// ─── Manual retry: sync an existing booking to Calendar ──
+
+export const retrySyncBooking = onCall(
+  { region: "us-east4" },
+  async (request) => {
+    if (!request.auth?.token.email?.endsWith("@creedava.com")) {
+      throw new HttpsError("permission-denied", "Must be @creedava.com");
+    }
+
+    const { bookingId } = request.data as { bookingId: string };
+    if (!bookingId || typeof bookingId !== "string") {
+      throw new HttpsError("invalid-argument", "bookingId is required");
+    }
+
+    const bookingRef = admin.firestore().collection("bookings").doc(bookingId);
+    const snap = await bookingRef.get();
+    if (!snap.exists) throw new HttpsError("not-found", "Booking not found");
+
+    const booking = snap.data() as BookingData & { googleCalendarEventId?: string };
+    const { calendar, calendarId } = await getCalendarClient();
+    const calendarEvent = bookingToEvent(booking);
+
+    if (booking.googleCalendarEventId) {
+      // Event already exists — update it
+      await calendar.events.update({
+        calendarId,
+        eventId: booking.googleCalendarEventId,
+        requestBody: calendarEvent,
+        sendUpdates: "all",
+      });
+      await bookingRef.update({ syncedToCalendar: true });
+      return { synced: true, updated: true };
+    } else {
+      // No event yet — create it
+      const result = await calendar.events.insert({
+        calendarId,
+        requestBody: calendarEvent,
+        sendUpdates: "all",
+      });
+      await bookingRef.update({
+        googleCalendarEventId: result.data.id,
+        googleCalendarLink: result.data.htmlLink,
+        syncedToCalendar: true,
+      });
+      return { synced: true, created: true, link: result.data.htmlLink };
+    }
+  },
+);
+
 // ─── List upcoming calendar events (callable) ────────
 
 export const listCalendarEvents = onCall(
