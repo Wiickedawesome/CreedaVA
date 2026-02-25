@@ -1,16 +1,11 @@
 /**
- * Firebase AI (Gemini) service — client-side wrapper
+ * Firebase AI (Gemini) service — proxy-based client
  *
- * Uses @google/generative-ai to call the Gemini API directly,
- * bypassing the Firebase AI Logic proxy which requires App Check.
+ * All Gemini calls are routed through /api/ai (server-side proxy) so that
+ * the API key is never exposed in the browser bundle.
  *
- * Prerequisites:
- *   1. NEXT_PUBLIC_GEMINI_API_KEY set in .env.local
- *   2. Key must have generativelanguage.googleapis.com enabled
+ * The proxy enforces Firebase session-cookie auth and per-user rate limiting.
  */
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { GenerativeModel, CountTokensRequest } from "@google/generative-ai";
 
 import { buildContentPrompt, buildLandingPagePrompt } from "@/lib/utils/ai-system-prompt";
 import type { TrainedPrompt } from "@/lib/utils/ai-system-prompt";
@@ -18,110 +13,71 @@ import type { TrainedPrompt } from "@/lib/utils/ai-system-prompt";
 /** Input to all generation functions — either a plain string or a split prompt */
 export type PromptInput = string | TrainedPrompt;
 
-// ─── Token Budget ────────────────────────────────────
+// ─── Proxy helper ────────────────────────────────────
 
-/**
- * Gemini 2.5 Flash has a 1,048,576 token context window.
- * We leave a 100K token margin for the response + safety.
- */
-const TOKEN_BUDGET = 900_000;
+type ProxyType = "generate" | "stream" | "grounded";
 
-// ─── Singleton model instance ────────────────────────
-
-let _model: GenerativeModel | null = null;
-
-function getModel(): GenerativeModel {
-  if (!_model) {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error(
-        "NEXT_PUBLIC_GEMINI_API_KEY is not set. Add it to .env.local.",
-      );
-    }
-    const genAI = new GoogleGenerativeAI(apiKey);
-    _model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-  }
-  return _model;
+interface ProxyParams {
+  type: ProxyType;
+  userContent?: string;
+  systemInstruction?: string;
 }
 
-// ─── Internal: Build Gemini request from PromptInput ─
-
 /**
- * Convert a PromptInput to the correct generateContent params.
- * - string: passed as plain user content (legacy behavior)
- * - TrainedPrompt: system instruction separated from user content
+ * Post a request to the server-side /api/ai proxy.
+ * Throws on non-2xx responses with the error message from the proxy.
  */
-function buildRequest(input: PromptInput) {
+async function callProxy(params: ProxyParams): Promise<Response> {
+  const res = await fetch("/api/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) {
+    let message = `HTTP ${res.status}`;
+    try {
+      const body = await res.clone().json();
+      if (body?.error) message = body.error;
+    } catch { /* ignore */ }
+    throw new Error(`[AI Proxy] ${message}`);
+  }
+  return res;
+}
+
+/** Build proxy params from a PromptInput */
+function toProxyParams(type: ProxyType, input: PromptInput): ProxyParams {
   if (typeof input === "string") {
-    return {
-      request: input,
-      logLabel: `plain(${input.length} chars)`,
-    };
+    return { type, userContent: input };
   }
   return {
-    request: {
-      systemInstruction: input.systemInstruction,
-      contents: [{ role: "user" as const, parts: [{ text: input.userContent }] }],
-    },
-    logLabel: `split(sys:${input.systemInstruction.length}, user:${input.userContent.length} chars)`,
+    type,
+    userContent: input.userContent,
+    systemInstruction: input.systemInstruction,
   };
-}
-
-/**
- * Count tokens and warn if over budget. Returns true if safe to proceed.
- */
-async function validateTokenBudget(input: PromptInput): Promise<boolean> {
-  try {
-    const model = getModel();
-    let countRequest: CountTokensRequest;
-    if (typeof input === "string") {
-      countRequest = { contents: [{ role: "user", parts: [{ text: input }] }] };
-    } else {
-      // SDK types lag behind API — systemInstruction is supported at runtime
-      countRequest = {
-        contents: [{ role: "user", parts: [{ text: input.userContent }] }],
-        systemInstruction: { role: "model", parts: [{ text: input.systemInstruction }] },
-      } as CountTokensRequest;
-    }
-    const { totalTokens } = await model.countTokens(countRequest);
-    console.info(`[AI] Token count: ${totalTokens.toLocaleString()} / ${TOKEN_BUDGET.toLocaleString()} budget`);
-    if (totalTokens > TOKEN_BUDGET) {
-      console.warn(`[AI] ⚠️ Token count ${totalTokens} exceeds budget ${TOKEN_BUDGET} — request may fail`);
-      return false;
-    }
-    return true;
-  } catch (err) {
-    // Token counting failed — proceed optimistically
-    console.warn("[AI] Token counting failed, proceeding without validation:", err);
-    return true;
-  }
 }
 
 // ─── Low-level helpers ───────────────────────────────
 
-/** Generate text from a prompt. Returns the text string. */
+/** Generate text from a prompt via the /api/ai proxy. */
 export async function generateText(input: PromptInput): Promise<string> {
-  const model = getModel();
-  const { request, logLabel } = buildRequest(input);
-  await validateTokenBudget(input);
-  console.info(`[AI] generateText — ${logLabel}`);
-  const result = await model.generateContent(request);
-  return result.response.text() ?? "";
+  const res = await callProxy(toProxyParams("generate", input));
+  const { text } = await res.json();
+  return text ?? "";
 }
 
 /**
- * Generate text from a prompt with streaming.
+ * Generate text from a prompt with streaming via the /api/ai proxy.
  * Returns an async generator that yields text chunks as they arrive.
  */
 export async function* generateTextStream(input: PromptInput): AsyncGenerator<string, void, unknown> {
-  const model = getModel();
-  const { request, logLabel } = buildRequest(input);
-  await validateTokenBudget(input);
-  console.info(`[AI] generateTextStream — ${logLabel}`);
-  const result = await model.generateContentStream(request);
-  for await (const chunk of result.stream) {
-    const text = chunk.text();
-    if (text) yield text;
+  const res = await callProxy(toProxyParams("stream", input));
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value, { stream: true });
+    if (chunk) yield chunk;
   }
 }
 
@@ -174,43 +130,15 @@ export function formatGroundingSources(sources: GroundingSource[]): string {
 }
 
 /**
- * Generate text with Google Search grounding enabled.
- * Gemini will use real-time web search to ground factual responses.
+ * Generate text with Google Search grounding enabled via the /api/ai proxy.
  * Returns { text, sources } where sources are extracted from grounding metadata.
  */
 export async function generateTextGrounded(
   input: PromptInput,
 ): Promise<{ text: string; sources: GroundingSource[] }> {
-  const model = getModel();
-  const { logLabel } = buildRequest(input);
-  await validateTokenBudget(input);
-  console.info(`[AI] generateTextGrounded — ${logLabel}`);
-
-  // Build request with Google Search grounding tool
-  let request;
-  if (typeof input === "string") {
-    request = {
-      contents: [{ role: "user" as const, parts: [{ text: input }] }],
-      tools: [{ googleSearchRetrieval: { dynamicRetrievalConfig: { mode: "MODE_DYNAMIC" as const } } }],
-    };
-  } else {
-    request = {
-      systemInstruction: input.systemInstruction,
-      contents: [{ role: "user" as const, parts: [{ text: input.userContent }] }],
-      tools: [{ googleSearchRetrieval: { dynamicRetrievalConfig: { mode: "MODE_DYNAMIC" as const } } }],
-    };
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await model.generateContent(request as any);
-  const text = result.response.text() ?? "";
-  const sources = extractGroundingSources(result.response);
-
-  if (sources.length > 0) {
-    console.info(`[AI] Grounding found ${sources.length} source(s)`);
-  }
-
-  return { text, sources };
+  const res = await callProxy(toProxyParams("grounded", input));
+  const { text, sources } = await res.json();
+  return { text: text ?? "", sources: sources ?? [] };
 }
 
 /** Generate structured JSON from a prompt. */

@@ -10,6 +10,7 @@ const mockSwitchToConversation = vi.fn();
 const mockGenerateText = vi.fn();
 const mockGenerateTextStream = vi.fn();
 const mockGenerateContent = vi.fn();
+let mockFetch: ReturnType<typeof vi.spyOn>;
 
 vi.mock("@google/generative-ai", () => {
   const mockModel = {
@@ -55,6 +56,10 @@ vi.mock("@/lib/firebase/config", () => ({
   db: {},
 }));
 
+vi.mock("@/lib/firebase/cloud-functions", () => ({
+  cloudWebSearch: vi.fn().mockResolvedValue({ success: false, results: [], competitors: [], trends: [], keywords: [] }),
+}));
+
 vi.mock("@/lib/utils/ai-system-prompt", () => ({
   buildTrainedPrompt: (_section: string, msg: string) => `TRAINED: ${msg}`,
   getPageContext: () => "page context",
@@ -89,19 +94,15 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_GEMINI_API_KEY = "test-key";
   clearCache(); // Ensure cache is clean between tests
 
-  // Default mock: model returns text with no function calls
-  mockGenerateContent.mockResolvedValue({
-    response: {
-      text: () => "AI reply",
-      candidates: [
-        {
-          content: {
-            parts: [{ text: "AI reply" }],
-          },
-        },
-      ],
-    },
-  });
+  // Mock the AI proxy endpoint used by callChatProxy in ai-core.ts
+  mockFetch = vi.spyOn(global, "fetch").mockResolvedValue({
+    ok: true,
+    json: () =>
+      Promise.resolve({
+        parts: [{ text: "AI reply" }],
+        text: "AI reply",
+      }),
+  } as unknown as Response);
 });
 
 // ─── sendMessage ─────────────────────────────────────
@@ -123,7 +124,7 @@ describe("sendMessage", () => {
     expect(result.conversationId).toBe("conv-1");
     expect(result.messageCount).toBe(2); // user + assistant
     expect(mockAddMessage).toHaveBeenCalledTimes(2); // user msg + AI msg
-    expect(mockGenerateContent).toHaveBeenCalledOnce();
+    expect(mockFetch).toHaveBeenCalledOnce();
   });
 
   it("includes data context when provided", async () => {
@@ -138,7 +139,7 @@ describe("sendMessage", () => {
 
     await sendMessage("u1", "Question", { dataContext: "Some data" });
 
-    expect(mockGenerateContent).toHaveBeenCalledOnce();
+    expect(mockFetch).toHaveBeenCalledOnce();
   });
 });
 

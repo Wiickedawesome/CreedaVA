@@ -15,8 +15,7 @@
  * Based on: https://docs.cloud.google.com/architecture/choose-design-pattern-agentic-ai-system
  */
 
-import { GoogleGenerativeAI, FunctionCallingMode } from "@google/generative-ai";
-import type { GenerativeModel, Content, Part } from "@google/generative-ai";
+import type { Content, Part } from "@google/generative-ai";
 import { generateText, generateTextStream } from "./ai";
 import {
   getActiveConversation,
@@ -31,7 +30,8 @@ import {
   getPageContext,
 } from "@/lib/utils/ai-system-prompt";
 import { loadPageAwareContext } from "@/lib/utils/ai-page-context";
-import { ALL_TOOLS } from "./ai-tools";
+import { getSpecialist } from "@/lib/utils/ai-specialists";
+import { cloudWebSearch } from "@/lib/firebase/cloud-functions";
 import {
   executeTool,
   confirmAction as execConfirm,
@@ -47,26 +47,35 @@ import type { AIMessage, AIConversation, CreeaAICoreOptions } from "@/lib/types/
  * Separate model instance for tool-enabled calls.
  * The base `ai.ts` model doesn't support tools — this one does.
  */
-let _toolModel: GenerativeModel | null = null;
-
-function getToolModel(): GenerativeModel {
-  if (!_toolModel) {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("NEXT_PUBLIC_GEMINI_API_KEY is not set.");
-    }
-    const genAI = new GoogleGenerativeAI(apiKey);
-    _toolModel = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      tools: [ALL_TOOLS],
-      toolConfig: {
-        functionCallingConfig: {
-          mode: FunctionCallingMode.AUTO,
-        },
-      },
-    });
+/**
+ * Call the /api/ai proxy in "chat" mode — one round of the tool loop.
+ * Returns a mock GenerateContentResult so the existing loop logic works unchanged.
+ */
+async function callChatProxy(
+  systemInstruction: string,
+  contents: Content[],
+): Promise<{
+  response: {
+    candidates: Array<{ content: { parts: Part[]; role: string } }>;
+    text(): string;
+  };
+}> {
+  const res = await fetch("/api/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "chat", systemInstruction, contents }),
+  });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    throw new Error(`[AI Core Proxy] ${errBody.error ?? res.status}`);
   }
-  return _toolModel;
+  const { parts, text } = await res.json();
+  return {
+    response: {
+      candidates: [{ content: { parts: parts ?? [], role: "model" } }],
+      text: () => text ?? "",
+    },
+  };
 }
 
 /** Max function call rounds to prevent infinite loops */
@@ -99,7 +108,70 @@ async function getConvo(userId: string): Promise<AIConversation & { id: string }
 function invalidateCache() {
   _cachedConvo = null;
   _cachedUserId = null;
-  _toolModel = null;
+}
+
+// ─── NOVA: Web Research Pre-fetch ──────────────────────
+
+/**
+ * Extracts a content topic from a user message by looking for creation verbs.
+ * Returns null if no content-creation intent is detected.
+ */
+function extractContentTopic(message: string): string | null {
+  const triggers = [
+    "write",
+    "create",
+    "generate",
+    "draft",
+    "post about",
+    "article about",
+    "blog about",
+    "blog post on",
+    "blog on",
+  ];
+  const lower = message.toLowerCase();
+  for (const trigger of triggers) {
+    const idx = lower.indexOf(trigger);
+    if (idx !== -1) {
+      const after = message.slice(idx + trigger.length).trim();
+      const topic = after.slice(0, 80).replace(/[.!?].*$/, "").trim();
+      if (topic.length > 3) return topic;
+    }
+  }
+  return null;
+}
+
+/**
+ * Pre-fetches web research for NOVA's content creation tasks.
+ * Fires two parallel web searches and formats results as a context block.
+ * Silently swallows errors so AI generation is never blocked.
+ */
+async function fetchWebContextForNova(topic: string): Promise<string> {
+  try {
+    const queries = [
+      `virtual assistant ${topic} trends 2026`,
+      `${topic} small business outsourcing 2026`,
+    ];
+    const results = await Promise.allSettled(
+      queries.map((q) => cloudWebSearch(q, 5)),
+    );
+    const sections: string[] = [];
+    for (let i = 0; i < queries.length; i++) {
+      const r = results[i];
+      if (
+        r.status === "fulfilled" &&
+        r.value.success &&
+        r.value.results.length > 0
+      ) {
+        const items = r.value.results
+          .map((sr) => `  - ${sr.title}: ${sr.snippet} (${sr.link})`)
+          .join("\n");
+        sections.push(`[${queries[i]}]\n${items}`);
+      }
+    }
+    return sections.length > 0 ? sections.join("\n\n") : "";
+  } catch {
+    return "";
+  }
 }
 
 // ─── Core: Send Message ──────────────────────────────
@@ -179,15 +251,23 @@ export async function sendMessage(
     }
   }
 
-  // 6. Build the fully-trained prompt with memory + tool guidelines
+  // 5.5 Resolve specialist + NOVA web research pre-fetch
+  const specialist = getSpecialist(pagePath);
+  let novaWebContext = "";
+  if (specialist.codename === "NOVA") {
+    const topic = extractContentTopic(userMessage);
+    if (topic) {
+      novaWebContext = await fetchWebContextForNova(topic);
+    }
+  }
+
+  // 6. Build the fully-trained prompt using specialist modules + memory
   const pageContext = getPageContext(pagePath);
   const trained = buildTrainedPrompt(section, userMessage, dataContext, {
-    includeCompetitors: options.includeCompetitors ?? true,
-    includeKPIs: options.includeKPIs ?? true,
-    includeSEOAlgorithms: options.includeSEOAlgorithms ?? true,
-    includeWebMastery: options.includeWebMastery,
-    includeCitationRules: options.includeCitationRules ?? true,
+    ...specialist.promptOptions,
+    specialistIntro: specialist.intro,
     includeToolGuidelines: true,
+    webSearchResults: novaWebContext || undefined,
     pageContext: [
       pageContext,
       historyBlock,
@@ -198,16 +278,12 @@ export async function sendMessage(
     customInstructions: options.customInstructions,
   });
 
-  // 7. Call Gemini with function calling support
-  const model = getToolModel();
+  // 7. Call proxy in tool-calling mode (first round)
   const contents: Content[] = [
     { role: "user", parts: [{ text: trained.userContent }] },
   ];
 
-  let response = await model.generateContent({
-    systemInstruction: trained.systemInstruction,
-    contents,
-  });
+  let response = await callChatProxy(trained.systemInstruction, contents);
 
   // 8. Tool-call loop: execute function calls, feed results back to Gemini
   const toolsUsed: ToolExecutionResult[] = [];
@@ -261,16 +337,13 @@ export async function sendMessage(
       });
     }
 
-    // Feed function responses back to Gemini
+    // Feed function responses back to proxy (next tool round)
     contents.push({
       role: "user",
       parts: functionResponses,
     });
 
-    response = await model.generateContent({
-      systemInstruction: trained.systemInstruction,
-      contents,
-    });
+    response = await callChatProxy(trained.systemInstruction, contents);
 
     rounds++;
   }

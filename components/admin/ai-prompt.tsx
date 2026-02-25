@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect, type ReactNode } from "react";
+import React, { useState, useRef, useEffect, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { Modal, useToast } from "@/components/admin";
 import { Button } from "@/components/ui";
 import { lazyGenerateText, lazySendMessage, lazyGetCurrentMessages, lazyLogActionToMemory, lazyGetConversationHistory, lazySwitchConversation, lazyNewConversation, lazyConfirmAction, lazyRejectAction } from "@/lib/firebase/ai-lazy";
 import { buildTrainedPrompt, getPageContext } from "@/lib/utils/ai-system-prompt";
 import type { TrainedPrompt } from "@/lib/utils/ai-system-prompt";
+import { getSpecialist, ALL_SPECIALISTS } from "@/lib/utils/ai-specialists";
 import { fetchOne } from "@/lib/firebase/firestore";
 import { useAuth } from "@/lib/firebase/auth-context";
 import { Markdown } from "@/components/admin/markdown";
@@ -31,7 +32,13 @@ export interface AIPromptConfig {
    * Quick-action presets shown as chips above the textarea.
    * Clicking one pre-fills the textarea.
    */
-  presets?: { label: string; prompt: string }[];
+  presets?: { label: string; prompt: string; specialist?: string }[];
+  /**
+   * Grouped presets — renders two labeled rows of chips instead of a flat
+   * rotating list. Use when blending two specialists (e.g. NOVA + MAVERICK).
+   * When present, overrides the rotation behavior for the grouped items.
+   */
+  presetGroups?: { groupLabel: string; items: { label: string; prompt: string; specialist?: string }[] }[];
   /**
    * Build the full prompt from user input + data context.
    * If not provided, uses a default that includes the section context.
@@ -50,6 +57,12 @@ export interface AIPromptConfig {
    * Label for the preview button (default: "Preview Page").
    */
   previewLabel?: string;
+  /**
+   * Chat-mode only. When set and the conversation is empty on first open,
+   * auto-fires this prompt through specialist routing for a proactive opening
+   * analysis. Fires only once per dialog open (tracked via ref).
+   */
+  proactiveQuery?: string;
 }
 
 export interface AIPromptButtonProps extends AIPromptConfig {
@@ -70,16 +83,18 @@ export function AIPromptButton({
   ...config
 }: AIPromptButtonProps) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const specialist = getSpecialist(pathname ?? "");
 
   return (
-    <>
+    <span style={{ '--sc': specialist.color } as React.CSSProperties}>
       <button
         onClick={() => setOpen(true)}
-        className={`group relative inline-flex items-center justify-center rounded-xl border border-primary/20 bg-linear-to-br from-primary/10 to-primary/5 text-primary hover:from-primary/15 hover:to-primary/10 hover:border-primary/30 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer ${
+        className={`group relative inline-flex items-center justify-center rounded-xl border transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer ai-prompt-btn ${
           size === "sm" ? "h-9 w-9" : "h-10 w-10"
         } ${className}`}
-        title={`${config.section} — Click to open AI assistant`}
-        aria-label={`Open ${config.section}`}
+        title={`${specialist.codename} — ${specialist.tagline}`}
+        aria-label={`Chat with ${specialist.codename}`}
       >
         {children || (
           <svg
@@ -97,10 +112,10 @@ export function AIPromptButton({
             <path d="M9 18h6" />
           </svg>
         )}
-        {/* Subtle animated dot indicator */}
+        {/* Specialist pulse indicator */}
         <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40 opacity-75" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 color-dot" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full color-dot" />
         </span>
       </button>
 
@@ -111,11 +126,34 @@ export function AIPromptButton({
           onClose={() => setOpen(false)}
         />
       )}
-    </>
+    </span>
   );
 }
 
 // ─── AI Prompt Dialog ────────────────────────────────
+
+const TOUR_STEPS = [
+  {
+    title: "Meet Your AI Specialist",
+    body: "Each page has a dedicated expert. ORACLE handles SEO, NOVA creates content, SCOUT tracks sales performance, and more.",
+  },
+  {
+    title: "Persistent Memory",
+    body: "I remember everything across pages and sessions. Your context builds over time — no need to repeat yourself.",
+  },
+  {
+    title: "Proactive Analysis",
+    body: "On key pages I auto-analyze your data the moment you open me. No prompt needed — I start working immediately.",
+  },
+  {
+    title: "Save Note",
+    body: "Any insight I generate can be saved to AI Tasks with one click using the bookmark icon below each response.",
+  },
+  {
+    title: "Switch Specialists",
+    body: "Click the chevron next to my codename to manually switch to any specialist for cross-domain help.",
+  },
+];
 
 interface AIPromptDialogProps extends AIPromptConfig {
   open: boolean;
@@ -131,16 +169,22 @@ function AIPromptDialog({
   maxChars = 5000,
   dataContext = "",
   presets = [],
+  presetGroups = [],
   buildPrompt,
   onResult,
   previewable = false,
   previewLabel = "Preview Page",
+  proactiveQuery = "",
 }: AIPromptDialogProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const proactiveFired = useRef(false);
   const pathname = usePathname();
+  const autoSpecialist = getSpecialist(pathname ?? "");
+  const [activeSpecialist, setActiveSpecialist] = useState(autoSpecialist);
+  const [showSwitcher, setShowSwitcher] = useState(false);
 
   // Action mode = one-shot structured generation; Chat mode = persistent memory
   const isActionMode = !!(onResult || buildPrompt);
@@ -161,6 +205,13 @@ function AIPromptDialog({
   const [showHistory, setShowHistory] = useState(false);
   const [pastConversations, setPastConversations] = useState<AIConversation[]>([]);
   const [activeConvoId, setActiveConvoId] = useState<string | null>(null);
+
+  // Onboarding tour state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
+
+  // Offline prompt queue
+  const [offlineQueue, setOfflineQueue] = useState<string[]>([]);
 
   // Tool calling state
   const [pendingActions, setPendingActions] = useState<PendingAction[]>([]);
@@ -268,6 +319,59 @@ function AIPromptDialog({
     }
   }, [chatMessages.length, lastChatContent, isActionMode]);
 
+  // Close switcher when clicking outside
+  useEffect(() => {
+    if (!showSwitcher) return;
+    function handleClickOutside() { setShowSwitcher(false); }
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [showSwitcher]);
+
+  // Show onboarding tour on first open (chat mode only)
+  useEffect(() => {
+    if (!open || isActionMode) return;
+    if (typeof window !== "undefined" && !localStorage.getItem("ai-onboarding-v1")) {
+      setShowOnboarding(true);
+      setOnboardingStep(0);
+    }
+  }, [open, isActionMode]);
+
+  // Drain offline queue when connection restores
+  useEffect(() => {
+    function handleOnline() {
+      setOfflineQueue((q) => {
+        if (q.length > 0) {
+          setPrompt(q[0]);
+          toast("You're back online — queued prompt ready to send", "info");
+          return q.slice(1);
+        }
+        return q;
+      });
+    }
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
+  }, [toast]);
+
+  // Chat mode: Proactive specialist analysis on first open (empty conversation)
+  useEffect(() => {
+    if (!open || isActionMode || !chatLoaded || chatMessages.length > 0 || !proactiveQuery || !user?.uid || proactiveFired.current) return;
+    proactiveFired.current = true;
+    setGenerating(true);
+    setActiveToolName("thinking");
+    lazySendMessage(user.uid, proactiveQuery, {
+      section,
+      pagePath: activeSpecialist.codename !== autoSpecialist.codename ? activeSpecialist.specialistPath : pathname ?? "/admin",
+    }).then((result) => {
+      setChatMessages([{ role: "assistant", content: result.response, toolsUsed: result.toolsUsed }]);
+      if (result.pendingActions?.length) setPendingActions(result.pendingActions);
+    }).catch((err) => {
+      console.warn("[AI Prompt] Proactive analysis failed:", err);
+    }).finally(() => {
+      setGenerating(false);
+      setActiveToolName(null);
+    });
+  }, [open, isActionMode, chatLoaded, chatMessages.length, proactiveQuery, user?.uid, pathname, section]);
+
   function handlePreset(presetPrompt: string) {
     setPrompt(presetPrompt);
     textareaRef.current?.focus();
@@ -311,13 +415,27 @@ function AIPromptDialog({
           return;
         }
         const userMsg = prompt.trim();
+
+        // Queue prompt if offline instead of making failing API call
+        if (typeof window !== "undefined" && !navigator.onLine) {
+          setOfflineQueue((q) => [...q, userMsg]);
+          setChatMessages((prev) => [
+            ...prev,
+            { role: "user", content: `${userMsg} ⏸ *(queued — you're offline)*` },
+          ]);
+          setPrompt("");
+          toast("You're offline — prompt queued and will send when connection restores", "info");
+          setGenerating(false);
+          return;
+        }
+
         setChatMessages((prev) => [...prev, { role: "user", content: userMsg }]);
         setPrompt("");
 
         // Use sendMessage (non-streaming) to support tool-call loop
         setActiveToolName("thinking");
         const msgResult = await lazySendMessage(user.uid, userMsg, {
-          pagePath: pathname,
+          pagePath: activeSpecialist.codename !== autoSpecialist.codename ? activeSpecialist.specialistPath : pathname ?? "/admin",
           dataContext: enrichedDataContext || dataContext,
           section,
           includeCompetitors: true,
@@ -325,12 +443,23 @@ function AIPromptDialog({
         });
         setActiveToolName(null);
 
+        // Detect cross-specialist handoff markers: [HANDOFF:CODENAME]
+        const handoffMatch = msgResult.response.match(/\[HANDOFF:([A-Z]+)\]/);
+        const cleanResponse = msgResult.response.replace(/\[HANDOFF:[A-Z]+\]/g, "").trim();
+        if (handoffMatch) {
+          const target = ALL_SPECIALISTS.find(s => s.codename === handoffMatch[1]);
+          if (target) {
+            setActiveSpecialist(target);
+            toast(`${activeSpecialist.codename} → ${target.codename} (${target.title})`, "info");
+          }
+        }
+
         // Add assistant message with tools metadata
         setChatMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: msgResult.response,
+            content: cleanResponse,
             toolsUsed: msgResult.toolsUsed,
           },
         ]);
@@ -361,6 +490,16 @@ function AIPromptDialog({
   function handleCopyChatMessage(content: string) {
     navigator.clipboard.writeText(content);
     toast("Copied to clipboard");
+  }
+
+  async function handleSaveNote(content: string) {
+    try {
+      const { saveSpecialistNote } = await import("@/lib/utils/ai-feedback");
+      await saveSpecialistNote(content, activeSpecialist.codename, activeSpecialist.title, section, pathname ?? "");
+      toast("Note saved to AI Tasks", "success");
+    } catch {
+      toast("Failed to save note", "error");
+    }
   }
 
   async function handleToggleHistory() {
@@ -532,7 +671,24 @@ function AIPromptDialog({
         footer={
           <>
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              {allPresets.length > 0 && (
+              {presetGroups.length > 0 ? (
+                <div className="flex flex-col gap-1 flex-1 min-w-0">
+                  {presetGroups.map((group) => (
+                    <div key={group.groupLabel} className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-[10px] text-gray-40 shrink-0 font-medium w-14 truncate">{group.groupLabel}</span>
+                      {group.items.slice(0, 4).map((p) => (
+                        <button
+                          key={p.label}
+                          onClick={() => handlePreset(p.prompt)}
+                          className="flex-1 min-w-0 rounded-full border border-border bg-card px-2 py-1 text-xs text-gray-60 hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-all duration-200 truncate cursor-pointer"
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ) : allPresets.length > 0 && (
                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                   {visiblePresets.map((p) => {
                     const isDynamic = dynamicPresets.some((dp) => dp.label === p.label);
@@ -564,27 +720,144 @@ function AIPromptDialog({
           </>
         }
       >
-        <div className="flex flex-col h-[60vh]">
+        <div className="flex flex-col h-[60vh] relative" style={{ '--sc': activeSpecialist.color } as React.CSSProperties}>
+          {/* ─── Onboarding Tour Overlay ─── */}
+          {showOnboarding && (
+            <div className="absolute inset-0 z-20 bg-card/96 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center p-8">
+              {/* Step dots */}
+              <div className="flex gap-1.5 mb-6">
+                {TOUR_STEPS.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      i === onboardingStep ? "w-6 bg-primary" : "w-2 bg-gray-20"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Step content */}
+              <div className="text-center max-w-xs">
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center mb-4 mx-auto shadow-sm specialist-ring"
+                >
+                  <svg className="w-7 h-7 specialist-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={activeSpecialist.avatarPath} />
+                  </svg>
+                </div>
+                <h3 className="text-base font-semibold text-gray-90 mb-2">
+                  {TOUR_STEPS[onboardingStep].title}
+                </h3>
+                <p className="text-sm text-gray-60 leading-relaxed">
+                  {TOUR_STEPS[onboardingStep].body}
+                </p>
+              </div>
+
+              {/* Navigation */}
+              <div className="mt-8 flex items-center gap-3">
+                {onboardingStep > 0 && (
+                  <button
+                    onClick={() => setOnboardingStep((s) => s - 1)}
+                    className="px-3 py-1.5 text-xs text-gray-50 hover:text-gray-80 transition-colors cursor-pointer"
+                  >
+                    Back
+                  </button>
+                )}
+                {onboardingStep < TOUR_STEPS.length - 1 ? (
+                  <button
+                    onClick={() => setOnboardingStep((s) => s + 1)}
+                    className="px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-colors cursor-pointer specialist-bg"
+                  >
+                    Next
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      localStorage.setItem("ai-onboarding-v1", "done");
+                      setShowOnboarding(false);
+                    }}
+                    className="px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-colors cursor-pointer specialist-bg"
+                  >
+                    Got it!
+                  </button>
+                )}
+              </div>
+
+              {/* Skip */}
+              <button
+                onClick={() => setShowOnboarding(false)}
+                className="mt-3 text-xs text-gray-30 hover:text-gray-50 transition-colors cursor-pointer"
+              >
+                Skip (show again next time)
+              </button>
+            </div>
+          )}
           {/* Chat toolbar */}
-          <div className="flex items-center justify-end gap-1 pb-2 border-b border-border mb-2 shrink-0">
-            <button
-              onClick={handleToggleHistory}
-              className={`p-1 rounded transition-colors cursor-pointer ${showHistory ? "text-primary bg-primary/10" : "text-gray-40 hover:text-primary"}`}
-              title="Conversation history"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-              </svg>
-            </button>
-            <button
-              onClick={handleNewChat}
-              className="p-1 text-gray-40 hover:text-primary transition-colors cursor-pointer"
-              title="New conversation"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
-              </svg>
-            </button>
+          <div className="flex items-center justify-between gap-1 pb-2 border-b border-border mb-2 shrink-0">
+            {/* Specialist badge + switcher */}
+            <div className="relative flex items-center" onClick={e => e.stopPropagation()}>
+              <div
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium specialist-badge"
+              >
+                <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={activeSpecialist.avatarPath} />
+                </svg>
+                <span className="font-bold tracking-wide">{activeSpecialist.codename}</span>
+                {activeSpecialist.codename !== autoSpecialist.codename && (
+                  <span className="text-[9px] opacity-60">override</span>
+                )}
+              </div>
+              <button
+                onClick={() => setShowSwitcher(p => !p)}
+                className="ml-0.5 rounded-full p-0.5 hover:bg-gray-20/80 transition-colors cursor-pointer text-gray-40"
+                title="Switch specialist"
+                type="button"
+              >
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d={showSwitcher ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
+                </svg>
+              </button>
+              {showSwitcher && (
+                <div className="absolute z-50 top-full mt-1 left-0 rounded-xl border border-border bg-card shadow-xl p-2.5 w-64">
+                  <p className="text-[10px] text-gray-40 mb-1.5">Switch specialist</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {ALL_SPECIALISTS.map(s => (
+                      <button
+                        key={s.codename}
+                        type="button"
+                        onClick={() => { setActiveSpecialist(s); setShowSwitcher(false); }}
+                        style={{ '--sc': s.color } as React.CSSProperties}
+                        className={`rounded-full border px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${activeSpecialist.codename === s.codename ? 'specialist-tag-btn-active' : 'specialist-tag-btn'}`}
+                        title={`${s.codename} — ${s.title}`}
+                      >
+                        {s.codename}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* History + new conversation */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleToggleHistory}
+                className={`p-1 rounded transition-colors cursor-pointer ${showHistory ? "text-primary bg-primary/10" : "text-gray-40 hover:text-primary"}`}
+                title="Conversation history"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                </svg>
+              </button>
+              <button
+                onClick={handleNewChat}
+                className="p-1 text-gray-40 hover:text-primary transition-colors cursor-pointer"
+                title="New conversation"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Conversation history dropdown */}
@@ -621,14 +894,14 @@ function AIPromptDialog({
             )}
             {chatLoaded && chatMessages.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2a4 4 0 014 4v1h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2V6a4 4 0 014-4z" />
-                    <circle cx="9" cy="14" r="1.5" />
-                    <circle cx="15" cy="14" r="1.5" />
-                    <path d="M9 18h6" />
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center mb-3 shadow-sm specialist-ring"
+                >
+                  <svg className="w-7 h-7 specialist-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={activeSpecialist.avatarPath} />
                   </svg>
                 </div>
+                <p className="text-sm font-medium mb-1 specialist-tagline">{activeSpecialist.tagline}</p>
                 <p className="text-sm text-gray-60 max-w-xs">{description}</p>
                 <p className="text-xs text-gray-40 mt-1">I remember our conversations across pages</p>
               </div>
@@ -642,8 +915,9 @@ function AIPromptDialog({
                   className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                     msg.role === "user"
                       ? "bg-primary text-white rounded-br-md"
-                      : "bg-gray-10 text-gray-80 border border-border rounded-bl-md"
+                      : "bg-gray-10 text-gray-80 border border-border rounded-bl-md border-l-2"
                   }`}
+                  style={msg.role === "assistant" ? { borderLeftColor: "var(--sc)" } : undefined}
                 >
                   {msg.role === "assistant" ? (
                     <Markdown content={msg.content} />
@@ -669,12 +943,21 @@ function AIPromptDialog({
                     </div>
                   )}
                   {msg.role === "assistant" && msg.content && (
-                    <button
-                      onClick={() => handleCopyChatMessage(msg.content)}
-                      className="mt-1.5 text-xs text-gray-40 hover:text-primary transition-colors cursor-pointer"
-                    >
-                      Copy
-                    </button>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <button
+                        onClick={() => handleCopyChatMessage(msg.content)}
+                        className="text-xs text-gray-40 hover:text-primary transition-colors cursor-pointer"
+                      >
+                        Copy
+                      </button>
+                      <span className="text-gray-30 text-xs">·</span>
+                      <button
+                        onClick={() => handleSaveNote(msg.content)}
+                        className="text-xs text-gray-40 hover:text-primary transition-colors cursor-pointer"
+                      >
+                        Save Note
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -770,7 +1053,24 @@ function AIPromptDialog({
       footer={
         <>
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            {allPresets.length > 0 && (
+            {presetGroups.length > 0 ? (
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                {presetGroups.map((group) => (
+                  <div key={group.groupLabel} className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[10px] text-gray-40 shrink-0 font-medium w-14 truncate">{group.groupLabel}</span>
+                    {group.items.slice(0, 4).map((p) => (
+                      <button
+                        key={p.label}
+                        onClick={() => handlePreset(p.prompt)}
+                        className="flex-1 min-w-0 rounded-full border border-border bg-gray-10/60 px-2 py-1 text-xs text-gray-70 hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-all duration-200 truncate cursor-pointer"
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ) : allPresets.length > 0 && (
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
                 {visiblePresets.map((p) => {
                   const isDynamic = dynamicPresets.some((dp) => dp.label === p.label);
@@ -805,7 +1105,48 @@ function AIPromptDialog({
         </>
       }
     >
-      <div className="space-y-3">
+      <div className="space-y-3" style={{ '--sc': activeSpecialist.color } as React.CSSProperties}>
+        <div className="relative flex items-center mb-1" onClick={e => e.stopPropagation()}>
+          <div
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium specialist-badge"
+          >
+            <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d={activeSpecialist.avatarPath} />
+            </svg>
+            <span className="font-bold tracking-wide">{activeSpecialist.codename}</span>
+            <span style={{ color: `${activeSpecialist.color}70` }}>—</span>
+            <span>{activeSpecialist.title}</span>
+          </div>
+          <button
+            onClick={() => setShowSwitcher(p => !p)}
+            className="ml-0.5 rounded-full p-0.5 hover:bg-gray-20/80 transition-colors cursor-pointer text-gray-40"
+            title="Switch specialist"
+            type="button"
+          >
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d={showSwitcher ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
+            </svg>
+          </button>
+          {showSwitcher && (
+            <div className="absolute z-50 top-full mt-1 left-0 rounded-xl border border-border bg-card shadow-xl p-2.5 w-64">
+              <p className="text-[10px] text-gray-40 mb-1.5">Switch specialist</p>
+              <div className="flex flex-wrap gap-1.5">
+                {ALL_SPECIALISTS.map(s => (
+                  <button
+                    key={s.codename}
+                    type="button"
+                    onClick={() => { setActiveSpecialist(s); setShowSwitcher(false); }}
+                    style={{ '--sc': s.color } as React.CSSProperties}
+                    className={`rounded-full border px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${activeSpecialist.codename === s.codename ? 'specialist-tag-btn-active' : 'specialist-tag-btn'}`}
+                    title={`${s.codename} — ${s.title}`}
+                  >
+                    {s.codename}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
         <p className="text-sm text-gray-60">{description}</p>
         <textarea
           ref={textareaRef}

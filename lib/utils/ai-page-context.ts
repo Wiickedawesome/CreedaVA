@@ -128,10 +128,10 @@ const PAGE_CONFIGS: Record<string, PageConfig> = {
   },
 };
 
-// Default for unrecognized pages
+// Default for unrecognized pages — minimal footprint, only core CRM data
 const DEFAULT_CONFIG: PageConfig = {
   section: "CreedaVA AI",
-  collections: ["leads", "customers", "tasks", "campaigns", "blog", "keywords"],
+  collections: ["leads", "tasks"],
   contextBuilder: buildFullContext,
 };
 

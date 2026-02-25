@@ -7,11 +7,15 @@ import {
   StatCard,
   DashboardSection,
   AIPromptButton,
+  Modal,
+  StatusBadge,
   useToast,
 } from "@/components/admin";
+import { Button } from "@/components/ui";
 import { fetchAnalyticsEvents } from "@/lib/firebase/analytics";
 import { cloudFetchBusinessReviews } from "@/lib/firebase/cloud-functions";
-import { lazyGenerateAndSaveReport } from "@/lib/firebase/ai-lazy";
+import { lazyGenerateAndSaveReport, lazyForecastRevenue } from "@/lib/firebase/ai-lazy";
+import type { RevenueForecast } from "@/lib/firebase/ai-engine";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Lead, Customer, Task, Booking } from "@/lib/types/crm";
@@ -201,6 +205,9 @@ export default function AdminDashboardPage() {
 
   // ─── Daily Status ──────────────────────────────────
   const [dailyRunning, setDailyRunning] = useState(false);
+  const [forecastReport, setForecastReport] = useState<RevenueForecast | null>(null);
+  const [forecastOpen, setForecastOpen] = useState(false);
+  const [forecastLoading, setForecastLoading] = useState(false);
   const { toast } = useToast();
 
   async function handleRunDailyStatus() {
@@ -213,6 +220,20 @@ export default function AdminDashboardPage() {
       toast("Daily status failed — try again", "error");
     } finally {
       setDailyRunning(false);
+    }
+  }
+
+  async function handleForecastRevenue() {
+    setForecastLoading(true);
+    try {
+      const forecast = await lazyForecastRevenue();
+      setForecastReport(forecast);
+      setForecastOpen(true);
+    } catch (err) {
+      console.error("[Dashboard] Revenue forecast failed:", err);
+      toast("Revenue forecast failed — try again", "error");
+    } finally {
+      setForecastLoading(false);
     }
   }
 
@@ -410,6 +431,19 @@ export default function AdminDashboardPage() {
               )}
               {dailyRunning ? "Running..." : "Daily Status"}
             </button>
+            <Button
+              variant="outline"
+              onClick={handleForecastRevenue}
+              isLoading={forecastLoading}
+            >
+              {!forecastLoading && (
+                <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                  <polyline points="16 7 22 7 22 13"/>
+                </svg>
+              )}
+              {forecastLoading ? "Forecasting..." : "Revenue Forecast"}
+            </Button>
             <AIPromptButton
             section="Dashboard AI"
             description="Analyze your business data — get growth strategies, weekly priorities, and SEO quick wins."
@@ -732,6 +766,79 @@ export default function AdminDashboardPage() {
               </div>
             </DashboardSection>
           </div>
+      <Modal open={forecastOpen} onClose={() => setForecastOpen(false)} title="Revenue Forecast — ARIA" size="lg">
+        {forecastReport && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="rounded-lg border border-border p-4 text-center">
+                <p className="text-xs text-gray-50 mb-1">Current MRR</p>
+                <p className="text-2xl font-bold text-gray-90">${forecastReport.currentMRR.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-center">
+                <p className="text-xs text-gray-50 mb-1">3-Month Forecast</p>
+                <p className="text-2xl font-bold text-primary">${forecastReport.projected3MonthMRR.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg border border-border p-4 text-center">
+                <p className="text-xs text-gray-50 mb-1">12-Month Forecast</p>
+                <p className="text-2xl font-bold text-gray-90">${forecastReport.projected12MonthMRR.toLocaleString()}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-sm">
+              <div className="rounded-lg border border-border p-3">
+                <p className="text-xs text-gray-50">Monthly Growth Rate</p>
+                <p className="font-semibold text-green-600">+{forecastReport.growthRatePercent}%/mo</p>
+              </div>
+              <div className="rounded-lg border border-border p-3">
+                <p className="text-xs text-gray-50">Expansion Revenue</p>
+                <p className="font-semibold text-primary">${forecastReport.expansionRevenuePotential.toLocaleString()}</p>
+              </div>
+              <div className="rounded-lg border border-border p-3">
+                <p className="text-xs text-gray-50">Confidence Score</p>
+                <p className="font-semibold">{forecastReport.confidenceScore}/100</p>
+              </div>
+            </div>
+            {forecastReport.growthLevers && forecastReport.growthLevers.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-80 mb-2">Growth Levers</h4>
+                <div className="space-y-2">
+                  {forecastReport.growthLevers.map((l, i) => (
+                    <div key={i} className="flex justify-between items-center rounded-lg border border-border p-3 text-sm">
+                      <span className="text-gray-70">{l.lever}</span>
+                      <div className="text-right">
+                        <span className="text-green-600 font-semibold">+${l.estimatedImpactDollars.toLocaleString()}/mo</span>
+                        <p className="text-xs text-gray-40">{l.timeToImpact}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {forecastReport.risks && forecastReport.risks.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-80 mb-2">Risks</h4>
+                <ul className="space-y-1">
+                  {forecastReport.risks.map((r, i) => (
+                    <li key={i} className="text-xs text-gray-60 flex gap-2">
+                      <StatusBadge status={r.probability} variant={r.probability === "high" ? "error" : r.probability === "medium" ? "warning" : "success"} />
+                      <span>{r.risk} — {r.impact}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {forecastReport.keyAssumptions && forecastReport.keyAssumptions.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-80 mb-2">Key Assumptions</h4>
+                <ul className="space-y-1">
+                  {forecastReport.keyAssumptions.map((a, i) => (
+                    <li key={i} className="text-xs text-gray-60 flex gap-2"><span className="text-gray-40 shrink-0">&bull;</span>{a}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

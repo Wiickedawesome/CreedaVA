@@ -130,6 +130,12 @@ export async function lazyAnalyzeCustomerHealth() {
   return analyzeCustomerHealth();
 }
 
+/** Forecast revenue for the next 3 and 12 months */
+export async function lazyForecastRevenue() {
+  const { forecastRevenue } = await import("./ai-engine");
+  return forecastRevenue();
+}
+
 /** Generate content strategy */
 export async function lazyGenerateContentStrategy(weeks?: number) {
   const { generateContentStrategy } = await import("./ai-engine");

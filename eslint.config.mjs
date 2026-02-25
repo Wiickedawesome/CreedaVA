@@ -11,6 +11,10 @@ const eslintConfig = defineConfig([
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+      // jsx-a11y/aria-proptypes cannot statically evaluate dynamic boolean
+      // expressions (e.g. aria-pressed={isActive ? "true" : "false"}).
+      // The ARIA usage here is correct at runtime; suppress the false positive.
+      "jsx-a11y/aria-proptypes": "off",
     },
   },
   // Override default ignores of eslint-config-next.

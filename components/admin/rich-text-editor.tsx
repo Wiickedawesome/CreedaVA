@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback } from "react";
 
 interface RichTextEditorProps {
   label?: string;
@@ -200,16 +200,16 @@ export function RichTextEditor({
         {mode === "edit" ? (
           <textarea
             ref={ref}
-            className="w-full px-4 py-3 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none resize-y font-mono bg-card"
-            style={{ minHeight }}
+            className="w-full px-4 py-3 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none resize-y font-mono bg-card rte-area"
+            style={{ '--rte-min-h': minHeight } as React.CSSProperties}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
           />
         ) : (
           <div
-            className="px-4 py-3 prose prose-sm max-w-none text-sm text-gray-80 overflow-auto bg-card"
-            style={{ minHeight }}
+            className="px-4 py-3 prose prose-sm max-w-none text-sm text-gray-80 overflow-auto bg-card rte-area"
+            style={{ '--rte-min-h': minHeight } as React.CSSProperties}
             dangerouslySetInnerHTML={{ __html: value || `<p class="text-gray-40">${placeholder}</p>` }}
           />
         )}

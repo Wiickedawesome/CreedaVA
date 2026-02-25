@@ -73,7 +73,7 @@ describe("getPageConfig", () => {
   it("returns default config for unknown pages", () => {
     const config = getPageConfig("/admin/unknown-page");
     expect(config.section).toBe("CreedaVA AI");
-    expect(config.collections.length).toBeGreaterThan(3);
+    expect(config.collections.length).toBeGreaterThanOrEqual(1);
   });
 
   it("strips trailing slashes", () => {
@@ -144,8 +144,8 @@ describe("loadPageAwareContext", () => {
   it("returns default context for unknown page", async () => {
     const result = await loadPageAwareContext("/admin/xyz");
     expect(result.section).toBe("CreedaVA AI");
-    // Default config has 6 collections
-    expect(result.loadedCollections.length).toBeGreaterThanOrEqual(4);
+    // Default config has a minimal set of collections (leads, tasks)
+    expect(result.loadedCollections.length).toBeGreaterThanOrEqual(1);
   });
 });
 

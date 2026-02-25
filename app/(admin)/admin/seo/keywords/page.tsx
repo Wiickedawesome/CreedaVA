@@ -1,7 +1,7 @@
 "use client";
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,
@@ -234,6 +234,12 @@ export default function KeywordsPage() {
         actions={
           <div className="flex items-center gap-2">
           <AIPromptButton
+            section="Keyword Chat"
+            description="Ask ORACLE about search performance, striking-distance opportunities, and content gaps."
+            placeholder="What keywords should we target this month?"
+            proactiveQuery="Analyze organic search performance and identify striking-distance keywords currently ranking positions 4–15 that we could push to page 1 with targeted content improvements. Cross-reference with our tracked keywords and suggest which blog posts to update first."
+          />
+          <AIPromptButton
             section="Keyword AI"
             description="Enter a topic to get AI-powered keyword suggestions with search intent, difficulty, and suggested titles."
             placeholder="e.g. virtual assistant services, remote work, business outsourcing"
@@ -322,7 +328,7 @@ export default function KeywordsPage() {
                         <span className="text-xs font-medium text-gray-60">{count} ({pct}%)</span>
                       </div>
                       <div className="h-3 bg-gray-10 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${Math.max(pct, 2)}%`, backgroundColor: colors[intent as keyof typeof colors] || "#A2A9B0" }} />
+                        <div className="bar-segment" style={{ '--bar-w': `${Math.max(pct, 2)}%`, '--bar-c': colors[intent as keyof typeof colors] || "#A2A9B0" } as React.CSSProperties} />
                       </div>
                     </div>
                   );
@@ -348,7 +354,7 @@ export default function KeywordsPage() {
                         <span className="text-xs font-medium text-gray-60">{count} ({pct}%)</span>
                       </div>
                       <div className="h-3 bg-gray-10 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${Math.max(pct, 2)}%`, backgroundColor: colors[diff as keyof typeof colors] }} />
+                        <div className="bar-segment" style={{ '--bar-w': `${Math.max(pct, 2)}%`, '--bar-c': colors[diff as keyof typeof colors] } as React.CSSProperties} />
                       </div>
                     </div>
                   );

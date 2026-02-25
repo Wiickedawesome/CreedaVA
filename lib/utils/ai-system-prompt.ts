@@ -2412,6 +2412,10 @@ export function buildTrainedPrompt(
     includeCitationRules?: boolean;
     includeReportFormat?: boolean;
     includeKPIs?: boolean;
+    /**
+     * Include SEO algorithms module. Defaults to TRUE if unset — set to `false`
+     * for specialists that don't need it (ATLAS, GUIDE, SCOUT, MAVERICK).
+     */
     includeSEOAlgorithms?: boolean;
     includeMarketIntel?: boolean;
     includeAIO?: boolean;
@@ -2424,6 +2428,8 @@ export function buildTrainedPrompt(
     includeCRO?: boolean;
     includeWebMastery?: boolean;
     includeToolGuidelines?: boolean;
+    /** Specialist persona block injected right after CREEDA_IDENTITY */
+    specialistIntro?: string;
     pageContext?: string;
     webSearchResults?: string;
     customInstructions?: string;
@@ -2431,6 +2437,9 @@ export function buildTrainedPrompt(
 ): TrainedPrompt {
   // ── System instruction: identity + expertise modules ──
   const systemParts: string[] = [CREEDA_IDENTITY];
+
+  // Specialist persona block — overrides the generic "CreedaVA AI" intro
+  if (options.specialistIntro) systemParts.push(options.specialistIntro);
 
   if (options.includeDesignSystem) systemParts.push(DESIGN_SYSTEM);
   if (options.includeCreativeFramework) systemParts.push(CREATIVE_HTML_FRAMEWORK);

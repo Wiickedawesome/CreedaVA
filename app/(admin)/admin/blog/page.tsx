@@ -19,6 +19,7 @@ import { uploadImage, uploadFile } from "@/lib/firebase/storage";
 import { cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
 import type { BlogPost, BlogPostFormData } from "@/lib/types/content";
 import Image from "next/image";
+import { translateBlogInBackground } from "@/lib/firebase/translate";
 
 const emptyPost: BlogPostFormData = {
   title: "",
@@ -204,6 +205,14 @@ export default function BlogPage() {
     if (!selected) return;
     try {
       await edit(selected.id, { status: "published", publishedAt: new Date().toISOString() });
+      // Fire-and-forget: translate the post to Spanish in the background
+      translateBlogInBackground(
+        selected.id,
+        selected.title,
+        selected.excerpt ?? "",
+        selected.content ?? "",
+        selected.lang ?? "en",
+      );
       toast("Post published!");
       setModalOpen(false);
     } catch {
@@ -421,7 +430,7 @@ export default function BlogPage() {
                   <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                   Upload
                 </Button>
-                <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden" aria-label="Upload blog post images" onChange={handleImageUpload} />
               </div>
             </div>
             {(form.images?.length ?? 0) > 0 ? (
@@ -467,7 +476,7 @@ export default function BlogPage() {
                   <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
                   Attach
                 </Button>
-                <input ref={attachInputRef} type="file" multiple className="hidden" onChange={handleAttachmentUpload} />
+                <input ref={attachInputRef} type="file" multiple className="hidden" aria-label="Upload blog post attachments" onChange={handleAttachmentUpload} />
               </div>
             </div>
             {(form.attachments?.length ?? 0) > 0 ? (

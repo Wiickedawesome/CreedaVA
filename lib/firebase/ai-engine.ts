@@ -701,6 +701,50 @@ Return JSON:
 
 // ─── Export as a unified engine ──────────────────────
 
+// ─── Revenue Forecast Engine ────────────────────────────────────────────────
+
+export interface RevenueForecast {
+  currentMRR: number;
+  projected3MonthMRR: number;
+  projected12MonthMRR: number;
+  growthRatePercent: number;
+  churnAdjustedRevenue: number;
+  expansionRevenuePotential: number;
+  confidenceScore: number;
+  keyAssumptions: string[];
+  risks: { risk: string; probability: "high" | "medium" | "low"; impact: string }[];
+  growthLevers: { lever: string; estimatedImpactDollars: number; timeToImpact: string }[];
+}
+
+/**
+ * Forecast revenue for the next 3 and 12 months using customer data,
+ * churn patterns, and pipeline intelligence. Used by ARIA on the dashboard.
+ */
+export async function forecastRevenue(): Promise<RevenueForecast> {
+  return analyzeAndRespondJSON<RevenueForecast>(
+    "/admin",
+    `Forecast CreedaVA revenue for the next 3 and 12 months.
+
+Use the business data above (MRR, churn rate, active customers, pipeline, win rate)
+to produce a realistic, data-grounded forecast.
+
+Return JSON with exactly this structure:
+{
+  "currentMRR": number,
+  "projected3MonthMRR": number,
+  "projected12MonthMRR": number,
+  "growthRatePercent": number,
+  "churnAdjustedRevenue": number,
+  "expansionRevenuePotential": number,
+  "confidenceScore": number (0-100),
+  "keyAssumptions": ["...list of assumptions..."],
+  "risks": [{ "risk": string, "probability": "high"|"medium"|"low", "impact": string }],
+  "growthLevers": [{ "lever": string, "estimatedImpactDollars": number, "timeToImpact": string }]
+}`,
+    { includeCompetitors: true, includeKPIs: true, includeMarketIntel: true },
+  );
+}
+
 export const aiEngine = {
   // Core
   analyzeAndRespond,
@@ -723,6 +767,9 @@ export const aiEngine = {
 
   // Customer Success
   analyzeCustomerHealth,
+
+  // Revenue
+  forecastRevenue,
 
   // Reports
   generateAndSaveReport,

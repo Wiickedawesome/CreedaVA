@@ -178,6 +178,7 @@ export function buildBlogContext(data: AllCollections): string {
   if (data.blog?.length) sections.push(summarizeBlog(data.blog));
   if (data.keywords?.length) sections.push(summarizeKeywords(data.keywords));
   if (data.seoAudits?.length) sections.push(summarizeSEO(data.seoAudits));
+  if (data.blog?.length) sections.push(buildContentClusterMap(data.blog));
   return sections.join("\n");
 }
 
@@ -354,6 +355,19 @@ function summarizeBlog(posts: BlogPost[]): string {
   return `\n--- BLOG (${posts.length}, ${published.length} published) ---
 Recent: ${titles || "none"}
 Tags: ${tags.slice(0, 15).join(", ") || "none"}`;
+}
+
+/**
+ * Builds a content cluster map listing up to 20 published posts with their
+ * URL slugs so NOVA can generate accurate internal links in new content.
+ */
+function buildContentClusterMap(posts: BlogPost[]): string {
+  const published = posts
+    .filter((p) => p.status === "published" && p.slug)
+    .slice(0, 20)
+    .map((p) => `  - ${p.title} → /news/${p.slug}`);
+  if (published.length === 0) return "";
+  return `\n--- CONTENT CLUSTER MAP (use these paths for internal links) ---\n${published.join("\n")}`;
 }
 
 function summarizeKeywords(keywords: SEOKeyword[]): string {

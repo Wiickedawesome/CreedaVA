@@ -316,17 +316,31 @@ export default function LandingPagesPage() {
           <div className="flex items-center gap-2">
           <AIPromptButton
             section="Landing Page AI"
-            description="Generate a complete landing page with headline, content, and call-to-action. Preview the page live in a new tab."
+            description="Generate a complete landing page with headline, content, and call-to-action — or analyze existing pages for conversion improvements."
             placeholder="Page topic (e.g. Virtual assistant for startups) and CTA text"
-            presets={[
-              { label: "Lead Capture", prompt: "Create a landing page to capture leads for virtual assistant services with a free consultation offer" },
-              { label: "Service Promo", prompt: "Create a landing page promoting CreedaVA's executive assistant services with 'Get Started' CTA" },
-              { label: "Event Signup", prompt: "Create a landing page for a free webinar about how VAs can transform your business" },
-              { label: "Case Study LP", prompt: "Create a landing page showcasing a client success story with key metrics, testimonial, and a CTA to book a consultation" },
-              { label: "Pricing Page", prompt: "Create a landing page comparing VA service plans (Basic, Professional, Enterprise) with features, pricing, and a CTA for each tier" },
-              { label: "Free Trial", prompt: "Create a landing page offering a free 1-week virtual assistant trial. Highlight zero-risk, no commitment, and immediate value" },
-              { label: "Industry Focus", prompt: "Create a landing page targeting real estate agents who need virtual assistant support. Address their specific pain points and workflows" },
-              { label: "Seasonal Offer", prompt: "Create a limited-time promotional landing page with urgency elements, a special discount, and countdown-style messaging for VA services" },
+            presetGroups={[
+              {
+                groupLabel: "✦ Create",
+                items: [
+                  { label: "Lead Capture", prompt: "Create a landing page to capture leads for virtual assistant services with a free consultation offer" },
+                  { label: "Service Promo", prompt: "Create a landing page promoting CreedaVA's executive assistant services with 'Get Started' CTA" },
+                  { label: "Event Signup", prompt: "Create a landing page for a free webinar about how VAs can transform your business" },
+                  { label: "Case Study LP", prompt: "Create a landing page showcasing a client success story with key metrics, testimonial, and a CTA to book a consultation" },
+                  { label: "Pricing Page", prompt: "Create a landing page comparing VA service plans (Basic, Professional, Enterprise) with features, pricing, and a CTA for each tier" },
+                  { label: "Free Trial", prompt: "Create a landing page offering a free 1-week virtual assistant trial. Highlight zero-risk, no commitment, and immediate value" },
+                  { label: "Industry Focus", prompt: "Create a landing page targeting real estate agents who need virtual assistant support. Address their specific pain points and workflows" },
+                  { label: "Seasonal Offer", prompt: "Create a limited-time promotional landing page with urgency elements, a special discount, and countdown-style messaging for VA services" },
+                ],
+              },
+              {
+                groupLabel: "◎ Analyze",
+                items: [
+                  { label: "Conversion Audit", prompt: "Analyze all landing pages — which ones have the lowest conversion rates and what specific changes would improve them?" },
+                  { label: "A/B Ideas", prompt: "Suggest 3 A/B test variants for our highest-traffic landing page: alternative headlines, CTA text, and social proof placement" },
+                  { label: "Campaign Match", prompt: "Review our landing pages against active campaigns — identify any message mismatch between ad copy and landing page headlines" },
+                  { label: "CRO Scorecard", prompt: "Score each landing page 0-100 using our CRO rubric (persuasion sequence, trust elements, form optimization, page speed, mobile)" },
+                ],
+              },
             ]}
             previewable
             previewLabel="Preview Page"
@@ -557,7 +571,7 @@ export default function LandingPagesPage() {
                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
                 Upload
               </Button>
-              <input ref={lpImageRef} type="file" accept="image/*" multiple className="hidden" onChange={handleLpImageUpload} />
+              <input ref={lpImageRef} type="file" accept="image/*" multiple className="hidden" aria-label="Upload landing page images" onChange={handleLpImageUpload} />
             </div>
             {form.images.length > 0 ? (
               <div className="grid grid-cols-4 gap-2">
@@ -587,7 +601,7 @@ export default function LandingPagesPage() {
                 <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
                 Attach
               </Button>
-              <input ref={lpAttachRef} type="file" multiple className="hidden" onChange={handleLpAttachUpload} />
+              <input ref={lpAttachRef} type="file" multiple className="hidden" aria-label="Upload landing page attachments" onChange={handleLpAttachUpload} />
             </div>
             {form.attachments.length > 0 ? (
               <div className="space-y-1">
@@ -785,8 +799,7 @@ export default function LandingPagesPage() {
           <div className="rounded-xl border border-border overflow-hidden">
             <iframe
               src="/satisfaction/demo"
-              className="w-full border-0"
-              style={{ height: "600px" }}
+              className="w-full border-0 h-[600px]"
               title="Satisfaction Survey Preview"
             />
           </div>

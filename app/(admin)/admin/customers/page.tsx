@@ -1,7 +1,7 @@
 "use client";
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,
@@ -24,6 +24,8 @@ import type { Contact } from "@/lib/types/crm";
 import type { EmailDraft } from "@/lib/types/content";
 import { computeLTV } from "@/lib/utils/ltv";
 import { statusVariant, CUSTOMER_PLANS, BILLING_CYCLES, REFERRAL_SOURCES } from "@/lib/types/crm";
+import { lazyAnalyzeCustomerHealth } from "@/lib/firebase/ai-lazy";
+import type { CustomerHealthReport } from "@/lib/firebase/ai-engine";
 
 const BUSINESS_EMAILS = [
   { label: "contact@creedava.com", value: "contact@creedava.com" },
@@ -109,6 +111,9 @@ export default function CustomersPage() {
   const [surveyEmail, setSurveyEmail] = useState({ subject: "", html: "" });
   const [surveySender, setSurveySender] = useState(BUSINESS_EMAILS[0].value);
   const [savingTemplate, setSavingTemplate] = useState(false);
+  const [healthReport, setHealthReport] = useState<CustomerHealthReport | null>(null);
+  const [healthOpen, setHealthOpen] = useState(false);
+  const [healthLoading, setHealthLoading] = useState(false);
 
   // Load satisfaction email template from emails collection
   const { data: emailDrafts, add: addEmail, edit: editEmail } = useCollection<EmailDraft>("emails", {
@@ -439,6 +444,19 @@ export default function CustomersPage() {
     }
   }
 
+  async function handleHealthAnalysis() {
+    setHealthLoading(true);
+    try {
+      const report = await lazyAnalyzeCustomerHealth();
+      setHealthReport(report);
+      setHealthOpen(true);
+    } catch {
+      toast("Health analysis failed — check data and try again", "error");
+    } finally {
+      setHealthLoading(false);
+    }
+  }
+
   async function handleSendSurvey() {
     if (!selected) return;
     setSendingSurvey(true);
@@ -488,7 +506,7 @@ export default function CustomersPage() {
       }
       return (
         <span className="flex items-center gap-2 font-medium text-gray-90">
-          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: healthColor }} title={`Last contacted: ${c.lastContactDate || "Never"}`} />
+          <span className="w-2 h-2 rounded-full shrink-0 color-dot" style={{ '--dot-c': healthColor } as React.CSSProperties} title={`Last contacted: ${c.lastContactDate || "Never"}`} />
           {c.name}
         </span>
       );
@@ -570,6 +588,12 @@ export default function CustomersPage() {
                 buildTrainedPrompt("Customers", input, ctx, { includeCompetitors: true, includeKPIs: true })
               }
             />
+            <Button variant="outline" size="sm" onClick={handleHealthAnalysis} isLoading={healthLoading} className="w-full sm:w-auto">
+              <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+              AI Health
+            </Button>
             <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               CSV
@@ -618,7 +642,7 @@ export default function CustomersPage() {
                 <div key={seg.label} className="space-y-1">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
+                      <div className="w-2.5 h-2.5 rounded-full shrink-0 color-dot" style={{ '--dot-c': seg.color } as React.CSSProperties} />
                       <span className="text-sm font-medium text-gray-80">{seg.label}</span>
                       <span className="text-xs text-gray-40">{seg.sublabel}</span>
                     </div>
@@ -629,8 +653,8 @@ export default function CustomersPage() {
                   </div>
                   <div className="h-2 bg-gray-10 rounded-full overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%`, backgroundColor: seg.color }}
+                      className="bar-segment"
+                      style={{ '--bar-w': `${pct}%`, '--bar-c': seg.color } as React.CSSProperties}
                     />
                   </div>
                 </div>
@@ -665,11 +689,8 @@ export default function CustomersPage() {
                     </div>
                     <div className="h-2 bg-gray-10 rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${(item.count / maxSourceCount) * 100}%`,
-                          backgroundColor: sourceColors[i % sourceColors.length],
-                        }}
+                        className="bar-segment"
+                        style={{ '--bar-w': `${(item.count / maxSourceCount) * 100}%`, '--bar-c': sourceColors[i % sourceColors.length] } as React.CSSProperties}
                       />
                     </div>
                   </div>
@@ -966,6 +987,7 @@ export default function CustomersPage() {
             <textarea
               className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 min-h-48 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono text-xs"
               value={surveyEmail.html}
+              aria-label="Email Body HTML"
               onChange={(e) => setSurveyEmail({ ...surveyEmail, html: e.target.value })}
             />
             <p className="text-xs text-gray-40 mt-1">
@@ -984,6 +1006,68 @@ export default function CustomersPage() {
             />
           </div>
         </div>
+      </Modal>
+      <Modal open={healthOpen} onClose={() => setHealthOpen(false)} title="Customer Health Analysis — SCOUT" size="lg">
+        {healthReport && (
+          <div className="space-y-5">
+            <div className="flex items-center gap-4 rounded-xl border border-border p-4 bg-card">
+              <div className={`text-4xl font-bold tabular-nums ${
+                healthReport.overallHealth >= 75 ? "text-green-600" :
+                healthReport.overallHealth >= 50 ? "text-yellow-600" : "text-red-600"
+              }`}>{healthReport.overallHealth}<span className="text-lg font-normal text-gray-40">/100</span></div>
+              <div>
+                <p className="text-sm font-semibold text-gray-80">Overall Health Score</p>
+                <p className="text-xs text-gray-50 mt-0.5">Retention: {healthReport.retentionScore}/100 · {healthReport.mrrTrend}</p>
+              </div>
+            </div>
+            {healthReport.churnRisk && healthReport.churnRisk.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-80 mb-2">Churn Risk</h4>
+                <div className="space-y-2">
+                  {healthReport.churnRisk.map((r, i) => (
+                    <div key={i} className="flex gap-3 rounded-lg border border-border p-3 text-sm">
+                      <StatusBadge status={r.risk} variant={r.risk === "high" ? "error" : r.risk === "medium" ? "warning" : "success"} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-80">{r.customer}</p>
+                        <p className="text-xs text-gray-50 mt-0.5">{r.signals?.join(" · ")}</p>
+                        <p className="text-xs text-primary mt-1">{r.action}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {healthReport.upsellOpportunities && healthReport.upsellOpportunities.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-80 mb-2">Upsell Opportunities</h4>
+                <div className="space-y-2">
+                  {healthReport.upsellOpportunities.map((u, i) => (
+                    <div key={i} className="rounded-lg border border-border p-3 text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-gray-80">{u.customer}</span>
+                        <span className="text-primary font-semibold">+${u.estimatedValue}/mo</span>
+                      </div>
+                      <p className="text-xs text-gray-60 mt-1">{u.opportunity}</p>
+                      <p className="text-xs text-gray-50 mt-1 italic">{u.approach}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {healthReport.recommendations && healthReport.recommendations.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-80 mb-2">Recommendations</h4>
+                <ul className="space-y-1">
+                  {healthReport.recommendations.map((r, i) => (
+                    <li key={i} className="text-xs text-gray-60 flex gap-2">
+                      <span className="text-primary shrink-0">&rarr;</span>{r}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
     </div>
   );

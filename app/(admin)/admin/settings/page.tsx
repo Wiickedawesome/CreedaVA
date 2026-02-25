@@ -7,8 +7,10 @@ import { useCollection } from "@/hooks/useCollection";
 import { createWithId, subscribe } from "@/lib/firebase/firestore";
 import { cloudTestIntegration, cloudVerifyAllIntegrations } from "@/lib/firebase/cloud-functions";
 import type { IntegrationTestResult, VerifyAllResult } from "@/lib/firebase/cloud-functions";
-import { PageHeader, useToast } from "@/components/admin";
+import { AIPromptButton, PageHeader, useToast } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
+import { useAdminTheme } from "@/hooks/useAdminTheme";
+import type { AdminTheme } from "@/hooks/useAdminTheme";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -260,6 +262,9 @@ const { toast } = useToast();
   const [timezone, setTimezone] = useState("America/Belize");
   const [saving, setSaving] = useState(false);
 
+  // ─── Appearance (theme) ─────────────
+  const [adminTheme, setAdminTheme] = useAdminTheme();
+
   // ─── Integrations state (REAL-TIME listener) ─────────────
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [integrationsLoading, setIntegrationsLoading] = useState(true);
@@ -486,7 +491,10 @@ const { toast } = useToast();
   return (
     <div className="space-y-8">
       <PageHeader title="Settings" description="Profile, preferences, and integrations" />
-
+      <AIPromptButton
+        section="Settings AI"
+        description="I can help you configure integrations, explain settings, and troubleshoot connection issues."
+      />
       {/* ─── Profile ──────────────────────────────────── */}
       <section className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-3 mb-5">
@@ -603,6 +611,75 @@ const { toast } = useToast();
               />
             </span>
           </label>
+        </div>
+      </section>
+
+      {/* ─── Appearance ───────────────────────────────── */}
+      <section className="rounded-xl border border-border bg-card p-6">
+        <div className="flex items-center gap-3 mb-5">
+          {/* Sun / Moon icon */}
+          <svg className="w-5 h-5 text-gray-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          </svg>
+          <h2 className="text-sm font-semibold text-foreground tracking-wide uppercase">Appearance</h2>
+        </div>
+        <div className="max-w-lg">
+          <p className="text-xs text-gray-50 mb-4">Choose how the admin panel looks. <span className="font-medium text-gray-70">Auto</span> follows your operating system setting.</p>
+          {/* Three-way segmented toggle */}
+          <div
+            role="group"
+            aria-label="Admin theme"
+            className="inline-flex rounded-xl border border-border bg-gray-30/30 p-1 gap-1"
+          >
+            {([
+              { value: "auto" as AdminTheme, label: "Auto", icon: (
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
+                </svg>
+              ) },
+              { value: "light" as AdminTheme, label: "Light", icon: (
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                </svg>
+              ) },
+              { value: "dark" as AdminTheme, label: "Dark", icon: (
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              ) },
+            ] as { value: AdminTheme; label: string; icon: React.ReactNode }[]).map(({ value, label, icon }) => {
+              const isActive = adminTheme === value;
+              const pressedAttr: "true" | "false" = isActive ? "true" : "false";
+              return (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={pressedAttr}
+                onClick={() => setAdminTheme(value)}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                  isActive
+                    ? "bg-card shadow-sm text-primary border border-primary/20"
+                    : "text-gray-50 hover:text-gray-80 hover:bg-card/50"
+                }`}
+              >
+                {icon}
+                {label}
+                {isActive && value === "auto" && (
+                  <span className="text-[10px] text-gray-40 font-normal">(default)</span>
+                )}
+              </button>
+              );
+            })}
+          </div>
+          <p className="text-[11px] text-gray-40 mt-3">
+            {adminTheme === "auto"
+              ? "Currently following your OS setting."
+              : adminTheme === "dark"
+              ? "Dark mode is always on."
+              : "Light mode is always on."}
+          </p>
         </div>
       </section>
 
@@ -807,20 +884,6 @@ const { toast } = useToast();
             );
           })}
         </div>
-      </section>
-
-      {/* ─── Danger Zone ──────────────────────────────── */}
-      <section className="rounded-xl border border-red-500/60 bg-red-500/5 p-6">
-        <div className="flex items-center gap-3 mb-2">
-          <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-            <line x1="12" y1="9" x2="12" y2="13" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
-          </svg>
-          <h2 className="text-sm font-semibold text-red-600 tracking-wide uppercase">Danger Zone</h2>
-        </div>
-        <p className="text-xs text-gray-50 mb-4">These actions are irreversible. Proceed with caution.</p>
-        <Button variant="danger" size="sm" disabled>Delete All Data</Button>
       </section>
     </div>
   );
