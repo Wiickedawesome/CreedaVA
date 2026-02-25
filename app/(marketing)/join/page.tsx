@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, type FormEvent } from "react";
 import { Container, Input, Button } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
-import { getAppCheckHeaders } from "@/lib/firebase/app-check";
 import Link from "next/link";
 
 interface Slot {
@@ -12,7 +11,6 @@ interface Slot {
   available: boolean;
 }
 
-const WEBHOOK_URL = "/handleFormWebhook";
 const SLOTS_URL = "/getAvailableSlots";
 
 /** Generates Mon–Fri 9am–5pm slots for the next 60 days when the
@@ -90,8 +88,7 @@ export default function JoinPage() {
   useEffect(() => {
     async function load() {
       try {
-        const appCheckHeaders = await getAppCheckHeaders();
-        const res = await fetch(SLOTS_URL, { headers: appCheckHeaders });
+        const res = await fetch(SLOTS_URL);
         if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
         const loaded: Slot[] = data.slots || [];
@@ -142,22 +139,17 @@ export default function JoinPage() {
     setError("");
 
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        ...(await getAppCheckHeaders()),
-      };
-
-      const res = await fetch(WEBHOOK_URL, {
+      const res = await fetch("/api/booking", {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          formType: "booking",
-          name: `${form.firstName} ${form.lastName}`.trim(),
+          firstName: form.firstName,
+          lastName: form.lastName,
           email: form.email,
           phone: form.phone,
           company: form.company,
           service: form.service,
-          date: `${selectedDate}T${selectedTime}:00`,
+          date: selectedDate,
           time: selectedTime,
           notes: form.notes,
           source: "join-page",
