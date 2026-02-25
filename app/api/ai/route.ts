@@ -119,12 +119,19 @@ export async function POST(req: NextRequest) {
   }
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  // ── Handle each call type ──────────────────────────
+  // Server-side requests have no Referer by default.
+  // If the API key has HTTP referrer restrictions set in Google Cloud Console,
+  // injecting the production origin satisfies the restriction.
+  const geminiRequestOptions = {
+    customHeaders: { Referer: "https://creedava.com" },
+  };
+
+  // ── Handle each call type ──────────────────────
 
   try {
     // ── "generate": single text generation ──
     if (type === "generate") {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }, geminiRequestOptions);
       const request =
         systemInstruction && userContent
           ? {
@@ -144,7 +151,7 @@ export async function POST(req: NextRequest) {
 
     // ── "stream": streaming text generation ──
     if (type === "stream") {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }, geminiRequestOptions);
       const request =
         systemInstruction && userContent
           ? {
@@ -175,7 +182,7 @@ export async function POST(req: NextRequest) {
 
     // ── "grounded": Google Search grounding ──
     if (type === "grounded") {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }, geminiRequestOptions);
       const groundingRequest =
         systemInstruction && userContent
           ? {
@@ -227,7 +234,7 @@ export async function POST(req: NextRequest) {
         toolConfig: {
           functionCallingConfig: { mode: FunctionCallingMode.AUTO },
         },
-      });
+      }, geminiRequestOptions);
       const result = await model.generateContent({
         systemInstruction,
         contents: contents as Content[],

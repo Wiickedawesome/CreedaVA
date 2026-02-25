@@ -645,7 +645,7 @@ export default function AIReportsDashboard() {
   const { data: keywords } = useCollection<SEOKeyword>("keywords");
   const { data: seoAudits } = useCollection<SEOAudit>("seo");
   const { data: landingPages } = useCollection<LandingPage>("landing-pages");
-  const { data: forumThreads } = useCollection<ForumThread>("forum-threads");
+  const { data: forumThreads } = useCollection<ForumThread>("forum");
   const { data: activityLog, loading: logLoading } = useCollection<ActivityLogEntry>(
     "ai-activity-log",
     { orderByField: "createdAt", orderDirection: "desc" },

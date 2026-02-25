@@ -152,9 +152,9 @@ const COLLECTION_FETCHERS: Record<
   emails: () => fetchAll<EmailDraft>("emails"),
   blog: () => fetchAll<BlogPost>("blog"),
   keywords: () => fetchAll<SEOKeyword>("keywords"),
-  seoAudits: () => fetchAll<SEOAudit>("seo-audits"),
+  seoAudits: () => fetchAll<SEOAudit>("seo"),
   landingPages: () => fetchAll<LandingPage>("landing-pages"),
-  forumThreads: () => fetchAll<ForumThread>("forum-threads"),
+  forumThreads: () => fetchAll<ForumThread>("forum"),
 };
 
 // ─── Main loader ─────────────────────────────────────
