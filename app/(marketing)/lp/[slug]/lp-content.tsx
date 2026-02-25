@@ -91,10 +91,10 @@ export default function LpContent({ slug }: Props) {
           <div
             className="prose prose-lg max-w-none
               prose-headings:text-gray-100 prose-headings:font-bold
-              prose-p:text-gray-70 prose-p:leading-relaxed
+              prose-p:text-gray-80 prose-p:leading-relaxed
               prose-a:text-primary prose-a:no-underline hover:prose-a:underline
               prose-strong:text-gray-90
-              prose-ul:text-gray-70 prose-li:text-gray-70
+              prose-ul:text-gray-80 prose-li:text-gray-80
               prose-img:rounded-xl"
             dangerouslySetInnerHTML={{ __html: page.bodyHtml }}
           />

@@ -234,12 +234,6 @@ export default function KeywordsPage() {
         actions={
           <div className="flex items-center gap-2">
           <AIPromptButton
-            section="Keyword Chat"
-            description="Ask ORACLE about search performance, striking-distance opportunities, and content gaps."
-            placeholder="What keywords should we target this month?"
-            proactiveQuery="Analyze organic search performance and identify striking-distance keywords currently ranking positions 4–15 that we could push to page 1 with targeted content improvements. Cross-reference with our tracked keywords and suggest which blog posts to update first."
-          />
-          <AIPromptButton
             section="Keyword AI"
             description="Enter a topic to get AI-powered keyword suggestions with search intent, difficulty, and suggested titles."
             placeholder="e.g. virtual assistant services, remote work, business outsourcing"

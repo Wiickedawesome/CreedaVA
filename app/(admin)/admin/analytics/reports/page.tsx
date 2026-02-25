@@ -1098,10 +1098,7 @@ export default function AIReportsDashboard() {
     { label: "Scheduled", value: "scheduled", badge: schedules.filter((s) => s.isStale).length || undefined },
     { label: "On-Demand", value: "on-demand" },
     { label: "Insights", value: "insights", badge: activeInsights.length || undefined },
-    { label: "History", value: "history", badge: reports.length || undefined },
-    { label: "AI Activity", value: "ai-activity", badge: activityStats.criticalInsights || undefined },
-    { label: `Activity Log${activityLog.length > 0 ? ` (${activityLog.length})` : ""}`, value: "activity-log" },
-    { label: `AI Tasks${aiTasks.length > 0 ? ` (${aiTasks.length})` : ""}`, value: "ai-tasks" },
+    { label: "History", value: "history", badge: (reports.length + activityLog.length + aiTasks.length) || undefined },
   ];
 
   // ─── Loading state ─────────────────────────────────
@@ -1403,241 +1400,86 @@ export default function AIReportsDashboard() {
 
       {/* ═══════ HISTORY TAB ═══════ */}
       {tab === "history" && (
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-semibold text-gray-90">All Reports</h3>
-            <p className="text-xs text-gray-50 mt-0.5">
-              Complete history of all AI-generated reports
-            </p>
-          </div>
-
-          <DataTable
-            columns={columns}
-            data={reports}
-            keyExtractor={(r) => r.id}
-            onRowClick={(r) => openDetail(r)}
-            emptyMessage="No reports yet — generate one from your CRM data"
-          />
-        </div>
-      )}
-
-      {/* ═══════ AI ACTIVITY TAB ═══════ */}
-      {tab === "ai-activity" && (
-        <div className="space-y-6">
-          {/* Stat cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard label="Total Actions" value={activityStats.total} />
-            <StatCard label="Auto-Executed" value={activityStats.autoExec} />
-            <StatCard
-              label="Active Insights"
-              value={activityStats.activeInsightsCount}
-              trend={activityStats.criticalInsights > 0 ? { value: activityStats.criticalInsights, positive: false } : undefined}
-            />
-            <StatCard
-              label="AI Tasks"
-              value={activityStats.completedTasks + activityStats.failedTasks + activityStats.runningTasks}
-              trend={activityStats.runningTasks > 0 ? { value: activityStats.runningTasks, positive: true } : undefined}
-            />
-          </div>
-
-          {/* Overview grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Top tools */}
-            <div className="bg-card border border-border rounded-lg p-5">
-              <h3 className="text-sm font-medium text-gray-80 mb-4">Top Tools Used</h3>
-              {activityStats.topTools.length === 0 ? (
-                <p className="text-xs text-gray-40">No tool invocations yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {activityStats.topTools.map(([tool, count]) => {
-                    const maxCount = activityStats.topTools[0][1];
-                    const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                    return (
-                      <div key={tool} className="flex items-center gap-3">
-                        <span className="text-xs font-mono text-gray-60 w-48 truncate shrink-0">{tool}</span>
-                        <div className="flex-1 h-2 bg-gray-20 rounded-full overflow-hidden">
-                          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className="text-xs text-gray-40 w-8 text-right">{count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+        <div className="space-y-10">
+          {/* ── AI Reports ── */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-90">AI Reports</h3>
+              <p className="text-xs text-gray-50 mt-0.5">All AI-generated reports</p>
             </div>
-
-            {/* Risk distribution */}
-            <div className="bg-card border border-border rounded-lg p-5">
-              <h3 className="text-sm font-medium text-gray-80 mb-4">Risk Level Distribution</h3>
-              {activityStats.total === 0 ? (
-                <p className="text-xs text-gray-40">No actions recorded yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  {(["read-only", "draft", "auto", "destructive"] as const).map((risk) => {
-                    const count = activityStats.risks[risk] || 0;
-                    const pct = activityStats.total > 0 ? (count / activityStats.total) * 100 : 0;
-                    return (
-                      <div key={risk} className="flex items-center gap-3">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium w-24 text-center ${riskColors[risk]}`}>
-                          {risk}
-                        </span>
-                        <div className="flex-1 h-2 bg-gray-20 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${ risk === "destructive" ? "bg-red-500" : risk === "auto" ? "bg-green-500" : risk === "draft" ? "bg-yellow-500" : "bg-blue-500" }`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <span className="text-xs text-gray-40 w-20 text-right">{count} ({pct.toFixed(0)}%)</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Domain breakdown */}
-            <div className="bg-card border border-border rounded-lg p-5">
-              <h3 className="text-sm font-medium text-gray-80 mb-4">Actions by Domain</h3>
-              {Object.keys(activityStats.domains).length === 0 ? (
-                <p className="text-xs text-gray-40">No domains recorded.</p>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(activityStats.domains)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([domain, count]) => (
-                      <div key={domain} className="flex items-center justify-between bg-gray-20/30 rounded-lg px-3 py-2">
-                        <span className="text-xs capitalize text-gray-60">{domain}</span>
-                        <span className="text-sm font-medium text-gray-80">{count}</span>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-
-            {/* Decision summary */}
-            <div className="bg-card border border-border rounded-lg p-5">
-              <h3 className="text-sm font-medium text-gray-80 mb-4">Decision Summary</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-green-400">{activityStats.autoExec}</p>
-                  <p className="text-xs text-green-400/70 mt-1">Auto-Executed</p>
-                </div>
-                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-yellow-400">{activityStats.confirmed}</p>
-                  <p className="text-xs text-yellow-400/70 mt-1">Confirmed</p>
-                </div>
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-red-400">{activityStats.denied}</p>
-                  <p className="text-xs text-red-400/70 mt-1">Denied</p>
-                </div>
-                <div className="bg-gray-500/10 border border-gray-500/20 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-gray-400">{activityStats.errors}</p>
-                  <p className="text-xs text-gray-400/70 mt-1">Errors</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Recent insights */}
-            <div className="lg:col-span-2 bg-card border border-border rounded-lg p-5">
-              <h3 className="text-sm font-medium text-gray-80 mb-4">
-                Recent Insights
-                {activityStats.criticalInsights > 0 && (
-                  <span className="ml-2 text-[10px] bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full">
-                    {activityStats.criticalInsights} critical
-                  </span>
-                )}
-                {activityStats.warningInsights > 0 && (
-                  <span className="ml-2 text-[10px] bg-yellow-500/15 text-yellow-400 px-2 py-0.5 rounded-full">
-                    {activityStats.warningInsights} warning
-                  </span>
-                )}
-              </h3>
-              {insights.length === 0 ? (
-                <p className="text-xs text-gray-40">No insights yet. Weekly reviews generate insights automatically.</p>
-              ) : (
-                <div className="space-y-3">
-                  {insights
-                    .filter((i) => !i.dismissed)
-                    .sort((a, b) => {
-                      if (a.pinned && !b.pinned) return -1;
-                      if (!a.pinned && b.pinned) return 1;
-                      const sevOrder: Record<string, number> = { critical: 0, warning: 1, positive: 2, info: 3 };
-                      return (sevOrder[a.severity] ?? 3) - (sevOrder[b.severity] ?? 3);
-                    })
-                    .slice(0, 8)
-                    .map((insight) => (
-                      <InsightCard
-                        key={insight.id}
-                        insight={insight}
-                        onPin={() => editInsight(insight.id, { pinned: !insight.pinned })}
-                        onDismiss={() => editInsight(insight.id, { dismissed: true })}
-                      />
-                    ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════ ACTIVITY LOG TAB ═══════ */}
-      {tab === "activity-log" && (
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-3">
-            <select
-              value={domainFilter}
-              onChange={(e) => setDomainFilter(e.target.value)}
-              aria-label="Filter by domain"
-              className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-foreground"
-            >
-              <option value="all">All Domains</option>
-              {domainOptions.map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-            <select
-              value={riskFilter}
-              onChange={(e) => setRiskFilter(e.target.value)}
-              aria-label="Filter by risk level"
-              className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-foreground"
-            >
-              <option value="all">All Risk Levels</option>
-              <option value="read-only">Read-Only</option>
-              <option value="draft">Draft</option>
-              <option value="auto">Auto</option>
-              <option value="destructive">Destructive</option>
-            </select>
-          </div>
-          {filteredLog.length === 0 && !logLoading ? (
-            <EmptyState
-              title="No activity yet"
-              description="AI tool invocations will appear here as the AI assistant processes requests."
-            />
-          ) : (
             <DataTable
-              columns={logColumns}
-              data={filteredLog}
-              keyExtractor={(entry) => entry.id}
+              columns={columns}
+              data={reports}
+              keyExtractor={(r) => r.id}
+              onRowClick={(r) => openDetail(r)}
+              emptyMessage="No reports yet — generate one from your CRM data"
             />
-          )}
-        </div>
-      )}
+          </div>
 
-      {/* ═══════ AI TASKS TAB ═══════ */}
-      {tab === "ai-tasks" && (
-        <div>
-          {aiTasks.length === 0 ? (
-            <EmptyState
-              title="No AI tasks"
-              description="Tasks like blog generation, SEO audits, and report creation will appear here."
-            />
-          ) : (
-            <DataTable
-              columns={aiTaskColumns}
-              data={aiTasks}
-              keyExtractor={(task) => task.id}
-            />
-          )}
+          {/* ── Activity Log ── */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-90">AI Activity Log</h3>
+              <p className="text-xs text-gray-50 mt-0.5">All AI tool invocations and decision history</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <select
+                value={domainFilter}
+                onChange={(e) => setDomainFilter(e.target.value)}
+                aria-label="Filter by domain"
+                className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-foreground"
+              >
+                <option value="all">All Domains</option>
+                {domainOptions.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+              <select
+                value={riskFilter}
+                onChange={(e) => setRiskFilter(e.target.value)}
+                aria-label="Filter by risk level"
+                className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm text-foreground"
+              >
+                <option value="all">All Risk Levels</option>
+                <option value="read-only">Read-Only</option>
+                <option value="draft">Draft</option>
+                <option value="auto">Auto</option>
+                <option value="destructive">Destructive</option>
+              </select>
+            </div>
+            {filteredLog.length === 0 && !logLoading ? (
+              <EmptyState
+                title="No activity yet"
+                description="AI tool invocations will appear here as the AI assistant processes requests."
+              />
+            ) : (
+              <DataTable
+                columns={logColumns}
+                data={filteredLog}
+                keyExtractor={(entry) => entry.id}
+              />
+            )}
+          </div>
+
+          {/* ── AI Tasks ── */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-90">AI Tasks</h3>
+              <p className="text-xs text-gray-50 mt-0.5">Background tasks like blog generation, SEO audits, and report creation</p>
+            </div>
+            {aiTasks.length === 0 ? (
+              <EmptyState
+                title="No AI tasks"
+                description="Tasks like blog generation, SEO audits, and report creation will appear here."
+              />
+            ) : (
+              <DataTable
+                columns={aiTaskColumns}
+                data={aiTasks}
+                keyExtractor={(task) => task.id}
+              />
+            )}
+          </div>
         </div>
       )}
 
