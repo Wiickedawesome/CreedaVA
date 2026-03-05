@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Container } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
 
-const DEFAULT_STAT_VALUES = ["500+", "98%", "24/7", "50+"];
+const DEFAULT_STAT_VALUES = ["500+", "98%", "EN/ES", "50+"];
 const statKeys = [
   "tasksCompleted",
   "clientSatisfaction",

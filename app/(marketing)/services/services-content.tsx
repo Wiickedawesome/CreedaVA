@@ -13,7 +13,7 @@ const serviceIds = [
   "web",
   "real-estate",
   "insurance",
-  "ai-streamlining",
+  "workflow-optimization",
 ];
 
 const serviceIcons = [

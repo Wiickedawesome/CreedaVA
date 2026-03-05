@@ -10,7 +10,7 @@ export async function generateMetadata() {
   });
 }
 
-const DEFAULT_STATS = ["500+", "98%", "24/7", "50+"];
+const DEFAULT_STATS = ["500+", "98%", "EN/ES", "50+"];
 
 async function getHomepageStats(): Promise<string[]> {
   try {

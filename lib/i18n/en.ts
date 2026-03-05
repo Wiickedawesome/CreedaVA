@@ -17,18 +17,18 @@ const en = {
     heroTitle: "Focus on What",
     heroTitleHighlight: "Matters Most",
     heroDesc:
-      "Delegate your administrative tasks to skilled virtual assistants. Save time, reduce costs, and scale your business with CreedaVA\u2019s professional support services.",
+      "Delegate your administrative tasks to skilled virtual assistants \u2014 professionally bilingual in English and Spanish. Save time, reduce costs, and scale your business with CreedaVA\u2019s trusted support services.",
     heroCtaPrimary: "Get Started",
     heroCtaSecondary: "View Services",
     stats: {
       tasksCompleted: "Tasks Completed",
       clientSatisfaction: "Client Satisfaction",
-      availability: "Availability",
+      availability: "Bilingual Support",
       happyClients: "Happy Clients",
     },
     howItWorks: "How It Works",
     howItWorksDesc:
-      "Get started with your dedicated virtual assistant in just a few simple steps.",
+      "Get started with your dedicated virtual assistant in just a few steps. Most clients are fully onboarded within 5\u20137 business days.",
     steps: [
       {
         title: "Free Consultation",
@@ -49,16 +49,16 @@ const en = {
       "We combine expertise, reliability, and personalized service to help your business thrive.",
     whyItems: [
       {
-        title: "Experienced Professionals",
-        desc: "Our VAs are vetted experts with years of experience across multiple industries.",
+        title: "Bilingual Professionals",
+        desc: "Our VAs are fluent in both English and Spanish at a professional level, and are carefully vetted for expertise across multiple industries.",
       },
       {
         title: "Flexible & Scalable",
-        desc: "Scale up or down as your business needs change. No long-term commitments required.",
+        desc: "Scale up or down as your business evolves. All services are covered by a clear, formal service agreement so expectations are defined from day one.",
       },
       {
         title: "Cost Effective",
-        desc: "Save up to 70% compared to hiring full-time employees. Pay only for what you need.",
+        desc: "Significant savings compared to in-house hiring \u2014 pay only for the support you need, with no overhead or benefits costs.",
       },
       {
         title: "Data Secure",
@@ -67,7 +67,7 @@ const en = {
     ],
     whySteps: [
       { title: "Tell us your needs", desc: "Describe the tasks you need help with" },
-      { title: "Get matched", desc: "We pair you with the perfect VA" },
+      { title: "Get matched", desc: "We pair you with the ideal bilingual VA for your needs" },
       { title: "Start delegating", desc: "Focus on growth while we handle the rest" },
     ],
     ctaTitle: "Ready to Get Started?",
@@ -81,7 +81,7 @@ const en = {
   services: {
     heroTitle: "Our Services",
     heroDesc:
-      "From administrative tasks to specialized support, our virtual assistants are trained to handle your unique business needs with professionalism and expertise. Whether you need help scaling operations or freeing up your time to focus on growth, we have the right solution \u2014 with bilingual support available.",
+      "From administrative tasks to specialized support, our virtual assistants are trained to handle your unique business needs with professionalism and expertise. Whether you need help scaling operations or freeing up your time to focus on growth, we have the right solution \u2014 with professional, bilingual support in English and Spanish.",
     categories: [
       {
         title: "Administrative Support",
@@ -180,15 +180,15 @@ const en = {
         ],
       },
       {
-        title: "AI & Streamlining",
-        desc: "Leverage AI-powered tools and automation to streamline your workflows and maximize efficiency.",
+        title: "Process & Workflow Optimization",
+        desc: "Streamline your business operations with smart workflow design, tool integration, and thorough process documentation tailored to your needs.",
         features: [
-          "AI-assisted task automation",
-          "Workflow optimization and design",
-          "Process documentation and SOPs",
-          "Tool integration and setup",
-          "Data analysis and reporting",
-          "Custom automation solutions",
+          "Workflow design and documentation",
+          "Standard operating procedure (SOP) development",
+          "Tool setup and integration support",
+          "Process efficiency analysis",
+          "Task delegation frameworks",
+          "Digital tool coordination and training",
         ],
       },
     ],
@@ -203,7 +203,7 @@ const en = {
     heroTitle: "About",
     heroTitleHighlight: "CreedaVA",
     heroP1:
-      "Founded in 2023, CreedaVA is a Belize-based virtual assistant agency with a mission to bridge opportunity and talent. In a nation where education continues to rise but employment remains scarce, we serve as a digital bridge \u2014 connecting Belize\u2019s highly skilled, bilingual professionals with global businesses.",
+      "Founded in 2023, CreedaVA is a Belize-based virtual assistant agency built to connect outstanding talent with global opportunity. Belize\u2019s highly educated, professionally bilingual workforce represents a new standard in remote professional support \u2014 and we\u2019re proud to bring that talent to businesses around the world.",
     heroP2:
       "Belize, the only English-speaking country in Central America, is uniquely positioned at the crossroads of cultures. Our team is fluent in English and Spanish, and rich in adaptability, communication, and professionalism \u2014 delivering world-class virtual support across industries.",
     missionTitle: "Our Mission",
@@ -231,7 +231,7 @@ const en = {
   // ─── Pricing ───────────────────────────────────
   pricing: {
     heroTitle: "Simple, Transparent Pricing",
-    heroDesc: "No hidden fees. No long-term contracts. Choose the plan that works for your business and scale as you grow.",
+    heroDesc: "No hidden fees. Transparent, straightforward pricing. Choose the plan that works for your business and scale as you grow.",
     plans: [
       {
         name: "Starter",
@@ -291,7 +291,7 @@ const en = {
     faqs: [
       { q: "Can I switch plans?", a: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle." },
       { q: "What if I need more hours?", a: "Additional hours can be purchased at any time. We also offer rollover on unused hours for Professional plan subscribers." },
-      { q: "Is there a contract?", a: "No long-term contracts required. All plans are month-to-month and can be cancelled at any time." },
+      { q: "What\u2019s included in onboarding?", a: "Onboarding includes a needs assessment, VA matching, brand-specific training, and full setup of your communication and workflow channels \u2014 all at no extra cost. Most clients are up and running within 5\u20137 business days." },
       { q: "How do I get matched with a VA?", a: "After signing up, we assess your needs and pair you with a VA whose skills and experience match your requirements." },
     ],
     seeMore: "See more",
@@ -394,15 +394,15 @@ const en = {
         questions: [
           {
             q: "How do I get started?",
-            a: "It\u2019s simple: schedule a free consultation through our Contact page. We\u2019ll discuss your needs, match you with the right VA, and get you onboarded \u2014 usually within a few business days.",
+            a: "It\u2019s simple: schedule a free consultation through our Contact page. We\u2019ll discuss your needs, match you with the right VA, and get you fully onboarded \u2014 typically within 5\u20137 business days.",
           },
           {
             q: "Is there a minimum commitment?",
-            a: "We offer flexible plans with no long-term contracts required. You can scale up or down based on your needs. We recommend starting with at least 20 hours per month to see meaningful results.",
+            a: "An initial commitment of one year is required to ensure we can deliver consistent, high-quality support. After the first year, services continue under the same agreement with 30 days\u2019 written notice to end. You can scale hours up or down at any time within your plan.",
           },
           {
             q: "How long does onboarding take?",
-            a: "Most clients are fully onboarded within 3\u20135 business days. This includes matching you with a VA, providing brand-specific training, and setting up communication channels.",
+            a: "Most clients are fully onboarded within 5\u20137 business days. This includes matching you with the right VA, tailoring their training to your brand, and setting up all communication and workflow channels.",
           },
         ],
       },
@@ -461,7 +461,7 @@ const en = {
       "Web & Digital Support",
       "Real Estate VA",
       "Insurance Processing",
-      "AI & Streamlining",
+      "Process & Workflow Optimization",
     ],
     companyLinks: {
       about: "About Us",

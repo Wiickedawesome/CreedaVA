@@ -19,18 +19,18 @@ const es: Dictionary = {
     heroTitle: "Enf\u00f3cate en Lo Que",
     heroTitleHighlight: "M\u00e1s Importa",
     heroDesc:
-      "Delega tus tareas administrativas a asistentes virtuales calificados. Ahorra tiempo, reduce costos y escala tu negocio con los servicios de soporte profesional de CreedaVA.",
+      "Delega tus tareas administrativas a asistentes virtuales calificados \u2014 profesionalmente biling\u00fces en ingl\u00e9s y espa\u00f1ol. Ahorra tiempo, reduce costos y escala tu negocio con los servicios de soporte confiables de CreedaVA.",
     heroCtaPrimary: "Empezar",
     heroCtaSecondary: "Ver Servicios",
     stats: {
       tasksCompleted: "Tareas Completadas",
       clientSatisfaction: "Satisfacci\u00f3n del Cliente",
-      availability: "Disponibilidad",
+      availability: "Soporte Biling\u00fce",
       happyClients: "Clientes Satisfechos",
     },
     howItWorks: "C\u00f3mo Funciona",
     howItWorksDesc:
-      "Comienza con tu asistente virtual dedicado en solo unos simples pasos.",
+      "Comienza con tu asistente virtual dedicado en pocos pasos. La mayor\u00eda de los clientes est\u00e1n completamente operativos en 5 a 7 d\u00edas h\u00e1biles.",
     steps: [
       {
         title: "Consulta Gratuita",
@@ -51,16 +51,16 @@ const es: Dictionary = {
       "Combinamos experiencia, confiabilidad y servicio personalizado para ayudar a tu negocio a prosperar.",
     whyItems: [
       {
-        title: "Profesionales Experimentados",
-        desc: "Nuestros AV son expertos verificados con a\u00f1os de experiencia en m\u00faltiples industrias.",
+        title: "Profesionales Biling\u00fces",
+        desc: "Nuestros AV son fluidos en ingl\u00e9s y espa\u00f1ol a nivel profesional, y seleccionados rigurosamente por su experiencia en m\u00faltiples industrias.",
       },
       {
         title: "Flexible y Escalable",
-        desc: "Escala seg\u00fan las necesidades de tu negocio. Sin compromisos a largo plazo.",
+        desc: "Escala seg\u00fan las necesidades de tu negocio. Todos los servicios est\u00e1n cubiertos por un acuerdo de servicio formal y claro que define las expectativas desde el primer d\u00eda.",
       },
       {
         title: "Rentable",
-        desc: "Ahorra hasta un 70% en comparaci\u00f3n con empleados de tiempo completo. Paga solo por lo que necesitas.",
+        desc: "Ahorro significativo en comparaci\u00f3n con la contrataci\u00f3n interna \u2014 paga solo por el soporte que necesitas, sin gastos generales ni costos de beneficios.",
       },
       {
         title: "Datos Seguros",
@@ -69,7 +69,7 @@ const es: Dictionary = {
     ],
     whySteps: [
       { title: "Cu\u00e9ntanos tus necesidades", desc: "Describe las tareas con las que necesitas ayuda" },
-      { title: "Encuentra tu match", desc: "Te emparejamos con el AV perfecto" },
+      { title: "Encuentra tu match", desc: "Te emparejamos con el AV biling\u00fce ideal para tus necesidades" },
       { title: "Comienza a delegar", desc: "Enf\u00f3cate en crecer mientras nosotros nos encargamos del resto" },
     ],
     ctaTitle: "\u00bfListo para Comenzar?",
@@ -83,7 +83,7 @@ const es: Dictionary = {
   services: {
     heroTitle: "Nuestros Servicios",
     heroDesc:
-      "Desde tareas administrativas hasta soporte especializado, nuestros asistentes virtuales est\u00e1n capacitados para manejar las necesidades \u00fanicas de tu negocio con profesionalismo y experiencia. Ya sea que necesites ayuda para escalar operaciones o liberar tu tiempo, tenemos la soluci\u00f3n adecuada \u2014 con soporte biling\u00fce disponible.",
+      "Desde tareas administrativas hasta soporte especializado, nuestros asistentes virtuales est\u00e1n capacitados para manejar las necesidades \u00fanicas de tu negocio con profesionalismo y experiencia. Ya sea que necesites ayuda para escalar operaciones o liberar tu tiempo, tenemos la soluci\u00f3n adecuada \u2014 con soporte biling\u00fce profesional en ingl\u00e9s y espa\u00f1ol.",
     categories: [
       {
         title: "Soporte Administrativo",
@@ -182,15 +182,15 @@ const es: Dictionary = {
         ],
       },
       {
-        title: "IA y Optimizaci\u00f3n",
-        desc: "Aprovecha herramientas impulsadas por IA y automatizaci\u00f3n para optimizar tus flujos de trabajo y maximizar la eficiencia.",
+        title: "Optimizaci\u00f3n de Procesos y Flujos de Trabajo",
+        desc: "Optimiza tus operaciones con dise\u00f1o de flujos de trabajo, integraci\u00f3n de herramientas y documentaci\u00f3n de procesos adaptados a las necesidades de tu negocio.",
         features: [
-          "Automatizaci\u00f3n de tareas asistida por IA",
-          "Optimizaci\u00f3n y dise\u00f1o de flujos de trabajo",
-          "Documentaci\u00f3n de procesos y SOPs",
-          "Integraci\u00f3n y configuraci\u00f3n de herramientas",
-          "An\u00e1lisis de datos e informes",
-          "Soluciones de automatizaci\u00f3n personalizadas",
+          "Dise\u00f1o y documentaci\u00f3n de flujos de trabajo",
+          "Desarrollo de procedimientos operativos est\u00e1ndar (SOPs)",
+          "Soporte de configuraci\u00f3n e integraci\u00f3n de herramientas",
+          "An\u00e1lisis de eficiencia de procesos",
+          "Marcos de delegaci\u00f3n de tareas",
+          "Coordinaci\u00f3n y capacitaci\u00f3n en herramientas digitales",
         ],
       },
     ],
@@ -205,7 +205,7 @@ const es: Dictionary = {
     heroTitle: "Sobre",
     heroTitleHighlight: "CreedaVA",
     heroP1:
-      "Fundada en 2023, CreedaVA es una agencia de asistentes virtuales con sede en Belice con la misi\u00f3n de conectar oportunidad y talento. En una naci\u00f3n donde la educaci\u00f3n sigue en ascenso pero el empleo sigue siendo escaso, servimos como un puente digital \u2014 conectando a los profesionales altamente capacitados y biling\u00fces de Belice con empresas globales.",
+      "Fundada en 2023, CreedaVA es una agencia de asistentes virtuales con sede en Belice, creada para conectar talento excepcional con oportunidades globales. La fuerza laboral altamente educada y profesionalmente biling\u00fce de Belice representa un nuevo est\u00e1ndar en el soporte profesional remoto \u2014 y estamos orgullosos de llevar ese talento a empresas de todo el mundo.",
     heroP2:
       "Belice, el \u00fanico pa\u00eds de habla inglesa en Centroam\u00e9rica, est\u00e1 posicionado de manera \u00fanica en la encrucijada de culturas. Nuestro equipo es fluido en ingl\u00e9s y espa\u00f1ol, y rico en adaptabilidad, comunicaci\u00f3n y profesionalismo \u2014 ofreciendo soporte virtual de clase mundial en todas las industrias.",
     missionTitle: "Nuestra Misi\u00f3n",
@@ -233,7 +233,7 @@ const es: Dictionary = {
   // ─── Pricing ───────────────────────────────────
   pricing: {
     heroTitle: "Precios Simples y Transparentes",
-    heroDesc: "Sin cargos ocultos. Sin contratos a largo plazo. Elige el plan que funcione para tu negocio y escala a medida que creces.",
+    heroDesc: "Sin cargos ocultos. Precios transparentes y directos. Elige el plan que funcione para tu negocio y escala a medida que creces.",
     plans: [
       {
         name: "Inicial",
@@ -293,7 +293,7 @@ const es: Dictionary = {
     faqs: [
       { q: "\u00bfPuedo cambiar de plan?", a: "S\u00ed, puedes mejorar o reducir tu plan en cualquier momento. Los cambios toman efecto al inicio de tu pr\u00f3ximo ciclo de facturaci\u00f3n." },
       { q: "\u00bfQu\u00e9 pasa si necesito m\u00e1s horas?", a: "Se pueden comprar horas adicionales en cualquier momento. Tambi\u00e9n ofrecemos rollover de horas no utilizadas para suscriptores del plan Profesional." },
-      { q: "\u00bfHay contrato?", a: "No se requieren contratos a largo plazo. Todos los planes son mes a mes y se pueden cancelar en cualquier momento." },
+      { q: "\u00bfQu\u00e9 incluye la incorporaci\u00f3n?", a: "La incorporaci\u00f3n incluye una evaluaci\u00f3n de necesidades, emparejamiento con el AV adecuado, capacitaci\u00f3n espec\u00edfica de tu marca y la configuraci\u00f3n completa de canales de comunicaci\u00f3n y flujo de trabajo \u2014 todo sin costo adicional. La mayor\u00eda de los clientes est\u00e1n operativos en 5 a 7 d\u00edas h\u00e1biles." },
       { q: "\u00bfC\u00f3mo me emparejan con un AV?", a: "Despu\u00e9s de registrarte, evaluamos tus necesidades y te emparejamos con un AV cuyas habilidades y experiencia coincidan con tus requisitos." },
     ],
     seeMore: "Ver m\u00e1s",
@@ -396,15 +396,15 @@ const es: Dictionary = {
         questions: [
           {
             q: "\u00bfC\u00f3mo empiezo?",
-            a: "Es simple: agenda una consulta gratuita a trav\u00e9s de nuestra p\u00e1gina de Contacto. Discutiremos tus necesidades, te emparejaremos con el AV adecuado y te incorporaremos \u2014 generalmente en unos pocos d\u00edas h\u00e1biles.",
+            a: "Es simple: agenda una consulta gratuita a trav\u00e9s de nuestra p\u00e1gina de Contacto. Discutiremos tus necesidades, te emparejaremos con el AV adecuado y te incorporaremos \u2014 t\u00edpicamente en 5 a 7 d\u00edas h\u00e1biles.",
           },
           {
             q: "\u00bfHay un compromiso m\u00ednimo?",
-            a: "Ofrecemos planes flexibles sin contratos a largo plazo. Puedes escalar hacia arriba o hacia abajo seg\u00fan tus necesidades. Recomendamos comenzar con al menos 20 horas por mes para ver resultados significativos.",
+            a: "Se requiere un compromiso inicial de un a\u00f1o para garantizar un soporte consistente y de alta calidad. Despu\u00e9s del primer a\u00f1o, los servicios contin\u00faan bajo el mismo acuerdo con 30 d\u00edas de aviso por escrito para finalizarlo. Puedes ajustar las horas en cualquier momento dentro de tu plan.",
           },
           {
             q: "\u00bfCu\u00e1nto tiempo toma la incorporaci\u00f3n?",
-            a: "La mayor\u00eda de los clientes est\u00e1n completamente incorporados en 3\u20135 d\u00edas h\u00e1biles. Esto incluye emparejarte con un AV, proporcionar capacitaci\u00f3n espec\u00edfica de marca y configurar canales de comunicaci\u00f3n.",
+            a: "La mayor\u00eda de los clientes est\u00e1n completamente incorporados en 5 a 7 d\u00edas h\u00e1biles. Esto incluye emparejarte con el AV adecuado, adaptar su capacitaci\u00f3n a tu marca y configurar todos los canales de comunicaci\u00f3n y flujo de trabajo.",
           },
         ],
       },
@@ -463,7 +463,7 @@ const es: Dictionary = {
       "Soporte Web y Digital",
       "AV de Bienes Ra\u00edces",
       "Procesamiento de Seguros",
-      "IA y Optimizaci\u00f3n",
+      "Optimizaci\u00f3n de Procesos y Flujos",
     ],
     companyLinks: {
       about: "Nosotros",
