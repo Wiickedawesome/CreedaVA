@@ -1,7 +1,11 @@
+import { unstable_cache } from "next/cache";
 import { adminDb } from "@/lib/firebase-admin";
 import { getPageSEO } from "@/lib/firebase/seo";
 import { websiteJsonLd } from "@/lib/utils/structured-data";
 import { HomeContent } from "./home-content";
+
+// Revalidate homepage every 5 minutes — content rarely changes
+export const revalidate = 300;
 
 export async function generateMetadata() {
   return getPageSEO("/", {
@@ -12,20 +16,24 @@ export async function generateMetadata() {
 
 const DEFAULT_STATS = ["500+", "98%", "EN/ES", "50+"];
 
-async function getHomepageStats(): Promise<string[]> {
-  try {
-    const doc = await adminDb.collection("settings").doc("homepage-stats").get();
-    if (doc.exists) {
-      const data = doc.data();
-      if (Array.isArray(data?.values) && data.values.length === 4) {
-        return data.values as string[];
+const getHomepageStats = unstable_cache(
+  async (): Promise<string[]> => {
+    try {
+      const doc = await adminDb.collection("settings").doc("homepage-stats").get();
+      if (doc.exists) {
+        const data = doc.data();
+        if (Array.isArray(data?.values) && data.values.length === 4) {
+          return data.values as string[];
+        }
       }
+    } catch {
+      // Fall through to defaults
     }
-  } catch {
-    // Fall through to defaults
-  }
-  return DEFAULT_STATS;
-}
+    return DEFAULT_STATS;
+  },
+  ["homepage-stats"],
+  { revalidate: 300 },
+);
 
 export default async function HomePage() {
   const statValues = await getHomepageStats();

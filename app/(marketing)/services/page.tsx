@@ -2,6 +2,8 @@ import { getPageSEO } from "@/lib/firebase/seo";
 import { serviceJsonLd } from "@/lib/utils/structured-data";
 import { ServicesContent } from "./services-content";
 
+export const revalidate = 3600;
+
 export async function generateMetadata() {
   return getPageSEO("/services", {
     title: "Virtual Assistant Services",

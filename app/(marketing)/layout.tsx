@@ -4,10 +4,8 @@ import { Footer } from "@/components/layout/footer";
 import Script from "next/script";
 import { Suspense } from "react";
 
-import { ForceTheme } from "@/components/layout/force-theme";
 import { GtagPageViews } from "@/components/layout/gtag-pageviews";
 import { LanguageProvider } from "@/lib/i18n";
-import { FirebaseInit } from "@/lib/firebase";
 
 // Use the Firebase measurement ID (set in apphosting.yaml) as the single source of truth.
 // NEXT_PUBLIC_GA_MEASUREMENT_ID is accepted as an override for non-Firebase deploys.
@@ -44,8 +42,6 @@ const organizationJsonLd = {
   },
   sameAs: [
     "https://linkedin.com/company/creedava",
-    "https://facebook.com/creedava",
-    "https://instagram.com/creedava",
   ],
   contactPoint: {
     "@type": "ContactPoint",
@@ -61,8 +57,6 @@ export default function MarketingLayout({
 }) {
   return (
     <LanguageProvider>
-      <FirebaseInit />
-
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
         strategy="afterInteractive"
@@ -81,7 +75,6 @@ gtag('config', '${GA_MEASUREMENT_ID}');`}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
       <div data-theme="light">
-        <ForceTheme theme="light" />
         <Navbar />
         <main id="main-content" className="min-h-screen">{children}</main>
         <Footer />

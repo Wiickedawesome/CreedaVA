@@ -1,6 +1,8 @@
 import { getPageSEO } from "@/lib/firebase/seo";
 import { PrivacyContent } from "./privacy-content";
 
+export const revalidate = 3600;
+
 export async function generateMetadata() {
   return getPageSEO("/privacy", {
     title: "Privacy Policy",

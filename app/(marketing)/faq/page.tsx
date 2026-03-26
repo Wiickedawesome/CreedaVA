@@ -1,5 +1,9 @@
 import { getPageSEO } from "@/lib/firebase/seo";
+import { faqJsonLd } from "@/lib/utils/structured-data";
+import en from "@/lib/i18n/en";
 import { FaqContent } from "./faq-content";
+
+export const revalidate = 3600;
 
 export async function generateMetadata() {
   return getPageSEO("/faq", {
@@ -9,5 +13,17 @@ export async function generateMetadata() {
 }
 
 export default function FAQPage() {
-  return <FaqContent />;
+  const questions = en.faq.categories.flatMap((cat) =>
+    cat.questions.map((item) => ({ question: item.q, answer: item.a })),
+  );
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(questions)) }}
+      />
+      <FaqContent />
+    </>
+  );
 }

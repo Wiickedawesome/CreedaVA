@@ -2,6 +2,8 @@ import { getPageSEO } from "@/lib/firebase/seo";
 import { webPageJsonLd } from "@/lib/utils/structured-data";
 import { PricingContent } from "./pricing-content";
 
+export const revalidate = 3600;
+
 export async function generateMetadata() {
   return getPageSEO("/pricing", {
     title: "Pricing — Virtual Assistant Plans",

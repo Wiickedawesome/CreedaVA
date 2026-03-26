@@ -1,6 +1,8 @@
 import { getPageSEO } from "@/lib/firebase/seo";
 import { ForumContent } from "./forum-content";
 
+export const revalidate = 300;
+
 export async function generateMetadata() {
   return getPageSEO("/forum", {
     title: "Community Forum",

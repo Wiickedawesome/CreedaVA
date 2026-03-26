@@ -1,6 +1,8 @@
 import { getPageSEO } from "@/lib/firebase/seo";
 import { NewsContent } from "./news-content";
 
+export const revalidate = 300;
+
 export async function generateMetadata() {
   return getPageSEO("/news", {
     title: "News & Insights",

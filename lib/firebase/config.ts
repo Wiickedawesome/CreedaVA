@@ -5,12 +5,7 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
-import {
-  getAnalytics,
-  logEvent as firebaseLogEvent,
-  isSupported,
-  type Analytics,
-} from "firebase/analytics";
+import type { Analytics } from "firebase/analytics";
 
 // For production on modern hosting (Vercel/App Hosting), force the use of
 // the firebaseapp.com domain for auth to avoid rewrite issues & 404s.
@@ -43,6 +38,7 @@ let _analytics: Analytics | null = null;
 async function getGA4(): Promise<Analytics | null> {
   if (typeof window === "undefined") return null;
   if (_analytics) return _analytics;
+  const { isSupported, getAnalytics } = await import("firebase/analytics");
   const supported = await isSupported();
   if (!supported) return null;
   if (!app) return null;
@@ -57,7 +53,8 @@ async function logGA4Event(
 ): Promise<void> {
   const analytics = await getGA4();
   if (analytics) {
-    firebaseLogEvent(analytics, eventName, params);
+    const { logEvent } = await import("firebase/analytics");
+    logEvent(analytics, eventName, params);
   }
 }
 
