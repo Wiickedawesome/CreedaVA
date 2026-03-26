@@ -82,7 +82,7 @@ async function getImapClient() {
 // ─── Fetch Inbox Messages ────────────────────────────
 
 export const fetchInbox = onCall(
-  { region: "us-east4", memory: "512MiB", timeoutSeconds: 60 },
+  { region: "us-east4", memory: "512MiB", timeoutSeconds: 60, ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");
@@ -200,7 +200,7 @@ export const fetchInbox = onCall(
 // ─── Fetch Single Email ──────────────────────────────
 
 export const fetchEmailMessage = onCall(
-  { region: "us-east4", memory: "256MiB", timeoutSeconds: 30 },
+  { region: "us-east4", memory: "256MiB", timeoutSeconds: 30, ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");
@@ -278,7 +278,7 @@ export const fetchEmailMessage = onCall(
 // ─── List Mailbox Folders ────────────────────────────
 
 export const listMailboxFolders = onCall(
-  { region: "us-east4", memory: "256MiB", timeoutSeconds: 15 },
+  { region: "us-east4", memory: "256MiB", timeoutSeconds: 15, ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");
@@ -312,7 +312,7 @@ export const listMailboxFolders = onCall(
 // ─── Sync Inbox to Firestore (for dashboard widgets) ─
 
 export const syncInboxToFirestore = onCall(
-  { region: "us-east4", memory: "512MiB", timeoutSeconds: 120 },
+  { region: "us-east4", memory: "512MiB", timeoutSeconds: 120, ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");

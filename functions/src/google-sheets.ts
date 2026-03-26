@@ -49,7 +49,7 @@ async function getSheetsClient() {
 // ─── Export CRM Data to Sheets ───────────────────────
 
 export const exportToSheets = onCall(
-  { region: "us-east4", memory: "512MiB", timeoutSeconds: 120 },
+  { region: "us-east4", memory: "512MiB", timeoutSeconds: 120, ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -180,7 +180,7 @@ export const exportToSheets = onCall(
 // ─── Generate Weekly Report Sheet ────────────────────
 
 export const generateReportSheet = onCall(
-  { region: "us-east4", memory: "512MiB", timeoutSeconds: 120 },
+  { region: "us-east4", memory: "512MiB", timeoutSeconds: 120, ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 

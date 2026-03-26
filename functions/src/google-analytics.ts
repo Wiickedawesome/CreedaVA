@@ -65,7 +65,7 @@ interface GARow {
 }
 
 export const fetchAnalyticsReport = onCall(
-  { region: "us-east4", memory: "256MiB" },
+  { region: "us-east4", memory: "256MiB", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -169,7 +169,7 @@ export const fetchAnalyticsReport = onCall(
 // ─── Realtime Report ─────────────────────────────────
 
 export const fetchRealtimeAnalytics = onCall(
-  { region: "us-east4", memory: "256MiB" },
+  { region: "us-east4", memory: "256MiB", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 

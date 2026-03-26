@@ -3,8 +3,13 @@
 import { Container } from "@/components/ui";
 import { NewsList } from "./news-list";
 import { useTranslation } from "@/lib/i18n";
+import type { BlogPost } from "@/lib/types/content";
 
-export function NewsContent() {
+interface NewsContentProps {
+  posts: (BlogPost & { id: string })[];
+}
+
+export function NewsContent({ posts }: NewsContentProps) {
   const { t } = useTranslation();
 
   return (
@@ -26,7 +31,7 @@ export function NewsContent() {
       {/* Posts Grid */}
       <section className="py-20 lg:py-28">
         <Container>
-          <NewsList />
+          <NewsList posts={posts} />
         </Container>
       </section>
 

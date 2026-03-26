@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { adminDb } from "@/lib/firebase-admin";
 import { blogPostingJsonLd } from "@/lib/utils/structured-data";
 import { BlogPostContent } from "./blog-post-content";
+import type { BlogPost } from "@/lib/types/content";
+
+export const revalidate = 300;
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -21,36 +24,49 @@ export async function generateStaticParams() {
   }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-
+async function getPost(slug: string): Promise<(BlogPost & { id: string }) | null> {
   try {
-    // Try to fetch the real post data for rich metadata
     const snap = await adminDb
       .collection("blog")
       .where("slug", "==", slug)
+      .where("status", "==", "published")
       .limit(1)
       .get();
+    if (snap.empty) return null;
+    const doc = snap.docs[0];
+    const data = doc.data();
+    // Convert Firestore Timestamps to ISO strings for serialization
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? data.createdAt,
+      updatedAt: data.updatedAt?.toDate?.()?.toISOString?.() ?? data.updatedAt,
+      publishedAt: data.publishedAt?.toDate?.()?.toISOString?.() ?? data.publishedAt,
+    } as BlogPost & { id: string };
+  } catch {
+    return null;
+  }
+}
 
-    if (!snap.empty) {
-      const post = snap.docs[0].data();
-      const title = post.title || slug.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
-      const description = post.metaDescription || post.excerpt || "";
-      return {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+
+  const post = await getPost(slug);
+  if (post) {
+    const title = post.title;
+    const description = post.metaDescription || post.excerpt || "";
+    return {
+      title: `${title} | CreedaVA News`,
+      description,
+      alternates: { canonical: `https://creedava.com/news/${slug}` },
+      openGraph: {
         title: `${title} | CreedaVA News`,
         description,
-        alternates: { canonical: `https://creedava.com/news/${slug}` },
-        openGraph: {
-          title: `${title} | CreedaVA News`,
-          description,
-          type: "article",
-          url: `https://creedava.com/news/${slug}`,
-          images: post.featuredImage ? [post.featuredImage] : undefined,
-        },
-      };
-    }
-  } catch {
-    // Fall through to slug-derived fallback
+        type: "article",
+        url: `https://creedava.com/news/${slug}`,
+        images: post.featuredImage ? [post.featuredImage] : undefined,
+      },
+    };
   }
 
   // Fallback — derive from slug
@@ -73,29 +89,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
+  const post = await getPost(slug);
 
-  // Fetch post data for JSON-LD (best-effort)
   let jsonLd: object | null = null;
-  try {
-    const snap = await adminDb
-      .collection("blog")
-      .where("slug", "==", slug)
-      .limit(1)
-      .get();
-    if (!snap.empty) {
-      const post = snap.docs[0].data();
-      jsonLd = blogPostingJsonLd({
-        title: post.title || slug,
-        slug,
-        excerpt: post.excerpt || post.metaDescription || "",
-        publishedAt: post.publishedAt?.toDate?.()?.toISOString?.(),
-        updatedAt: post.updatedAt?.toDate?.()?.toISOString?.(),
-        featuredImage: post.featuredImage,
-        tags: post.tags,
-      });
-    }
-  } catch {
-    // JSON-LD is best-effort; page still renders
+  if (post) {
+    jsonLd = blogPostingJsonLd({
+      title: post.title,
+      slug,
+      excerpt: post.excerpt || post.metaDescription || "",
+      publishedAt: post.publishedAt,
+      updatedAt: post.updatedAt as string | undefined,
+      featuredImage: post.featuredImage,
+      tags: post.tags,
+    });
   }
 
   return (
@@ -106,7 +112,7 @@ export default async function BlogPostPage({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <BlogPostContent slug={slug} />
+      <BlogPostContent post={post} />
     </>
   );
 }

@@ -60,7 +60,7 @@ async function fetchGoogleAdsData(
 // ─── Sync Campaign Data ──────────────────────────────
 
 export const syncCampaignData = onCall(
-  { region: "us-east4", timeoutSeconds: 120 },
+  { region: "us-east4", timeoutSeconds: 120, ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     if (!request.auth?.token.email?.endsWith("@creedava.com")) {
       throw new HttpsError("permission-denied", "Must be @creedava.com");

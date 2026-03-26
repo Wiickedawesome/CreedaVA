@@ -46,7 +46,7 @@ async function getBusinessClient() {
 // ─── Fetch Reviews ───────────────────────────────────
 
 export const fetchBusinessReviews = onCall(
-  { region: "us-east4", memory: "256MiB" },
+  { region: "us-east4", memory: "256MiB", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -96,7 +96,7 @@ export const fetchBusinessReviews = onCall(
 // ─── Fetch Business Insights ─────────────────────────
 
 export const fetchBusinessInsights = onCall(
-  { region: "us-east4", memory: "256MiB" },
+  { region: "us-east4", memory: "256MiB", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 

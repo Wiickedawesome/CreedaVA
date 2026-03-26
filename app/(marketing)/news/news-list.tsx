@@ -1,101 +1,20 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { fetchAll } from "@/lib/firebase/firestore";
-import { where, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n";
 import {
   getTranslatedTitle,
   getTranslatedExcerpt,
-  ensureBlogTranslated,
 } from "@/lib/firebase/translate";
 import type { BlogPost } from "@/lib/types/content";
 
-export function NewsList() {
+interface NewsListProps {
+  posts: (BlogPost & { id: string })[];
+}
+
+export function NewsList({ posts }: NewsListProps) {
   const { t, locale } = useTranslation();
-  const [posts, setPosts] = useState<(BlogPost & { id: string })[]>([]);
-  const [loading, setLoading] = useState(true);
-  const translatingRef = useRef(false);
-
-  useEffect(() => {
-    async function loadPosts() {
-      try {
-        const data = await fetchAll<BlogPost>(
-          "blog",
-          where("status", "==", "published"),
-          orderBy("publishedAt", "desc"),
-        );
-        setPosts(data);
-      } catch (err) {
-        console.error("Blog fetch failed (composite index may be missing):", err);
-        try {
-          const data = await fetchAll<BlogPost>(
-            "blog",
-            where("status", "==", "published"),
-          );
-          const sorted = data.sort((a, b) =>
-            (b.publishedAt || "").localeCompare(a.publishedAt || ""),
-          );
-          setPosts(sorted);
-        } catch {
-          setPosts([]);
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadPosts();
-  }, []);
-
-  // On-demand: translate blog posts missing translations for the current locale
-  useEffect(() => {
-    if (translatingRef.current || posts.length === 0) return;
-    const untranslated = posts.filter(
-      (p) => !p.translations?.[locale] && (p.lang || "en") !== locale,
-    );
-    if (untranslated.length === 0) return;
-
-    translatingRef.current = true;
-    (async () => {
-      const updated: (BlogPost & { id: string })[] = [];
-      for (const p of untranslated) {
-        const result = await ensureBlogTranslated(p, locale);
-        updated.push(result);
-      }
-      if (updated.length > 0) {
-        setPosts((prev) =>
-          prev.map((p) => {
-            const u = updated.find((x) => x.id === p.id);
-            return u || p;
-          }),
-        );
-      }
-    })()
-      .catch((err) => console.error("Blog list translation error:", err))
-      .finally(() => {
-        translatingRef.current = false;
-      });
-  }, [posts, locale]);
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-2xl border border-border bg-white overflow-hidden animate-pulse">
-            <div className="bg-gray-10 h-48" />
-            <div className="p-6 space-y-3">
-              <div className="h-4 bg-gray-10 rounded w-1/3" />
-              <div className="h-5 bg-gray-10 rounded w-3/4" />
-              <div className="h-4 bg-gray-10 rounded w-full" />
-              <div className="h-3 bg-gray-10 rounded w-1/4" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   if (posts.length === 0) {
     return (

@@ -48,7 +48,7 @@ async function getDriveClient() {
 // ─── List Files in Root Folder ───────────────────────
 
 export const listDriveFiles = onCall(
-  { region: "us-east4", memory: "256MiB" },
+  { region: "us-east4", memory: "256MiB", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -87,7 +87,7 @@ export const listDriveFiles = onCall(
 // ─── Create Client Folder ────────────────────────────
 
 export const createClientFolder = onCall(
-  { region: "us-east4" },
+  { region: "us-east4", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -149,7 +149,7 @@ export const createClientFolder = onCall(
 // ─── Upload Report to Drive ──────────────────────────
 
 export const uploadReportToDrive = onCall(
-  { region: "us-east4", memory: "512MiB", timeoutSeconds: 60 },
+  { region: "us-east4", memory: "512MiB", timeoutSeconds: 60, ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
