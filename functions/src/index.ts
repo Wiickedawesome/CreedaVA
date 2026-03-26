@@ -36,7 +36,7 @@ export { handleFormWebhook } from "./webhooks";
 export { fetchInbox, fetchEmailMessage, listMailboxFolders, syncInboxToFirestore } from "./inbox";
 
 // Scheduled tasks
-export { dailyDigest, weeklyReport, monthlyReport, dailyGoogleSync, cleanupAnalytics } from "./scheduled";
+export { weeklyReport, monthlyReport, dailyGoogleSync, cleanupAnalytics } from "./scheduled";
 
 // Firestore triggers (automatic sync)
 export { onNewLead, onNewContact, onEmailQueued, onBookingConfirmed } from "./triggers";
