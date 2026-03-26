@@ -74,13 +74,21 @@ export default function SeoContentPage() {
 
   // Merge Firestore entries with defaults for pages not yet saved
   const mergedPages = useMemo(() => {
+    const defaultPaths = new Set(DEFAULT_PAGES.map((d) => d.path));
     const existing = new Map(seoEntries.map((e) => [e.path, e]));
-    return DEFAULT_PAGES.map((d) => {
+    const pages = DEFAULT_PAGES.map((d) => {
       const saved = existing.get(d.path);
       return saved
         ? { ...saved, isDefault: false }
         : { ...d, id: `default-${d.path}`, isDefault: true };
     });
+    // Include custom Firestore entries whose paths are not in DEFAULT_PAGES
+    for (const entry of seoEntries) {
+      if (!defaultPaths.has(entry.path)) {
+        pages.push({ ...entry, isDefault: false });
+      }
+    }
+    return pages;
   }, [seoEntries]);
 
   const pagesWithSeo = mergedPages.filter((p) => !p.isDefault).length;
@@ -98,6 +106,21 @@ export default function SeoContentPage() {
       ogImage: (page as PageSEO).ogImage || "",
       keywords: (page as PageSEO).keywords?.join(", ") || "",
       noIndex: (page as PageSEO).noIndex || false,
+    });
+    setEditOpen(true);
+  }
+
+  function openNewPage() {
+    setEditForm({
+      id: undefined,
+      path: "",
+      title: "",
+      description: "",
+      ogTitle: "",
+      ogDescription: "",
+      ogImage: "",
+      keywords: "",
+      noIndex: false,
     });
     setEditOpen(true);
   }
@@ -349,8 +372,21 @@ export default function SeoContentPage() {
                   Click a row to customize, or seed all pages to Firestore at once.
                 </p>
               </div>
-              <Button size="sm" onClick={handleSeedAll} isLoading={seeding}>
-                Seed All Defaults
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={openNewPage}>
+                  + New Page
+                </Button>
+                <Button size="sm" onClick={handleSeedAll} isLoading={seeding}>
+                  Seed All Defaults
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {pagesWithSeo >= mergedPages.length && (
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" onClick={openNewPage}>
+                + New Page
               </Button>
             </div>
           )}
@@ -401,7 +437,7 @@ export default function SeoContentPage() {
       <Modal
         open={editOpen}
         onClose={() => setEditOpen(false)}
-        title={`Edit SEO — ${editForm.path === "/" ? "Homepage" : editForm.path}`}
+        title={editForm.id ? `Edit SEO — ${editForm.path === "/" ? "Homepage" : editForm.path}` : "New Page SEO"}
         size="lg"
         footer={
           <>
@@ -417,7 +453,15 @@ export default function SeoContentPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-gray-50 mb-1">Page Path</label>
-            <Input value={editForm.path} disabled />
+            <Input
+              value={editForm.path}
+              disabled={!!editForm.id && !editForm.id.startsWith("default-")}
+              onChange={(e) => setEditForm((f) => ({ ...f, path: e.target.value }))}
+              placeholder="/custom-page"
+            />
+            {!editForm.id && (
+              <p className="text-xs text-gray-40 mt-1">Enter the URL path, e.g. /blog or /landing/promo</p>
+            )}
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-50 mb-1">

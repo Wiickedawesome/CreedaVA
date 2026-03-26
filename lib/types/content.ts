@@ -42,6 +42,12 @@ export interface SEOKeyword extends FirestoreDoc {
   suggestedTitle: string;
   tracked: boolean;
   notes?: string;
+  // Search Console metrics (persisted on sync)
+  clicks?: number;
+  impressions?: number;
+  ctr?: number;
+  position?: number;
+  lastSynced?: string;
 }
 
 export type SEOKeywordFormData = Omit<SEOKeyword, keyof FirestoreDoc>;

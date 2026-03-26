@@ -8,6 +8,7 @@ import {
   DataTable,
   Modal,
   Select,
+  AdminTabs,
   AIPromptButton,
   useToast,
 } from "@/components/admin";
@@ -40,6 +41,7 @@ export default function ContactsPage() {
   const { toast } = useToast();
 
   const [search, setSearch] = useState("");
+  const [tagFilter, setTagFilter] = useState("all");
   const [sortBy, setSortBy] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [modalOpen, setModalOpen] = useState(false);
@@ -48,7 +50,29 @@ export default function ContactsPage() {
   const [selected, setSelected] = useState<Contact | null>(null);
   const [form, setForm] = useState<ContactFormData>(emptyContact);
 
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    contacts.forEach((c) => c.tags?.forEach((t) => set.add(t)));
+    return [...set].sort();
+  }, [contacts]);
+
+  const tagTabs = useMemo(() => [
+    { label: "All", value: "all", badge: contacts.length },
+    { label: "Tagged", value: "__tagged__", badge: contacts.filter((c) => c.tags?.length).length },
+    { label: "Untagged", value: "__untagged__", badge: contacts.filter((c) => !c.tags?.length).length },
+    ...allTags.map((tag) => ({
+      label: tag,
+      value: tag,
+      badge: contacts.filter((c) => c.tags?.includes(tag)).length,
+    })),
+  ], [contacts, allTags]);
+
   const filtered = contacts.filter((c) => {
+    // Tag filter
+    if (tagFilter === "__tagged__" && !c.tags?.length) return false;
+    if (tagFilter === "__untagged__" && c.tags?.length) return false;
+    if (tagFilter !== "all" && tagFilter !== "__tagged__" && tagFilter !== "__untagged__" && !c.tags?.includes(tagFilter)) return false;
+    // Search filter
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -255,6 +279,8 @@ export default function ContactsPage() {
           </div>
         }
       />
+
+      <AdminTabs tabs={tagTabs} defaultValue="all" onChange={setTagFilter} />
 
       <div className="flex flex-col sm:flex-row items-center gap-3">
         <div className="max-w-sm w-full sm:flex-1">

@@ -18,16 +18,26 @@ function LoginComponent() {
       (async () => {
         try {
           const token = await user.getIdToken();
-          await fetch("/api/session", {
+          const res = await fetch("/api/session", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token }),
           });
+          if (res.status === 403) {
+            setError("Access denied. Only @creedava.com accounts are authorized.");
+            setSigningIn(false);
+            return;
+          }
+          if (!res.ok) {
+            setError("Session creation failed. Please try again.");
+            setSigningIn(false);
+            return;
+          }
           router.replace(redirectTo);
         } catch (e) {
           console.error("[Auth] Session sync failed:", e);
-          // Still redirect, but log the error
-          router.replace(redirectTo);
+          setError("Network error during sign-in. Please try again.");
+          setSigningIn(false);
         }
       })();
     }
@@ -52,11 +62,7 @@ function LoginComponent() {
       
       setError(msg || "Sign-in failed. Please try again.");
       console.error("[Auth]", code, msg);
-    } finally {
-      // Let the redirect handle the final state, but if there's an error, stop signing in.
-      if (error) {
-        setSigningIn(false);
-      }
+      setSigningIn(false);
     }
   }
 

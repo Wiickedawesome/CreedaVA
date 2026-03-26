@@ -289,6 +289,9 @@ export async function sendMessage(
   const toolsUsed: ToolExecutionResult[] = [];
   const pendingConfirmations: PendingAction[] = [];
   let rounds = 0;
+  let autoExecuteCount = 0;
+  const AUTO_EXECUTE_WARN_THRESHOLD = 3;
+  let toolChainWarning = "";
 
   while (rounds < MAX_TOOL_ROUNDS) {
     const candidate = response.response.candidates?.[0];
@@ -317,6 +320,10 @@ export async function sendMessage(
     for (const fc of functionCalls) {
       const result = await executeTool(fc.functionCall, convo.id);
       toolsUsed.push(result);
+
+      if (!result.requiresConfirmation) {
+        autoExecuteCount++;
+      }
 
       if (result.requiresConfirmation) {
         pendingConfirmations.push({
@@ -348,6 +355,10 @@ export async function sendMessage(
     rounds++;
   }
 
+  if (autoExecuteCount > AUTO_EXECUTE_WARN_THRESHOLD) {
+    toolChainWarning = `\n\n> ⚠️ ${autoExecuteCount} tools were auto-executed in this response. Review the actions above to ensure they are correct.`;
+  }
+
   // 9. Extract the final text response
   const finalText = response.response.text() ?? "";
 
@@ -360,7 +371,7 @@ export async function sendMessage(
   // 11. Add AI response to conversation
   const aiMsg: AIMessage = {
     role: "assistant",
-    content: finalText + toolSummary,
+    content: finalText + toolSummary + toolChainWarning,
     timestamp: new Date().toISOString(),
     page: pagePath,
   };
@@ -371,7 +382,7 @@ export async function sendMessage(
   _cachedConvo = convo;
 
   return {
-    response: finalText,
+    response: finalText + toolChainWarning,
     conversationId: convo.id,
     messageCount: messagesAfterAI.length,
     toolsUsed: toolsUsed.length > 0 ? toolsUsed : undefined,
@@ -571,6 +582,20 @@ export async function* sendMessageStream(
     yield chunk;
   }
 
+  // 5.5 Detect if the AI tried to invoke tools in streaming mode
+  const toolPatterns = [
+    /i'?ll\s+(now\s+)?(run|execute|call|use|invoke|check|fetch|search|send|create|update)/i,
+    /let me\s+(run|execute|call|use|invoke|check|fetch|search|send|create|update)/i,
+    /i'?m\s+(going to|about to)\s+(run|execute|call|use|invoke)/i,
+  ];
+  const looksLikeToolAttempt = toolPatterns.some((p) => p.test(fullResponse));
+  if (looksLikeToolAttempt) {
+    const toolWarning =
+      "\n\n---\n> **Note:** It looks like I wanted to perform an action, but streaming mode doesn't support tool execution. Please use the main chat prompt (non-streaming) so I can execute actions on your behalf.";
+    fullResponse += toolWarning;
+    yield toolWarning;
+  }
+
   // 6. Persist the complete AI response to memory
   const aiMsg: AIMessage = {
     role: "assistant",
@@ -603,6 +628,6 @@ export async function confirmAction(actionId: string): Promise<ToolExecutionResu
  * Reject a pending destructive action.
  * Call this when the user clicks "Reject" on a pending action card.
  */
-export function rejectAction(actionId: string): ToolExecutionResult {
+export async function rejectAction(actionId: string): Promise<ToolExecutionResult> {
   return execReject(actionId);
 }

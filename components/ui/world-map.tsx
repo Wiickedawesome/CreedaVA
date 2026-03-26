@@ -1,8 +1,7 @@
-"use client";
-
 /**
  * World map from Natural Earth 110m. Antarctica removed, antimeridian fixed.
  * Belize highlighted with pulsing indicator.
+ * Server Component — pure SVG, no state/effects needed.
  */
 
 interface WorldMapProps {

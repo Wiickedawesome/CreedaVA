@@ -23,12 +23,10 @@ export function Navbar() {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Close mobile menu on route change (state adjustment during render)
-  const [prevPathname, setPrevPathname] = useState(pathname);
-  if (pathname !== prevPathname) {
-    setPrevPathname(pathname);
+  // Close mobile menu on route change
+  useEffect(() => {
     setMobileMenuOpen(false);
-  }
+  }, [pathname]);
 
   // Focus trap for mobile menu
   useEffect(() => {

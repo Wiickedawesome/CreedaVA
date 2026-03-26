@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-/**
- * Auth gating temporarily disabled while login is rebuilt.
- * All /admin routes pass through directly.
- */
-export function proxy(_request: NextRequest) {
+export function proxy(request: NextRequest) {
+  const session = request.cookies.get("__session");
+
+  if (!session?.value) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("from", request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
   return NextResponse.next();
 }
 

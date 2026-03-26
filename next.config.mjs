@@ -1,3 +1,8 @@
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const rawFunctionsBase = process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://us-east4-creeda-va.cloudfunctions.net";
 const functionsBase = rawFunctionsBase.replace(/\/$/, "");
@@ -5,6 +10,10 @@ const functionsBase = rawFunctionsBase.replace(/\/$/, "");
 const nextConfig = {
   // firebase-admin uses native modules (grpc, etc.) that must not be bundled
   serverExternalPackages: ["firebase-admin"],
+
+  turbopack: {
+    root: __dirname,
+  },
 
   images: {
     remotePatterns: [

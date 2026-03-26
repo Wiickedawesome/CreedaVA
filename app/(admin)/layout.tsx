@@ -1,8 +1,13 @@
 export const dynamic = "force-dynamic";
 
-import Script from "next/script";
+import type { Metadata } from "next";
+import "./admin-styles.css";
 
 import { AdminThemeProvider } from "@/components/layout/admin-theme-provider";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default function AdminGroupLayout({
   children,

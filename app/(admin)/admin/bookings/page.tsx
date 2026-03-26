@@ -28,6 +28,9 @@ export default function BookingsPage() {
   const { toast } = useToast();
 
   const [tab, setTab] = useState("all");
+  const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -243,7 +246,20 @@ export default function BookingsPage() {
     }
   }
 
-  const filtered = useMemo(() => bookings.filter((b) => tab === "all" || b.status === tab), [bookings, tab]);
+  const filtered = useMemo(() => bookings.filter((b) => {
+    if (tab !== "all" && b.status !== tab) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      if (
+        !b.name?.toLowerCase().includes(q) &&
+        !b.email?.toLowerCase().includes(q) &&
+        !b.service?.toLowerCase().includes(q)
+      ) return false;
+    }
+    if (dateFrom && b.date < dateFrom) return false;
+    if (dateTo && b.date > dateTo) return false;
+    return true;
+  }), [bookings, tab, search, dateFrom, dateTo]);
 
   const tabs = [
     { label: "All", value: "all", badge: bookings.length },
@@ -416,6 +432,41 @@ export default function BookingsPage() {
       />
 
       <AdminTabs tabs={tabs} defaultValue="all" onChange={setTab} />
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="sm:max-w-xs w-full">
+          <Input
+            placeholder="Search name, email, service..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            aria-label="From date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          <span className="text-xs text-gray-50">to</span>
+          <input
+            type="date"
+            aria-label="To date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          {(search || dateFrom || dateTo) && (
+            <button
+              onClick={() => { setSearch(""); setDateFrom(""); setDateTo(""); }}
+              className="text-xs text-gray-50 hover:text-gray-80 underline"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
 
       {viewMode === "table" ? (
         <DataTable

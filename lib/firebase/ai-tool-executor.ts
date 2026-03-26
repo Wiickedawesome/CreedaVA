@@ -562,8 +562,10 @@ registerHandler("create_social_draft", async (args) => {
 
 // ─── Main Executor ───────────────────────────────────
 
-/** Pending actions waiting for user confirmation */
-const pendingActions = new Map<string, PendingAction>();
+/** Firestore collection for persisting pending actions (survives restarts) */
+const PENDING_ACTIONS_COLLECTION = "ai-pending-actions";
+/** Pending actions expire after 30 minutes */
+const PENDING_ACTION_TTL_MS = 30 * 60 * 1000;
 
 /**
  * Execute a Gemini function call.
@@ -597,13 +599,14 @@ export async function executeTool(
   // Destructive actions need confirmation
   if (decision.decision === "confirm") {
     const actionId = `${name}_${Date.now()}`;
-    pendingActions.set(actionId, {
+    const { create } = await import("./firestore");
+    await create(PENDING_ACTIONS_COLLECTION, {
       id: actionId,
       toolName: name,
       args: (args as Record<string, unknown>) ?? {},
       impactSummary: decision.impactSummary ?? `Execute ${name}`,
-      conversationId,
-      createdAt: new Date(),
+      conversationId: conversationId ?? null,
+      expiresAt: new Date(Date.now() + PENDING_ACTION_TTL_MS).toISOString(),
     });
 
     return {
@@ -631,6 +634,19 @@ export async function executeTool(
   // Auto-execute
   try {
     const result = await handler(request.args);
+
+    // Validate result shape
+    if (
+      result === null ||
+      result === undefined ||
+      typeof result !== "object" ||
+      !("success" in result)
+    ) {
+      console.warn(
+        `[AI Tool Executor] Tool "${name}" returned invalid result shape (missing 'success' field):`,
+        result,
+      );
+    }
 
     // Log to audit trail (fire and forget)
     const auditEntry = buildAuditEntry(request, "auto-execute", result);
@@ -664,13 +680,18 @@ export async function executeTool(
 
 /**
  * Confirm and execute a pending destructive action.
- * Returns the execution result, or an error if the action wasn't found.
+ * Reads from Firestore so pending actions survive server restarts.
  */
 export async function confirmAction(
   actionId: string,
 ): Promise<ToolExecutionResult> {
-  const action = pendingActions.get(actionId);
-  if (!action) {
+  const { fetchAll, remove } = await import("./firestore");
+  const { where } = await import("firebase/firestore");
+
+  const docs = await fetchAll(PENDING_ACTIONS_COLLECTION, where("id", "==", actionId));
+  const actionDoc = docs[0] as (Record<string, unknown> & { id: string }) | undefined;
+
+  if (!actionDoc) {
     return {
       name: "unknown",
       response: {
@@ -681,22 +702,40 @@ export async function confirmAction(
     };
   }
 
-  pendingActions.delete(actionId);
-  const handler = handlers[action.toolName];
+  const toolName = actionDoc.toolName as string;
+  const args = actionDoc.args as Record<string, unknown>;
+  const conversationId = actionDoc.conversationId as string | undefined;
 
+  // Remove from Firestore
+  await remove(PENDING_ACTIONS_COLLECTION, actionDoc.id);
+
+  const handler = handlers[toolName];
   if (!handler) {
     return {
-      name: action.toolName,
-      response: { success: false, error: `Handler not found: ${action.toolName}` },
+      name: toolName,
+      response: { success: false, error: `Handler not found: ${toolName}` },
       requiresConfirmation: false,
     };
   }
 
   try {
-    const result = await handler(action.args);
+    const result = await handler(args);
+
+    // Validate result shape
+    if (
+      result === null ||
+      result === undefined ||
+      typeof result !== "object" ||
+      !("success" in result)
+    ) {
+      console.warn(
+        `[AI Tool Executor] Confirmed tool "${toolName}" returned invalid result shape:`,
+        result,
+      );
+    }
 
     const auditEntry = buildAuditEntry(
-      { toolName: action.toolName, args: action.args, conversationId: action.conversationId },
+      { toolName, args, conversationId },
       "auto-execute",
       result,
       undefined,
@@ -705,14 +744,14 @@ export async function confirmAction(
     logToolInvocation(auditEntry).catch(() => {});
 
     return {
-      name: action.toolName,
+      name: toolName,
       response: result,
       requiresConfirmation: false,
     };
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : "Unknown error";
     return {
-      name: action.toolName,
+      name: toolName,
       response: { success: false, error: errorMsg },
       requiresConfirmation: false,
     };
@@ -722,16 +761,23 @@ export async function confirmAction(
 /**
  * Reject a pending destructive action.
  */
-export function rejectAction(actionId: string): ToolExecutionResult {
-  const action = pendingActions.get(actionId);
-  pendingActions.delete(actionId);
+export async function rejectAction(actionId: string): Promise<ToolExecutionResult> {
+  const { fetchAll, remove } = await import("./firestore");
+  const { where } = await import("firebase/firestore");
+
+  const docs = await fetchAll(PENDING_ACTIONS_COLLECTION, where("id", "==", actionId));
+  const actionDoc = docs[0] as (Record<string, unknown> & { id: string }) | undefined;
+
+  if (actionDoc) {
+    await remove(PENDING_ACTIONS_COLLECTION, actionDoc.id);
+  }
+
+  const toolName = (actionDoc?.toolName as string) ?? "unknown";
+  const args = (actionDoc?.args as Record<string, unknown>) ?? {};
+  const conversationId = actionDoc?.conversationId as string | undefined;
 
   const auditEntry = buildAuditEntry(
-    {
-      toolName: action?.toolName ?? "unknown",
-      args: action?.args ?? {},
-      conversationId: action?.conversationId,
-    },
+    { toolName, args, conversationId },
     "deny",
     undefined,
     "User rejected action",
@@ -740,7 +786,7 @@ export function rejectAction(actionId: string): ToolExecutionResult {
   logToolInvocation(auditEntry).catch(() => {});
 
   return {
-    name: action?.toolName ?? "unknown",
+    name: toolName,
     response: {
       success: false,
       status: "rejected",
@@ -750,17 +796,39 @@ export function rejectAction(actionId: string): ToolExecutionResult {
   };
 }
 
-/** Get all pending actions */
-export function getPendingActions(): PendingAction[] {
-  return Array.from(pendingActions.values());
+/** Get all non-expired pending actions */
+export async function getPendingActions(): Promise<PendingAction[]> {
+  const { fetchAll } = await import("./firestore");
+  const docs = await fetchAll(PENDING_ACTIONS_COLLECTION);
+  const now = Date.now();
+  return docs
+    .filter((d) => {
+      const expires = (d as Record<string, unknown>).expiresAt;
+      return !expires || new Date(expires as string).getTime() > now;
+    })
+    .map((d) => {
+      const data = d as Record<string, unknown> & { id: string };
+      return {
+        id: data.id,
+        toolName: data.toolName as string,
+        args: data.args as Record<string, unknown>,
+        impactSummary: data.impactSummary as string,
+        conversationId: data.conversationId as string | undefined,
+        createdAt: new Date(data.createdAt as string),
+      };
+    });
 }
 
-/** Clear expired pending actions (older than 5 minutes) */
-export function clearExpiredActions(): void {
-  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-  for (const [id, action] of pendingActions.entries()) {
-    if (action.createdAt.getTime() < fiveMinutesAgo) {
-      pendingActions.delete(id);
+/** Clear expired pending actions (older than TTL) */
+export async function clearExpiredActions(): Promise<void> {
+  const { fetchAll, remove } = await import("./firestore");
+  const docs = await fetchAll(PENDING_ACTIONS_COLLECTION);
+  const now = Date.now();
+  for (const d of docs) {
+    const data = d as Record<string, unknown> & { id: string };
+    const expires = data.expiresAt as string | undefined;
+    if (expires && new Date(expires).getTime() < now) {
+      await remove(PENDING_ACTIONS_COLLECTION, data.id);
     }
   }
 }

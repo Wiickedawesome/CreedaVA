@@ -32,7 +32,7 @@ import type { Content, Part } from "@google/generative-ai";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebase-admin";
 import { ALL_TOOLS } from "@/lib/firebase/ai-tools";
-import { checkRateLimit } from "./rate-limit";
+import { checkRateLimit, checkGroundedSearchLimit } from "./rate-limit";
 
 // ─── Auth helper ─────────────────────────────────────
 
@@ -109,15 +109,47 @@ export async function POST(req: NextRequest) {
 
   const { type, userContent, systemInstruction, contents } = body;
 
+  // 3b. Input validation
+  const MAX_INPUT_LENGTH = 50_000;
+  if (userContent && userContent.length > MAX_INPUT_LENGTH) {
+    return NextResponse.json(
+      { error: `Input too long (max ${MAX_INPUT_LENGTH} characters)` },
+      { status: 400 },
+    );
+  }
+  if (systemInstruction && systemInstruction.length > MAX_INPUT_LENGTH) {
+    return NextResponse.json(
+      { error: `System instruction too long (max ${MAX_INPUT_LENGTH} characters)` },
+      { status: 400 },
+    );
+  }
+  // Validate contents array size for chat requests
+  if (contents && Array.isArray(contents)) {
+    const totalParts = contents.reduce(
+      (sum, c) => sum + (Array.isArray(c.parts) ? c.parts.length : 0),
+      0,
+    );
+    if (totalParts > 500) {
+      return NextResponse.json(
+        { error: "Conversation history too large" },
+        { status: 400 },
+      );
+    }
+  }
+
   // 4. Init Gemini client
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
+    console.error("[/api/ai] GEMINI_API_KEY is not set");
     return NextResponse.json(
-      { error: "Gemini API key not configured" },
-      { status: 500 },
+      { error: "AI service is temporarily unavailable" },
+      { status: 503 },
     );
   }
   const genAI = new GoogleGenerativeAI(apiKey);
+
+  const PRIMARY_MODEL = "gemini-2.5-flash";
+  const FALLBACK_MODEL = "gemini-2.0-flash";
 
   // Server-side requests have no Referer by default.
   // If the API key has HTTP referrer restrictions set in Google Cloud Console,
@@ -131,7 +163,7 @@ export async function POST(req: NextRequest) {
   try {
     // ── "generate": single text generation ──
     if (type === "generate") {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }, geminiRequestOptions);
+      const model = genAI.getGenerativeModel({ model: PRIMARY_MODEL }, geminiRequestOptions);
       const request =
         systemInstruction && userContent
           ? {
@@ -151,7 +183,7 @@ export async function POST(req: NextRequest) {
 
     // ── "stream": streaming text generation ──
     if (type === "stream") {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }, geminiRequestOptions);
+      const model = genAI.getGenerativeModel({ model: PRIMARY_MODEL }, geminiRequestOptions);
       const request =
         systemInstruction && userContent
           ? {
@@ -182,7 +214,14 @@ export async function POST(req: NextRequest) {
 
     // ── "grounded": Google Search grounding ──
     if (type === "grounded") {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }, geminiRequestOptions);
+      const groundedLimit = await checkGroundedSearchLimit(uid);
+      if (!groundedLimit.allowed) {
+        return NextResponse.json(
+          { error: "Daily grounded search limit reached. Try again tomorrow." },
+          { status: 429, headers: { "X-RateLimit-Remaining": "0" } },
+        );
+      }
+      const model = genAI.getGenerativeModel({ model: PRIMARY_MODEL }, geminiRequestOptions);
       const groundingRequest =
         systemInstruction && userContent
           ? {
@@ -229,7 +268,7 @@ export async function POST(req: NextRequest) {
         );
       }
       const model = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash",
+        model: PRIMARY_MODEL,
         tools: [ALL_TOOLS],
         toolConfig: {
           functionCallingConfig: { mode: FunctionCallingMode.AUTO },
@@ -250,8 +289,64 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "Unknown type" }, { status: 400 });
   } catch (err) {
-    console.error("[/api/ai] Gemini error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[/api/ai] Gemini primary model error:", err);
+
+    // Fallback: retry generate/chat with secondary model
+    if (type === "generate" || type === "chat") {
+      try {
+        console.log(`[/api/ai] Retrying with fallback model: ${FALLBACK_MODEL}`);
+        if (type === "generate") {
+          const fallbackModel = genAI.getGenerativeModel(
+            { model: FALLBACK_MODEL },
+            geminiRequestOptions,
+          );
+          const request =
+            systemInstruction && userContent
+              ? {
+                  systemInstruction,
+                  contents: [
+                    { role: "user" as const, parts: [{ text: userContent }] },
+                  ],
+                }
+              : (userContent ?? "");
+          const result = await fallbackModel.generateContent(request);
+          const text = result.response.text() ?? "";
+          return NextResponse.json(
+            { text },
+            { headers: { "X-RateLimit-Remaining": String(remaining) } },
+          );
+        }
+        if (type === "chat" && systemInstruction && Array.isArray(contents)) {
+          const fallbackModel = genAI.getGenerativeModel(
+            {
+              model: FALLBACK_MODEL,
+              tools: [ALL_TOOLS],
+              toolConfig: {
+                functionCallingConfig: { mode: FunctionCallingMode.AUTO },
+              },
+            },
+            geminiRequestOptions,
+          );
+          const result = await fallbackModel.generateContent({
+            systemInstruction,
+            contents: contents as Content[],
+          });
+          const candidate = result.response.candidates?.[0];
+          const parts: Part[] = candidate?.content?.parts ?? [];
+          const text = result.response.text() ?? "";
+          return NextResponse.json(
+            { parts, text },
+            { headers: { "X-RateLimit-Remaining": String(remaining) } },
+          );
+        }
+      } catch (fallbackErr) {
+        console.error("[/api/ai] Fallback model also failed:", fallbackErr);
+      }
+    }
+
+    return NextResponse.json(
+      { error: "AI generation failed. Please try again." },
+      { status: 500 },
+    );
   }
 }

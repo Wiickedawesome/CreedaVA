@@ -37,6 +37,50 @@ export interface AllCollections {
   forumThreads?: ForumThread[];
 }
 
+// ─── Token estimation & sampling ─────────────────────
+
+/** Rough token estimate: ~4 chars per token */
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
+/** Max context tokens before truncation (Gemini 2.5 Flash supports 1M, but we stay practical) */
+const MAX_CONTEXT_TOKENS = 80_000;
+
+/**
+ * Sample a large collection: keep the latest `recentCount` items + `randomCount`
+ * random samples from the rest, and return aggregate stats for the remainder.
+ */
+function sampleCollection<T extends { createdAt?: unknown }>(
+  items: T[],
+  recentCount = 50,
+  randomCount = 20,
+): { sampled: T[]; totalCount: number; wasSampled: boolean } {
+  if (items.length <= recentCount + randomCount) {
+    return { sampled: items, totalCount: items.length, wasSampled: false };
+  }
+
+  // Sort by createdAt desc (most recent first)
+  const sorted = [...items].sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt as string).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt as string).getTime() : 0;
+    return dateB - dateA;
+  });
+
+  const recent = sorted.slice(0, recentCount);
+  const remaining = sorted.slice(recentCount);
+
+  // Pick random samples from the rest
+  const shuffled = remaining.sort(() => Math.random() - 0.5);
+  const randomPicks = shuffled.slice(0, randomCount);
+
+  return {
+    sampled: [...recent, ...randomPicks],
+    totalCount: items.length,
+    wasSampled: true,
+  };
+}
+
 // ─── Full context (all collections) ──────────────────
 
 export function buildFullContext(data: AllCollections): string {
@@ -45,22 +89,50 @@ export function buildFullContext(data: AllCollections): string {
     "",
   ];
 
-  if (data.leads?.length) sections.push(summarizeLeads(data.leads));
-  if (data.customers?.length) sections.push(summarizeCustomers(data.customers));
-  if (data.tasks?.length) sections.push(summarizeTasks(data.tasks));
-  if (data.projects?.length) sections.push(summarizeProjects(data.projects));
-  if (data.contacts?.length) sections.push(summarizeContacts(data.contacts));
-  if (data.bookings?.length) sections.push(summarizeBookings(data.bookings));
-  if (data.campaigns?.length) sections.push(summarizeCampaigns(data.campaigns));
-  if (data.socialPosts?.length) sections.push(summarizeSocial(data.socialPosts));
-  if (data.emails?.length) sections.push(summarizeEmails(data.emails));
-  if (data.blog?.length) sections.push(summarizeBlog(data.blog));
-  if (data.keywords?.length) sections.push(summarizeKeywords(data.keywords));
-  if (data.seoAudits?.length) sections.push(summarizeSEO(data.seoAudits));
-  if (data.landingPages?.length) sections.push(summarizeLandingPages(data.landingPages));
-  if (data.forumThreads?.length) sections.push(summarizeForum(data.forumThreads));
+  // Sample large collections to prevent context bloat
+  const sampledData: AllCollections = { ...data };
+  const samplingNotes: string[] = [];
 
-  return sections.join("\n");
+  for (const key of Object.keys(data) as (keyof AllCollections)[]) {
+    const items = data[key];
+    if (Array.isArray(items) && items.length > 70) {
+      const { sampled, totalCount, wasSampled } = sampleCollection(items as (typeof items[number] & { createdAt?: unknown })[]);
+      (sampledData as Record<string, unknown>)[key] = sampled;
+      if (wasSampled) {
+        samplingNotes.push(`${key}: showing ${sampled.length} of ${totalCount} (latest 50 + 20 random samples)`);
+      }
+    }
+  }
+
+  if (sampledData.leads?.length) sections.push(summarizeLeads(sampledData.leads));
+  if (sampledData.customers?.length) sections.push(summarizeCustomers(sampledData.customers));
+  if (sampledData.tasks?.length) sections.push(summarizeTasks(sampledData.tasks));
+  if (sampledData.projects?.length) sections.push(summarizeProjects(sampledData.projects));
+  if (sampledData.contacts?.length) sections.push(summarizeContacts(sampledData.contacts));
+  if (sampledData.bookings?.length) sections.push(summarizeBookings(sampledData.bookings));
+  if (sampledData.campaigns?.length) sections.push(summarizeCampaigns(sampledData.campaigns));
+  if (sampledData.socialPosts?.length) sections.push(summarizeSocial(sampledData.socialPosts));
+  if (sampledData.emails?.length) sections.push(summarizeEmails(sampledData.emails));
+  if (sampledData.blog?.length) sections.push(summarizeBlog(sampledData.blog));
+  if (sampledData.keywords?.length) sections.push(summarizeKeywords(sampledData.keywords));
+  if (sampledData.seoAudits?.length) sections.push(summarizeSEO(sampledData.seoAudits));
+  if (sampledData.landingPages?.length) sections.push(summarizeLandingPages(sampledData.landingPages));
+  if (sampledData.forumThreads?.length) sections.push(summarizeForum(sampledData.forumThreads));
+
+  if (samplingNotes.length > 0) {
+    sections.push(`\n--- DATA SAMPLING NOTES ---\n${samplingNotes.join("\n")}`);
+  }
+
+  let result = sections.join("\n");
+
+  // Enforce token budget — truncate if context exceeds limit
+  const tokens = estimateTokens(result);
+  if (tokens > MAX_CONTEXT_TOKENS) {
+    const maxChars = MAX_CONTEXT_TOKENS * 4;
+    result = result.slice(0, maxChars) + "\n\n[Context truncated — data exceeds token budget]";
+  }
+
+  return result;
 }
 
 // ─── Period-filtered context ─────────────────────────

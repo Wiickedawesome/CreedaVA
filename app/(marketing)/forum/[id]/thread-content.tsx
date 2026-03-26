@@ -22,6 +22,7 @@ import {
 } from "@/lib/firebase/translate";
 import type { ForumThread, ForumReply } from "@/lib/types/content";
 import type { Timestamp } from "firebase/firestore";
+import { sanitizeHtml } from "@/lib/utils/sanitize-html";
 
 function toDate(val: unknown): Date {
   if (!val) return new Date();
@@ -376,10 +377,7 @@ function ThreadContent({ id }: { id: string }) {
                 <div
                   className="text-sm leading-relaxed prose prose-sm max-w-none prose-headings:text-gray-100 prose-headings:font-bold prose-p:text-gray-80 prose-p:leading-relaxed prose-a:text-primary prose-strong:text-gray-90 prose-li:text-gray-80"
                   dangerouslySetInnerHTML={{
-                    __html: getTranslatedContent(thread, locale)
-                      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-                      .replace(/on\w+="[^"]*"/gi, "")
-                      .replace(/<iframe\b[^>]*>/gi, ""),
+                    __html: sanitizeHtml(getTranslatedContent(thread, locale)),
                   }}
                 />
               ) : (

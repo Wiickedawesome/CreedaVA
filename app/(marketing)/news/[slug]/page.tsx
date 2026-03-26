@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { adminDb } from "@/lib/firebase-admin";
+import { blogPostingJsonLd } from "@/lib/utils/structured-data";
 import { BlogPostContent } from "./blog-post-content";
 
 interface Props {
@@ -72,5 +73,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  return <BlogPostContent slug={slug} />;
+
+  // Fetch post data for JSON-LD (best-effort)
+  let jsonLd: object | null = null;
+  try {
+    const snap = await adminDb
+      .collection("blog")
+      .where("slug", "==", slug)
+      .limit(1)
+      .get();
+    if (!snap.empty) {
+      const post = snap.docs[0].data();
+      jsonLd = blogPostingJsonLd({
+        title: post.title || slug,
+        slug,
+        excerpt: post.excerpt || post.metaDescription || "",
+        publishedAt: post.publishedAt?.toDate?.()?.toISOString?.(),
+        updatedAt: post.updatedAt?.toDate?.()?.toISOString?.(),
+        featuredImage: post.featuredImage,
+        tags: post.tags,
+      });
+    }
+  } catch {
+    // JSON-LD is best-effort; page still renders
+  }
+
+  return (
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <BlogPostContent slug={slug} />
+    </>
+  );
 }

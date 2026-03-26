@@ -67,7 +67,26 @@ export default function KeywordsPage() {
       if (result.success) {
         setConsoleData({ queries: result.queries, summary: result.summary });
         setConsoleOpen(true);
-        toast(`Fetched ${result.queries.length} search queries from Google Search Console`, "success");
+        // Persist metrics to existing keyword records
+        const now = new Date().toISOString();
+        let synced = 0;
+        for (const q of result.queries) {
+          const match = keywords.find((k) => k.keyword.toLowerCase() === q.query.toLowerCase());
+          if (match) {
+            await edit(match.id, {
+              clicks: q.clicks,
+              impressions: q.impressions,
+              ctr: q.ctr,
+              position: q.position,
+              lastSynced: now,
+            });
+            synced++;
+          }
+        }
+        const msg = synced > 0
+          ? `Fetched ${result.queries.length} queries, synced metrics to ${synced} keywords`
+          : `Fetched ${result.queries.length} search queries from Google Search Console`;
+        toast(msg, "success");
       } else {
         toast("Fetch failed — check Search Console integration", "error");
       }
@@ -215,6 +234,30 @@ export default function KeywordsPage() {
       key: "suggestedTitle",
       header: "Suggested Title",
       render: (k) => <span className="text-sm text-gray-70 truncate max-w-xs block">{k.suggestedTitle}</span>,
+    },
+    {
+      key: "clicks",
+      header: "Clicks",
+      sortable: true,
+      render: (k) => <span className="text-sm tabular-nums">{k.clicks ?? "—"}</span>,
+    },
+    {
+      key: "impressions",
+      header: "Impr.",
+      sortable: true,
+      render: (k) => <span className="text-sm tabular-nums">{k.impressions ?? "—"}</span>,
+    },
+    {
+      key: "ctr",
+      header: "CTR",
+      sortable: true,
+      render: (k) => <span className="text-sm tabular-nums">{k.ctr != null ? `${(k.ctr * 100).toFixed(1)}%` : "—"}</span>,
+    },
+    {
+      key: "position",
+      header: "Pos.",
+      sortable: true,
+      render: (k) => <span className="text-sm tabular-nums">{k.position != null ? k.position.toFixed(1) : "—"}</span>,
     },
   ];
 
