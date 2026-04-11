@@ -1,5 +1,6 @@
 import { getPageSEO } from "@/lib/firebase/seo";
 import { webPageJsonLd } from "@/lib/utils/structured-data";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { PricingContent } from "./pricing-content";
 
 export const revalidate = 3600;
@@ -11,7 +12,8 @@ export async function generateMetadata() {
   });
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const { t } = await getDictionary();
   return (
     <>
       <script
@@ -24,7 +26,7 @@ export default function PricingPage() {
           })),
         }}
       />
-      <PricingContent />
+      <PricingContent t={t} />
     </>
   );
 }

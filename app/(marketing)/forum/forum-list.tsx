@@ -10,7 +10,6 @@ import { useForumAuth } from "./forum-auth-context";
 import { ForumAuthModal } from "./forum-auth-modal";
 import { Modal } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
-import { uploadImage } from "@/lib/firebase/storage";
 import { translateThreadInBackground, getTranslatedTitle, ensureThreadTranslated } from "@/lib/firebase/translate";
 import type { ForumThread } from "@/lib/types/content";
 import type { Timestamp } from "firebase/firestore";
@@ -215,6 +214,7 @@ export function ForumList() {
     if (!files?.length) return;
     setUploading(true);
     try {
+      const { uploadImage } = await import("@/lib/firebase/storage");
       const urls: string[] = [];
       for (const file of Array.from(files)) {
         const result = await uploadImage(file, "forum/new");

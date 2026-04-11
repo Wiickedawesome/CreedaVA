@@ -1,11 +1,8 @@
-"use client";
-
 import Link from "next/link";
 import { Container } from "@/components/ui";
-import { useTranslation } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/i18n";
 
-export function FaqContent() {
-  const { t } = useTranslation();
+export function FaqContent({ t }: { t: Dictionary }) {
 
   return (
     <>

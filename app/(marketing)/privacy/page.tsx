@@ -1,4 +1,5 @@
 import { getPageSEO } from "@/lib/firebase/seo";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { PrivacyContent } from "./privacy-content";
 
 export const revalidate = 3600;
@@ -10,6 +11,7 @@ export async function generateMetadata() {
   });
 }
 
-export default function PrivacyPage() {
-  return <PrivacyContent />;
+export default async function PrivacyPage() {
+  const { t } = await getDictionary();
+  return <PrivacyContent t={t} />;
 }

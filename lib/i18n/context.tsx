@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, startTransition } from "react";
+import { useRouter } from "next/navigation";
 import en from "./en";
 import type { Dictionary } from "./en";
 
@@ -25,6 +26,7 @@ const I18nContext = createContext<I18nContextValue>({
 const STORAGE_KEY = "creedava-lang";
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   // Always start with "en" so server and first client render match (no hydration mismatch).
   const [locale, setLocaleState] = useState<Locale>("en");
   const [dict, setDict] = useState<Dictionary>(en);
@@ -48,15 +50,23 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
     if (stored === "es") {
+      // Sync the cookie so server components can read it
+      document.cookie = `creedava-lang=es;path=/;max-age=31536000;SameSite=Lax`;
       // Load Spanish in the background — English renders immediately first.
       startTransition(() => { applyLocale("es"); });
+    } else {
+      // Ensure cookie matches (default English)
+      document.cookie = `creedava-lang=en;path=/;max-age=31536000;SameSite=Lax`;
     }
   }, [applyLocale]);
 
   const setLocale = useCallback((next: Locale) => {
     localStorage.setItem(STORAGE_KEY, next);
+    document.cookie = `creedava-lang=${next};path=/;max-age=31536000;SameSite=Lax`;
     applyLocale(next);
-  }, [applyLocale]);
+    // Refresh server components so they re-render with the new locale cookie
+    router.refresh();
+  }, [applyLocale, router]);
 
   return (
     <I18nContext.Provider value={{ locale, setLocale, t: dict }}>

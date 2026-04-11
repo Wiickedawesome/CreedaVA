@@ -1,10 +1,7 @@
-"use client";
-
 import { Container } from "@/components/ui";
-import { useTranslation } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/i18n";
 
-export function TermsContent() {
-  const { t } = useTranslation();
+export function TermsContent({ t }: { t: Dictionary }) {
 
   return (
     <>

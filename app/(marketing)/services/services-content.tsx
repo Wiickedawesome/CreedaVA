@@ -1,8 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import { Container } from "@/components/ui";
-import { useTranslation } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/i18n";
 
 const serviceIds = [
   "administrative",
@@ -28,8 +26,7 @@ const serviceIcons = [
   <svg key="ai" className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
 ];
 
-export function ServicesContent() {
-  const { t } = useTranslation();
+export function ServicesContent({ t }: { t: Dictionary }) {
 
   return (
     <>

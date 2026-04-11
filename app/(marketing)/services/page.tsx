@@ -1,5 +1,6 @@
 import { getPageSEO } from "@/lib/firebase/seo";
 import { serviceJsonLd } from "@/lib/utils/structured-data";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { ServicesContent } from "./services-content";
 
 export const revalidate = 3600;
@@ -11,7 +12,8 @@ export async function generateMetadata() {
   });
 }
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const { t } = await getDictionary();
   return (
     <>
       <script
@@ -23,7 +25,7 @@ export default function ServicesPage() {
           })),
         }}
       />
-      <ServicesContent />
+      <ServicesContent t={t} />
     </>
   );
 }

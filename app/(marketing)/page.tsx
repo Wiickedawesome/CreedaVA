@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { adminDb } from "@/lib/firebase-admin";
 import { getPageSEO } from "@/lib/firebase/seo";
 import { websiteJsonLd } from "@/lib/utils/structured-data";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { HomeContent } from "./home-content";
 
 // Revalidate homepage every 5 minutes — content rarely changes
@@ -36,14 +37,14 @@ const getHomepageStats = unstable_cache(
 );
 
 export default async function HomePage() {
-  const statValues = await getHomepageStats();
+  const [statValues, { t }] = await Promise.all([getHomepageStats(), getDictionary()]);
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
       />
-      <HomeContent statValues={statValues} />
+      <HomeContent statValues={statValues} t={t} />
     </>
   );
 }

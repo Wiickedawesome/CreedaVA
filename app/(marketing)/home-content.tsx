@@ -1,9 +1,7 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui";
-import { useTranslation } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/i18n";
 
 const DEFAULT_STAT_VALUES = ["500+", "98%", "EN/ES", "50+"];
 const statKeys = [
@@ -27,10 +25,11 @@ const stepIcons = [
 
 export function HomeContent({
   statValues = DEFAULT_STAT_VALUES,
+  t,
 }: {
   statValues?: readonly string[] | string[];
+  t: Dictionary;
 }) {
-  const { t } = useTranslation();
 
   return (
     <>

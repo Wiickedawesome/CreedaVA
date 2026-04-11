@@ -1,4 +1,5 @@
 import { getPageSEO } from "@/lib/firebase/seo";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { TermsContent } from "./terms-content";
 
 export const revalidate = 3600;
@@ -10,6 +11,7 @@ export async function generateMetadata() {
   });
 }
 
-export default function TermsPage() {
-  return <TermsContent />;
+export default async function TermsPage() {
+  const { t } = await getDictionary();
+  return <TermsContent t={t} />;
 }
