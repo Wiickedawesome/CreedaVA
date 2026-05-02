@@ -2,6 +2,7 @@
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import React, { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,
@@ -10,6 +11,7 @@ import {
   DashboardSection,
   StatCard,
   Modal,
+  AdminTabs,
   useToast,
 } from "@/components/admin";
 import type { Column } from "@/components/admin";
@@ -18,6 +20,7 @@ import { AIPromptButton } from "@/components/admin";
 import { lazySuggestKeywords as suggestKeywords } from "@/lib/firebase/ai-lazy";
 import { cloudFetchSearchConsoleData } from "@/lib/firebase/cloud-functions";
 import type { SEOKeyword } from "@/lib/types/content";
+import { RankingsTable } from "../_components/rankings-table";
 
 const intentVariant: Record<string, "default" | "success" | "warning" | "error" | "info"> = {
   informational: "info",
@@ -39,6 +42,9 @@ export default function KeywordsPage() {
   const { toast } = useToast();
 
   const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const initialTab = searchParams?.get("tab") ?? "keywords";
+  const [tab, setTab] = useState(initialTab);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<SEOKeyword | null>(null);
@@ -323,6 +329,19 @@ export default function KeywordsPage() {
         }
       />
 
+      <AdminTabs
+        tabs={[
+          { label: "Keywords", value: "keywords", badge: keywords.length },
+          { label: "Rankings", value: "rankings" },
+        ]}
+        defaultValue={initialTab}
+        onChange={setTab}
+      />
+
+      {tab === "rankings" && <RankingsTable />}
+
+      {tab === "keywords" && (
+        <>
       {/* Dashboard Metrics */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard label="Tracked" value={keywords.length.toString()} badge="keywords" />
@@ -417,6 +436,8 @@ export default function KeywordsPage() {
         onRowClick={(k) => openEdit(k)}
         emptyMessage="No keywords tracked — use AI to suggest some"
       />
+        </>
+      )}
 
       {/* Create Keyword Modal */}
       <Modal

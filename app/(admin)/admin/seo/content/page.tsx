@@ -2,6 +2,7 @@
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,
@@ -18,6 +19,9 @@ import { Button, Input } from "@/components/ui";
 import { AIPromptButton } from "@/components/admin";
 import { lazyAnalyzeSEO as analyzeSEO } from "@/lib/firebase/ai-lazy";
 import type { SEOAudit, PageSEO } from "@/lib/types/content";
+import { SeoAgentDashboard } from "../_components/agent-dashboard";
+import { SeoTasksBoard } from "../_components/tasks-board";
+import { OnPageAuditsList } from "../_components/onpage-audits";
 
 // ─── Default page SEO values ─────────────────────────
 const DEFAULT_PAGES: Omit<PageSEO, "id" | "createdAt" | "updatedAt">[] = [
@@ -47,7 +51,9 @@ export default function SeoContentPage() {
   });
   const { toast } = useToast();
 
-  const [tab, setTab] = useState("pages");
+  const searchParams = useSearchParams();
+  const initialTab = searchParams?.get("tab") ?? "pages";
+  const [tab, setTab] = useState(initialTab);
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState<{
     id?: string;
@@ -338,9 +344,11 @@ export default function SeoContentPage() {
       <AdminTabs
         tabs={[
           { label: "Page SEO", value: "pages", badge: mergedPages.length },
-          { label: "AI Audits", value: "audits", badge: audits.length },
+          { label: "Audits", value: "audits", badge: audits.length },
+          { label: "SEO Agent", value: "agent" },
+          { label: "Tasks", value: "tasks" },
         ]}
-        defaultValue="pages"
+        defaultValue={initialTab}
         onChange={setTab}
       />
 
@@ -430,8 +438,16 @@ export default function SeoContentPage() {
             onRowClick={(a) => openAuditDetail(a)}
             emptyMessage="No audits yet — enter a URL above to get started"
           />
+
+          <OnPageAuditsList />
         </>
       )}
+
+      {/* ─── SEO Agent Tab ──────────────────────── */}
+      {tab === "agent" && <SeoAgentDashboard />}
+
+      {/* ─── Tasks Tab ──────────────────────────── */}
+      {tab === "tasks" && <SeoTasksBoard />}
 
       {/* ─── Edit SEO Modal ───────────────────────── */}
       <Modal

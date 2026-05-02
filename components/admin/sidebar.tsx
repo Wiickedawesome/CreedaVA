@@ -115,43 +115,24 @@ const contentItems: NavItem[] = [
 
 const seoItems: NavItem[] = [
   {
-    label: "SEO Agent",
-    href: "/admin/seo",
-    exact: true,
+    label: "SEO Content",
+    href: "/admin/seo/content",
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3 2" />
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
     ),
   },
   {
-    label: "Tasks",
-    href: "/admin/seo/tasks",
+    label: "Keywords",
+    href: "/admin/seo/keywords",
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 11l3 3L22 4" />
-        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-      </svg>
-    ),
-  },
-  {
-    label: "Audits",
-    href: "/admin/seo/audits",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-      </svg>
-    ),
-  },
-  {
-    label: "Rankings",
-    href: "/admin/seo/rankings",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="3 17 9 11 13 15 21 7" />
-        <polyline points="14 7 21 7 21 14" />
+        <line x1="4" y1="9" x2="20" y2="9" />
+        <line x1="4" y1="15" x2="20" y2="15" />
+        <line x1="10" y1="3" x2="8" y2="21" />
+        <line x1="16" y1="3" x2="14" y2="21" />
       </svg>
     ),
   },
@@ -172,28 +153,6 @@ const seoItems: NavItem[] = [
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 2L11 13" />
         <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Keywords",
-    href: "/admin/seo/keywords",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="4" y1="9" x2="20" y2="9" />
-        <line x1="4" y1="15" x2="20" y2="15" />
-        <line x1="10" y1="3" x2="8" y2="21" />
-        <line x1="16" y1="3" x2="14" y2="21" />
-      </svg>
-    ),
-  },
-  {
-    label: "SEO Content",
-    href: "/admin/seo/content",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
     ),
   },
