@@ -49,5 +49,24 @@
     "tailwindcss": "^4.2.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
+  },
+  "overrides": {
+    "firebase-admin": {
+      "@google-cloud/firestore": "8.5.0"
+    },
+    "@google-cloud/storage": {
+      "gaxios": "7.1.4",
+      "retry-request": "8.0.2",
+      "teeny-request": "10.1.2"
+    },
+    "google-gax": {
+      "retry-request": "8.0.2"
+    },
+    "teeny-request": {
+      "http-proxy-agent": "7.0.2"
+    },
+    "postcss": "8.5.13",
+    "rimraf": "6.1.2",
+    "uuid": "14.0.0"
   }
 }

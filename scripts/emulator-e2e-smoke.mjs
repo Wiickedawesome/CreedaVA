@@ -117,7 +117,7 @@ async function run() {
     bookingId: bookingWithSyncMetadata.id,
     bookingStatus: bookingSyncData.status,
     syncedToCalendar: bookingSyncData.syncedToCalendar,
-    hasCalendarError: Boolean(bookingSyncData.calendarSyncError),
+    calendarSyncSkipped: Boolean(bookingSyncData.calendarSyncError),
   };
 
   console.log("E2E smoke passed:");

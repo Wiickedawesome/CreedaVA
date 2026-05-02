@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock Firestore before importing the module under test
 vi.mock("@/lib/firebase/firestore", () => ({
@@ -23,6 +23,10 @@ import { create } from "@/lib/firebase/firestore";
 describe("AI Autonomy Rules", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   // ─── evaluateAction ─────────────────────────────────
@@ -191,6 +195,7 @@ describe("AI Autonomy Rules", () => {
     });
 
     it("does not throw on Firestore failure", async () => {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
       vi.mocked(create).mockRejectedValueOnce(new Error("Firestore down"));
       const entry = buildAuditEntry(
         { toolName: "read_inbox", args: {} },
@@ -198,6 +203,10 @@ describe("AI Autonomy Rules", () => {
       );
       // Should not throw
       await expect(logToolInvocation(entry)).resolves.toBeUndefined();
+      expect(errorSpy).toHaveBeenCalledWith(
+        "[AI Autonomy] Failed to log tool invocation:",
+        expect.any(Error),
+      );
     });
   });
 });

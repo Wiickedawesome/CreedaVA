@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ── Mock Firebase Performance ────────────────────────
 const mockGetPerformance = vi.fn();
@@ -16,6 +16,10 @@ vi.mock("@/lib/firebase/config", () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   vi.resetModules();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("Performance Monitoring", () => {
@@ -43,6 +47,7 @@ describe("Performance Monitoring", () => {
   });
 
   it("initializePerformance handles errors gracefully", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     mockGetPerformance.mockImplementation(() => {
       throw new Error("Performance not supported");
     });
@@ -51,6 +56,10 @@ describe("Performance Monitoring", () => {
     const result = initializePerformance();
 
     expect(result).toBeNull();
+    expect(warnSpy).toHaveBeenCalledWith(
+      "[Performance] Failed to initialize:",
+      expect.any(Error),
+    );
   });
 
   it("startTrace creates and starts a trace", async () => {

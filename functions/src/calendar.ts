@@ -33,7 +33,7 @@ async function verifyAppCheckToken(req: Parameters<typeof corsHandler>[0]): Prom
   const token = Array.isArray(header) ? header[0] : header;
 
   if (!token || typeof token !== "string") {
-    console.warn("[App Check] No token provided — allowing (best-effort)");
+    console.info("[App Check] No token provided — allowing (best-effort)");
     return true;
   }
 
@@ -168,7 +168,11 @@ export const syncBookingToCalendar = onDocumentCreated(
 
       console.log(`Booking ${event.params.bookingId} synced to Calendar: ${result.data.id}`);
     } catch (err) {
-      console.error("Calendar sync failed:", err);
+      if (err instanceof HttpsError && err.code === "failed-precondition") {
+        console.info(`Calendar sync skipped: ${err.message}`);
+      } else {
+        console.error("Calendar sync failed:", err);
+      }
       await snapshot.ref.update({
         syncedToCalendar: false,
         calendarSyncError: err instanceof Error ? err.message : "Unknown error",

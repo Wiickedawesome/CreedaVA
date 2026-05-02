@@ -2,9 +2,10 @@ import { readFile, writeFile, rm } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { join } from "node:path";
 
-const projectId = process.env.FIREBASE_PROJECT_ID || "creeda-va";
+const projectId = process.env.FIREBASE_PROJECT_ID || "demo-creeda-va";
 const functionsPort = Number(process.env.FUNCTIONS_EMULATOR_PORT || 5005);
 const firestorePort = Number(process.env.FIRESTORE_EMULATOR_PORT || 8085);
+const authPort = Number(process.env.AUTH_EMULATOR_PORT || 9098);
 const tempConfigPath = join(process.cwd(), ".firebase.emu.temp.json");
 const functionsPackagePath = join(process.cwd(), "functions", "package.json");
 
@@ -30,6 +31,18 @@ function run(command, args, env = {}) {
   });
 }
 
+function emulatorEnv() {
+  return {
+    GCLOUD_PROJECT: projectId,
+    GOOGLE_CLOUD_PROJECT: projectId,
+    FIREBASE_CONFIG: JSON.stringify({
+      projectId,
+      storageBucket: `${projectId}.appspot.com`,
+    }),
+    NODE_NO_WARNINGS: "1",
+  };
+}
+
 async function createTempEmulatorConfig() {
   const raw = await readFile(join(process.cwd(), "firebase.json"), "utf8");
   const config = JSON.parse(raw);
@@ -41,6 +54,10 @@ async function createTempEmulatorConfig() {
   config.emulators.firestore = {
     ...(config.emulators.firestore || {}),
     port: firestorePort,
+  };
+  config.emulators.auth = {
+    ...(config.emulators.auth || {}),
+    port: authPort,
   };
 
   await writeFile(tempConfigPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
@@ -73,9 +90,9 @@ async function main() {
       "--project",
       projectId,
       "--only",
-      "functions,firestore",
-      `FUNCTIONS_EMULATOR_PORT=${functionsPort} FIRESTORE_EMULATOR_HOST=127.0.0.1:${firestorePort} node ${targetScript}`,
-    ]);
+      "functions,firestore,auth",
+      `FUNCTIONS_EMULATOR_PORT=${functionsPort} FIRESTORE_EMULATOR_HOST=127.0.0.1:${firestorePort} FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:${authPort} node ${targetScript}`,
+    ], emulatorEnv());
   } finally {
     await writeFile(functionsPackagePath, originalFunctionsPackageJson, "utf8");
     await rm(tempConfigPath, { force: true });

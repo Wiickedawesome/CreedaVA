@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 import { blogPostingJsonLd } from "@/lib/utils/structured-data";
 import { BlogPostContent } from "./blog-post-content";
 import type { BlogPost } from "@/lib/types/content";
@@ -12,6 +12,8 @@ interface Props {
 
 /** Pre-generate paths for all published blog posts */
 export async function generateStaticParams() {
+  if (!canUseAdminDb) return [];
+
   try {
     const snap = await adminDb
       .collection("blog")
@@ -25,6 +27,8 @@ export async function generateStaticParams() {
 }
 
 async function getPost(slug: string): Promise<(BlogPost & { id: string }) | null> {
+  if (!canUseAdminDb) return null;
+
   try {
     const snap = await adminDb
       .collection("blog")

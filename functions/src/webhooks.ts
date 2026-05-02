@@ -109,7 +109,7 @@ async function verifyAppCheckToken(req: Parameters<typeof corsHandler>[0]): Prom
   const token = Array.isArray(header) ? header[0] : header;
 
   if (!token || typeof token !== "string") {
-    console.warn("[App Check] No token provided — allowing (best-effort)");
+    console.info("[App Check] No token provided — allowing (best-effort)");
     return true;
   }
 

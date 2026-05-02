@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ── Mock Firebase Messaging ──────────────────────────
 const mockGetMessaging = vi.fn();
@@ -29,8 +29,13 @@ beforeEach(() => {
   vi.resetModules();
 });
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe("Firebase Messaging", () => {
   it("requestNotificationPermission returns null when VAPID key is not set", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     delete process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
     mockGetMessaging.mockReturnValue({ name: "messaging" });
 
@@ -38,9 +43,13 @@ describe("Firebase Messaging", () => {
     const token = await requestNotificationPermission();
 
     expect(token).toBeNull();
+    expect(warnSpy).toHaveBeenCalledWith(
+      "[FCM] NEXT_PUBLIC_FIREBASE_VAPID_KEY is not set. Push notifications are disabled.",
+    );
   });
 
   it("requestNotificationPermission returns null when permission denied", async () => {
+    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => undefined);
     process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY = "test-vapid-key";
     mockGetMessaging.mockReturnValue({ name: "messaging" });
     mockRequestPermission.mockResolvedValue("denied");
@@ -49,6 +58,7 @@ describe("Firebase Messaging", () => {
     const token = await requestNotificationPermission();
 
     expect(token).toBeNull();
+    expect(infoSpy).toHaveBeenCalledWith("[FCM] Notification permission denied by user.");
   });
 
   it("requestNotificationPermission returns token on success", async () => {
@@ -73,6 +83,7 @@ describe("Firebase Messaging", () => {
   });
 
   it("requestNotificationPermission handles errors gracefully", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY = "test-vapid-key";
     mockGetMessaging.mockReturnValue({ name: "messaging" });
     mockRequestPermission.mockRejectedValue(new Error("Permission API error"));
@@ -81,6 +92,7 @@ describe("Firebase Messaging", () => {
     const token = await requestNotificationPermission();
 
     expect(token).toBeNull();
+    expect(warnSpy).toHaveBeenCalledWith("[FCM] Failed to get token:", expect.any(Error));
   });
 
   it("onForegroundMessage subscribes to messages", async () => {

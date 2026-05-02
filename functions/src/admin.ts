@@ -14,7 +14,9 @@ import * as nodemailer from "nodemailer";
 
 // Initialize Firebase Admin (auto-detects credentials in Cloud Functions)
 if (!admin.apps.length) {
-  admin.initializeApp();
+  admin.initializeApp({
+    projectId: process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "creeda-va",
+  });
 }
 
 export const db = admin.firestore();

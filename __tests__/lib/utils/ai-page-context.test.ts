@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock Firestore before importing SUT
 vi.mock("@/lib/firebase/config", () => ({ app: {}, auth: {}, db: {} }));
@@ -40,6 +40,10 @@ const mockFetchAll = fetchAll as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 // ─── getPageConfig ─────────────────────────────────
@@ -135,10 +139,15 @@ describe("loadPageAwareContext", () => {
   });
 
   it("handles fetchAll errors gracefully", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     mockFetchAll.mockRejectedValueOnce(new Error("Firestore error"));
     const result = await loadPageAwareContext("/admin/forum");
     expect(result.rawData).toBeDefined();
     // Should not throw
+    expect(warnSpy).toHaveBeenCalledWith(
+      "[AI Context] Failed to fetch forumThreads:",
+      expect.any(Error),
+    );
   });
 
   it("returns default context for unknown page", async () => {

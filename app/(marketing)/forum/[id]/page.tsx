@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 import ForumThreadContent from "./thread-content";
 
 interface Props {
@@ -8,6 +8,8 @@ interface Props {
 
 /** Pre-generate paths for all open forum threads */
 export async function generateStaticParams() {
+  if (!canUseAdminDb) return [];
+
   try {
     const snap = await adminDb
       .collection("forum")
@@ -22,6 +24,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+
+  if (!canUseAdminDb) {
+    return {
+      title: "Forum Thread | CreedaVA Forum",
+      description: "Join the discussion on the CreedaVA community forum.",
+      alternates: { canonical: `https://creedava.com/forum/${id}` },
+    };
+  }
 
   try {
     const doc = await adminDb.collection("forum").doc(id).get();

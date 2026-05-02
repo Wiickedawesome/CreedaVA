@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ── Mock Firebase Remote Config ──────────────────────
 const mockFetchAndActivate = vi.fn().mockResolvedValue(true);
@@ -18,6 +18,10 @@ vi.mock("@/lib/firebase/config", () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   vi.resetModules();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("Remote Config", () => {
@@ -45,6 +49,7 @@ describe("Remote Config", () => {
   });
 
   it("activateRemoteConfig handles fetch errors gracefully", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const fakeRC = { settings: {}, defaultConfig: {} };
     mockGetRemoteConfig.mockReturnValue(fakeRC);
     mockFetchAndActivate.mockRejectedValueOnce(new Error("Network error"));
@@ -53,6 +58,10 @@ describe("Remote Config", () => {
     const result = await activateRemoteConfig();
 
     expect(result).toBe(false);
+    expect(warnSpy).toHaveBeenCalledWith(
+      "[Remote Config] Failed to fetch:",
+      expect.any(Error),
+    );
   });
 
   it("getConfigString returns string value", async () => {

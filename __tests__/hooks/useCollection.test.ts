@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import type { ReactNode } from "react";
 
@@ -51,6 +51,10 @@ describe("useCollection", () => {
       user: { uid: "user1", email: "admin@creedava.com" },
       loading: false,
     });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("fetches data on mount for authenticated user", async () => {
@@ -113,6 +117,7 @@ describe("useCollection", () => {
   });
 
   it("handles fetch errors gracefully", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const col = uniqueCollection();
     mockFetchAll.mockRejectedValue(new Error("Network error"));
 
@@ -126,6 +131,10 @@ describe("useCollection", () => {
     });
 
     expect(result.current.error).toBe("Network error");
+    expect(warnSpy).toHaveBeenCalledWith(
+      `[Firestore] ${col} fetch error:`,
+      "Network error",
+    );
   });
 
   it("passes orderBy constraints", async () => {

@@ -4,12 +4,27 @@
  * Used exclusively in Next.js API routes and Server Actions (never imported
  * by client components). On Firebase App Hosting, Application Default
  * Credentials are available automatically — no explicit serviceAccount needed.
+ * Local production builds can check canUseAdminDb before prerender-time reads.
  *
  * Import ONLY from server files:
  *   import { adminAuth } from "@/lib/firebase-admin";
  */
 
 import admin from "firebase-admin";
+
+const hasExplicitAdminCredentials = Boolean(
+  process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
+  process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+  process.env.GOOGLE_CLOUD_PROJECT ||
+  process.env.GCLOUD_PROJECT ||
+  process.env.K_SERVICE ||
+  process.env.FIREBASE_CONFIG,
+);
+
+export const canUseAdminDb = !(
+  process.env.NEXT_PHASE === "phase-production-build" &&
+  !hasExplicitAdminCredentials
+);
 
 function getAdminApp(): admin.app.App {
   if (admin.apps.length > 0) {

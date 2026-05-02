@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 import { getPageSEO } from "@/lib/firebase/seo";
 import { websiteJsonLd } from "@/lib/utils/structured-data";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -19,6 +19,8 @@ const DEFAULT_STATS = ["500+", "98%", "EN/ES", "50+"];
 
 const getHomepageStats = unstable_cache(
   async (): Promise<string[]> => {
+    if (!canUseAdminDb) return DEFAULT_STATS;
+
     try {
       const doc = await adminDb.collection("settings").doc("homepage-stats").get();
       if (doc.exists) {

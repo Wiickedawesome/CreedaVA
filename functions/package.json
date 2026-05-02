@@ -32,5 +32,23 @@
     "@types/nodemailer": "^7.0.11",
     "typescript": "^5.9.3"
   },
+  "overrides": {
+    "firebase-admin": {
+      "@google-cloud/firestore": "8.5.0"
+    },
+    "@google-cloud/storage": {
+      "gaxios": "7.1.4",
+      "retry-request": "8.0.2",
+      "teeny-request": "10.1.2"
+    },
+    "google-gax": {
+      "retry-request": "8.0.2"
+    },
+    "teeny-request": {
+      "http-proxy-agent": "7.0.2"
+    },
+    "rimraf": "6.1.2",
+    "uuid": "14.0.0"
+  },
   "private": true
 }

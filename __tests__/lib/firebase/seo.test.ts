@@ -14,6 +14,7 @@ const mockGet = vi.fn();
 
 vi.mock("@/lib/firebase-admin", () => ({
   adminAuth: {},
+  canUseAdminDb: true,
   adminDb: {
     collection: () => ({
       where: () => ({
@@ -113,6 +114,27 @@ describe("getPageSEO", () => {
     expect(meta.title).toBe("Contact");
     expect(meta.description).toBe("Get in touch");
     expect(meta.alternates?.canonical).toBe("https://creedava.com/contact");
+  });
+
+  it("falls back to defaults when Admin Firestore is unavailable", async () => {
+    vi.doMock("@/lib/firebase-admin", () => ({
+      adminAuth: {},
+      canUseAdminDb: false,
+      adminDb: {
+        collection: vi.fn(),
+      },
+    }));
+    vi.resetModules();
+
+    const { getPageSEO: guardedGetPageSEO } = await import("@/lib/firebase/seo");
+    const meta = await guardedGetPageSEO("/local-build", {
+      title: "Local Build",
+      description: "Fallback only",
+    });
+
+    expect(meta.title).toBe("Local Build");
+    expect(meta.description).toBe("Fallback only");
+    expect(meta.alternates?.canonical).toBe("https://creedava.com/local-build");
   });
 
   it("uses default title/description when Firestore doc has empty fields", async () => {

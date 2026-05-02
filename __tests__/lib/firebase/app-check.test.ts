@@ -31,11 +31,13 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   process.env = originalEnv;
 });
 
 describe("initializeAppCheck", () => {
   it("returns null when enablement flag is missing", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     process.env.NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY = "test-site-key";
 
     const { initializeAppCheck } = await import("@/lib/firebase/app-check");
@@ -43,9 +45,11 @@ describe("initializeAppCheck", () => {
 
     expect(result).toBeNull();
     expect(mockInitAppCheck).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("[App Check] Disabled"));
   });
 
   it("returns null when RECAPTCHA key is not set", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     // Only set enable flag
     process.env.NEXT_PUBLIC_ENABLE_APP_CHECK = "true";
     
@@ -54,6 +58,9 @@ describe("initializeAppCheck", () => {
 
     expect(result).toBeNull();
     expect(mockInitAppCheck).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY"),
+    );
   });
 
   it("initializes App Check when key is set and enabled", async () => {

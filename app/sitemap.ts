@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 
 const BASE = "https://creedava.com";
 
@@ -83,6 +83,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let blogPages: MetadataRoute.Sitemap = [];
   let lpPages: MetadataRoute.Sitemap = [];
   let forumPages: MetadataRoute.Sitemap = [];
+
+  if (!canUseAdminDb) {
+    return staticPages;
+  }
 
   try {
     const [blogSnap, lpSnap, forumSnap] = await Promise.all([

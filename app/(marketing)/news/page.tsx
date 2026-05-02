@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 import { getPageSEO } from "@/lib/firebase/seo";
 import { NewsContent } from "./news-content";
 import type { BlogPost } from "@/lib/types/content";
@@ -15,6 +15,8 @@ export async function generateMetadata() {
 
 const getBlogPosts = unstable_cache(
   async (): Promise<(BlogPost & { id: string })[]> => {
+    if (!canUseAdminDb) return [];
+
     try {
       const snap = await adminDb
         .collection("blog")

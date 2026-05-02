@@ -9,11 +9,13 @@
  * must use the Firebase Admin SDK — NOT the client Firebase SDK. The client SDK
  * (lib/firebase/config.ts) only initializes `db` inside `if (typeof window !== "undefined")`,
  * so `db` is always `undefined` on the server. The Admin SDK (lib/firebase-admin.ts)
- * uses Application Default Credentials and works in any server context.
+ * uses Application Default Credentials in hosted server contexts. Local
+ * production builds skip Firestore metadata reads when no Admin credentials are
+ * available and use the provided defaults.
  */
 
 import { unstable_cache } from "next/cache";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 import type { PageSEO } from "@/lib/types/content";
 import type { Metadata } from "next";
 
@@ -24,6 +26,8 @@ async function _getPageSEO(
   path: string,
   defaults: { title: string; description: string },
 ): Promise<Metadata> {
+  if (!canUseAdminDb) return fallback(path, defaults);
+
   try {
     const snapshot = await adminDb
       .collection("page-seo")
