@@ -8,6 +8,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { google } from "googleapis";
 import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
+import { toGA4PropertyResourceName } from "./google-analytics-property";
 
 // ─── Auth helper ─────────────────────────────────────
 
@@ -38,7 +39,7 @@ async function getAnalyticsAuth() {
   const credentials = authClient instanceof google.auth.JWT
     ? await authClient.authorize()
     : { access_token: (await (authClient as InstanceType<typeof google.auth.GoogleAuth>).getAccessToken()) };
-  return { token: credentials.access_token!, propertyId: config.propertyId || "" };
+  return { token: credentials.access_token!, propertyName: toGA4PropertyResourceName(config.propertyId) };
 }
 
 async function gaFetch(token: string, url: string, body?: Record<string, unknown>) {
@@ -69,7 +70,7 @@ export const fetchAnalyticsReport = onCall(
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
-    const { token, propertyId } = await getAnalyticsAuth();
+    const { token, propertyName } = await getAnalyticsAuth();
     const days = (request.data as { days?: number })?.days || 30;
 
     const endDate = new Date();
@@ -77,7 +78,7 @@ export const fetchAnalyticsReport = onCall(
     startDate.setDate(startDate.getDate() - days);
     const start = startDate.toISOString().split("T")[0];
     const end = endDate.toISOString().split("T")[0];
-    const baseUrl = `https://analyticsdata.googleapis.com/v1beta/${propertyId}:runReport`;
+    const baseUrl = `https://analyticsdata.googleapis.com/v1beta/${propertyName}:runReport`;
 
     try {
       // Main report
@@ -173,8 +174,8 @@ export const fetchRealtimeAnalytics = onCall(
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
-    const { token, propertyId } = await getAnalyticsAuth();
-    const url = `https://analyticsdata.googleapis.com/v1beta/${propertyId}:runRealtimeReport`;
+    const { token, propertyName } = await getAnalyticsAuth();
+    const url = `https://analyticsdata.googleapis.com/v1beta/${propertyName}:runRealtimeReport`;
 
     try {
       const res = await gaFetch(token, url, {

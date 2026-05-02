@@ -201,15 +201,15 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: "google-analytics",
-    label: "Analytics Admin",
-    description: "GA4 properties, data streams, and audience definitions.",
+    label: "Google Analytics",
+    description: "GA4 traffic reports, real-time data, and engagement metrics.",
     icon: <TrendingIcon />,
     fields: [
-      { key: "propertyId", label: "GA4 Property ID", type: "text", required: true, placeholder: "properties/123456789" },
+      { key: "propertyId", label: "GA4 Property ID", type: "text", required: true, placeholder: "524822766" },
       { key: "serviceAccountEmail", label: "Service Account Email", type: "email", required: false, placeholder: "ga@creeda-va.iam.gserviceaccount.com" },
       { key: "serviceAccountKey", label: "Service Account JSON Key", type: "password", required: true, placeholder: "Paste full JSON key" },
     ],
-    docsUrl: "https://console.cloud.google.com/apis/library/analyticsadmin.googleapis.com",
+    docsUrl: "https://console.cloud.google.com/apis/library/analyticsdata.googleapis.com",
   },
   {
     id: "google-sheets",

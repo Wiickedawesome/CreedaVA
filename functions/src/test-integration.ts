@@ -9,6 +9,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { google } from "googleapis";
 import * as nodemailer from "nodemailer";
 import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
+import { toGA4PropertyResourceName } from "./google-analytics-property";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -124,11 +125,11 @@ async function testAnalytics(config: Record<string, string>): Promise<string> {
     scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
   });
   const credentials = await auth.authorize();
-  const propertyId = config.propertyId || "";
+  const propertyName = toGA4PropertyResourceName(config.propertyId);
 
   // Minimal GA4 Data API call
   const res = await fetch(
-    `https://analyticsdata.googleapis.com/v1beta/${propertyId}:runReport`,
+    `https://analyticsdata.googleapis.com/v1beta/${propertyName}:runReport`,
     {
       method: "POST",
       headers: {
@@ -145,7 +146,7 @@ async function testAnalytics(config: Record<string, string>): Promise<string> {
     const err = await res.text();
     throw new Error(`GA4 API ${res.status}: ${err}`);
   }
-  return `Analytics property ${propertyId} connected`;
+  return `Analytics property ${propertyName} connected`;
 }
 
 async function testSheets(config: Record<string, string>): Promise<string> {

@@ -8,6 +8,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { Timestamp } from "firebase-admin/firestore";
 import { db, getIntegrationConfig, getEmailTransport } from "./admin";
+import { toGA4PropertyResourceName } from "./google-analytics-property";
 
 /** Shorthand: convert JS Date to Firestore Timestamp (required for where() comparisons). */
 const TS = Timestamp.fromDate;
@@ -466,10 +467,10 @@ export const dailyGoogleSync = onSchedule(
         });
         const creds = await authClient.authorize();
         const token = creds.access_token!;
-        const propertyId = config.propertyId;
+        const propertyName = toGA4PropertyResourceName(config.propertyId);
 
         const res = await fetch(
-          `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
+          `https://analyticsdata.googleapis.com/v1beta/${propertyName}:runReport`,
           {
             method: "POST",
             headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
