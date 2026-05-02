@@ -38,6 +38,22 @@ export { fetchInbox, fetchEmailMessage, listMailboxFolders, syncInboxToFirestore
 // Scheduled tasks
 export { weeklyReport, monthlyReport, dailyGoogleSync, cleanupAnalytics } from "./scheduled";
 
+// SEO Agent (daily skill rotation + manual trigger)
+export {
+  seoAgentMon,
+  seoAgentMonRanks,
+  seoAgentTue,
+  seoAgentWed,
+  seoAgentThu,
+  seoAgentFri,
+  seoAgentSat,
+  seoAgentSun,
+  seoAgentRun,
+} from "./seo-schedules";
+
+// SEO Agent — outreach send-on-approval Firestore trigger
+export { onOutreachEmailApproved } from "./seo/outreach-trigger";
+
 // Firestore triggers (automatic sync)
 export { onNewLead, onNewContact, onEmailQueued, onBookingConfirmed } from "./triggers";
 

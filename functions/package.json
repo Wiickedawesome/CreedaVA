@@ -18,7 +18,9 @@
     "npm": "11.x"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@types/mailparser": "^3.4.6",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "firebase-admin": "^13.6.1",
     "firebase-functions": "^7.0.5",

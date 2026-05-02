@@ -540,3 +540,40 @@ export async function cloudVerifyAllIntegrations(): Promise<VerifyAllResult> {
   const result = await fn({});
   return result.data;
 }
+
+// ─── SEO Agent ───────────────────────────────────────
+
+export type SeoAgentSkill =
+  | "onpage-audit"
+  | "rank-history"
+  | "keyword-gaps"
+  | "citation-audit"
+  | "backlinks-resources"
+  | "backlinks-competitor"
+  | "brand-mentions"
+  | "synthesizer";
+
+interface SeoAgentRunResult {
+  runId: string;
+  status: "ok" | "partial" | "skipped" | "error" | "locked" | "killswitch";
+  result?: {
+    status: string;
+    findings: number;
+    queriesUsed: number;
+    summary?: Record<string, unknown>;
+    error?: string;
+  };
+  error?: string;
+}
+
+export async function cloudSeoAgentRun(
+  skill: SeoAgentSkill,
+  options?: { force?: boolean },
+): Promise<SeoAgentRunResult> {
+  const fn = httpsCallable<{ skill: SeoAgentSkill; force?: boolean }, SeoAgentRunResult>(
+    functions,
+    "seoAgentRun",
+  );
+  const result = await fn({ skill, force: options?.force });
+  return result.data;
+}

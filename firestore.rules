@@ -144,6 +144,19 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // ─── SEO Agent (autonomous "living AI") ────────────
+    // All written by Cloud Functions; admin can read + correct via dashboard.
+    match /agent-runs/{docId}        { allow read, write: if isAdmin(); }
+    match /seo-tasks/{docId}         { allow read, write: if isAdmin(); }
+    match /rank-history/{docId}      { allow read, write: if isAdmin(); }
+    match /onpage-audits/{docId}     { allow read, write: if isAdmin(); }
+    match /keyword-gaps/{docId}      { allow read, write: if isAdmin(); }
+    match /citation-audits/{docId}   { allow read, write: if isAdmin(); }
+    match /backlink-prospects/{docId}        { allow read, write: if isAdmin(); }
+    match /outreach-emails/{docId}            { allow read, write: if isAdmin(); }
+    match /internal-link-suggestions/{docId}  { allow read, write: if isAdmin(); }
+    match /content-briefs/{docId}             { allow read, write: if isAdmin(); }
+
     // AI Conversations — chat history for dashboard AI assistant
     match /ai-conversations/{docId} {
       allow read, write: if isAdmin();

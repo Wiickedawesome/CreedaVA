@@ -57,7 +57,6 @@ next-env.d.ts
 # ─── AI & Cloud Dev Environments ─────────────────
 .gemini/
 .idx/
-.github/
 
 # ─── OS generated ────────────────────────────────
 Thumbs.db
