@@ -99,8 +99,12 @@ function ThreadContent({ id }: { id: string }) {
   }, [id]);
 
   useEffect(() => {
-    loadThread();
-    loadReplies();
+    const timeoutId = setTimeout(() => {
+      void loadThread();
+      void loadReplies();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [loadThread, loadReplies]);
 
   // On-demand: translate thread if missing translations for current locale

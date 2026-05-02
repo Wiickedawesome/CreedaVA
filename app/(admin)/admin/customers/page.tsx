@@ -34,6 +34,7 @@ const BUSINESS_EMAILS = [
 ];
 
 const DEFAULT_SURVEY_SUBJECT = "We'd love your feedback — CreedaVA Satisfaction Survey";
+const CUSTOMER_STATS_NOW_MS = Date.now();
 const DEFAULT_SURVEY_HTML = `
 <div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#002D72;">
   <div style="text-align:center;padding:24px 0;">
@@ -228,9 +229,8 @@ export default function CustomersPage() {
   const avgTenure = useMemo(() => {
     const withStart = active.filter((c) => c.startDate);
     if (withStart.length === 0) return 0;
-    const now = Date.now();
     const totalMonths = withStart.reduce((s, c) => {
-      const diff = now - new Date(c.startDate!).getTime();
+      const diff = CUSTOMER_STATS_NOW_MS - new Date(c.startDate!).getTime();
       return s + diff / (1000 * 60 * 60 * 24 * 30);
     }, 0);
     return Math.round(totalMonths / withStart.length);
@@ -239,7 +239,6 @@ export default function CustomersPage() {
 
   // ─── Contact Health (based on days since last contact + satisfaction) ───
   const contactHealthData = useMemo(() => {
-    const now = Date.now();
     const segments = [
       { label: "Healthy", sublabel: "≤ 60 days", color: "#198038", count: 0 },
       { label: "Needs Attention", sublabel: "61–90 days", color: "#F1C21B", count: 0 },
@@ -248,7 +247,7 @@ export default function CustomersPage() {
     ];
     active.forEach((c) => {
       if (!c.lastContactDate) { segments[3].count++; return; }
-      const days = Math.floor((now - new Date(c.lastContactDate).getTime()) / (1000 * 60 * 60 * 24));
+      const days = Math.floor((CUSTOMER_STATS_NOW_MS - new Date(c.lastContactDate).getTime()) / (1000 * 60 * 60 * 24));
       if (days <= 60) segments[0].count++;
       else if (days <= 90) segments[1].count++;
       else if (days <= 120) segments[2].count++;
@@ -259,12 +258,11 @@ export default function CustomersPage() {
 
   const avgHealthScore = useMemo(() => {
     if (active.length === 0) return 0;
-    const now = Date.now();
     let totalScore = 0;
     active.forEach((c) => {
       let contactScore = 0;
       if (c.lastContactDate) {
-        const days = Math.floor((now - new Date(c.lastContactDate).getTime()) / (1000 * 60 * 60 * 24));
+        const days = Math.floor((CUSTOMER_STATS_NOW_MS - new Date(c.lastContactDate).getTime()) / (1000 * 60 * 60 * 24));
         if (days <= 60) contactScore = 100;
         else if (days <= 90) contactScore = 60;
         else if (days <= 120) contactScore = 30;

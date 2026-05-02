@@ -753,41 +753,6 @@ export default function AIReportsDashboard() {
     [insights],
   );
 
-  // ─── AI Activity stats ───────────────────────────
-  const activityStats = useMemo(() => {
-    const total = activityLog.length;
-    const autoExec = activityLog.filter((l) => l.decision === "auto-execute").length;
-    const confirmed = activityLog.filter((l) => l.decision === "confirm").length;
-    const denied = activityLog.filter((l) => l.decision === "deny").length;
-    const errors = activityLog.filter((l) => l.error).length;
-    const domains: Record<string, number> = {};
-    for (const entry of activityLog) {
-      domains[entry.domain] = (domains[entry.domain] || 0) + 1;
-    }
-    const risks: Record<string, number> = {};
-    for (const entry of activityLog) {
-      risks[entry.risk] = (risks[entry.risk] || 0) + 1;
-    }
-    const toolCounts: Record<string, number> = {};
-    for (const entry of activityLog) {
-      toolCounts[entry.toolName] = (toolCounts[entry.toolName] || 0) + 1;
-    }
-    const topTools = Object.entries(toolCounts)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 10);
-    const aiActive = insights.filter((i) => !i.dismissed);
-    const criticalInsights = aiActive.filter((i) => i.severity === "critical").length;
-    const warningInsights = aiActive.filter((i) => i.severity === "warning").length;
-    const completedTasks = aiTasks.filter((t) => t.status === "completed").length;
-    const failedTasks = aiTasks.filter((t) => t.status === "failed").length;
-    const runningTasks = aiTasks.filter((t) => t.status === "running" || t.status === "queued").length;
-    return {
-      total, autoExec, confirmed, denied, errors, domains, risks, topTools,
-      activeInsightsCount: aiActive.length, criticalInsights, warningInsights,
-      completedTasks, failedTasks, runningTasks,
-    };
-  }, [activityLog, insights, aiTasks]);
-
   const filteredLog = useMemo(() => {
     return activityLog.filter((entry) => {
       if (domainFilter !== "all" && entry.domain !== domainFilter) return false;

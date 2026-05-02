@@ -6,7 +6,6 @@ import { Modal, useToast } from "@/components/admin";
 import { Button } from "@/components/ui";
 import { lazyGenerateText, lazySendMessage, lazyGetCurrentMessages, lazyLogActionToMemory, lazyGetConversationHistory, lazySwitchConversation, lazyNewConversation, lazyConfirmAction, lazyRejectAction } from "@/lib/firebase/ai-lazy";
 import { buildTrainedPrompt, getPageContext } from "@/lib/utils/ai-system-prompt";
-import type { TrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { getSpecialist, ALL_SPECIALISTS } from "@/lib/utils/ai-specialists";
 import { fetchOne } from "@/lib/firebase/firestore";
 import { useAuth } from "@/lib/firebase/auth-context";
@@ -211,7 +210,7 @@ function AIPromptDialog({
   const [onboardingStep, setOnboardingStep] = useState(0);
 
   // Offline prompt queue
-  const [offlineQueue, setOfflineQueue] = useState<string[]>([]);
+  const [, setOfflineQueue] = useState<string[]>([]);
 
   // Tool calling state
   const [pendingActions, setPendingActions] = useState<PendingAction[]>([]);
@@ -331,8 +330,12 @@ function AIPromptDialog({
   useEffect(() => {
     if (!open || isActionMode) return;
     if (typeof window !== "undefined" && !localStorage.getItem("ai-onboarding-v1")) {
-      setShowOnboarding(true);
-      setOnboardingStep(0);
+      const timeoutId = setTimeout(() => {
+        setShowOnboarding(true);
+        setOnboardingStep(0);
+      }, 0);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [open, isActionMode]);
 
@@ -370,7 +373,7 @@ function AIPromptDialog({
       setGenerating(false);
       setActiveToolName(null);
     });
-  }, [open, isActionMode, chatLoaded, chatMessages.length, proactiveQuery, user?.uid, pathname, section]);
+  }, [open, isActionMode, chatLoaded, chatMessages.length, proactiveQuery, user?.uid, pathname, section, activeSpecialist, autoSpecialist]);
 
   function handlePreset(presetPrompt: string) {
     setPrompt(presetPrompt);

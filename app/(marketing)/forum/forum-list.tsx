@@ -87,7 +87,11 @@ export function ForumList() {
   }, []);
 
   useEffect(() => {
-    loadThreads();
+    const timeoutId = setTimeout(() => {
+      void loadThreads();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [loadThreads]);
 
   // On-demand: translate threads that lack translations for the current locale

@@ -25,7 +25,8 @@ export function Navbar() {
 
   // Close mobile menu on route change
   useEffect(() => {
-    setMobileMenuOpen(false);
+    const timeoutId = setTimeout(() => setMobileMenuOpen(false), 0);
+    return () => clearTimeout(timeoutId);
   }, [pathname]);
 
   // Focus trap for mobile menu

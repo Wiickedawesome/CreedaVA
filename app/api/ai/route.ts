@@ -55,18 +55,29 @@ interface GroundingSource {
   url: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function extractSources(response: any): GroundingSource[] {
+interface GroundingChunk {
+  web?: {
+    title?: string;
+    uri?: string;
+  };
+}
+
+interface GroundingResponse {
+  candidates?: {
+    groundingMetadata?: {
+      groundingChunks?: GroundingChunk[];
+    };
+  }[];
+}
+
+function extractSources(response: GroundingResponse): GroundingSource[] {
   try {
     const metadata = response?.candidates?.[0]?.groundingMetadata;
     if (!metadata?.groundingChunks) return [];
     return (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       metadata.groundingChunks
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .filter((c: any) => c.web?.uri)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((c: any) => ({ title: c.web.title || "Source", url: c.web.uri }))
+        .filter((chunk): chunk is GroundingChunk & { web: { uri: string; title?: string } } => Boolean(chunk.web?.uri))
+        .map((chunk) => ({ title: chunk.web.title || "Source", url: chunk.web.uri }))
     );
   } catch {
     return [];

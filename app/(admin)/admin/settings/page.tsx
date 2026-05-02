@@ -280,8 +280,8 @@ const { toast } = useToast();
   // This ensures test results from Cloud Functions push to the UI immediately
   useEffect(() => {
     if (!user || !user.email?.endsWith("@creedava.com")) {
-      setIntegrationsLoading(false);
-      return;
+      const timeoutId = setTimeout(() => setIntegrationsLoading(false), 0);
+      return () => clearTimeout(timeoutId);
     }
 
     const unsubscribe = subscribe<Integration>("integrations", (data) => {
@@ -294,6 +294,7 @@ const { toast } = useToast();
 
   // Load general settings
   useEffect(() => {
+    const timeoutId = setTimeout(() => {
     const existing = settings.find((s) => s.key === "business");
     if (existing) {
       try {
@@ -305,15 +306,22 @@ const { toast } = useToast();
         if (parsed.weeklyDigest !== undefined) setWeeklyDigest(parsed.weeklyDigest);
       } catch { /* ignore parse errors */ }
     }
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [settings]);
 
   // Pre-fill integration form data from live Firestore data
   useEffect(() => {
+    const timeoutId = setTimeout(() => {
     const prefilled: Record<string, Record<string, string>> = {};
     for (const integration of integrations) {
       prefilled[integration.provider] = integration.config || {};
     }
     setFormData(prefilled);
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [integrations]);
 
   // ── Auto-verify all enabled integrations on first load ──

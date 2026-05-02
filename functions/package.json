@@ -1,7 +1,7 @@
 {
   "name": "creedava-functions",
   "version": "1.0.1",
-  "packageManager": "npm@10.9.4",
+  "packageManager": "npm@11.12.1",
   "description": "CreedaVA Cloud Functions — email, calendar, ads, search console integrations",
   "main": "lib/index.js",
   "scripts": {
@@ -14,8 +14,8 @@
     "logs": "firebase functions:log"
   },
   "engines": {
-    "node": "22",
-    "npm": "10.x"
+    "node": "24",
+    "npm": "11.x"
   },
   "dependencies": {
     "@types/mailparser": "^3.4.6",

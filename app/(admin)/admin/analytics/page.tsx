@@ -432,7 +432,11 @@ export default function AnalyticsPage() {
   }, [user, daysFilter]);
 
   useEffect(() => {
-    fetchAnalytics();
+    const timeoutId = setTimeout(() => {
+      void fetchAnalytics();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [fetchAnalytics]);
 
   // ─── Filtered events ──────────────────────────────

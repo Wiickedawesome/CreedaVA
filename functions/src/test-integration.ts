@@ -207,7 +207,7 @@ const TESTS: Record<string, (config: Record<string, string>) => Promise<string>>
 // ─── Main Cloud Function ─────────────────────────────
 
 export const testIntegration = onCall(
-  { region: "us-east4", timeoutSeconds: 30, memory: "256MiB", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4", timeoutSeconds: 30, memory: "256MiB" },
   async (request): Promise<TestResult> => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -228,7 +228,7 @@ interface VerifyAllResult {
 }
 
 export const verifyAllIntegrations = onCall(
-  { region: "us-east4", timeoutSeconds: 60, memory: "512MiB", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4", timeoutSeconds: 60, memory: "512MiB" },
   async (request): Promise<VerifyAllResult> => {
     verifyAdminEmail(request.auth?.token?.email);
 

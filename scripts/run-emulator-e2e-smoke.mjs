@@ -44,8 +44,8 @@ async function normalizeFunctionsEngineForEmulator() {
   const raw = await readFile(functionsPackagePath, "utf8");
   const parsed = JSON.parse(raw);
 
-  if (parsed?.engines?.node === "22.x") {
-    parsed.engines.node = "22";
+  if (typeof parsed?.engines?.node === "string" && parsed.engines.node.endsWith(".x")) {
+    parsed.engines.node = parsed.engines.node.slice(0, -2);
     await writeFile(functionsPackagePath, `${JSON.stringify(parsed, null, 2)}\n`, "utf8");
   }
 

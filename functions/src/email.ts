@@ -58,7 +58,7 @@ async function getTransport() {
 // ─── Send Single Email ──────────────────────────────
 
 export const sendEmail = onCall(
-  { region: "us-east4", memory: "256MiB", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4", memory: "256MiB" },
   async (request) => {
     // Verify auth
     if (!request.auth) {
@@ -121,7 +121,7 @@ export const sendEmail = onCall(
 // ─── Send Bulk Email ─────────────────────────────────
 
 export const sendBulkEmail = onCall(
-  { region: "us-east4", memory: "512MiB", timeoutSeconds: 300, ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4", memory: "512MiB", timeoutSeconds: 300 },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");

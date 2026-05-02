@@ -23,8 +23,9 @@ const googleProvider = new GoogleAuthProvider();
  * the /__/auth/handler served by Firebase Hosting. The result is
  * delivered back via postMessage — no cross-origin cookie issues.
  */
-export async function signInWithGoogle(): Promise<void> {
-  await signInWithPopup(auth, googleProvider);
+export async function signInWithGoogle(): Promise<User> {
+  const result = await signInWithPopup(auth, googleProvider);
+  return result.user;
 }
 
 export async function signOut(): Promise<void> {

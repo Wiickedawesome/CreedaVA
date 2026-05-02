@@ -599,13 +599,13 @@ export async function executeTool(
   // Destructive actions need confirmation
   if (decision.decision === "confirm") {
     const actionId = `${name}_${Date.now()}`;
-    const { create } = await import("./firestore");
-    await create(PENDING_ACTIONS_COLLECTION, {
-      id: actionId,
+    const { createWithId } = await import("./firestore");
+    await createWithId(PENDING_ACTIONS_COLLECTION, actionId, {
       toolName: name,
       args: (args as Record<string, unknown>) ?? {},
       impactSummary: decision.impactSummary ?? `Execute ${name}`,
       conversationId: conversationId ?? null,
+      createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + PENDING_ACTION_TTL_MS).toISOString(),
     });
 
@@ -685,11 +685,8 @@ export async function executeTool(
 export async function confirmAction(
   actionId: string,
 ): Promise<ToolExecutionResult> {
-  const { fetchAll, remove } = await import("./firestore");
-  const { where } = await import("firebase/firestore");
-
-  const docs = await fetchAll(PENDING_ACTIONS_COLLECTION, where("id", "==", actionId));
-  const actionDoc = docs[0] as (Record<string, unknown> & { id: string }) | undefined;
+  const { fetchOne, remove } = await import("./firestore");
+  const actionDoc = await fetchOne(PENDING_ACTIONS_COLLECTION, actionId) as (Record<string, unknown> & { id: string }) | null;
 
   if (!actionDoc) {
     return {
@@ -762,11 +759,8 @@ export async function confirmAction(
  * Reject a pending destructive action.
  */
 export async function rejectAction(actionId: string): Promise<ToolExecutionResult> {
-  const { fetchAll, remove } = await import("./firestore");
-  const { where } = await import("firebase/firestore");
-
-  const docs = await fetchAll(PENDING_ACTIONS_COLLECTION, where("id", "==", actionId));
-  const actionDoc = docs[0] as (Record<string, unknown> & { id: string }) | undefined;
+  const { fetchOne, remove } = await import("./firestore");
+  const actionDoc = await fetchOne(PENDING_ACTIONS_COLLECTION, actionId) as (Record<string, unknown> & { id: string }) | null;
 
   if (actionDoc) {
     await remove(PENDING_ACTIONS_COLLECTION, actionDoc.id);

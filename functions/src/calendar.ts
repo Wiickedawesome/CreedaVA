@@ -216,7 +216,7 @@ export const updateCalendarOnBookingChange = onDocumentUpdated(
 // ─── Manual retry: sync an existing booking to Calendar ──
 
 export const retrySyncBooking = onCall(
-  { region: "us-east4", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4" },
   async (request) => {
     if (!request.auth?.token.email?.endsWith("@creedava.com")) {
       throw new HttpsError("permission-denied", "Must be @creedava.com");
@@ -265,7 +265,7 @@ export const retrySyncBooking = onCall(
 // ─── List upcoming calendar events (callable) ────────
 
 export const listCalendarEvents = onCall(
-  { region: "us-east4", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4" },
   async (request) => {
     if (!request.auth?.token.email?.endsWith("@creedava.com")) {
       throw new HttpsError("permission-denied", "Must be @creedava.com");

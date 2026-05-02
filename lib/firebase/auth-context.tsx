@@ -14,7 +14,7 @@ import { FirebaseInit } from "./firebase-init";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signIn: () => Promise<void>;
+  signIn: () => Promise<User>;
   logOut: () => Promise<void>;
 }
 
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn() {
     try {
-      await signInWithGoogle();
+      return await signInWithGoogle();
     } catch (error) {
       console.error("Sign-in failed:", error);
       throw error;

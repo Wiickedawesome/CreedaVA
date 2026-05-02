@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 22.x
+- Node.js 24.x
 - Firebase CLI: `npm install -g firebase-tools`
 - Firebase project created at [console.firebase.google.com](https://console.firebase.google.com)
 
@@ -14,7 +14,7 @@
 | ---------------- | ------------------------------------------ |
 | Authentication   | Google sign-in (restricted to creedava.com)|
 | Cloud Firestore  | Primary database (CRM, blog, forum, etc.)  |
-| Cloud Functions  | Server-side integrations (Node.js 22)      |
+| Cloud Functions  | Server-side integrations (Node.js 24)      |
 | App Hosting      | Next.js SSR & API deployment               |
 | Firebase Storage | File uploads (blog images, attachments)    |
 | Firebase AI      | Gemini 2.5 Flash for content translation   |
@@ -141,7 +141,7 @@ firebase deploy --only firestore:indexes
 
 Configured in `apphosting.yaml` and `firebase.json`:
 
-- **Runtime**: Node.js 22 (managed by App Hosting)
+- **Runtime**: Node.js 24 (managed by App Hosting)
 - **Environment**: Secrets managed via Cloud Secret Manager
 - **Backend**: Cloud Run (Next.js SSR)
 

@@ -32,7 +32,9 @@ export function ForumAuthModal({
 
   // Sync mode when defaultMode prop changes (e.g. New Post vs Like)
   useEffect(() => {
-    if (open) setMode(defaultMode);
+    if (!open) return;
+    const timeoutId = setTimeout(() => setMode(defaultMode), 0);
+    return () => clearTimeout(timeoutId);
   }, [open, defaultMode]);
 
   // Sign in fields

@@ -74,8 +74,8 @@ npm run dev          # → http://localhost:3000
 
 #### Prerequisites
 
-- **Node.js** 22.x
-- **npm** ≥ 10
+- **Node.js** 24.x
+- **npm** 11.x
 - Firebase project with Auth, Firestore, and Storage enabled
 
 ## Scripts
@@ -109,7 +109,7 @@ lib/
 ├─ types/              ← TypeScript definitions (content, CRM)
 └─ utils/              ← CSV export, LTV calculation
 
-functions/             ← Cloud Functions (Node.js 22)
+functions/             ← Cloud Functions (Node.js 24)
 docs/dev/              ← Architecture, testing, Firebase & contributing guides
 __tests__/             ← Vitest test suite
 ```

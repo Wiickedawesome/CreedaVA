@@ -26,13 +26,15 @@ beforeEach(() => {
 
 describe("Auth module", () => {
   describe("signInWithGoogle", () => {
-    it("starts popup sign-in", async () => {
-      mockSignInWithPopup.mockResolvedValue(undefined);
+    it("starts popup sign-in and returns the signed-in user", async () => {
+      const mockUser = { uid: "user-123" };
+      mockSignInWithPopup.mockResolvedValue({ user: mockUser });
 
       const { signInWithGoogle } = await import("@/lib/firebase/auth");
-      await signInWithGoogle();
+      const user = await signInWithGoogle();
 
       expect(mockSignInWithPopup).toHaveBeenCalled();
+      expect(user).toBe(mockUser);
     });
   });
 

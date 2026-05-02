@@ -19,7 +19,7 @@ interface SubmitSatisfactionRequest {
 }
 
 export const submitSatisfaction = onCall(
-  { region: "us-east4", memory: "256MiB", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4", memory: "256MiB" },
   async (request) => {
     // No auth check — this is a public endpoint for customers
     const { token, ratings, comment } = request.data as SubmitSatisfactionRequest;

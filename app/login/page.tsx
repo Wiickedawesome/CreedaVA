@@ -1,55 +1,94 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/firebase/auth-context";
+import type { User } from "@/lib/firebase/auth";
+
+function getSafeRedirectPath(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/admin";
+  }
+
+  try {
+    const baseUrl = "https://creedava.local";
+    const url = new URL(value, baseUrl);
+    if (url.origin !== baseUrl || !url.pathname.startsWith("/admin")) {
+      return "/admin";
+    }
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return "/admin";
+  }
+}
 
 function LoginComponent() {
   const { user, signIn } = useAuth();
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("from") || "/admin";
+  const redirectTo = getSafeRedirectPath(searchParams.get("from"));
   const [error, setError] = useState<string | null>(null);
   const [signingIn, setSigningIn] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
+  const redirectStartedRef = useRef(false);
+
+  const syncSessionAndRedirect = useCallback(async (firebaseUser: User) => {
+    if (redirectStartedRef.current) return;
+    redirectStartedRef.current = true;
+    setRedirecting(true);
+
+    try {
+      const token = await firebaseUser.getIdToken();
+      const res = await fetch("/api/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+
+      if (res.status === 403) {
+        setError("Access denied. Only @creedava.com accounts are authorized.");
+        setSigningIn(false);
+        setRedirecting(false);
+        redirectStartedRef.current = false;
+        return;
+      }
+
+      if (!res.ok) {
+        setError("Session creation failed. Please try again.");
+        setSigningIn(false);
+        setRedirecting(false);
+        redirectStartedRef.current = false;
+        return;
+      }
+
+      window.location.replace(redirectTo);
+    } catch (e) {
+      console.error("[Auth] Session sync failed:", e);
+      setError("Network error during sign-in. Please try again.");
+      setSigningIn(false);
+      setRedirecting(false);
+      redirectStartedRef.current = false;
+    }
+  }, [redirectTo]);
 
   // Redirect if user is already signed in or after successful sign-in
   useEffect(() => {
-    if (user) {
-      (async () => {
-        try {
-          const token = await user.getIdToken();
-          const res = await fetch("/api/session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token }),
-          });
-          if (res.status === 403) {
-            setError("Access denied. Only @creedava.com accounts are authorized.");
-            setSigningIn(false);
-            return;
-          }
-          if (!res.ok) {
-            setError("Session creation failed. Please try again.");
-            setSigningIn(false);
-            return;
-          }
-          router.replace(redirectTo);
-        } catch (e) {
-          console.error("[Auth] Session sync failed:", e);
-          setError("Network error during sign-in. Please try again.");
-          setSigningIn(false);
-        }
-      })();
-    }
-  }, [user, router, redirectTo]);
+    if (!user) return;
+
+    const timeoutId = window.setTimeout(() => {
+      void syncSessionAndRedirect(user);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [user, syncSessionAndRedirect]);
 
   async function handleSignIn() {
-    if (signingIn) return;
+    if (signingIn || redirecting) return;
     setError(null);
     setSigningIn(true);
     try {
-      await signIn();
-      // The useEffect above will handle the redirect
+      const signedInUser = await signIn();
+      await syncSessionAndRedirect(signedInUser);
     } catch (err: unknown) {
       const code = (err as { code?: string }).code;
       const msg = (err as { message?: string }).message;
@@ -57,12 +96,14 @@ function LoginComponent() {
       // Don't show an error if the user closes the popup
       if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
         setSigningIn(false);
+        setRedirecting(false);
         return;
       }
       
       setError(msg || "Sign-in failed. Please try again.");
       console.error("[Auth]", code, msg);
       setSigningIn(false);
+      setRedirecting(false);
     }
   }
 
@@ -70,19 +111,19 @@ function LoginComponent() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-center px-4">
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
         <div className="flex justify-center mb-6">
-          <img src="/logo.webp" alt="CreedaVA Logo" className="h-12 w-auto" />
+          <Image src="/logo.webp" alt="CreedaVA Logo" width={96} height={48} className="h-12 w-auto" />
         </div>
         <h1 className="text-3xl font-bold text-[#0f2546] mb-2">Welcome Back</h1>
         <p className="text-sm text-gray-500 mb-8">
           Sign in to access the CreedaVA dashboard
         </p>
 
-        {signingIn ? (
-           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto" />
+        {signingIn || redirecting ? (
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto" />
         ) : (
           <button
             onClick={handleSignIn}
-            disabled={signingIn}
+            disabled={signingIn || redirecting}
             className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#849b9f] hover:bg-[#73898d] text-white rounded-lg shadow-sm text-sm font-medium transition-colors"
           >
             <svg className="w-5 h-5 bg-white rounded-full p-0.5" viewBox="0 0 24 24">

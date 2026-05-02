@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 interface ModalProps {
@@ -18,6 +18,10 @@ const sizeStyles = {
   lg: "max-w-2xl",
 };
 
+const subscribeToClientMount = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 export function Modal({
   open,
   onClose,
@@ -27,11 +31,11 @@ export function Modal({
   size = "md",
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    subscribeToClientMount,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {

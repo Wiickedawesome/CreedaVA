@@ -68,9 +68,12 @@ export function useCollection<T extends DocumentData>(
     // ── Don't fetch until auth is resolved & valid ──────────
     if (authLoading) return;
     if (!user || !user.email?.endsWith("@creedava.com")) {
-      setLoading(false);
-      setData([]);
-      return;
+      const timeoutId = setTimeout(() => {
+        if (!mountedRef.current) return;
+        setLoading(false);
+        setData([]);
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
 
     const constraints: QueryConstraint[] = [];
@@ -88,28 +91,32 @@ export function useCollection<T extends DocumentData>(
     // Use one-shot getDocs instead of onSnapshot to avoid
     // Firebase SDK internal assertion crash on permission errors
     let cancelled = false;
-    setLoading(true);
+    const timeoutId = setTimeout(() => {
+      if (cancelled || !mountedRef.current) return;
+      setLoading(true);
 
-    fetchAll<T>(collectionName, ...constraints)
-      .then((items) => {
-        if (cancelled || !mountedRef.current) return;
-        setData(items);
-        setLoading(false);
-        setError(null);
-        cache.set(key, { data: items, ts: Date.now() });
-      })
-      .catch((err) => {
-        if (cancelled || !mountedRef.current) return;
-        const msg = err instanceof Error ? err.message : "Failed to load";
-        console.warn(`[Firestore] ${collectionName} fetch error:`, msg);
-        setError(msg);
-        setLoading(false);
-        // Use cached data if available
-        if (!cached) setData([]);
-      });
+      fetchAll<T>(collectionName, ...constraints)
+        .then((items) => {
+          if (cancelled || !mountedRef.current) return;
+          setData(items);
+          setLoading(false);
+          setError(null);
+          cache.set(key, { data: items, ts: Date.now() });
+        })
+        .catch((err) => {
+          if (cancelled || !mountedRef.current) return;
+          const msg = err instanceof Error ? err.message : "Failed to load";
+          console.warn(`[Firestore] ${collectionName} fetch error:`, msg);
+          setError(msg);
+          setLoading(false);
+          // Use cached data if available
+          if (!cached) setData([]);
+        });
+    }, 0);
 
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
       mountedRef.current = false;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- `cached` derives from `key` (already a dep); including it would cause infinite re-fetch loops

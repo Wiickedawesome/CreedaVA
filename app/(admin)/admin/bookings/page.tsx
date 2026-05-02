@@ -62,9 +62,11 @@ export default function BookingsPage() {
 
   // Load Google Calendar events when switching to calendar view
   useEffect(() => {
-    if (viewMode === "calendar" && calendarEvents.length === 0) {
-      fetchCalendarEvents();
-    }
+    if (viewMode !== "calendar" || calendarEvents.length > 0) return;
+    const timeoutId = setTimeout(() => {
+      void fetchCalendarEvents();
+    }, 0);
+    return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewMode]);
 

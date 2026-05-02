@@ -16,7 +16,7 @@ CreedaVA is a virtual assistant services platform built with **Next.js 16** (App
 | Auth            | Firebase Authentication (Google)   |
 | Database        | Cloud Firestore                    |
 | Storage         | Firebase Storage                   |
-| Functions       | Firebase Cloud Functions (Node 22) |
+| Functions       | Firebase Cloud Functions (Node 24) |
 | Hosting         | Firebase App Hosting (SSR/Node)    |
 | AI              | Firebase AI (Gemini 2.0/2.5 Flash) |
 | i18n            | Custom dictionary system (EN/ES)   |
@@ -95,7 +95,7 @@ CreedaVA is a virtual assistant services platform built with **Next.js 16** (App
 │   ├── useCollection.ts        # Firestore collection subscription hook
 │   └── useScheduledReports.ts  # Report scheduling hook
 │
-├── functions/                  # Firebase Cloud Functions (Node.js 22)
+├── functions/                  # Firebase Cloud Functions (Node.js 24)
 │   └── src/
 │       ├── index.ts            # Function barrel export
 │       ├── admin.ts            # Admin API functions
@@ -159,7 +159,7 @@ Standalone login page (no nav/footer). Supports Google sign-in restricted to `@c
 
 ### Cloud Functions
 
-- Runtime: Node.js 22
+- Runtime: Node.js 24
 - Codebase: `functions/` directory with separate `package.json`
 - Key integrations: Email (Nodemailer), Google Calendar, Ads, Search Console, Analytics, Business Profile, Drive, Sheets
 - Triggers: Firestore document writes

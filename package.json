@@ -1,7 +1,7 @@
 {
   "name": "creedava",
   "version": "1.0.1",
-  "packageManager": "npm@10.9.4",
+  "packageManager": "npm@11.12.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -21,8 +21,8 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "engines": {
-    "node": "22.x",
-    "npm": "10.x"
+    "node": "24.x",
+    "npm": "11.x"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

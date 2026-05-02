@@ -50,7 +50,7 @@ async function getSearchConsoleClient() {
 // ─── Fetch Search Performance Data ───────────────────
 
 export const fetchSearchConsoleData = onCall(
-  { region: "us-east4", timeoutSeconds: 60, ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4", timeoutSeconds: 60 },
   async (request) => {
     if (!request.auth?.token.email?.endsWith("@creedava.com")) {
       throw new HttpsError("permission-denied", "Must be @creedava.com");

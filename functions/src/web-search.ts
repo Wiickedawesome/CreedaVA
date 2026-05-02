@@ -71,7 +71,7 @@ export const webSearch = onCall<
   { query: string; numResults?: number },
   Promise<WebSearchResponse>
 >(
-  { region: "us-east4", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -115,7 +115,7 @@ export const competitorSearch = onCall<
   { competitor?: string },
   Promise<{ success: boolean; competitors: Record<string, SearchResult[]> }>
 >(
-  { region: "us-east4", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -146,7 +146,7 @@ export const industryTrends = onCall<
   void,
   Promise<{ success: boolean; trends: SearchResult[]; keywords: SearchResult[] }>
 >(
-  { region: "us-east4", ingressSettings: "ALLOW_INTERNAL_AND_GCLB" },
+  { region: "us-east4" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 

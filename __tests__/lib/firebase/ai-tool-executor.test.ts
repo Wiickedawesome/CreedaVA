@@ -1,5 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const firestoreMocks = vi.hoisted(() => {
+  const pendingActions = new Map<string, Record<string, unknown> & { id: string }>();
+
+  return {
+    pendingActions,
+    fetchAll: vi.fn(async (collectionName: string) => {
+      if (collectionName === "ai-pending-actions") {
+        return Array.from(pendingActions.values());
+      }
+      return [];
+    }),
+    fetchOne: vi.fn(async (collectionName: string, docId: string) => {
+      if (collectionName === "ai-pending-actions") {
+        return pendingActions.get(docId) ?? null;
+      }
+      return null;
+    }),
+    create: vi.fn().mockResolvedValue("mock-id"),
+    createWithId: vi.fn(async (collectionName: string, docId: string, data: Record<string, unknown>) => {
+      if (collectionName === "ai-pending-actions") {
+        pendingActions.set(docId, { id: docId, ...data });
+      }
+    }),
+    update: vi.fn().mockResolvedValue(undefined),
+    remove: vi.fn(async (collectionName: string, docId: string) => {
+      if (collectionName === "ai-pending-actions") {
+        pendingActions.delete(docId);
+      }
+    }),
+    where: vi.fn(),
+  };
+});
+
 // Mock all dependencies before importing the module under test
 vi.mock("@/lib/firebase/config", () => ({
   app: {},
@@ -7,12 +40,13 @@ vi.mock("@/lib/firebase/config", () => ({
   db: {},
 }));
 vi.mock("@/lib/firebase/firestore", () => ({
-  fetchAll: vi.fn(),
-  fetchOne: vi.fn(),
-  create: vi.fn().mockResolvedValue("mock-id"),
-  update: vi.fn().mockResolvedValue(undefined),
-  remove: vi.fn().mockResolvedValue(undefined),
-  where: vi.fn(),
+  fetchAll: firestoreMocks.fetchAll,
+  fetchOne: firestoreMocks.fetchOne,
+  create: firestoreMocks.create,
+  createWithId: firestoreMocks.createWithId,
+  update: firestoreMocks.update,
+  remove: firestoreMocks.remove,
+  where: firestoreMocks.where,
 }));
 vi.mock("firebase/firestore", () => ({
   where: vi.fn(),
@@ -36,12 +70,9 @@ import {
 } from "@/lib/firebase/ai-tool-executor";
 
 describe("AI Tool Executor", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    // Clear any pending actions between tests
-    for (const a of getPendingActions()) {
-      rejectAction(a.id);
-    }
+    firestoreMocks.pendingActions.clear();
   });
 
   // ─── executeTool — read-only (auto-execute) ─────────
@@ -86,7 +117,7 @@ describe("AI Tool Executor", () => {
         name: "send_email",
         args: { to: "a@b.com", subject: "Hi", html: "x" },
       });
-      const pending = getPendingActions();
+      const pending = await getPendingActions();
       expect(pending.length).toBe(1);
       expect(pending[0].toolName).toBe("send_email");
     });
@@ -140,29 +171,30 @@ describe("AI Tool Executor", () => {
       const actionId = (pendingResult.response as Record<string, unknown>)
         .actionId as string;
 
-      const result = rejectAction(actionId);
+      const result = await rejectAction(actionId);
       expect(result.response).toHaveProperty("status", "rejected");
-      expect(getPendingActions().length).toBe(0);
+      expect((await getPendingActions()).length).toBe(0);
     });
   });
 
   // ─── clearExpiredActions ────────────────────────────
 
   describe("clearExpiredActions", () => {
-    it("removes actions older than 5 minutes", async () => {
+    it("removes expired actions", async () => {
       // Create a pending action
       await executeTool({
         name: "send_email",
         args: { to: "a@b.com", subject: "Old", html: "x" },
       });
-      expect(getPendingActions().length).toBe(1);
+      expect((await getPendingActions()).length).toBe(1);
 
-      // Manually age the action by modifying its createdAt
-      const action = getPendingActions()[0];
-      action.createdAt = new Date(Date.now() - 6 * 60 * 1000); // 6 minutes ago
+      const actionId = Array.from(firestoreMocks.pendingActions.keys())[0];
+      const action = firestoreMocks.pendingActions.get(actionId);
+      expect(action).toBeDefined();
+      action!.expiresAt = new Date(Date.now() - 1000).toISOString();
 
-      clearExpiredActions();
-      expect(getPendingActions().length).toBe(0);
+      await clearExpiredActions();
+      expect((await getPendingActions()).length).toBe(0);
     });
   });
 
