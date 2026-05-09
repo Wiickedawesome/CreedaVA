@@ -36,7 +36,7 @@ export { handleFormWebhook } from "./webhooks";
 export { fetchInbox, fetchEmailMessage, listMailboxFolders, syncInboxToFirestore } from "./inbox";
 
 // Scheduled tasks
-export { weeklyReport, monthlyReport, dailyGoogleSync, cleanupAnalytics } from "./scheduled";
+export { weeklyReport, monthlyReport, dailyGoogleSync, weeklyAISEOReview, cleanupAnalytics } from "./scheduled";
 
 // SEO Agent (daily skill rotation + manual trigger)
 export {
