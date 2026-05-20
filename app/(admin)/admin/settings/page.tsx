@@ -236,6 +236,17 @@ const PROVIDERS: ProviderConfig[] = [
     docsUrl: "https://console.cloud.google.com/apis/library/drive.googleapis.com",
   },
   {
+    id: "web-search",
+    label: "Web Search (Custom Search)",
+    description: "Powers the SEO agent's keyword-gap, citation, backlink, and brand-mention research. Uses Google Programmable Search Engine + Custom Search JSON API.",
+    icon: <SearchIcon />,
+    fields: [
+      { key: "apiKey", label: "Custom Search API Key", type: "password", required: true, placeholder: "AIza... — from Google Cloud Console" },
+      { key: "searchEngineId", label: "Programmable Search Engine ID (cx)", type: "text", required: true, placeholder: "e.g. 0123456789abcdef0:abcdefghij" },
+    ],
+    docsUrl: "https://programmablesearchengine.google.com/controlpanel/all",
+  },
+  {
     id: "webhooks",
     label: "Form Webhooks",
     description: "Receive data from Google Forms, Typeform, etc.",

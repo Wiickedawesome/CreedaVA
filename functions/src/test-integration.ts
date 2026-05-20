@@ -191,6 +191,27 @@ async function testWebhooks(): Promise<string> {
   return "Webhook endpoint active — ready to receive form submissions";
 }
 
+async function testWebSearch(config: Record<string, string>): Promise<string> {
+  const apiKey = config.apiKey;
+  const cx = config.searchEngineId;
+  if (!apiKey || !cx) {
+    throw new Error("Missing apiKey or searchEngineId");
+  }
+  const url = new URL("https://www.googleapis.com/customsearch/v1");
+  url.searchParams.set("key", apiKey);
+  url.searchParams.set("cx", cx);
+  url.searchParams.set("q", "creedava virtual assistant");
+  url.searchParams.set("num", "1");
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Custom Search API ${res.status}: ${err.slice(0, 200)}`);
+  }
+  const data = (await res.json()) as { searchInformation?: { totalResults?: string } };
+  const total = data.searchInformation?.totalResults ?? "?";
+  return `Custom Search connected (cx=${cx.slice(0, 12)}…, ${total} results for probe query)`;
+}
+
 // ─── Provider test dispatcher ────────────────────────
 
 const TESTS: Record<string, (config: Record<string, string>) => Promise<string>> = {
@@ -202,6 +223,7 @@ const TESTS: Record<string, (config: Record<string, string>) => Promise<string>>
   "google-analytics": testAnalytics,
   "google-sheets": testSheets,
   "google-drive": testDrive,
+  "web-search": testWebSearch,
   "webhooks": testWebhooks,
 };
 
