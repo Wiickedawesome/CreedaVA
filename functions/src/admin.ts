@@ -73,8 +73,7 @@ const ENV_FALLBACK: Record<string, Record<string, string>> = {
     serviceAccountKey: "GDRIVE_SERVICE_ACCOUNT_KEY",
   },
   "web-search": {
-    apiKey: "GOOGLE_SEARCH_API_KEY",
-    searchEngineId: "GOOGLE_SEARCH_ENGINE_ID",
+    apiKey: "BRAVE_SEARCH_API_KEY",
   },
   webhooks: {
     apiKey: "WEBHOOK_API_KEY",

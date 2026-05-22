@@ -237,14 +237,13 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: "web-search",
-    label: "Web Search (Custom Search)",
-    description: "Powers the SEO agent's keyword-gap, citation, backlink, and brand-mention research. Uses Google Programmable Search Engine + Custom Search JSON API.",
+    label: "Web Search (Brave)",
+    description: "Powers the SEO agent's keyword-gap, citation, backlink, and brand-mention research. Uses the Brave Search API (replaced Google Custom Search after Google deprecated it for our org in May 2026).",
     icon: <SearchIcon />,
     fields: [
-      { key: "apiKey", label: "Custom Search API Key", type: "password", required: true, placeholder: "AIza... — from Google Cloud Console" },
-      { key: "searchEngineId", label: "Programmable Search Engine ID (cx)", type: "text", required: true, placeholder: "e.g. 0123456789abcdef0:abcdefghij" },
+      { key: "apiKey", label: "Brave Search API Key", type: "password", required: true, placeholder: "BSA... — from api.search.brave.com" },
     ],
-    docsUrl: "https://programmablesearchengine.google.com/controlpanel/all",
+    docsUrl: "https://api.search.brave.com/app/dashboard",
   },
   {
     id: "webhooks",

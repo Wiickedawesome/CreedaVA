@@ -193,23 +193,26 @@ async function testWebhooks(): Promise<string> {
 
 async function testWebSearch(config: Record<string, string>): Promise<string> {
   const apiKey = config.apiKey;
-  const cx = config.searchEngineId;
-  if (!apiKey || !cx) {
-    throw new Error("Missing apiKey or searchEngineId");
+  if (!apiKey) {
+    throw new Error("Missing apiKey");
   }
-  const url = new URL("https://www.googleapis.com/customsearch/v1");
-  url.searchParams.set("key", apiKey);
-  url.searchParams.set("cx", cx);
+  const url = new URL("https://api.search.brave.com/res/v1/web/search");
   url.searchParams.set("q", "creedava virtual assistant");
-  url.searchParams.set("num", "1");
-  const res = await fetch(url.toString());
+  url.searchParams.set("count", "1");
+  const res = await fetch(url.toString(), {
+    headers: {
+      "Accept": "application/json",
+      "Accept-Encoding": "gzip",
+      "X-Subscription-Token": apiKey,
+    },
+  });
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Custom Search API ${res.status}: ${err.slice(0, 200)}`);
+    throw new Error(`Brave Search ${res.status}: ${err.slice(0, 200)}`);
   }
-  const data = (await res.json()) as { searchInformation?: { totalResults?: string } };
-  const total = data.searchInformation?.totalResults ?? "?";
-  return `Custom Search connected (cx=${cx.slice(0, 12)}…, ${total} results for probe query)`;
+  const data = (await res.json()) as { web?: { results?: unknown[] } };
+  const count = data.web?.results?.length ?? 0;
+  return `Brave Search connected (${count} result${count === 1 ? "" : "s"} for probe query)`;
 }
 
 // ─── Provider test dispatcher ────────────────────────

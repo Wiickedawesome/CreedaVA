@@ -1,8 +1,9 @@
 /**
  * Web Search Cloud Function — gives AI access to real-time internet data.
  *
- * Uses Google Custom Search API to fetch live market data, competitor
- * intel, and industry trends that the AI can incorporate into its analysis.
+ * Uses the Brave Search API (Google Custom Search was deprecated for our org
+ * in May 2026) to fetch live market data, competitor intel, and industry
+ * trends that the AI can incorporate into its analysis.
  *
  * Endpoints:
  *  - webSearch(query) — general web search
@@ -12,6 +13,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
+import { braveSearch } from "./brave-search";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -29,40 +31,27 @@ interface WebSearchResponse {
   searchedAt: string;
 }
 
-// ─── Google Custom Search ────────────────────────────
+// ─── Brave Search ────────────────────────────────────
 
-async function googleSearch(
+async function runSearch(
   query: string,
   numResults = 5,
 ): Promise<SearchResult[]> {
   const config = await getIntegrationConfig("web-search");
-  const apiKey = config?.config?.apiKey || process.env.GOOGLE_SEARCH_API_KEY;
-  const cx = config?.config?.searchEngineId || process.env.GOOGLE_SEARCH_ENGINE_ID;
+  const apiKey = config?.config?.apiKey || process.env.BRAVE_SEARCH_API_KEY;
 
-  if (!apiKey || !cx) {
-    // Fallback: return empty results if search not configured
-    console.warn("[Web Search] Google Custom Search not configured — returning mock results");
+  if (!apiKey) {
+    console.warn("[Web Search] Brave Search not configured — returning empty results");
     return [];
   }
 
-  const url = new URL("https://www.googleapis.com/customsearch/v1");
-  url.searchParams.set("key", apiKey);
-  url.searchParams.set("cx", cx);
-  url.searchParams.set("q", query);
-  url.searchParams.set("num", String(Math.min(numResults, 10)));
-
-  const response = await fetch(url.toString());
-  if (!response.ok) {
-    console.error("[Web Search] API error:", response.status, await response.text());
+  try {
+    const hits = await braveSearch(apiKey, query, numResults);
+    return hits.map(({ title, link, snippet }) => ({ title, link, snippet }));
+  } catch (err) {
+    console.error("[Web Search] Brave Search failed:", err);
     return [];
   }
-
-  const data = await response.json();
-  return (data.items || []).map((item: { title: string; link: string; snippet: string }) => ({
-    title: item.title,
-    link: item.link,
-    snippet: item.snippet,
-  }));
 }
 
 // ─── Web Search Function ─────────────────────────────
@@ -80,7 +69,7 @@ export const webSearch = onCall<
       throw new HttpsError("invalid-argument", "Query string is required");
     }
 
-    const results = await googleSearch(query, numResults);
+    const results = await runSearch(query, numResults);
 
     const summary = results.length > 0
       ? results.map((r, i) => `${i + 1}. ${r.title}: ${r.snippet}`).join("\n")
@@ -125,9 +114,9 @@ export const competitorSearch = onCall<
 
     const competitorResults: Record<string, SearchResult[]> = {};
 
-    // Search for each competitor in parallel
+    // Brave's rate limiter serializes these internally.
     const searches = targetCompetitors.map(async (name) => {
-      const results = await googleSearch(
+      const results = await runSearch(
         `"${name}" virtual assistant services news updates 2025 2026`,
         3,
       );
@@ -151,8 +140,8 @@ export const industryTrends = onCall<
     verifyAdminEmail(request.auth?.token?.email);
 
     const [trends, keywords] = await Promise.all([
-      googleSearch("virtual assistant services industry trends 2026", 5),
-      googleSearch("hire virtual assistant trending topics demand growth", 5),
+      runSearch("virtual assistant services industry trends 2026", 5),
+      runSearch("hire virtual assistant trending topics demand growth", 5),
     ]);
 
     return { success: true, trends, keywords };

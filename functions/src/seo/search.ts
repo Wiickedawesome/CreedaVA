@@ -1,11 +1,15 @@
 /**
- * Custom Search wrapper with quota tracking.
+ * Web search wrapper with quota tracking.
  *
  * Every call must go through `searchWithQuota(ctx, query)` so the orchestrator
  * can enforce per-skill caps and write a resume cursor when the cap hits.
+ *
+ * Backed by the Brave Search API (Google Custom Search was deprecated for our
+ * org in May 2026). The result shape is preserved so SEO skills are unchanged.
  */
 
 import { getIntegrationConfig } from "../admin";
+import { braveSearch } from "../brave-search";
 import type { SkillContext } from "./types";
 
 export interface SearchHit {
@@ -15,20 +19,19 @@ export interface SearchHit {
   displayLink?: string;
 }
 
-let cachedKey: { apiKey?: string; cx?: string } | null = null;
+let cachedKey: { apiKey?: string } | null = null;
 
-async function getCreds(): Promise<{ apiKey?: string; cx?: string }> {
+async function getCreds(): Promise<{ apiKey?: string }> {
   if (cachedKey) return cachedKey;
   const cfg = await getIntegrationConfig("web-search");
   cachedKey = {
-    apiKey: cfg?.config?.apiKey || process.env.GOOGLE_SEARCH_API_KEY,
-    cx: cfg?.config?.searchEngineId || process.env.GOOGLE_SEARCH_ENGINE_ID,
+    apiKey: cfg?.config?.apiKey || process.env.BRAVE_SEARCH_API_KEY,
   };
   return cachedKey;
 }
 
 /**
- * Run a Custom Search query, charging 1 to the skill's quota.
+ * Run a web search query, charging 1 to the skill's quota.
  * Returns null if quota was exhausted (caller should write cursor + bail).
  */
 export async function searchWithQuota(
@@ -39,36 +42,16 @@ export async function searchWithQuota(
   if (!ctx.consumeQuery()) {
     return null;
   }
-  const { apiKey, cx } = await getCreds();
-  if (!apiKey || !cx) {
-    console.warn("[seo-agent] Custom Search not configured — skipping query:", query);
+  const { apiKey } = await getCreds();
+  if (!apiKey) {
+    console.warn("[seo-agent] Brave Search not configured — skipping query:", query);
     return [];
   }
 
-  const url = new URL("https://www.googleapis.com/customsearch/v1");
-  url.searchParams.set("key", apiKey);
-  url.searchParams.set("cx", cx);
-  url.searchParams.set("q", query);
-  url.searchParams.set("num", String(Math.min(Math.max(numResults, 1), 10)));
-
   try {
-    const response = await fetch(url.toString());
-    if (!response.ok) {
-      const body = await response.text();
-      console.error("[seo-agent] Custom Search error:", response.status, body.slice(0, 200));
-      return [];
-    }
-    const data = (await response.json()) as {
-      items?: { title: string; link: string; snippet: string; displayLink?: string }[];
-    };
-    return (data.items ?? []).map((item) => ({
-      title: item.title,
-      link: item.link,
-      snippet: item.snippet,
-      displayLink: item.displayLink,
-    }));
+    return await braveSearch(apiKey, query, numResults);
   } catch (err) {
-    console.warn("[seo-agent] Custom Search fetch failed:", err);
+    console.warn("[seo-agent] Brave Search failed:", err);
     return [];
   }
 }
