@@ -390,7 +390,9 @@ export default function AnalyticsPage() {
   } | null>(null);
   const [realtimeUsers, setRealtimeUsers] = useState<number | null>(null);
 
-  async function handleSyncGA4() {
+  const daysFilter = period === "7d" ? 7 : period === "30d" ? 30 : 90;
+
+  const handleSyncGA4 = useCallback(async () => {
     setGa4Syncing(true);
     try {
       const [report, realtime] = await Promise.all([
@@ -408,9 +410,7 @@ export default function AnalyticsPage() {
     } finally {
       setGa4Syncing(false);
     }
-  }
-
-  const daysFilter = period === "7d" ? 7 : period === "30d" ? 30 : 90;
+  }, [daysFilter]);
 
   // ─── Fetch ─────────────────────────────────────────
   const fetchAnalytics = useCallback(async () => {
@@ -438,6 +438,27 @@ export default function AnalyticsPage() {
 
     return () => clearTimeout(timeoutId);
   }, [fetchAnalytics]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (typeof window === "undefined") return;
+
+    const syncKey = `ga4-last-sync-${daysFilter}`;
+    const lastSyncRaw = window.localStorage.getItem(syncKey);
+    const lastSync = lastSyncRaw ? Number(lastSyncRaw) : 0;
+    const now = Date.now();
+    const syncEveryMs = 15 * 60 * 1000;
+
+    if (now - lastSync < syncEveryMs) return;
+
+    const timeoutId = window.setTimeout(() => {
+      void handleSyncGA4().finally(() => {
+        window.localStorage.setItem(syncKey, String(Date.now()));
+      });
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [user, daysFilter, handleSyncGA4]);
 
   // ─── Filtered events ──────────────────────────────
   const filtered = useMemo(

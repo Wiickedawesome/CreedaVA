@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, type FormEvent } from "react";
 import { Container, Input, Button } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
 import Link from "next/link";
+import { trackEvent } from "@/lib/firebase/analytics";
 
 interface Slot {
   date: string;
@@ -156,6 +157,11 @@ export default function JoinPage() {
         }),
       });
       if (!res.ok) throw new Error("Failed");
+      void trackEvent("form_submission", "/join", {
+        formName: "booking",
+        source: "join-page",
+        service: form.service,
+      });
       setSubmitted(true);
     } catch {
       setError(t.join.submitError);
