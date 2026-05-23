@@ -49,7 +49,7 @@ function fmtDate(v: AgentRun["startedAt"]): string {
 }
 
 export function SeoAgentDashboard() {
-  const { data: runs, loading } = useCollection<AgentRun>("agent-runs", {
+  const { data: runs, loading, refetch } = useCollection<AgentRun>("agent-runs", {
     orderByField: "startedAt",
     orderDirection: "desc",
   });
@@ -91,6 +91,9 @@ export function SeoAgentDashboard() {
           "success",
         );
       }
+      // The callable writes run docs server-side; refresh to reflect new stats/runs immediately.
+      refetch();
+      setTimeout(() => refetch(), 1200);
     } catch (err) {
       toast(err instanceof Error ? err.message : "Run failed.", "error");
     } finally {
