@@ -30,6 +30,19 @@ export default function OutreachPage() {
   const [toInputs, setToInputs] = useState<Record<string, string>>({});
 
   async function setStatus(id: string, status: OutreachEmail["status"]) {
+    if (status === "approved") {
+      const confirmed = window.confirm("Approve this draft and trigger sending now?");
+      if (!confirmed) return;
+    }
+    if (status === "sent") {
+      const confirmed = window.confirm("Mark this outreach email as sent?");
+      if (!confirmed) return;
+    }
+    if (status === "skipped") {
+      const confirmed = window.confirm("Skip this outreach draft?");
+      if (!confirmed) return;
+    }
+
     setUpdating(id);
     try {
       const patch: Partial<OutreachEmail> = { status };
@@ -65,11 +78,11 @@ export default function OutreachPage() {
         ) : (
           <div className="space-y-3">
             {emails.map((e) => (
-              <div key={e.id} className="bg-white rounded-lg border border-gray-200 p-4">
+              <div key={e.id} className="bg-card rounded-lg border border-border p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div className="min-w-0">
-                    <div className="text-xs text-gray-500">{e.kind} • score {e.score ?? 0}</div>
-                    <div className="text-sm font-semibold text-gray-900">{e.targetDomain}</div>
+                    <div className="text-xs text-gray-50">{e.kind} • score {e.score ?? 0}</div>
+                    <div className="text-sm font-semibold text-foreground">{e.targetDomain}</div>
                     {e.targetUrl && (
                       <a
                         href={e.targetUrl}
@@ -86,11 +99,11 @@ export default function OutreachPage() {
                     variant={e.status === "sent" ? "success" : e.status === "approved" ? "info" : e.status === "skipped" ? "default" : "warning"}
                   />
                 </div>
-                <div className="border-t border-gray-100 pt-2 mt-2">
-                  <div className="text-xs text-gray-500 mb-1">Subject</div>
-                  <div className="text-sm font-medium mb-2">{e.subject}</div>
-                  <div className="text-xs text-gray-500 mb-1">Body</div>
-                  <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans bg-gray-50 p-2 rounded">{e.body}</pre>
+                <div className="border-t border-border pt-2 mt-2">
+                  <div className="text-xs text-gray-50 mb-1">Subject</div>
+                  <div className="text-sm font-medium text-foreground mb-2">{e.subject}</div>
+                  <div className="text-xs text-gray-50 mb-1">Body</div>
+                  <pre className="text-sm text-gray-70 whitespace-pre-wrap font-sans bg-gray-10 p-2 rounded">{e.body}</pre>
                 </div>
                 {e.error && (
                   <div className="mt-2 text-xs text-red-600 bg-red-50 border border-red-100 rounded p-2">

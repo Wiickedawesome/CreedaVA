@@ -50,6 +50,7 @@ export default function LeadsPage() {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<Lead | null>(null);
   const [form, setForm] = useState<LeadFormData>(emptyLead);
@@ -151,6 +152,20 @@ export default function LeadsPage() {
   }
 
   async function handleSave() {
+    if (!form.name.trim()) {
+      toast("Name is required", "error");
+      return;
+    }
+    if (!form.email.trim()) {
+      toast("Email is required", "error");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+      toast("Enter a valid email address", "error");
+      return;
+    }
+
+    setSaving(true);
     try {
       if (selected) {
         await edit(selected.id, form);
@@ -177,6 +192,8 @@ export default function LeadsPage() {
       setModalOpen(false);
     } catch {
       toast("Failed to save lead", "error");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -387,7 +404,7 @@ export default function LeadsPage() {
             <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
+            <Button size="sm" onClick={handleSave} isLoading={saving} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Create Lead"}
             </Button>
           </div>

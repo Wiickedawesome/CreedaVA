@@ -38,10 +38,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
 
       {/* Toast container */}
-      <div className="fixed bottom-4 right-4 z-100 flex flex-col gap-2 max-w-sm" aria-live="polite">
+      <div className="fixed bottom-4 right-4 z-100 flex flex-col gap-2 max-w-sm" aria-live="polite" aria-atomic="true">
         {toasts.map((t) => (
           <div
             key={t.id}
+            role={t.type === "error" ? "alert" : "status"}
+            aria-live={t.type === "error" ? "assertive" : "polite"}
             className={`flex items-center gap-3 rounded-lg border px-4 py-3 shadow-lg animate-in slide-in-from-right transition-all ${
               t.type === "success"
                 ? "border-success/30 bg-success/5 text-success"

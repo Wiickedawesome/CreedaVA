@@ -10,6 +10,7 @@ interface ModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   size?: "sm" | "md" | "lg";
+  closeOnBackdrop?: boolean;
 }
 
 const sizeStyles = {
@@ -29,6 +30,7 @@ export function Modal({
   children,
   footer,
   size = "md",
+  closeOnBackdrop = false,
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const mounted = useSyncExternalStore(
@@ -92,7 +94,7 @@ export function Modal({
     >
       <div 
         className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" 
-        onClick={onClose}
+        onClick={closeOnBackdrop ? onClose : undefined}
         aria-hidden="true"
       />
       <div

@@ -56,6 +56,7 @@ export default function TasksPage() {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<Task | null>(null);
   const [form, setForm] = useState<TaskFormData>(emptyTask);
@@ -155,6 +156,12 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
   }
 
   async function handleSave() {
+    if (!form.title.trim()) {
+      toast("Title is required", "error");
+      return;
+    }
+
+    setSaving(true);
     try {
       if (selected) {
         await edit(selected.id, form);
@@ -166,6 +173,8 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
       setModalOpen(false);
     } catch {
       toast("Failed to save task", "error");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -313,7 +322,7 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
             <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
+            <Button size="sm" onClick={handleSave} isLoading={saving} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Create Task"}
             </Button>
           </div>

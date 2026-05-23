@@ -49,9 +49,9 @@ export function RankingsTable() {
           No snapshots yet. The agent captures rank history every Monday at 03:30. Lower position is better.
         </p>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+        <div className="overflow-x-auto bg-card rounded-lg border border-border">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 text-left">
+            <thead className="bg-gray-10 text-left text-gray-70">
               <tr>
                 <th className="px-3 py-2">Keyword</th>
                 <th className="px-3 py-2">Latest position</th>
@@ -65,7 +65,7 @@ export function RankingsTable() {
             </thead>
             <tbody>
               {summary.map((s) => (
-                <tr key={s.keyword} className="border-t border-gray-100">
+                <tr key={s.keyword} className="border-t border-border">
                   <td className="px-3 py-2 font-medium">{s.keyword}</td>
                   <td className="px-3 py-2">{s.latest.position.toFixed(1)}</td>
                   <td
@@ -75,7 +75,7 @@ export function RankingsTable() {
                   >
                     {s.trend === 0 ? "—" : s.trend > 0 ? `+${s.trend.toFixed(1)}` : s.trend.toFixed(1)}
                   </td>
-                  <td className="px-3 py-2 text-xs text-gray-600 truncate max-w-xs">{s.latest.page}</td>
+                  <td className="px-3 py-2 text-xs text-gray-60 truncate max-w-xs">{s.latest.page}</td>
                   <td className="px-3 py-2">{s.latest.impressions}</td>
                   <td className="px-3 py-2">{s.latest.clicks}</td>
                   <td className="px-3 py-2">{(s.latest.ctr * 100).toFixed(1)}%</td>

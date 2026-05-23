@@ -46,6 +46,7 @@ export default function ContactsPage() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<Contact | null>(null);
   const [form, setForm] = useState<ContactFormData>(emptyContact);
@@ -112,6 +113,20 @@ export default function ContactsPage() {
   }
 
   async function handleSave() {
+    if (!form.name.trim()) {
+      toast("Name is required", "error");
+      return;
+    }
+    if (!form.email.trim()) {
+      toast("Email is required", "error");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+      toast("Enter a valid email address", "error");
+      return;
+    }
+
+    setSaving(true);
     try {
       if (selected) {
         await edit(selected.id, form);
@@ -123,6 +138,8 @@ export default function ContactsPage() {
       setModalOpen(false);
     } catch {
       toast("Failed to save contact", "error");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -292,7 +309,7 @@ export default function ContactsPage() {
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Select
-            label=""
+            label="Sort contacts by"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
             options={[
@@ -306,6 +323,7 @@ export default function ContactsPage() {
           <button
             onClick={() => setSortDir((d) => d === "asc" ? "desc" : "asc")}
             className="px-2 py-1.5 rounded-md border border-border text-xs text-gray-60 hover:bg-gray-10 transition-colors shrink-0"
+            aria-label="Toggle contact sort direction"
           >
             {sortDir === "asc" ? "A → Z" : "Z → A"}
           </button>
@@ -346,7 +364,7 @@ export default function ContactsPage() {
             <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
+            <Button size="sm" onClick={handleSave} isLoading={saving} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Create Contact"}
             </Button>
           </div>

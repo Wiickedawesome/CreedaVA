@@ -45,6 +45,7 @@ export default function BlogPage() {
   const [tab, setTab] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<BlogPost | null>(null);
   const [form, setForm] = useState<BlogPostFormData>(emptyPost);
@@ -187,6 +188,16 @@ export default function BlogPage() {
   }
 
   async function handleSave() {
+    if (!form.title.trim()) {
+      toast("Title is required", "error");
+      return;
+    }
+    if (!form.slug.trim()) {
+      toast("Slug is required", "error");
+      return;
+    }
+
+    setSaving(true);
     try {
       if (selected) {
         await edit(selected.id, form);
@@ -198,6 +209,8 @@ export default function BlogPage() {
       setModalOpen(false);
     } catch {
       toast("Failed to save post", "error");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -244,7 +257,7 @@ export default function BlogPage() {
         <div className="flex items-center gap-3">
           {p.featuredImage ? (
             <div className="relative w-10 h-10 shrink-0">
-              <Image src={p.featuredImage} alt="" fill className="rounded-lg object-cover" />
+              <Image src={p.featuredImage} alt={`${p.title} featured image`} fill className="rounded-lg object-cover" />
             </div>
           ) : (
             <div className="w-10 h-10 rounded-lg bg-gray-10 shrink-0 flex items-center justify-center">
@@ -397,7 +410,7 @@ export default function BlogPage() {
             <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
+            <Button size="sm" onClick={handleSave} isLoading={saving} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Save Draft"}
             </Button>
           </div>
@@ -437,11 +450,11 @@ export default function BlogPage() {
               <div className="grid grid-cols-4 gap-2">
                 {form.images!.map((url, i) => (
                   <div key={i} className="relative group w-full h-20">
-                    <Image src={url} alt="" fill className="rounded-lg object-cover" />
+                    <Image src={url} alt={`Blog image ${i + 1}`} fill className="rounded-lg object-cover" />
                     {url === form.featuredImage && (
                       <span className="absolute top-1 left-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded">Featured</span>
                     )}
-                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-1 right-1 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity">
                       {url !== form.featuredImage && (
                         <button
                           onClick={() => setForm({ ...form, featuredImage: url })}
@@ -541,7 +554,7 @@ export default function BlogPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   {f.mimeType?.startsWith("image/") && f.thumbnail ? (
                     <div className="relative w-8 h-8 shrink-0">
-                      <Image src={f.thumbnail} alt="" fill className="rounded object-cover" />
+                      <Image src={f.thumbnail} alt={`${f.name} preview`} fill className="rounded object-cover" />
                     </div>
                   ) : (
                     <svg className="w-8 h-8 text-gray-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>

@@ -41,12 +41,12 @@ export function OnPageAuditsList() {
       ) : (
         <div className="space-y-3">
           {audits.map((a) => (
-            <div key={a.id} className="bg-white rounded-lg border border-gray-200 p-4">
+            <div key={a.id} className="bg-card rounded-lg border border-border p-4">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="min-w-0">
-                  <div className="text-xs text-gray-500 truncate">{a.url}</div>
-                  <div className="text-sm font-medium text-gray-900 truncate">{a.pathKey}</div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-50 truncate">{a.url}</div>
+                  <div className="text-sm font-medium text-foreground truncate">{a.pathKey}</div>
+                  <div className="text-xs text-gray-50 mt-1">
                     HTTP {a.status} • {a.responseTimeMs}ms • {a.wordCount} words • title {a.titleLength} chars • meta {a.metaDescriptionLength} chars
                   </div>
                 </div>

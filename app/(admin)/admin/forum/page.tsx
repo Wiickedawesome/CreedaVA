@@ -42,6 +42,7 @@ export default function ForumPage() {
     images: string[];
     links: string[];
   }>({ title: "", content: "", tags: "", images: [], links: [] });
+  const [creating, setCreating] = useState(false);
   const [linkInput, setLinkInput] = useState("");
 
   const [uploading, setUploading] = useState(false);
@@ -71,6 +72,11 @@ export default function ForumPage() {
       toast("Title is required", "error");
       return;
     }
+    if (!createForm.content.trim()) {
+      toast("Content is required", "error");
+      return;
+    }
+    setCreating(true);
     try {
       const title = createForm.title.trim();
       const content = createForm.content.trim();
@@ -96,6 +102,8 @@ export default function ForumPage() {
       setCreateForm({ title: "", content: "", tags: "", images: [], links: [] });
     } catch {
       toast("Failed to create thread", "error");
+    } finally {
+      setCreating(false);
     }
   }
 
@@ -288,7 +296,7 @@ export default function ForumPage() {
         <div className="flex items-center gap-2">
           {(t.images?.length ?? 0) > 0 ? (
             <div className="relative w-8 h-8 shrink-0">
-              <Image src={t.images![0]} alt="" fill className="rounded object-cover" />
+              <Image src={t.images![0]} alt={`${t.title} image`} fill className="rounded object-cover" />
             </div>
           ) : (t.links?.length ?? 0) > 0 ? (
             <svg className="w-5 h-5 text-gray-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
@@ -502,10 +510,10 @@ export default function ForumPage() {
                 <div className="grid grid-cols-4 gap-2">
                   {selected.images!.map((url, i) => (
                     <div key={i} className="relative group w-full h-20">
-                      <Image src={url} alt="" fill className="rounded-lg object-cover" />
+                      <Image src={url} alt={`Thread image ${i + 1}`} fill className="rounded-lg object-cover" />
                       <button
                         onClick={() => removeDetailImage(i)}
-                        className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
                         aria-label="Remove image"
                       >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -599,7 +607,7 @@ export default function ForumPage() {
             <Button variant="outline" size="sm" onClick={() => setCreateOpen(false)}>
               Cancel
             </Button>
-            <Button size="sm" onClick={handleCreate}>
+            <Button size="sm" onClick={handleCreate} isLoading={creating}>
               Create Thread
             </Button>
           </>
@@ -642,10 +650,10 @@ export default function ForumPage() {
               <div className="grid grid-cols-4 gap-2">
                 {createForm.images.map((url, i) => (
                   <div key={i} className="relative group w-full h-20">
-                    <Image src={url} alt="" fill className="rounded-lg object-cover" />
+                    <Image src={url} alt={`Forum image ${i + 1}`} fill className="rounded-lg object-cover" />
                     <button
                       onClick={() => removeForumImage(i)}
-                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
                       aria-label="Remove image"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -712,7 +720,7 @@ export default function ForumPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   {f.mimeType?.startsWith("image/") && f.thumbnail ? (
                     <div className="relative w-8 h-8 shrink-0">
-                      <Image src={f.thumbnail} alt="" fill className="rounded object-cover" />
+                      <Image src={f.thumbnail} alt={`${f.name} preview`} fill className="rounded object-cover" />
                     </div>
                   ) : (
                     <svg className="w-8 h-8 text-gray-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>

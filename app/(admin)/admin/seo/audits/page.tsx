@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
+import { ADMIN_ROUTE_ALIASES } from "@/lib/utils/admin-route-aliases";
 
-export default function Page() {
-  redirect("/admin/seo/content?tab=audits");
+export default function SeoAuditsRedirect() {
+  redirect(ADMIN_ROUTE_ALIASES.seoAudits);
 }

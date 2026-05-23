@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -275,6 +275,35 @@ function NavSection({ title, items, onNavigate }: { title?: string; items: NavIt
 export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { user, logOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filterItems = (items: NavItem[], query: string): NavItem[] => {
+    if (!query.trim()) return items;
+    const q = query.trim().toLowerCase();
+    return items.filter((item) => item.label.toLowerCase().includes(q));
+  };
+
+  const filteredNav = useMemo(() => {
+    const query = searchQuery;
+    return {
+      crm: filterItems(crmItems, query),
+      analytics: filterItems(analyticsItems, query),
+      content: filterItems(contentItems, query),
+      seo: filterItems(seoItems, query),
+      marketing: filterItems(marketingItems, query),
+    };
+  }, [searchQuery]);
+
+  const allFilteredItems = useMemo(
+    () => [
+      ...filteredNav.crm,
+      ...filteredNav.analytics,
+      ...filteredNav.content,
+      ...filteredNav.seo,
+      ...filteredNav.marketing,
+    ],
+    [filteredNav],
+  );
 
   return (
     <aside
@@ -314,6 +343,9 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
             <input
               type="text"
               placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search navigation"
               className="w-full bg-transparent text-sm text-foreground placeholder:text-gray-50 outline-none"
             />
           </div>
@@ -324,7 +356,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
       <div className="flex-1 overflow-y-auto px-2 py-2">
         {collapsed ? (
           <nav className="flex flex-col items-center gap-1">
-            {[...crmItems, ...analyticsItems, ...contentItems, ...seoItems, ...marketingItems].map(
+            {allFilteredItems.map(
               (item) => (
                 <Link
                   key={item.href}
@@ -332,6 +364,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
                   onClick={onNavigate}
                   className="rounded-lg p-2.5 text-gray-70 hover:bg-gray-20 hover:text-gray-90"
                   title={item.label}
+                  aria-label={item.label}
                 >
                   {item.icon}
                 </Link>
@@ -340,11 +373,14 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
           </nav>
         ) : (
           <>
-            <NavSection items={crmItems} onNavigate={onNavigate} />
-            <NavSection title="Analytics" items={analyticsItems} onNavigate={onNavigate} />
-            <NavSection title="Content" items={contentItems} onNavigate={onNavigate} />
-            <NavSection title="SEO" items={seoItems} onNavigate={onNavigate} />
-            <NavSection title="Marketing" items={marketingItems} onNavigate={onNavigate} />
+            <NavSection items={filteredNav.crm} onNavigate={onNavigate} />
+            <NavSection title="Analytics" items={filteredNav.analytics} onNavigate={onNavigate} />
+            <NavSection title="Content" items={filteredNav.content} onNavigate={onNavigate} />
+            <NavSection title="SEO" items={filteredNav.seo} onNavigate={onNavigate} />
+            <NavSection title="Marketing" items={filteredNav.marketing} onNavigate={onNavigate} />
+            {allFilteredItems.length === 0 && searchQuery.trim() && (
+              <p className="px-3 py-2 text-xs text-gray-50">No matching navigation items</p>
+            )}
           </>
         )}
       </div>
@@ -381,6 +417,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
               onClick={logOut}
               className="rounded-lg p-1.5 text-gray-50 hover:bg-gray-20 hover:text-error"
               title="Sign out"
+              aria-label="Sign out"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />

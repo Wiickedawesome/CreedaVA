@@ -477,6 +477,10 @@ const { toast } = useToast();
   async function handleToggle(providerId: string) {
     const existing = getIntegration(providerId);
     if (!existing) return;
+    if (existing.enabled) {
+      const confirmed = window.confirm(`Disable ${providerId} integration? This can interrupt related automations until re-enabled.`);
+      if (!confirmed) return;
+    }
     try {
       await createWithId("integrations", providerId, {
         provider: providerId,

@@ -115,10 +115,10 @@ export function SeoAgentDashboard() {
       <DashboardSection title="Skill rotation">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {SKILLS.map((s) => (
-            <div key={s.skill} className="p-4 rounded-lg border border-gray-200 bg-white flex items-center justify-between">
+            <div key={s.skill} className="p-4 rounded-lg border border-border bg-card flex items-center justify-between">
               <div>
-                <div className="text-sm font-medium text-gray-900">{s.label}</div>
-                <div className="text-xs text-gray-500">
+                <div className="text-sm font-medium text-foreground">{s.label}</div>
+                <div className="text-xs text-gray-50">
                   {s.weekday} • {s.cost}
                 </div>
               </div>
@@ -136,9 +136,9 @@ export function SeoAgentDashboard() {
         ) : runs.length === 0 ? (
           <p className="text-sm text-gray-500">No runs yet. Click &ldquo;Run now&rdquo; on any skill above to start.</p>
         ) : (
-          <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+          <div className="overflow-x-auto bg-card rounded-lg border border-border">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-50 text-left">
+              <thead className="bg-gray-10 text-left text-gray-70">
                 <tr>
                   <th className="px-3 py-2">Skill</th>
                   <th className="px-3 py-2">Status</th>
@@ -150,7 +150,7 @@ export function SeoAgentDashboard() {
               </thead>
               <tbody>
                 {runs.slice(0, 30).map((r) => (
-                  <tr key={r.id} className="border-t border-gray-100">
+                  <tr key={r.id} className="border-t border-border">
                     <td className="px-3 py-2 font-mono text-xs">{r.skill}</td>
                     <td className="px-3 py-2">
                       <StatusBadge status={r.status} variant={statusVariant[r.status] ?? "default"} />

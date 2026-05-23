@@ -866,10 +866,10 @@ export default function EmailsPage() {
               <div className="grid grid-cols-4 gap-2">
                 {form.images.map((url, i) => (
                   <div key={i} className="relative group w-full h-20">
-                    <Image src={url} alt="" fill className="rounded-lg object-cover" />
+                    <Image src={url} alt={`Email image ${i + 1}`} fill className="rounded-lg object-cover" />
                     <button
                       onClick={() => removeEmailImage(i)}
-                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
                       aria-label="Remove image"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>

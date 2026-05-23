@@ -54,9 +54,9 @@ export function SeoTasksBoard() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {COLUMNS.map((col) => (
-            <div key={col} className="bg-gray-50 rounded-lg p-3">
+            <div key={col} className="bg-gray-10 rounded-lg p-3 border border-border">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-700">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-70">
                   {col} ({grouped[col].length})
                 </h3>
               </div>
@@ -65,7 +65,7 @@ export function SeoTasksBoard() {
                   <p className="text-xs text-gray-400 italic">No tasks</p>
                 ) : (
                   grouped[col].map((t) => (
-                    <div key={t.id} className="bg-white rounded border border-gray-200 p-3">
+                    <div key={t.id} className="bg-card rounded border border-border p-3">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <span className="text-xs font-mono text-gray-500">{t.kind}</span>
                         {typeof t.priority === "number" && (
@@ -75,7 +75,7 @@ export function SeoTasksBoard() {
                           />
                         )}
                       </div>
-                      <div className="text-sm font-medium text-gray-900 mb-1">{t.title}</div>
+                      <div className="text-sm font-medium text-foreground mb-1">{t.title}</div>
                       {t.description && (
                         <div className="text-xs text-gray-600 whitespace-pre-line mb-2">{t.description}</div>
                       )}

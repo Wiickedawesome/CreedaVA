@@ -36,11 +36,11 @@ export default function BriefsPage() {
         ) : (
           <div className="space-y-3">
             {briefs.map((b) => (
-              <div key={b.id} className="bg-white rounded-lg border border-gray-200 p-4">
+              <div key={b.id} className="bg-card rounded-lg border border-border p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h3 className="text-base font-semibold text-gray-900">{b.keyword}</h3>
-                    <div className="text-xs text-gray-500">
+                    <h3 className="text-base font-semibold text-foreground">{b.keyword}</h3>
+                    <div className="text-xs text-gray-50">
                       pos {b.currentPosition?.toFixed(1) ?? "—"} • {b.impressions ?? 0} impressions • priority {b.priority ?? 0}
                     </div>
                   </div>
@@ -50,12 +50,12 @@ export default function BriefsPage() {
                   />
                 </div>
                 {b.rankingPage && (
-                  <div className="text-xs text-gray-500 mb-2">
+                  <div className="text-xs text-gray-50 mb-2">
                     Existing page: <code>{b.rankingPage}</code>
                   </div>
                 )}
                 {b.recommendedOutline && b.recommendedOutline.length > 0 && (
-                  <ol className="text-sm text-gray-700 list-decimal pl-5 space-y-0.5">
+                  <ol className="text-sm text-gray-70 list-decimal pl-5 space-y-0.5">
                     {b.recommendedOutline.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}

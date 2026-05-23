@@ -99,6 +99,7 @@ export default function CustomersPage() {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<Customer | null>(null);
   const [form, setForm] = useState<CustomerFormData>(emptyCustomer);
@@ -327,6 +328,20 @@ export default function CustomersPage() {
   }
 
   async function handleSave() {
+    if (!form.name.trim()) {
+      toast("Name is required", "error");
+      return;
+    }
+    if (!form.email.trim()) {
+      toast("Email is required", "error");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+      toast("Enter a valid email address", "error");
+      return;
+    }
+
+    setSaving(true);
     try {
       if (selected) {
         await edit(selected.id, form);
@@ -353,6 +368,8 @@ export default function CustomersPage() {
       setModalOpen(false);
     } catch {
       toast("Failed to save customer", "error");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -755,7 +772,7 @@ export default function CustomersPage() {
               <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
                 Cancel
               </Button>
-              <Button size="sm" onClick={handleSave}>
+              <Button size="sm" onClick={handleSave} isLoading={saving}>
                 {selected ? "Save Changes" : "Create Customer"}
               </Button>
             </div>

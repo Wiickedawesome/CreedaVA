@@ -42,6 +42,7 @@ export default function ProjectsPage() {
   const [tab, setTab] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<Project | null>(null);
   const [form, setForm] = useState<ProjectFormData>(emptyProject);
@@ -114,6 +115,12 @@ export default function ProjectsPage() {
   }
 
   async function handleSave() {
+    if (!form.name.trim()) {
+      toast("Project name is required", "error");
+      return;
+    }
+
+    setSaving(true);
     try {
       if (selected) {
         await edit(selected.id, form);
@@ -125,6 +132,8 @@ export default function ProjectsPage() {
       setModalOpen(false);
     } catch {
       toast("Failed to save project", "error");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -260,7 +269,7 @@ export default function ProjectsPage() {
             <Button variant="outline" size="sm" onClick={() => setModalOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave} className="w-full sm:w-auto">
+            <Button size="sm" onClick={handleSave} isLoading={saving} className="w-full sm:w-auto">
               {selected ? "Save Changes" : "Create Project"}
             </Button>
           </div>
