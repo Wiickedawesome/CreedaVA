@@ -738,8 +738,7 @@ export default function AnalyticsPage() {
             <StatCard
               label="Total Events"
               value={(
-                summary?.totalEvents
-                ?? (filtered.length || ga4Data?.totalPageViews || 0)
+                (summary?.totalEvents || filtered.length || ga4Data?.totalPageViews || 0)
               ).toLocaleString()}
               badge={`${daysFilter}d`}
             />
@@ -861,13 +860,13 @@ export default function AnalyticsPage() {
             />
             <StatCard
               label="Total Events"
-              value={filtered.length.toLocaleString()}
-              badge={`${daysFilter} days`}
+              value={(filtered.length || ga4Data?.totalPageViews || 0).toLocaleString()}
+              badge={filtered.length > 0 ? `${daysFilter} days` : ga4Data ? `${daysFilter}d (GA4)` : `${daysFilter} days`}
             />
             <StatCard
               label="Page Views"
-              value={pageViews.toLocaleString()}
-              badge={`${uniquePages} pages`}
+              value={(pageViews || ga4Data?.totalPageViews || 0).toLocaleString()}
+              badge={pageViews > 0 ? `${uniquePages} pages` : ga4Data ? `${ga4TopPages.length || uniquePages} pages` : `${uniquePages} pages`}
             />
           </div>
 
@@ -895,8 +894,8 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
               label="Unique Pages"
-              value={uniquePages.toString()}
-              badge="tracked"
+              value={(uniquePages || ga4TopPages.length || 0).toString()}
+              badge={uniquePages > 0 ? "tracked" : ga4TopPages.length > 0 ? "tracked (GA4)" : "tracked"}
             />
             <StatCard
               label="Most Visited"
@@ -905,7 +904,11 @@ export default function AnalyticsPage() {
             />
             <StatCard
               label="Avg Events/Page"
-              value={uniquePages > 0 ? Math.round(filtered.length / uniquePages).toString() : "0"}
+              value={(() => {
+                if (uniquePages > 0) return Math.round(filtered.length / uniquePages).toString();
+                if (ga4TopPages.length > 0 && ga4Data) return Math.round(ga4Data.totalPageViews / ga4TopPages.length).toString();
+                return "0";
+              })()}
               badge="per page"
             />
             <StatCard
@@ -1000,13 +1003,16 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
               label="Total Events"
-              value={filtered.length.toLocaleString()}
-              badge="all types"
+              value={(filtered.length || ga4Data?.totalPageViews || 0).toLocaleString()}
+              badge={filtered.length > 0 ? "all types" : ga4Data ? "page views (GA4)" : "all types"}
             />
             <StatCard
               label="Event Types"
-              value={Object.keys(summary?.eventTypes || {}).length.toString()}
-              badge="distinct"
+              value={(
+                Object.keys(summary?.eventTypes || {}).length ||
+                (ga4Data ? 1 : 0)
+              ).toString()}
+              badge={Object.keys(summary?.eventTypes || {}).length > 0 ? "distinct" : ga4Data ? "page_view (GA4)" : "distinct"}
             />
             <StatCard
               label="Countries"
@@ -1015,8 +1021,12 @@ export default function AnalyticsPage() {
             />
             <StatCard
               label="Sessions"
-              value={new Set(filtered.map((e) => e.sessionId).filter(Boolean)).size.toString()}
-              badge="unique"
+              value={(
+                new Set(filtered.map((e) => e.sessionId).filter(Boolean)).size ||
+                ga4Data?.totalSessions ||
+                0
+              ).toString()}
+              badge={ga4Data && new Set(filtered.map((e) => e.sessionId).filter(Boolean)).size === 0 ? "GA4 sessions" : "unique"}
             />
           </div>
 
