@@ -5,6 +5,7 @@ import Script from "next/script";
 import { Suspense } from "react";
 
 import { GtagPageViews } from "@/components/layout/gtag-pageviews";
+import { FirebaseInit } from "@/lib/firebase/firebase-init";
 import { LanguageProvider } from "@/lib/i18n";
 
 // Use the Firebase measurement ID (set in apphosting.yaml) as the single source of truth.
@@ -57,6 +58,8 @@ export default function MarketingLayout({
 }) {
   return (
     <LanguageProvider>
+      {/* App Check must initialize before any Firestore writes (analytics tracking). */}
+      <FirebaseInit />
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
         strategy="afterInteractive"

@@ -81,7 +81,10 @@ export const fetchAnalyticsReport = onCall(
     const baseUrl = `https://analyticsdata.googleapis.com/v1beta/${propertyName}:runReport`;
 
     try {
-      // Main report
+      // Main report — `metricAggregations: ["TOTAL"]` is required for the
+      // `totals` array in the response. Without it GA4 omits totals entirely
+      // and the dashboard summary row collapses to all zeros even when
+      // dailyData has real numbers.
       const reportRes = await gaFetch(token, baseUrl, {
         dateRanges: [{ startDate: start, endDate: end }],
         metrics: [
@@ -91,6 +94,7 @@ export const fetchAnalyticsReport = onCall(
         ],
         dimensions: [{ name: "date" }],
         orderBys: [{ dimension: { dimensionName: "date" } }],
+        metricAggregations: ["TOTAL"],
       });
 
       // Top pages
