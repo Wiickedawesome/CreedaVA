@@ -388,6 +388,13 @@ export default function AnalyticsPage() {
     avgBounceRate: number; avgSessionDuration: number; totalNewUsers: number;
     totalConversions: number;
   } | null>(null);
+  const [ga4Daily, setGa4Daily] = useState<{
+    date: string; activeUsers: number; sessions: number; pageViews: number;
+    bounceRate: number; avgSessionDuration: number; newUsers: number; conversions: number;
+  }[]>([]);
+  const [ga4TopPages, setGa4TopPages] = useState<{
+    path: string; pageViews: number; users: number; avgDuration: number;
+  }[]>([]);
   const [realtimeUsers, setRealtimeUsers] = useState<number | null>(null);
 
   const daysFilter = period === "7d" ? 7 : period === "30d" ? 30 : 90;
@@ -401,6 +408,8 @@ export default function AnalyticsPage() {
       ]);
       if (report.success) {
         setGa4Data(report.summary);
+        setGa4Daily(report.dailyData || []);
+        setGa4TopPages(report.topPages || []);
       }
       if (realtime.success) {
         setRealtimeUsers(realtime.activeUsers);
@@ -503,7 +512,7 @@ export default function AnalyticsPage() {
     return countries.size;
   }, [filtered]);
 
-  // Time series (events per day)
+  // Time series (events per day) — falls back to GA4 dailyData when Firestore is empty
   const timeSeries = useMemo(() => {
     const buckets: Record<string, number> = {};
     filtered.forEach((e) => {
@@ -513,11 +522,20 @@ export default function AnalyticsPage() {
     const sorted = Object.entries(buckets).sort((a, b) =>
       a[0].localeCompare(b[0]),
     );
-    return sorted.map(([date, value]) => ({
-      label: date.slice(5), // MM-DD
-      value,
-    }));
-  }, [filtered]);
+    if (sorted.length > 0) {
+      return sorted.map(([date, value]) => ({
+        label: date.slice(5), // MM-DD
+        value,
+      }));
+    }
+    // Fallback: GA4 dailyData (date is YYYYMMDD)
+    return [...ga4Daily]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((d) => ({
+        label: `${d.date.slice(4, 6)}-${d.date.slice(6, 8)}`,
+        value: d.pageViews,
+      }));
+  }, [filtered, ga4Daily]);
 
   // Event type breakdown
   const eventTypeBreakdown = useMemo(() => {
@@ -538,24 +556,34 @@ export default function AnalyticsPage() {
       }));
   }, [filtered]);
 
-  // Top pages
+  // Top pages — falls back to GA4 topPages when Firestore is empty
   const topPages = useMemo(() => {
     const acc: Record<string, number> = {};
     filtered.forEach((e) => {
       const p = e.page || "/";
       acc[p] = (acc[p] || 0) + 1;
     });
-    const total = filtered.length || 1;
-    return Object.entries(acc)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([page, count]) => ({
-        label: page,
-        value: count,
-        pct: Math.round((count / total) * 100),
-        color: "#005148",
-      }));
-  }, [filtered]);
+    if (Object.keys(acc).length > 0) {
+      const total = filtered.length || 1;
+      return Object.entries(acc)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([page, count]) => ({
+          label: page,
+          value: count,
+          pct: Math.round((count / total) * 100),
+          color: "#005148",
+        }));
+    }
+    // Fallback: GA4 topPages
+    const ga4Total = ga4TopPages.reduce((sum, p) => sum + p.pageViews, 0) || 1;
+    return ga4TopPages.slice(0, 10).map((p) => ({
+      label: p.path,
+      value: p.pageViews,
+      pct: Math.round((p.pageViews / ga4Total) * 100),
+      color: "#005148",
+    }));
+  }, [filtered, ga4TopPages]);
 
   // Country data for WorldMap
   const countryData = useMemo(() => {
@@ -705,26 +733,35 @@ export default function AnalyticsPage() {
       {/* ─── Overview Tab ─────────────────────────────── */}
       {activeTab === "overview" && (
         <>
-          {/* KPI Row */}
+          {/* KPI Row — Firestore-first, GA4 fallback for traffic stats */}
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
               label="Total Events"
-              value={(summary?.totalEvents ?? filtered.length).toLocaleString()}
+              value={(
+                summary?.totalEvents
+                ?? (filtered.length || ga4Data?.totalPageViews || 0)
+              ).toLocaleString()}
               badge={`${daysFilter}d`}
             />
             <StatCard
               label="Page Views"
-              value={pageViews.toLocaleString()}
-              badge={filtered.length > 0 ? `${Math.round((pageViews / filtered.length) * 100)}%` : "0%"}
+              value={(pageViews || ga4Data?.totalPageViews || 0).toLocaleString()}
+              badge={
+                filtered.length > 0
+                  ? `${Math.round((pageViews / filtered.length) * 100)}%`
+                  : ga4Data
+                    ? `${ga4Data.totalUsers.toLocaleString()} users`
+                    : "0%"
+              }
             />
             <StatCard
               label="Interactions"
-              value={interactions.toLocaleString()}
-              badge="clicks + forms"
+              value={(interactions || ga4Data?.totalSessions || 0).toLocaleString()}
+              badge={interactions > 0 ? "clicks + forms" : ga4Data ? "sessions (GA4)" : "clicks + forms"}
             />
             <StatCard
               label="Unique Pages"
-              value={uniquePages.toString()}
+              value={(uniquePages || ga4TopPages.length || 0).toString()}
               badge={`${uniqueCountries} countries`}
             />
           </div>
