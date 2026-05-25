@@ -1,90 +1,135 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { geoPath, geoEqualEarth } from "d3-geo";
+import { feature } from "topojson-client";
+import type { Topology, GeometryCollection, GeometryObject } from "topojson-specification";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
 
 interface WorldMapProps {
   countryData: Array<{ countryCode: string; country: string; count: number }>;
 }
 
-// Country centroids (lat, lng)
-const COUNTRY_COORDS: Record<string, [number, number]> = {
-  US: [39.83, -98.58], GB: [55.38, -3.44], CA: [56.13, -106.35],
-  AU: [-25.27, 133.78], DE: [51.17, 10.45], FR: [46.23, 2.21],
-  ES: [40.46, -3.75], IT: [41.87, 12.57], BR: [-14.24, -51.93],
-  MX: [23.63, -102.55], IN: [20.59, 78.96], CN: [35.86, 104.20],
-  JP: [36.20, 138.25], KR: [35.91, 127.77], NL: [52.13, 5.29],
-  SE: [60.13, 18.64], NO: [60.47, 8.47], DK: [56.26, 9.50],
-  FI: [61.92, 25.75], PL: [51.92, 19.15], BE: [50.50, 4.47],
-  CH: [46.82, 8.23], AT: [47.52, 14.55], IE: [53.14, -7.69],
-  PT: [39.40, -8.22], GR: [39.07, 21.82], CZ: [49.82, 15.47],
-  RO: [45.94, 24.97], HU: [47.16, 19.50], RU: [61.52, 105.32],
-  TR: [38.96, 35.24], ZA: [-30.56, 22.94], NG: [9.08, 8.68],
-  EG: [26.82, 30.80], KE: [-0.02, 37.91], SG: [1.35, 103.82],
-  MY: [4.21, 101.98], TH: [15.87, 100.99], ID: [-0.79, 113.92],
-  PH: [12.88, 121.77], VN: [14.06, 108.28], NZ: [-40.90, 174.89],
-  AR: [-38.42, -63.62], CL: [-35.68, -71.54], CO: [4.57, -74.30],
-  PE: [-9.19, -75.02], VE: [6.42, -66.59], IL: [31.05, 34.85],
-  AE: [23.42, 53.85], SA: [23.89, 45.08], PK: [30.38, 69.35],
-  BD: [23.69, 90.36], UA: [48.38, 31.17], BZ: [17.19, -88.50],
+// ISO 3166-1 alpha-2 → M49 numeric (matches the TopoJSON country `id` field)
+const ALPHA2_TO_M49: Record<string, string> = {
+  AD: "020", AE: "784", AF: "004", AG: "028", AI: "660", AL: "008", AM: "051",
+  AO: "024", AR: "032", AS: "016", AT: "040", AU: "036", AW: "533", AX: "248",
+  AZ: "031", BA: "070", BB: "052", BD: "050", BE: "056", BF: "854", BG: "100",
+  BH: "048", BI: "108", BJ: "204", BL: "652", BM: "060", BN: "096", BO: "068",
+  BQ: "535", BR: "076", BS: "044", BT: "064", BV: "074", BW: "072", BY: "112",
+  BZ: "084", CA: "124", CC: "166", CD: "180", CF: "140", CG: "178", CH: "756",
+  CI: "384", CK: "184", CL: "152", CM: "120", CN: "156", CO: "170", CR: "188",
+  CU: "192", CV: "132", CW: "531", CX: "162", CY: "196", CZ: "203", DE: "276",
+  DJ: "262", DK: "208", DM: "212", DO: "214", DZ: "012", EC: "218", EE: "233",
+  EG: "818", EH: "732", ER: "232", ES: "724", ET: "231", FI: "246", FJ: "242",
+  FK: "238", FM: "583", FO: "234", FR: "250", GA: "266", GB: "826", GD: "308",
+  GE: "268", GF: "254", GG: "831", GH: "288", GI: "292", GL: "304", GM: "270",
+  GN: "324", GP: "312", GQ: "226", GR: "300", GS: "239", GT: "320", GU: "316",
+  GW: "624", GY: "328", HK: "344", HM: "334", HN: "340", HR: "191", HT: "332",
+  HU: "348", ID: "360", IE: "372", IL: "376", IM: "833", IN: "356", IO: "086",
+  IQ: "368", IR: "364", IS: "352", IT: "380", JE: "832", JM: "388", JO: "400",
+  JP: "392", KE: "404", KG: "417", KH: "116", KI: "296", KM: "174", KN: "659",
+  KP: "408", KR: "410", KW: "414", KY: "136", KZ: "398", LA: "418", LB: "422",
+  LC: "662", LI: "438", LK: "144", LR: "430", LS: "426", LT: "440", LU: "442",
+  LV: "428", LY: "434", MA: "504", MC: "492", MD: "498", ME: "499", MF: "663",
+  MG: "450", MH: "584", MK: "807", ML: "466", MM: "104", MN: "496", MO: "446",
+  MP: "580", MQ: "474", MR: "478", MS: "500", MT: "470", MU: "480", MV: "462",
+  MW: "454", MX: "484", MY: "458", MZ: "508", NA: "516", NC: "540", NE: "562",
+  NF: "574", NG: "566", NI: "558", NL: "528", NO: "578", NP: "524", NR: "520",
+  NU: "570", NZ: "554", OM: "512", PA: "591", PE: "604", PF: "258", PG: "598",
+  PH: "608", PK: "586", PL: "616", PM: "666", PN: "612", PR: "630", PS: "275",
+  PT: "620", PW: "585", PY: "600", QA: "634", RE: "638", RO: "642", RS: "688",
+  RU: "643", RW: "646", SA: "682", SB: "090", SC: "690", SD: "729", SE: "752",
+  SG: "702", SH: "654", SI: "705", SJ: "744", SK: "703", SL: "694", SM: "674",
+  SN: "686", SO: "706", SR: "740", SS: "728", ST: "678", SV: "222", SX: "534",
+  SY: "760", SZ: "748", TC: "796", TD: "148", TF: "260", TG: "768", TH: "764",
+  TJ: "762", TK: "772", TL: "626", TM: "795", TN: "788", TO: "776", TR: "792",
+  TT: "780", TV: "798", TW: "158", TZ: "834", UA: "804", UG: "800", UM: "581",
+  US: "840", UY: "858", UZ: "860", VA: "336", VC: "670", VE: "862", VG: "092",
+  VI: "850", VN: "704", VU: "548", WF: "876", WS: "882", YE: "887", YT: "175",
+  ZA: "710", ZM: "894", ZW: "716",
 };
 
-// Simplified continent outlines
-const CONTINENT_PATHS = [
-  // North America
-  "M 60,80 L 80,70 100,60 130,55 155,60 170,75 185,90 195,105 200,120 198,135 190,150 175,155 160,160 145,168 130,175 115,185 100,175 90,165 85,150 75,140 65,130 55,115 50,100 55,90 Z",
-  // South America
-  "M 135,195 L 150,190 165,195 175,210 180,230 178,250 172,270 165,285 155,295 140,300 130,290 125,275 122,260 120,240 118,225 120,210 128,200 Z",
-  // Europe
-  "M 350,65 L 365,58 380,55 395,60 410,65 415,75 410,85 405,95 395,100 385,105 375,100 365,95 355,90 350,80 Z",
-  // Africa
-  "M 350,120 L 365,115 380,118 395,125 405,140 410,160 412,180 408,200 400,220 390,240 378,255 365,260 350,255 340,240 335,220 330,200 332,180 335,160 340,140 Z",
-  // Asia
-  "M 415,55 L 440,48 470,45 500,42 530,45 560,50 585,55 610,60 630,70 645,85 650,100 645,115 635,130 620,140 600,145 580,148 560,145 540,140 520,138 500,140 485,145 470,140 455,130 445,120 435,110 425,95 420,80 415,65 Z",
-  // Oceania
-  "M 580,200 L 610,195 640,200 660,210 670,225 665,240 650,250 630,255 610,250 595,240 585,225 580,210 Z",
-  // Indonesia/SE Asia
-  "M 545,165 L 560,162 575,165 590,170 600,175 605,182 595,185 580,183 565,180 550,175 Z",
-];
-
-function project(lat: number, lng: number): [number, number] {
-  const x = (lng + 180) * (800 / 360);
-  const latRad = (lat * Math.PI) / 180;
-  const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
-  const y = 400 / 2 - (800 * mercN) / (2 * Math.PI);
-  return [x, Math.max(10, Math.min(390, y))];
-}
-
-function dotColor(count: number, maxCount: number): string {
-  const ratio = count / maxCount;
-  if (ratio >= 0.6) return "#ef4444";
-  if (ratio >= 0.3) return "#f59e0b";
-  return "#3b82f6";
-}
-
-function dotRadius(count: number, maxCount: number): number {
-  const ratio = count / maxCount;
-  return 3 + ratio * 7;
+interface WorldTopology extends Topology {
+  objects: { countries: GeometryCollection };
 }
 
 export function WorldMap({ countryData }: WorldMapProps) {
+  const [topology, setTopology] = useState<WorldTopology | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [hover, setHover] = useState<{ name: string; count: number; x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/world-atlas-110m.json")
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data: WorldTopology) => {
+        if (!cancelled) setTopology(data);
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load map");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const maxCount = useMemo(
     () => Math.max(...countryData.map((c) => c.count), 1),
     [countryData],
   );
 
-  const dots = useMemo(() => {
-    return countryData
-      .map((cd) => {
-        const coords = COUNTRY_COORDS[cd.countryCode];
-        if (!coords) return null;
-        const [x, y] = project(coords[0], coords[1]);
-        return { ...cd, x, y };
-      })
-      .filter((d): d is NonNullable<typeof d> => d !== null);
+  const dataById = useMemo(() => {
+    const map = new Map<string, { count: number; name: string }>();
+    countryData.forEach((c) => {
+      const m49 = ALPHA2_TO_M49[c.countryCode];
+      if (m49) {
+        const existing = map.get(m49);
+        map.set(m49, {
+          count: (existing?.count ?? 0) + c.count,
+          name: c.country,
+        });
+      }
+    });
+    return map;
   }, [countryData]);
 
-  // Belize marker (home)
-  const [bzX, bzY] = project(17.19, -88.5);
+  const width = 800;
+  const height = 420;
+
+  function fillFor(id: string): string {
+    const entry = dataById.get(id);
+    if (!entry) return "rgba(148, 163, 184, 0.2)";
+    const ratio = entry.count / maxCount;
+    if (ratio >= 0.75) return "#005148";
+    if (ratio >= 0.5) return "#0a7a6e";
+    if (ratio >= 0.25) return "#39a394";
+    if (ratio > 0) return "#7cccc0";
+    return "rgba(148, 163, 184, 0.2)";
+  }
+
+  const features = useMemo<Feature<Geometry>[]>(() => {
+    if (!topology) return [];
+    const fc = feature(
+      topology,
+      topology.objects.countries as GeometryObject,
+    ) as unknown as FeatureCollection<Geometry>;
+    return fc.features;
+  }, [topology]);
+
+  const projection = useMemo(
+    () => geoEqualEarth().scale(155).translate([width / 2, height / 2 + 10]),
+    [],
+  );
+  const path = useMemo(() => geoPath(projection), [projection]);
+
+  const totalVisits = useMemo(
+    () => countryData.reduce((s, c) => s + c.count, 0),
+    [countryData],
+  );
 
   if (countryData.length === 0) {
     return (
@@ -102,96 +147,129 @@ export function WorldMap({ countryData }: WorldMapProps) {
 
   return (
     <div className="rounded-lg border border-border bg-card p-5">
-      <div className="mb-4">
-        <h3 className="text-base font-semibold text-gray-90 flex items-center gap-2">
-          <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-          Visitor Map
-        </h3>
-        <p className="text-sm text-gray-50">
-          {dots.length} countries &bull;{" "}
-          {countryData.reduce((s, c) => s + c.count, 0).toLocaleString()} total visits
-        </p>
+      <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h3 className="text-base font-semibold text-gray-90 flex items-center gap-2">
+            <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            Visitor Map
+          </h3>
+          <p className="text-sm text-gray-50 mt-0.5">
+            {countryData.length} countries &bull; {totalVisits.toLocaleString()} total visits
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-gray-50">
+          <span>Less</span>
+          {["rgba(148,163,184,0.25)", "#7cccc0", "#39a394", "#0a7a6e", "#005148"].map((c) => (
+            <span key={c} className="inline-block w-4 h-3 rounded-sm" style={{ backgroundColor: c }} />
+          ))}
+          <span>More</span>
+        </div>
       </div>
 
-      <div className="w-full overflow-hidden rounded-lg bg-gray-10 p-2">
-        <svg viewBox="0 0 800 400" className="w-full h-auto" style={{ maxHeight: "420px" }}>
-          {/* Background */}
-          <rect width="800" height="400" fill="transparent" />
+      <div className="relative w-full overflow-hidden rounded-lg bg-gray-10/40">
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-50 z-10">
+            Could not load map data ({error})
+          </div>
+        )}
+        {!topology && !error && (
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-40">
+            Loading map…
+          </div>
+        )}
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="w-full h-auto block"
+          role="img"
+          aria-label="World map of visitor countries"
+        >
+          <rect width={width} height={height} fill="transparent" />
 
-          {/* Grid lines */}
-          {[100, 200, 300].map((y) => (
-            <line key={`h${y}`} x1="0" y1={y} x2="800" y2={y} stroke="rgba(0,0,0,0.04)" />
-          ))}
-          {[200, 400, 600].map((x) => (
-            <line key={`v${x}`} x1={x} y1="0" x2={x} y2="400" stroke="rgba(0,0,0,0.04)" />
-          ))}
+          {/* Subtle graticule */}
+          {[-60, -30, 0, 30, 60].map((lat) => {
+            const samples: [number, number][] = [];
+            for (let lng = -180; lng <= 180; lng += 10) samples.push([lng, lat]);
+            const projected = samples
+              .map((p) => projection(p))
+              .filter((p): p is [number, number] => Array.isArray(p));
+            if (projected.length === 0) return null;
+            const d =
+              "M " +
+              projected
+                .map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`)
+                .join(" L ");
+            return <path key={lat} d={d} fill="none" stroke="rgba(0,81,72,0.06)" strokeWidth={0.5} />;
+          })}
 
-          {/* Continent outlines */}
-          {CONTINENT_PATHS.map((d, i) => (
-            <path key={i} d={d} fill="rgba(0,81,72,0.06)" stroke="rgba(0,81,72,0.12)" strokeWidth="0.8" />
-          ))}
-
-          {/* Connection arcs from visitors to Belize */}
-          {dots.slice(0, 10).map((dot) => (
-            <line
-              key={`arc-${dot.countryCode}`}
-              x1={dot.x}
-              y1={dot.y}
-              x2={bzX}
-              y2={bzY}
-              stroke="rgba(0,81,72,0.12)"
-              strokeWidth="0.8"
-              strokeDasharray="4 3"
-            />
-          ))}
-
-          {/* Visitor dots */}
-          {dots.map((dot) => {
-            const r = dotRadius(dot.count, maxCount);
-            const color = dotColor(dot.count, maxCount);
+          {/* Countries */}
+          {features.map((f, i) => {
+            const id = String(f.id ?? "");
+            const d = path(f) || "";
+            const entry = dataById.get(id);
+            const name = entry?.name ?? ((f.properties as { name?: string } | null)?.name ?? "");
+            const isHit = !!entry;
             return (
-              <g key={dot.countryCode}>
-                <circle cx={dot.x} cy={dot.y} r={r + 2} fill={color} opacity="0.15" />
-                <circle cx={dot.x} cy={dot.y} r={r} fill={color} opacity="0.8" />
+              <path
+                key={(f.id ?? i).toString()}
+                d={d}
+                fill={fillFor(id)}
+                stroke="rgba(255,255,255,0.5)"
+                strokeWidth={0.4}
+                className={isHit ? "cursor-pointer" : ""}
+                onMouseMove={(e) => {
+                  if (!isHit) return;
+                  const svg = e.currentTarget.ownerSVGElement;
+                  if (!svg) return;
+                  const rect = svg.getBoundingClientRect();
+                  setHover({
+                    name,
+                    count: entry!.count,
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                  });
+                }}
+                onMouseLeave={() => setHover(null)}
+              >
                 <title>
-                  {dot.country}: {dot.count.toLocaleString()} visits
+                  {name}
+                  {entry ? `: ${entry.count.toLocaleString()} visits` : ""}
                 </title>
-              </g>
+              </path>
             );
           })}
 
           {/* Belize home marker */}
-          <circle cx={bzX} cy={bzY} r="5" fill="#005148" stroke="#fff" strokeWidth="1.5" />
-          <text x={bzX + 8} y={bzY + 4} fill="#005148" fontSize="10" fontWeight="600">
-            BZ
-          </text>
+          {(() => {
+            const p = projection([-88.5, 17.19]);
+            if (!p) return null;
+            const [hx, hy] = p;
+            return (
+              <g>
+                <circle cx={hx} cy={hy} r={6} fill="#005148" opacity={0.25} />
+                <circle cx={hx} cy={hy} r={3.5} fill="#005148" stroke="#fff" strokeWidth={1.2} />
+              </g>
+            );
+          })()}
         </svg>
+
+        {hover && (
+          <div
+            className="pointer-events-none absolute z-20 rounded-md bg-gray-90 text-white text-xs px-2 py-1 shadow-lg"
+            style={{
+              left: hover.x + 12,
+              top: hover.y + 12,
+              transform: hover.x > width * 0.75 ? "translateX(-110%)" : undefined,
+            }}
+          >
+            <div className="font-semibold">{hover.name}</div>
+            <div className="text-gray-30">{hover.count.toLocaleString()} visits</div>
+          </div>
+        )}
       </div>
 
-      {/* Legend */}
-      <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-50">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-          <span>Low</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <span>Medium</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <span>High</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#005148", border: "1px solid white" }}></div>
-          <span>Home (Belize)</span>
-        </div>
-      </div>
-
-      {/* Summary stats */}
       <div className="mt-4 grid grid-cols-3 gap-4">
         <div className="text-center p-3 bg-gray-10 rounded-lg">
           <p className="text-xs text-gray-50">Countries</p>
@@ -199,15 +277,13 @@ export function WorldMap({ countryData }: WorldMapProps) {
         </div>
         <div className="text-center p-3 bg-gray-10 rounded-lg">
           <p className="text-xs text-gray-50">Top Source</p>
-          <p className="text-sm font-semibold text-gray-90 mt-1 truncate">
+          <p className="text-sm font-semibold text-gray-90 mt-1 truncate" title={countryData[0]?.country}>
             {countryData[0]?.country || "N/A"}
           </p>
         </div>
         <div className="text-center p-3 bg-gray-10 rounded-lg">
           <p className="text-xs text-gray-50">Total Visits</p>
-          <p className="text-xl font-bold text-primary mt-1">
-            {countryData.reduce((sum, c) => sum + c.count, 0).toLocaleString()}
-          </p>
+          <p className="text-xl font-bold text-primary mt-1">{totalVisits.toLocaleString()}</p>
         </div>
       </div>
     </div>

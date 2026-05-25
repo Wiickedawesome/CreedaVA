@@ -877,7 +877,10 @@ export default function AnalyticsPage() {
               {eventTypeBreakdown.length > 0 ? (
                 <DonutWithLegend
                   segments={eventTypeBreakdown.slice(0, 6)}
-                  centerValue={filtered.length.toString()}
+                  centerValue={(
+                    filtered.length ||
+                    eventTypeBreakdown.reduce((s, e) => s + e.value, 0)
+                  ).toLocaleString()}
                 />
               ) : (
                 <p className="text-sm text-gray-40 text-center py-8">
@@ -1114,7 +1117,10 @@ export default function AnalyticsPage() {
               {eventTypeBreakdown.length > 0 ? (
                 <DonutWithLegend
                   segments={eventTypeBreakdown}
-                  centerValue={filtered.length.toString()}
+                  centerValue={(
+                    filtered.length ||
+                    eventTypeBreakdown.reduce((s, e) => s + e.value, 0)
+                  ).toLocaleString()}
                 />
               ) : (
                 <p className="text-sm text-gray-40 text-center py-8">
