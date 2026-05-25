@@ -242,16 +242,30 @@ function HorizontalBar({
   );
 }
 
-function PeakHoursHeatmap({ events }: { events: AnalyticsEvent[] }) {
+function PeakHoursHeatmap({
+  events,
+  ga4Hourly,
+}: {
+  events: AnalyticsEvent[];
+  ga4Hourly?: { dayOfWeek: number; hour: number; pageViews: number }[];
+}) {
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const grid: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
 
-  events.forEach((ev) => {
-    const d = new Date(ev.timestamp);
-    const day = (d.getDay() + 6) % 7; // 0=Mon
-    grid[day][d.getHours()]++;
-  });
+  if (events.length > 0) {
+    events.forEach((ev) => {
+      const d = new Date(ev.timestamp);
+      const day = (d.getDay() + 6) % 7; // 0=Mon
+      grid[day][d.getHours()]++;
+    });
+  } else if (ga4Hourly && ga4Hourly.length > 0) {
+    ga4Hourly.forEach((row) => {
+      if (row.dayOfWeek >= 0 && row.dayOfWeek < 7 && row.hour >= 0 && row.hour < 24) {
+        grid[row.dayOfWeek][row.hour] += row.pageViews;
+      }
+    });
+  }
 
   const maxVal = Math.max(...grid.flat(), 1);
 
@@ -302,9 +316,11 @@ function PeakHoursHeatmap({ events }: { events: AnalyticsEvent[] }) {
 function ConversionFunnel({
   events,
   totalEvents: _totalEvents,
+  ga4TopPages,
 }: {
   events: AnalyticsEvent[];
   totalEvents: number;
+  ga4TopPages?: { path: string; pageViews: number; users: number; avgDuration: number }[];
 }) {
   const stages = [
     { label: "Homepage", match: (p: string) => p === "/" || p === "" },
@@ -313,10 +329,22 @@ function ConversionFunnel({
     { label: "Contact", match: (p: string) => p.includes("/contact") },
   ];
 
-  const counts = stages.map((s) => ({
-    label: s.label,
-    value: events.filter((e) => s.match(e.page || "")).length,
-  }));
+  let counts: { label: string; value: number }[];
+  if (events.length > 0) {
+    counts = stages.map((s) => ({
+      label: s.label,
+      value: events.filter((e) => s.match(e.page || "")).length,
+    }));
+  } else if (ga4TopPages && ga4TopPages.length > 0) {
+    counts = stages.map((s) => ({
+      label: s.label,
+      value: ga4TopPages
+        .filter((p) => s.match(p.path || ""))
+        .reduce((sum, p) => sum + p.pageViews, 0),
+    }));
+  } else {
+    counts = stages.map((s) => ({ label: s.label, value: 0 }));
+  }
 
   const maxCount = Math.max(counts[0]?.value || 1, 1);
 
@@ -395,6 +423,18 @@ export default function AnalyticsPage() {
   const [ga4TopPages, setGa4TopPages] = useState<{
     path: string; pageViews: number; users: number; avgDuration: number;
   }[]>([]);
+  const [ga4TrafficSources, setGa4TrafficSources] = useState<{
+    channel: string; sessions: number; users: number; conversions: number;
+  }[]>([]);
+  const [ga4Countries, setGa4Countries] = useState<{
+    countryCode: string; country: string; users: number; sessions: number; pageViews: number;
+  }[]>([]);
+  const [ga4Hourly, setGa4Hourly] = useState<{
+    dayOfWeek: number; hour: number; pageViews: number;
+  }[]>([]);
+  const [ga4Events, setGa4Events] = useState<{
+    eventName: string; count: number;
+  }[]>([]);
   const [realtimeUsers, setRealtimeUsers] = useState<number | null>(null);
 
   const daysFilter = period === "7d" ? 7 : period === "30d" ? 30 : 90;
@@ -410,6 +450,10 @@ export default function AnalyticsPage() {
         setGa4Data(report.summary);
         setGa4Daily(report.dailyData || []);
         setGa4TopPages(report.topPages || []);
+        setGa4TrafficSources(report.trafficSources || []);
+        setGa4Countries(report.countryBreakdown || []);
+        setGa4Hourly(report.hourlyBreakdown || []);
+        setGa4Events(report.eventBreakdown || []);
       }
       if (realtime.success) {
         setRealtimeUsers(realtime.activeUsers);
@@ -509,8 +553,9 @@ export default function AnalyticsPage() {
         .map((e) => e.country)
         .filter((c) => c && c !== "Unknown" && c !== "N/A"),
     );
-    return countries.size;
-  }, [filtered]);
+    if (countries.size > 0) return countries.size;
+    return ga4Countries.length;
+  }, [filtered, ga4Countries]);
 
   // Time series (events per day) — falls back to GA4 dailyData when Firestore is empty
   const timeSeries = useMemo(() => {
@@ -537,24 +582,34 @@ export default function AnalyticsPage() {
       }));
   }, [filtered, ga4Daily]);
 
-  // Event type breakdown
+  // Event type breakdown — falls back to GA4 eventBreakdown when Firestore is empty
   const eventTypeBreakdown = useMemo(() => {
-    const acc: Record<string, number> = {};
-    filtered.forEach((e) => {
-      acc[e.eventType] = (acc[e.eventType] || 0) + 1;
-    });
     const colors = [
       "#005148", "#007A6D", "#0043CE", "#4589FF", "#6929C4",
       "#9F1853", "#198038", "#F1C21B",
     ];
-    return Object.entries(acc)
-      .sort((a, b) => b[1] - a[1])
-      .map(([type, count], i) => ({
-        label: getEventLabel(type).label,
-        value: count,
+    const acc: Record<string, number> = {};
+    filtered.forEach((e) => {
+      acc[e.eventType] = (acc[e.eventType] || 0) + 1;
+    });
+    if (Object.keys(acc).length > 0) {
+      return Object.entries(acc)
+        .sort((a, b) => b[1] - a[1])
+        .map(([type, count], i) => ({
+          label: getEventLabel(type).label,
+          value: count,
+          color: colors[i % colors.length],
+        }));
+    }
+    // GA4 fallback (event names like page_view, session_start, scroll, etc.)
+    return ga4Events
+      .slice(0, 8)
+      .map((e, i) => ({
+        label: getEventLabel(e.eventName).label,
+        value: e.count,
         color: colors[i % colors.length],
       }));
-  }, [filtered]);
+  }, [filtered, ga4Events]);
 
   // Top pages — falls back to GA4 topPages when Firestore is empty
   const topPages = useMemo(() => {
@@ -585,7 +640,7 @@ export default function AnalyticsPage() {
     }));
   }, [filtered, ga4TopPages]);
 
-  // Country data for WorldMap
+  // Country data — falls back to GA4 countryBreakdown when Firestore is empty
   const countryData = useMemo(() => {
     const acc: Record<string, number> = {};
     filtered.forEach((e) => {
@@ -593,14 +648,21 @@ export default function AnalyticsPage() {
         acc[e.country] = (acc[e.country] || 0) + 1;
       }
     });
-    return Object.entries(acc)
-      .sort((a, b) => b[1] - a[1])
-      .map(([code, count]) => ({
-        countryCode: code,
-        country: getCountryName(code),
-        count,
-      }));
-  }, [filtered]);
+    if (Object.keys(acc).length > 0) {
+      return Object.entries(acc)
+        .sort((a, b) => b[1] - a[1])
+        .map(([code, count]) => ({
+          countryCode: code,
+          country: getCountryName(code),
+          count,
+        }));
+    }
+    return ga4Countries.map((c) => ({
+      countryCode: c.countryCode,
+      country: getCountryName(c.countryCode) || c.country || c.countryCode,
+      count: c.users,
+    }));
+  }, [filtered, ga4Countries]);
 
   // Sorted events for table
   const sortedEvents = useMemo(() => {
@@ -838,7 +900,11 @@ export default function AnalyticsPage() {
             </DashboardSection>
 
             <DashboardSection title="Conversion Funnel">
-              <ConversionFunnel events={filtered} totalEvents={filtered.length} />
+              <ConversionFunnel
+                events={filtered}
+                totalEvents={filtered.length}
+                ga4TopPages={ga4TopPages}
+              />
             </DashboardSection>
           </div>
         </>
@@ -882,9 +948,76 @@ export default function AnalyticsPage() {
             </DashboardSection>
 
             <DashboardSection title="Peak Hours">
-              <PeakHoursHeatmap events={filtered} />
+              <PeakHoursHeatmap events={filtered} ga4Hourly={ga4Hourly} />
             </DashboardSection>
           </div>
+
+          {/* Traffic Sources (channel breakdown from GA4) */}
+          {ga4TrafficSources.length > 0 && (
+            <DashboardSection title="Traffic Sources">
+              <div className="overflow-x-auto -mx-4">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-10">
+                      <th className="text-left px-4 py-2 text-xs font-medium text-gray-50 uppercase tracking-wider">
+                        Channel
+                      </th>
+                      <th className="text-right px-4 py-2 text-xs font-medium text-gray-50 uppercase tracking-wider">
+                        Sessions
+                      </th>
+                      <th className="text-right px-4 py-2 text-xs font-medium text-gray-50 uppercase tracking-wider">
+                        Users
+                      </th>
+                      <th className="text-right px-4 py-2 text-xs font-medium text-gray-50 uppercase tracking-wider">
+                        Conversions
+                      </th>
+                      <th className="px-4 py-2 text-xs font-medium text-gray-50 uppercase tracking-wider w-40">
+                        Share
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const total = ga4TrafficSources.reduce((s, r) => s + r.sessions, 0) || 1;
+                      return ga4TrafficSources.map((src) => {
+                        const pct = Math.round((src.sessions / total) * 100);
+                        return (
+                          <tr
+                            key={src.channel}
+                            className="border-b border-gray-10 last:border-0 hover:bg-gray-10/50 transition-colors"
+                          >
+                            <td className="px-4 py-2.5 text-gray-80 font-medium">
+                              {src.channel || "(unassigned)"}
+                            </td>
+                            <td className="px-4 py-2.5 text-right font-semibold text-gray-90">
+                              {src.sessions.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-2.5 text-right text-gray-70">
+                              {src.users.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-2.5 text-right text-gray-70">
+                              {src.conversions.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-2.5">
+                              <div className="h-2 bg-gray-10 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full rounded-full"
+                                  style={{
+                                    width: `${Math.max(pct, 3)}%`,
+                                    backgroundColor: "#005148",
+                                  }}
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            </DashboardSection>
+          )}
         </>
       )}
 
@@ -991,7 +1124,11 @@ export default function AnalyticsPage() {
             </DashboardSection>
 
             <DashboardSection title="Conversion Funnel">
-              <ConversionFunnel events={filtered} totalEvents={filtered.length} />
+              <ConversionFunnel
+                events={filtered}
+                totalEvents={filtered.length}
+                ga4TopPages={ga4TopPages}
+              />
             </DashboardSection>
           </div>
         </>

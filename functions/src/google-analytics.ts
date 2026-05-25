@@ -119,6 +119,32 @@ export const fetchAnalyticsReport = onCall(
         limit: 10,
       });
 
+      // Country breakdown (powers World Map + Country Map when Firestore empty)
+      const countryRes = await gaFetch(token, baseUrl, {
+        dateRanges: [{ startDate: start, endDate: end }],
+        metrics: [{ name: "activeUsers" }, { name: "sessions" }, { name: "screenPageViews" }],
+        dimensions: [{ name: "countryId" }, { name: "country" }],
+        orderBys: [{ metric: { metricName: "activeUsers" }, desc: true }],
+        limit: 50,
+      });
+
+      // Hour × weekday breakdown (powers Peak Hours heatmap when Firestore empty)
+      const hourlyRes = await gaFetch(token, baseUrl, {
+        dateRanges: [{ startDate: start, endDate: end }],
+        metrics: [{ name: "screenPageViews" }],
+        dimensions: [{ name: "dayOfWeek" }, { name: "hour" }],
+        limit: 200,
+      });
+
+      // Event-name breakdown (powers Event Types donut when Firestore empty)
+      const eventRes = await gaFetch(token, baseUrl, {
+        dateRanges: [{ startDate: start, endDate: end }],
+        metrics: [{ name: "eventCount" }],
+        dimensions: [{ name: "eventName" }],
+        orderBys: [{ metric: { metricName: "eventCount" }, desc: true }],
+        limit: 20,
+      });
+
       // Parse daily data
       const dailyData = ((reportRes.rows || []) as GARow[]).map((row) => ({
         date: row.dimensionValues?.[0]?.value || "",
@@ -145,6 +171,32 @@ export const fetchAnalyticsReport = onCall(
         conversions: parseInt(row.metricValues?.[2]?.value || "0"),
       }));
 
+      const countryBreakdown = ((countryRes.rows || []) as GARow[])
+        .map((row) => ({
+          countryCode: row.dimensionValues?.[0]?.value || "",
+          country: row.dimensionValues?.[1]?.value || "",
+          users: parseInt(row.metricValues?.[0]?.value || "0"),
+          sessions: parseInt(row.metricValues?.[1]?.value || "0"),
+          pageViews: parseInt(row.metricValues?.[2]?.value || "0"),
+        }))
+        .filter((c) => c.countryCode && c.countryCode !== "(not set)");
+
+      // GA4 dayOfWeek: 0=Sun..6=Sat. Convert to 0=Mon..6=Sun to match the heatmap.
+      const hourlyBreakdown = ((hourlyRes.rows || []) as GARow[]).map((row) => {
+        const gaDow = parseInt(row.dimensionValues?.[0]?.value || "0");
+        const dayOfWeek = (gaDow + 6) % 7; // 0=Mon..6=Sun
+        return {
+          dayOfWeek,
+          hour: parseInt(row.dimensionValues?.[1]?.value || "0"),
+          pageViews: parseInt(row.metricValues?.[0]?.value || "0"),
+        };
+      });
+
+      const eventBreakdown = ((eventRes.rows || []) as GARow[]).map((row) => ({
+        eventName: row.dimensionValues?.[0]?.value || "",
+        count: parseInt(row.metricValues?.[0]?.value || "0"),
+      }));
+
       // Summary from totals
       const totals = (reportRes.totals as GARow[])?.[0];
       const summary = {
@@ -159,11 +211,17 @@ export const fetchAnalyticsReport = onCall(
 
       await db.collection("analytics-snapshots").add({
         summary, dailyData, topPages, trafficSources,
+        countryBreakdown, hourlyBreakdown, eventBreakdown,
         period: { days, startDate: startDate.toISOString(), endDate: endDate.toISOString() },
         syncedAt: new Date().toISOString(),
       });
 
-      return { success: true, summary, dailyData, topPages, trafficSources, period: { startDate: start, endDate: end } };
+      return {
+        success: true,
+        summary, dailyData, topPages, trafficSources,
+        countryBreakdown, hourlyBreakdown, eventBreakdown,
+        period: { startDate: start, endDate: end },
+      };
     } catch (err) {
       console.error("GA4 report fetch failed:", err);
       throw new HttpsError("internal", err instanceof Error ? err.message : "Failed to fetch analytics");

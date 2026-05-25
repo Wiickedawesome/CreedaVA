@@ -300,6 +300,25 @@ interface GATrafficSource {
   conversions: number;
 }
 
+interface GACountryBreakdown {
+  countryCode: string;
+  country: string;
+  users: number;
+  sessions: number;
+  pageViews: number;
+}
+
+interface GAHourlyBreakdown {
+  dayOfWeek: number; // 0=Mon..6=Sun
+  hour: number;
+  pageViews: number;
+}
+
+interface GAEventBreakdown {
+  eventName: string;
+  count: number;
+}
+
 interface GAReportResult {
   success: boolean;
   summary: {
@@ -314,6 +333,9 @@ interface GAReportResult {
   dailyData: GADailyData[];
   topPages: GATopPage[];
   trafficSources: GATrafficSource[];
+  countryBreakdown: GACountryBreakdown[];
+  hourlyBreakdown: GAHourlyBreakdown[];
+  eventBreakdown: GAEventBreakdown[];
   period: { startDate: string; endDate: string };
 }
 
