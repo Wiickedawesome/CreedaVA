@@ -25,10 +25,10 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
     value: "1:53722795216:web:18065a250c22647774a2d5"
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-    value: G-GSYB90RLF2
+    value: G-EK7GG0F9Z4
   # Mirrors FIREBASE_MEASUREMENT_ID — used by the GA4 <Script> tag in marketing layout
   - variable: NEXT_PUBLIC_GA_MEASUREMENT_ID
-    value: G-GSYB90RLF2
+    value: G-EK7GG0F9Z4
   # Cloud Functions origin used by Next.js rewrites for same-origin client calls
   # (browser requests stay on https://creedava.com)
   - variable: NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL
