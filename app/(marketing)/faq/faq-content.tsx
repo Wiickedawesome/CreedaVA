@@ -15,7 +15,7 @@ export function FaqContent({ t }: { t: Dictionary }) {
             </h1>
             <p className="text-lg text-gray-60 leading-relaxed">
               {t.faq.heroDesc}{" "}
-              <Link href="/contact" className="text-primary hover:underline">
+              <Link href="/contact" data-analytics-cta="faq_intro_contact" className="text-primary hover:underline">
                 {t.faq.heroLink}
               </Link>
               .
@@ -61,6 +61,7 @@ export function FaqContent({ t }: { t: Dictionary }) {
             </p>
             <Link
               href="/contact"
+              data-analytics-cta="faq_bottom_contact"
               className="inline-flex items-center justify-center px-8 py-3 bg-white text-primary font-medium rounded-md hover:bg-gray-10 transition-colors"
             >
               {t.faq.ctaButton}

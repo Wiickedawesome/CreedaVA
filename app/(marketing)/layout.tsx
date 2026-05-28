@@ -5,6 +5,7 @@ import Script from "next/script";
 import { Suspense } from "react";
 
 import { GtagPageViews } from "@/components/layout/gtag-pageviews";
+import { GlobalAnalytics } from "@/components/layout/global-analytics";
 import { FirebaseInit } from "@/lib/firebase/firebase-init";
 import { LanguageProvider } from "@/lib/i18n";
 
@@ -72,6 +73,9 @@ gtag('config', '${GA_MEASUREMENT_ID}');`}
       </Script>
       <Suspense fallback={null}>
         <GtagPageViews gaId={GA_MEASUREMENT_ID} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GlobalAnalytics />
       </Suspense>
       <script
         type="application/ld+json"

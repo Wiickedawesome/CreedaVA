@@ -120,6 +120,7 @@ export function PricingContent({ t }: { t: Dictionary }) {
 
                   <Link
                     href="/contact"
+                    data-analytics-cta="pricing_card_contact"
                     className={`block w-full text-center py-3 rounded-md font-medium transition-colors ${
                       popular
                         ? "bg-white text-primary hover:bg-gray-10"
@@ -147,6 +148,7 @@ export function PricingContent({ t }: { t: Dictionary }) {
             </p>
             <Link
               href="/contact"
+              data-analytics-cta="pricing_custom_contact"
               className="inline-flex items-center justify-center px-8 py-3 bg-primary text-white font-medium rounded-md hover:bg-primary-hover transition-colors"
             >
               {t.pricing.customButton}

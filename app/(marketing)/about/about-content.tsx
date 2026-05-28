@@ -155,6 +155,7 @@ export function AboutContent() {
             </p>
             <Link
               href="/contact"
+              data-analytics-cta="about_bottom_contact"
               className="inline-flex items-center justify-center px-8 py-3 bg-white text-primary font-medium rounded-md hover:bg-gray-10 transition-colors"
             >
               {t.about.ctaButton}

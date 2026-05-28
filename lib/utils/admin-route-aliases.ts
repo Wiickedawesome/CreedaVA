@@ -1,9 +1,18 @@
 // Canonical admin destinations used by legacy/alias routes.
-// Keeping these in one place prevents terminology drift between tabs and URLs.
+// All SEO surfaces now live under the unified /admin/seo hub. The `section`
+// query parameter selects the tab.
 export const ADMIN_ROUTE_ALIASES = {
   analyticsReports: "/admin/analytics/reports",
-  seoAgent: "/admin/seo/content?tab=agent",
-  seoTasks: "/admin/seo/content?tab=tasks",
-  seoAudits: "/admin/seo/content?tab=audits",
-  seoRankings: "/admin/seo/keywords?tab=rankings",
+  seoHub: "/admin/seo",
+  seoPages: "/admin/seo?section=pages",
+  seoAudits: "/admin/seo?section=pages",
+  seoKeywords: "/admin/seo?section=keywords",
+  seoOpportunities: "/admin/seo?section=opportunities",
+  seoBriefs: "/admin/seo?section=briefs",
+  seoOutreach: "/admin/seo?section=outreach",
+  seoCitations: "/admin/seo?section=citations",
+  seoDigest: "/admin/seo?section=digest",
+  seoAgent: "/admin/seo?section=agent",
+  seoTasks: "/admin/seo?section=tasks",
+  seoRankings: "/admin/seo?section=keywords&tab=rankings",
 } as const;

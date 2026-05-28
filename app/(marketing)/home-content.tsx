@@ -51,6 +51,7 @@ export function HomeContent({
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/contact"
+                  data-analytics-cta="home_hero_contact"
                   className="inline-flex items-center justify-center px-8 py-3 bg-primary text-white font-medium rounded-md hover:bg-primary-hover transition-colors text-base"
                 >
                   {t.home.heroCtaPrimary}
@@ -126,6 +127,7 @@ export function HomeContent({
           <div className="text-center mt-12">
             <Link
               href="/contact"
+              data-analytics-cta="home_services_get_started"
               className="inline-flex items-center justify-center px-8 py-3 bg-primary text-white font-medium rounded-md hover:bg-primary-hover transition-colors text-base"
             >
               {t.home.getStartedToday}
@@ -191,12 +193,14 @@ export function HomeContent({
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/join"
+                data-analytics-cta="home_footer_join"
                 className="inline-flex items-center justify-center px-8 py-3 bg-white text-primary font-medium rounded-md hover:bg-gray-10 transition-colors"
               >
                 {t.home.ctaBookConsultation}
               </Link>
               <Link
                 href="/pricing"
+                data-analytics-cta="home_footer_pricing"
                 className="inline-flex items-center justify-center px-8 py-3 border-2 border-white text-white font-medium rounded-md hover:bg-white/10 transition-colors"
               >
                 {t.home.ctaViewPricing}

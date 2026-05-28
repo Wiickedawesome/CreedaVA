@@ -244,7 +244,24 @@ const CATEGORIES: CategoryDef[] = [
   },
 ];
 
+// The "essentials" surfaced by default on the On-Demand tab. Everything else
+// stays available behind a "Show all reports" toggle so the dashboard stops
+// feeling like a wall of 16 generators.
+const PRIMARY_CATEGORY_IDS = new Set<AIReportType>([
+  "performance",
+  "seo",
+  "pipeline",
+  "marketing",
+  "growth-forecast",
+]);
+
 // ─── Helper: format Firestore date ───────────────────
+
+// Hoisted so the react-hooks/purity rule doesn't flag time reads inside the
+// component body (event handlers / effects only).
+function nowMs(): number {
+  return Date.now();
+}
 
 function formatDate(d: unknown): string {
   if (!d) return "—";
@@ -664,7 +681,39 @@ export default function AIReportsDashboard() {
   }), [leads, customers, tasks, projects, contacts, bookings, campaigns, socialPosts, emails, blog, keywords, seoAudits, landingPages, forumThreads]);
 
   // ─── Scheduler ─────────────────────────────────────
-  const { schedules, isGenerating: schedulerGenerating, generateReport } = useScheduledReports();
+  const { schedules, isGenerating: schedulerGenerating, generateReport, autoGenerate } = useScheduledReports();
+
+  // ─── Auto-run stale scheduled reports once data is loaded ───
+  // Prevents the Scheduled tab from sitting empty on first visit; the
+  // hook already debounces via localStorage (5-minute window).
+  const autoRanRef = useRef(false);
+  useEffect(() => {
+    if (autoRanRef.current) return;
+    if (reportsLoading) return;
+    if (leads.length + customers.length + bookings.length + tasks.length === 0) return;
+    autoRanRef.current = true;
+    autoGenerate(allData).catch((err) => console.warn("[reports] autoGenerate failed:", err));
+  }, [reportsLoading, leads.length, customers.length, bookings.length, tasks.length, allData, autoGenerate]);
+
+  // ─── Auto-dismiss insights older than 14 days ──────
+  const dismissedRef = useRef(new Set<string>());
+  useEffect(() => {
+    const cutoff = nowMs() - 14 * 24 * 60 * 60 * 1000;
+    for (const insight of insights) {
+      if (insight.dismissed || dismissedRef.current.has(insight.id)) continue;
+      const createdAt = insight.createdAt
+        ? typeof insight.createdAt === "object" && "toDate" in insight.createdAt
+          ? (insight.createdAt as unknown as { toDate: () => Date }).toDate().getTime()
+          : new Date(insight.createdAt as unknown as string).getTime()
+        : 0;
+      if (createdAt && createdAt < cutoff) {
+        dismissedRef.current.add(insight.id);
+        editInsight(insight.id, { dismissed: true }).catch(() => {
+          dismissedRef.current.delete(insight.id);
+        });
+      }
+    }
+  }, [insights, editInsight]);
 
   // ─── UI state ──────────────────────────────────────
   const [tab, setTab] = useState("overview");
@@ -673,6 +722,7 @@ export default function AIReportsDashboard() {
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<AIReport | null>(null);
   const [categoryGenerating, setCategoryGenerating] = useState<string | null>(null);
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -934,9 +984,26 @@ export default function AIReportsDashboard() {
         area: cat.id,
       });
 
-      // Extract insights from recommendations
+      // Extract insights from recommendations, with a 30-day dedupe window
+      // keyed on (category + first 80 chars of the recommendation).
       const recs = (parsed.recommendations as string[]) || [];
+      const dedupeWindow = nowMs() - 30 * 24 * 60 * 60 * 1000;
+      const existingKeys = new Set(
+        insights
+          .filter((i) => {
+            const created = i.createdAt
+              ? typeof i.createdAt === "object" && "toDate" in i.createdAt
+                ? (i.createdAt as unknown as { toDate: () => Date }).toDate().getTime()
+                : new Date(i.createdAt as unknown as string).getTime()
+              : 0;
+            return created >= dedupeWindow;
+          })
+          .map((i) => `${i.sourceReport ?? ""}:${(i.title ?? "").slice(0, 80)}`),
+      );
       for (const rec of recs.slice(0, 3)) {
+        const key = `${cat.id}:${rec.slice(0, 80)}`;
+        if (existingKeys.has(key)) continue;
+        existingKeys.add(key);
         await addInsight({
           title: rec.slice(0, 80),
           description: rec,
@@ -1278,7 +1345,7 @@ export default function AIReportsDashboard() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {CATEGORIES.map((cat) => (
+            {(showAllCategories ? CATEGORIES : CATEGORIES.filter((c) => PRIMARY_CATEGORY_IDS.has(c.id))).map((cat) => (
               <ReportCategoryCard
                 key={cat.id}
                 icon={cat.icon}
@@ -1289,6 +1356,18 @@ export default function AIReportsDashboard() {
                 generating={categoryGenerating === cat.id}
               />
             ))}
+          </div>
+
+          <div className="flex justify-center">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowAllCategories((v) => !v)}
+            >
+              {showAllCategories
+                ? `Show essentials only (${PRIMARY_CATEGORY_IDS.size})`
+                : `Show all reports (${CATEGORIES.length})`}
+            </Button>
           </div>
 
           {/* On-demand history */}

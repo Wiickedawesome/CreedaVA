@@ -88,7 +88,7 @@ export default function ContactPage() {
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} data-analytics-form="contact" className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <Input
                       label={t.contact.firstName}
@@ -225,6 +225,7 @@ export default function ContactPage() {
                 </p>
                 <a
                   href="/join"
+                  data-analytics-cta="contact_book_join"
                   className="inline-flex items-center text-primary font-medium text-sm hover:underline"
                 >
                   {t.contact.bookLink}

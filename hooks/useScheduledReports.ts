@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import type { AIReport, AIReportType } from "@/lib/types/content";
 import type { AllCollections } from "@/lib/utils/ai-data-context";
@@ -68,6 +68,14 @@ export function useScheduledReports(): UseScheduledReportsReturn {
     monthly: false,
   });
 
+  // Ref mirror for synchronous read so the autoGenerate loop and rapid
+  // button clicks can't double-fire while React state catches up.
+  const inFlightRef = useRef<Record<SchedulePeriod, boolean>>({
+    daily: false,
+    weekly: false,
+    monthly: false,
+  });
+
   // ─── Find latest report per period ─────────────────
   const getLatestReport = useCallback(
     (period: SchedulePeriod): AIReport | null => {
@@ -119,7 +127,8 @@ export function useScheduledReports(): UseScheduledReportsReturn {
   // ─── Generate a report ────────────────────────────
   const generateReport = useCallback(
     async (period: SchedulePeriod, allData: AllCollections) => {
-      if (generatingMap[period]) return;
+      if (inFlightRef.current[period]) return;
+      inFlightRef.current[period] = true;
 
       setGeneratingMap((prev) => ({ ...prev, [period]: true }));
       try {
@@ -165,10 +174,11 @@ export function useScheduledReports(): UseScheduledReportsReturn {
       } catch (err) {
         console.error(`Failed to generate ${period} report:`, err);
       } finally {
+        inFlightRef.current[period] = false;
         setGeneratingMap((prev) => ({ ...prev, [period]: false }));
       }
     },
-    [add, generatingMap],
+    [add],
   );
 
   // ─── Auto-generate stale reports on mount ──────────

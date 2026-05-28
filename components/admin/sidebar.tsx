@@ -115,8 +115,9 @@ const contentItems: NavItem[] = [
 
 const seoItems: NavItem[] = [
   {
-    label: "SEO Content",
-    href: "/admin/seo/content",
+    label: "SEO Hub",
+    href: "/admin/seo",
+    exact: false,
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="8" />
@@ -124,38 +125,9 @@ const seoItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    label: "Keywords",
-    href: "/admin/seo/keywords",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="4" y1="9" x2="20" y2="9" />
-        <line x1="4" y1="15" x2="20" y2="15" />
-        <line x1="10" y1="3" x2="8" y2="21" />
-        <line x1="16" y1="3" x2="14" y2="21" />
-      </svg>
-    ),
-  },
-  {
-    label: "Briefs",
-    href: "/admin/seo/briefs",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 4h12l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" />
-        <polyline points="14 2 14 8 20 8" />
-      </svg>
-    ),
-  },
-  {
-    label: "Outreach",
-    href: "/admin/seo/outreach",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 2L11 13" />
-        <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-      </svg>
-    ),
-  },
+];
+
+const marketingItems: NavItem[] = [
   {
     label: "Landing Pages",
     href: "/admin/marketing/landing-pages",
@@ -167,9 +139,6 @@ const seoItems: NavItem[] = [
       </svg>
     ),
   },
-];
-
-const marketingItems: NavItem[] = [
   {
     label: "Social Media",
     href: "/admin/marketing/social",

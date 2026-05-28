@@ -2,6 +2,7 @@
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,
   DashboardSection,
@@ -439,6 +440,29 @@ export default function AnalyticsPage() {
 
   const daysFilter = period === "7d" ? 7 : period === "30d" ? 30 : 90;
 
+  // ─── Surface dailyGoogleSync last-run (server-truth replacement for
+  //     the per-period localStorage flag below). ───────────────────
+  const { data: syncLog } = useCollection<{
+    id: string;
+    type?: string;
+    completedAt?: { toDate: () => Date } | string;
+    results?: { service: string; status: string; detail?: string }[];
+  }>("sync-log", { orderByField: "completedAt", orderDirection: "desc" });
+
+  const syncDescription = useMemo(() => {
+    const latest = syncLog.find((s) => s.type === "daily-google-sync");
+    if (!latest?.completedAt) {
+      return "Real-time website traffic, visitor locations, and page performance";
+    }
+    const ts =
+      typeof latest.completedAt === "object" && "toDate" in latest.completedAt
+        ? latest.completedAt.toDate()
+        : new Date(latest.completedAt as string);
+    const okCount = (latest.results ?? []).filter((r) => r.status === "ok").length;
+    const errCount = (latest.results ?? []).filter((r) => r.status === "error").length;
+    return `Real-time website traffic — last Google sync ${ts.toLocaleString()} (${okCount} ok${errCount ? `, ${errCount} error` : ""})`;
+  }, [syncLog]);
+
   const handleSyncGA4 = useCallback(async () => {
     setGa4Syncing(true);
     try {
@@ -702,7 +726,7 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Website Analytics"
-        description="Real-time website traffic, visitor locations, and page performance"
+        description={syncDescription}
         actions={
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <AIPromptButton

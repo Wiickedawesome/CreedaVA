@@ -391,7 +391,7 @@ export default function JoinPage() {
 
             {/* Step 2: Contact Info */}
             {step === 2 && (
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} data-analytics-form="join">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-lg font-bold text-gray-100">{t.join.yourDetails}</h2>
