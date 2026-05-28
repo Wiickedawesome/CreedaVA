@@ -36,10 +36,22 @@ async function getBusinessClient() {
     });
   }
 
+  const rawAccount = String(config.accountId || "").trim();
+  const rawLocation = String(config.locationId || "").trim();
+  // Normalize: stored values may be raw IDs ("om-12345", "47033...") or already
+  // prefixed ("accounts/om-12345", "locations/47033..."). Strip then re-prefix
+  // so every call site has a predictable resource name shape.
+  const accountBare = rawAccount.replace(/^accounts\//, "");
+  const locationBare = rawLocation.replace(/^locations\//, "");
+  const accountName = accountBare ? `accounts/${accountBare}` : "";
+  const locationName = locationBare ? `locations/${locationBare}` : "";
+
   return {
     auth: authClient,
-    accountId: config.accountId || "",
-    locationId: config.locationId || "",
+    accountId: accountBare,
+    locationId: locationBare,
+    accountName, // "accounts/{id}"
+    locationName, // "locations/{id}"
   };
 }
 
@@ -50,20 +62,28 @@ export const fetchBusinessReviews = onCall(
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
-    const { auth, accountId, locationId } = await getBusinessClient();
+    const { auth, accountName, locationName } = await getBusinessClient();
+    if (!locationName) {
+      throw new HttpsError("failed-precondition", "Google Business locationId not configured.");
+    }
 
     try {
-      // Fetch location info
+      // Fetch location info — Business Profile v1 takes just "locations/{id}"
       const response = await google.mybusinessbusinessinformation({
         version: "v1",
         auth,
       }).locations.get({
-        name: `${accountId}/${locationId}`,
+        name: locationName,
         readMask: "name,title,storefrontAddress",
       });
 
-      // Fetch reviews directly via REST
-      const reviewsUrl = `https://mybusiness.googleapis.com/v4/${accountId}/${locationId}/reviews`;
+      // Fetch reviews directly via REST. The reviews endpoint still lives on
+      // the legacy v4 My Business API and requires the full
+      // "accounts/{id}/locations/{id}" resource path.
+      if (!accountName) {
+        throw new HttpsError("failed-precondition", "Google Business accountId required for reviews fetch.");
+      }
+      const reviewsUrl = `https://mybusiness.googleapis.com/v4/${accountName}/${locationName}/reviews`;
       const reviewsRes = await authClient_fetch(auth, reviewsUrl);
 
       const reviews = reviewsRes?.reviews || [];
@@ -75,7 +95,7 @@ export const fetchBusinessReviews = onCall(
         batch.set(docRef, {
           ...review,
           syncedAt: new Date().toISOString(),
-          locationName: response.data?.title || locationId,
+          locationName: response.data?.title || locationName,
         }, { merge: true });
       }
       await batch.commit();
@@ -100,11 +120,14 @@ export const fetchBusinessInsights = onCall(
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
-    const { auth, accountId, locationId } = await getBusinessClient();
+    const { auth, locationName } = await getBusinessClient();
+    if (!locationName) {
+      throw new HttpsError("failed-precondition", "Google Business locationId not configured.");
+    }
 
     try {
-      // Business Profile Performance API
-      const performanceUrl = `https://businessprofileperformance.googleapis.com/v1/${accountId}/${locationId}:getDailyMetricsTimeSeries`;
+      // Business Profile Performance API uses just "locations/{id}"
+      const performanceUrl = `https://businessprofileperformance.googleapis.com/v1/${locationName}:getDailyMetricsTimeSeries`;
 
       const endDate = new Date();
       const startDate = new Date();
