@@ -6,10 +6,14 @@
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { defineSecret } from "firebase-functions/params";
 import { google } from "googleapis";
 import * as nodemailer from "nodemailer";
 import { db, getIntegrationConfig, verifyAdminEmail } from "./admin";
 import { toGA4PropertyResourceName } from "./google-analytics-property";
+
+// Bound so testGemini sees process.env.GEMINI_API_KEY at runtime.
+const GEMINI_API_KEY = defineSecret("GEMINI_API_KEY");
 
 // ─── Types ───────────────────────────────────────────
 
@@ -114,7 +118,26 @@ async function testBusiness(config: Record<string, string>): Promise<string> {
     scopes: ["https://www.googleapis.com/auth/business.manage"],
   });
   await auth.authorize();
-  return `Business Profile service account authenticated (${key.client_email})`;
+
+  // Validate that accountId and locationId are usable, not just that auth works.
+  // Normalise: the API expects `locations/{id}`; accept raw IDs or prefixed strings.
+  const rawAccount = (config.accountId || "").trim();
+  const rawLocation = (config.locationId || "").trim();
+  if (!rawAccount || !rawLocation) {
+    throw new Error("Missing accountId or locationId in config");
+  }
+  const locationName = rawLocation.startsWith("locations/") ? rawLocation : `locations/${rawLocation}`;
+
+  try {
+    const loc = await google.mybusinessbusinessinformation({ version: "v1", auth }).locations.get({
+      name: locationName,
+      readMask: "name,title",
+    });
+    return `Business Profile location "${loc.data?.title || locationName}" accessible (${key.client_email})`;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Auth OK but location "${locationName}" fetch failed: ${msg.slice(0, 200)}`);
+  }
 }
 
 async function testAnalytics(config: Record<string, string>): Promise<string> {
@@ -191,6 +214,28 @@ async function testWebhooks(): Promise<string> {
   return "Webhook endpoint active — ready to receive form submissions";
 }
 
+async function testGemini(_config: Record<string, string>): Promise<string> {
+  // Gemini is configured via Firebase Secret (GEMINI_API_KEY), not via Firestore.
+  // We pull from process.env directly here so this test works without a Firestore doc.
+  const apiKey = process.env.GEMINI_API_KEY || _config.apiKey;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY secret not set");
+  }
+  // Use the lightweight models.list endpoint instead of a generation call to keep
+  // the test free of token usage and content-filter variance.
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}&pageSize=1`,
+    { method: "GET" },
+  );
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Gemini API ${res.status}: ${err.slice(0, 200)}`);
+  }
+  const data = (await res.json()) as { models?: Array<{ name?: string }> };
+  const first = data.models?.[0]?.name || "models/?";
+  return `Gemini API connected (first model: ${first})`;
+}
+
 async function testWebSearch(config: Record<string, string>): Promise<string> {
   const apiKey = config.apiKey;
   if (!apiKey) {
@@ -228,12 +273,13 @@ const TESTS: Record<string, (config: Record<string, string>) => Promise<string>>
   "google-drive": testDrive,
   "web-search": testWebSearch,
   "webhooks": testWebhooks,
+  "gemini": testGemini,
 };
 
 // ─── Main Cloud Function ─────────────────────────────
 
 export const testIntegration = onCall(
-  { region: "us-east4", timeoutSeconds: 30, memory: "256MiB" },
+  { region: "us-east4", timeoutSeconds: 30, memory: "256MiB", secrets: [GEMINI_API_KEY] },
   async (request): Promise<TestResult> => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -254,7 +300,7 @@ interface VerifyAllResult {
 }
 
 export const verifyAllIntegrations = onCall(
-  { region: "us-east4", timeoutSeconds: 60, memory: "512MiB" },
+  { region: "us-east4", timeoutSeconds: 60, memory: "512MiB", secrets: [GEMINI_API_KEY] },
   async (request): Promise<VerifyAllResult> => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -293,6 +339,32 @@ export const verifyAllIntegrations = onCall(
 // ─── Shared test runner ──────────────────────────────
 
 async function runSingleTest(provider: string): Promise<TestResult> {
+  // Gemini is configured via Firebase Secret, not Firestore. Skip the
+  // integration-doc lookup and run the test directly against process.env.
+  if (provider === "gemini") {
+    try {
+      const details = await TESTS.gemini({});
+      await db.collection("integrations").doc("gemini").set({
+        provider: "gemini",
+        enabled: true,
+        configSource: "secret",
+        lastTestedAt: new Date().toISOString(),
+        lastTestSuccess: true,
+        lastTestMessage: details,
+      }, { merge: true });
+      return { success: true, provider, message: "Connected", details, testedAt: new Date().toISOString() };
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      await db.collection("integrations").doc("gemini").set({
+        provider: "gemini",
+        lastTestedAt: new Date().toISOString(),
+        lastTestSuccess: false,
+        lastTestMessage: errorMsg,
+      }, { merge: true }).catch(() => undefined);
+      return { success: false, provider, message: "Connection failed", details: errorMsg, testedAt: new Date().toISOString() };
+    }
+  }
+
   const integration = await getIntegrationConfig(provider);
   if (!integration) {
     return {
