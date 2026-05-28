@@ -45,9 +45,11 @@ export function GlobalAnalytics() {
     const KEY = "creedava_session_started";
     if (sessionStorage.getItem(KEY)) return;
     sessionStorage.setItem(KEY, "1");
+    const entryReferrer = document.referrer || "";
+    const entryQuery = window.location.search || "";
     void trackEvent("session_start", window.location.pathname, {
-      entryReferrer: document.referrer || undefined,
-      entryQuery: window.location.search || undefined,
+      ...(entryReferrer ? { entryReferrer } : {}),
+      ...(entryQuery ? { entryQuery } : {}),
     });
   }, []);
 

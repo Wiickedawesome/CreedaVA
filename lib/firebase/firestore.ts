@@ -55,8 +55,12 @@ export async function create<T extends DocumentData>(
   collectionName: string,
   data: T,
 ): Promise<string> {
+  // Strip undefined values — Firestore addDoc rejects them.
+  const clean = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined),
+  );
   const docRef = await addDoc(getCollection(collectionName), {
-    ...data,
+    ...clean,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -73,8 +77,11 @@ export async function createWithId<T extends DocumentData>(
   data: T,
 ): Promise<void> {
   const docRef = doc(db, collectionName, docId);
+  const clean = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined),
+  );
   await setDoc(docRef, {
-    ...data,
+    ...clean,
     updatedAt: serverTimestamp(),
   }, { merge: true });
 }

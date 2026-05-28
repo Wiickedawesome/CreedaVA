@@ -160,6 +160,9 @@ service cloud.firestore {
     // Daily Google sync log — admin only (written by Cloud Function admin SDK).
     match /sync-log/{docId}                   { allow read, write: if isAdmin(); }
 
+    // Google Business reviews cache — admin only (written by Cloud Function).
+    match /business-reviews/{docId}           { allow read, write: if isAdmin(); }
+
     // AI Conversations — chat history for dashboard AI assistant
     match /ai-conversations/{docId} {
       allow read, write: if isAdmin();
