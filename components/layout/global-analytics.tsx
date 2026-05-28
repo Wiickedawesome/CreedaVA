@@ -101,9 +101,10 @@ export function GlobalAnalytics() {
       const cta = target.closest<HTMLElement>("[data-analytics-cta]");
       if (cta) {
         const ctaName = cta.getAttribute("data-analytics-cta") || "unknown";
+        const label = cta.textContent?.trim().slice(0, 80) ?? "";
         void trackEvent("cta_click", window.location.pathname, {
           cta: ctaName,
-          label: cta.textContent?.trim().slice(0, 80) || undefined,
+          ...(label ? { label } : {}),
         });
       }
 
@@ -111,9 +112,10 @@ export function GlobalAnalytics() {
       if (anchor) {
         const href = anchor.getAttribute("href") || "";
         if (href && isExternalHref(href)) {
+          const label = anchor.textContent?.trim().slice(0, 80) ?? "";
           void trackEvent("outbound_click", window.location.pathname, {
             href,
-            label: anchor.textContent?.trim().slice(0, 80) || undefined,
+            ...(label ? { label } : {}),
           });
         }
       }

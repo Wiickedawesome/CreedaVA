@@ -157,6 +157,9 @@ service cloud.firestore {
     match /internal-link-suggestions/{docId}  { allow read, write: if isAdmin(); }
     match /content-briefs/{docId}             { allow read, write: if isAdmin(); }
 
+    // Daily Google sync log — admin only (written by Cloud Function admin SDK).
+    match /sync-log/{docId}                   { allow read, write: if isAdmin(); }
+
     // AI Conversations — chat history for dashboard AI assistant
     match /ai-conversations/{docId} {
       allow read, write: if isAdmin();

@@ -115,13 +115,17 @@ export async function trackEvent(
     logGA4Event(eventType, { page: page || window.location.pathname, ...eventData });
 
     const geo = await getGeoData();
+    // Firestore rejects `undefined` field values; build the doc conditionally
+    // and only include optional strings when they have content.
+    const ref = typeof document !== "undefined" ? document.referrer : "";
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
     await addDoc(collection(db, "analytics"), {
       eventType,
       page: page || window.location.pathname,
       timestamp: serverTimestamp(),
       sessionId: getSessionId(),
-      referrer: document.referrer || undefined,
-      userAgent: navigator.userAgent || undefined,
+      ...(ref ? { referrer: ref } : {}),
+      ...(ua ? { userAgent: ua } : {}),
       ...geo,
       ...(eventData ? { eventData } : {}),
     });
