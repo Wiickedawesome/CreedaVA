@@ -819,71 +819,40 @@ export default function AnalyticsPage() {
       {/* ─── Overview Tab ─────────────────────────────── */}
       {activeTab === "overview" && (
         <>
-          {/* KPI Row — Firestore-first, GA4 fallback for traffic stats */}
+          {/* Google Analytics 4 KPI Row — single source of truth */}
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+            <span className="text-sm font-medium text-primary">Google Analytics 4</span>
+            <span className="text-xs text-gray-40">· last {daysFilter}d</span>
+            {realtimeUsers !== null && (
+              <span className="ml-auto flex items-center gap-1.5 text-xs text-primary">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                {realtimeUsers} active now
+              </span>
+            )}
+          </div>
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
-              label="Total Events"
-              value={(
-                (summary?.totalEvents || filtered.length || ga4Data?.totalPageViews || 0)
-              ).toLocaleString()}
-              badge={`${daysFilter}d`}
+              label="Users"
+              value={(ga4Data?.totalUsers ?? 0).toLocaleString()}
+              badge={ga4Data ? `${ga4Data.totalNewUsers.toLocaleString()} new` : `${daysFilter}d`}
             />
             <StatCard
               label="Page Views"
-              value={(pageViews || ga4Data?.totalPageViews || 0).toLocaleString()}
-              badge={
-                filtered.length > 0
-                  ? `${Math.round((pageViews / filtered.length) * 100)}%`
-                  : ga4Data
-                    ? `${ga4Data.totalUsers.toLocaleString()} users`
-                    : "0%"
-              }
+              value={(ga4Data?.totalPageViews ?? 0).toLocaleString()}
+              badge={ga4Data ? `${ga4Data.totalSessions.toLocaleString()} sessions` : `${daysFilter}d`}
             />
             <StatCard
-              label="Interactions"
-              value={(interactions || ga4Data?.totalSessions || 0).toLocaleString()}
-              badge={interactions > 0 ? "clicks + forms" : ga4Data ? "sessions (GA4)" : "clicks + forms"}
+              label="Bounce Rate"
+              value={ga4Data ? `${(ga4Data.avgBounceRate * 100).toFixed(1)}%` : "0%"}
+              badge={ga4Data ? `${Math.round(ga4Data.avgSessionDuration)}s avg` : "—"}
             />
             <StatCard
-              label="Unique Pages"
-              value={(uniquePages || ga4TopPages.length || 0).toString()}
+              label="Conversions"
+              value={(ga4Data?.totalConversions ?? 0).toLocaleString()}
               badge={`${uniqueCountries} countries`}
             />
           </div>
-
-          {/* GA4 Data (from Google Analytics Data API) */}
-          {(ga4Data || realtimeUsers !== null) && (
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
-                <span className="text-sm font-medium text-primary">Google Analytics 4</span>
-                {realtimeUsers !== null && (
-                  <span className="ml-auto flex items-center gap-1.5 text-xs text-primary">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    {realtimeUsers} active now
-                  </span>
-                )}
-              </div>
-              {ga4Data && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-                  {[
-                    { label: "Users", value: ga4Data.totalUsers.toLocaleString() },
-                    { label: "Sessions", value: ga4Data.totalSessions.toLocaleString() },
-                    { label: "Page Views", value: ga4Data.totalPageViews.toLocaleString() },
-                    { label: "New Users", value: ga4Data.totalNewUsers.toLocaleString() },
-                    { label: "Bounce Rate", value: `${(ga4Data.avgBounceRate * 100).toFixed(1)}%` },
-                    { label: "Avg Duration", value: `${Math.round(ga4Data.avgSessionDuration)}s` },
-                    { label: "Conversions", value: ga4Data.totalConversions.toLocaleString() },
-                  ].map((s) => (
-                    <div key={s.label}>
-                      <p className="text-xs text-primary/70">{s.label}</p>
-                      <p className="text-sm font-semibold text-gray-90">{s.value}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Traffic Trend + Event Types */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
