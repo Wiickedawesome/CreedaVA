@@ -921,14 +921,14 @@ export default function AnalyticsPage() {
               badge={countryData[0] ? `${countryData[0].count} events` : ""}
             />
             <StatCard
-              label="Total Events"
-              value={(filtered.length || ga4Data?.totalPageViews || 0).toLocaleString()}
-              badge={filtered.length > 0 ? `${daysFilter} days` : ga4Data ? `${daysFilter}d (GA4)` : `${daysFilter} days`}
+              label="Sessions"
+              value={(ga4Data?.totalSessions ?? 0).toLocaleString()}
+              badge={`${daysFilter}d (GA4)`}
             />
             <StatCard
               label="Page Views"
-              value={(pageViews || ga4Data?.totalPageViews || 0).toLocaleString()}
-              badge={pageViews > 0 ? `${uniquePages} pages` : ga4Data ? `${ga4TopPages.length || uniquePages} pages` : `${uniquePages} pages`}
+              value={(ga4Data?.totalPageViews ?? 0).toLocaleString()}
+              badge={`${ga4TopPages.length || uniquePages} pages`}
             />
           </div>
 
@@ -1023,27 +1023,27 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
               label="Unique Pages"
-              value={(uniquePages || ga4TopPages.length || 0).toString()}
-              badge={uniquePages > 0 ? "tracked" : ga4TopPages.length > 0 ? "tracked (GA4)" : "tracked"}
+              value={(ga4TopPages.length || uniquePages || 0).toString()}
+              badge="tracked (GA4)"
             />
             <StatCard
               label="Most Visited"
               value={topPages[0]?.label || "/"}
-              badge={topPages[0] ? `${topPages[0].value} hits` : ""}
+              badge={topPages[0] ? `${topPages[0].value} views` : ""}
             />
             <StatCard
-              label="Avg Events/Page"
+              label="Avg Views/Page"
               value={(() => {
-                if (uniquePages > 0) return Math.round(filtered.length / uniquePages).toString();
                 if (ga4TopPages.length > 0 && ga4Data) return Math.round(ga4Data.totalPageViews / ga4TopPages.length).toString();
+                if (uniquePages > 0) return Math.round(filtered.length / uniquePages).toString();
                 return "0";
               })()}
               badge="per page"
             />
             <StatCard
-              label="Form Submits"
-              value={filtered.filter((e) => e.eventType === "form_submission").length.toString()}
-              badge="conversions"
+              label="Conversions"
+              value={(ga4Data?.totalConversions ?? 0).toLocaleString()}
+              badge="GA4"
             />
           </div>
 
@@ -1138,17 +1138,14 @@ export default function AnalyticsPage() {
         <>
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard
-              label="Total Events"
-              value={(filtered.length || ga4Data?.totalPageViews || 0).toLocaleString()}
-              badge={filtered.length > 0 ? "all types" : ga4Data ? "page views (GA4)" : "all types"}
+              label="Page Views"
+              value={(ga4Data?.totalPageViews ?? 0).toLocaleString()}
+              badge="GA4"
             />
             <StatCard
-              label="Event Types"
-              value={(
-                Object.keys(summary?.eventTypes || {}).length ||
-                (ga4Data ? 1 : 0)
-              ).toString()}
-              badge={Object.keys(summary?.eventTypes || {}).length > 0 ? "distinct" : ga4Data ? "page_view (GA4)" : "distinct"}
+              label="New Users"
+              value={(ga4Data?.totalNewUsers ?? 0).toLocaleString()}
+              badge={ga4Data ? `${ga4Data.totalUsers.toLocaleString()} total` : "GA4"}
             />
             <StatCard
               label="Countries"
@@ -1157,12 +1154,8 @@ export default function AnalyticsPage() {
             />
             <StatCard
               label="Sessions"
-              value={(
-                new Set(filtered.map((e) => e.sessionId).filter(Boolean)).size ||
-                ga4Data?.totalSessions ||
-                0
-              ).toString()}
-              badge={ga4Data && new Set(filtered.map((e) => e.sessionId).filter(Boolean)).size === 0 ? "GA4 sessions" : "unique"}
+              value={(ga4Data?.totalSessions ?? 0).toLocaleString()}
+              badge="GA4 sessions"
             />
           </div>
 
