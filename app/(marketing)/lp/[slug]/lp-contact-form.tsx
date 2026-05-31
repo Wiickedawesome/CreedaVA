@@ -79,7 +79,7 @@ export default function LpContactForm({ ctaText, ctaEmail, pageTitle, pageSlug }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4 text-left">
+    <form onSubmit={handleSubmit} data-analytics-form="landing-page" className="max-w-md mx-auto space-y-4 text-left">
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium text-gray-70 mb-1">Name *</label>
