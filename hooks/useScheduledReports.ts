@@ -181,7 +181,11 @@ export function useScheduledReports(): UseScheduledReportsReturn {
     [add],
   );
 
-  // ─── Auto-generate stale reports on mount ──────────
+  // ─── Auto-generate the stale weekly report on mount ──────────
+  // Only the weekly report is auto-generated now — it feeds the SEO Hub's
+  // Agent → Weekly digest tab. Daily/monthly auto-generation was retired
+  // alongside the old AI Dashboard. `generateReport` still supports every
+  // period for any explicit, on-demand use.
   const autoGenerate = useCallback(
     async (allData: AllCollections) => {
       // Debounce via localStorage
@@ -189,11 +193,8 @@ export function useScheduledReports(): UseScheduledReportsReturn {
       if (lastCheck && Date.now() - Number(lastCheck) < DEBOUNCE_MS) return;
       localStorage.setItem(DEBOUNCE_KEY, String(Date.now()));
 
-      // Generate stale reports in order of importance
-      for (const period of ["daily", "weekly", "monthly"] as const) {
-        if (isStale(period)) {
-          await generateReport(period, allData);
-        }
+      if (isStale("weekly")) {
+        await generateReport("weekly", allData);
       }
     },
     [isStale, generateReport],

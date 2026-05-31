@@ -182,18 +182,6 @@ const analyticsItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    label: "AI Dashboard",
-    href: "/admin/analytics/reports",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2a4 4 0 014 4v1h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2V6a4 4 0 014-4z" />
-        <circle cx="9" cy="14" r="1.5" />
-        <circle cx="15" cy="14" r="1.5" />
-        <path d="M9 18h6" />
-      </svg>
-    ),
-  },
 ];
 
 

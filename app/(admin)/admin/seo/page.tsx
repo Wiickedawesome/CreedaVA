@@ -7,6 +7,10 @@ import { AdminTabs, PageHeader } from "@/components/admin";
 import type { Tab } from "@/components/admin/tabs";
 
 // Lazy-load every section so the hub stays light and each tab only pays its own bundle cost.
+const AiSection = dynamic(() => import("./_components/sections/ai-section"), {
+  ssr: false,
+  loading: () => <SectionSkeleton label="Loading Creeda AI…" />,
+});
 const PagesSection = dynamic(() => import("./_components/sections/pages-section"), {
   ssr: false,
   loading: () => <SectionSkeleton label="Loading pages…" />,
@@ -15,7 +19,7 @@ const KeywordsSection = dynamic(() => import("./_components/sections/keywords-se
   ssr: false,
   loading: () => <SectionSkeleton label="Loading keywords…" />,
 });
-const OpportunitiesSection = dynamic(() => import("./_components/sections/opportunities-section"), {
+const OpportunitiesSection = dynamic(() => import("./_components/sections/opportunities-hub-section"), {
   ssr: false,
   loading: () => <SectionSkeleton label="Loading opportunities…" />,
 });
@@ -27,34 +31,31 @@ const OutreachSection = dynamic(() => import("./_components/sections/outreach-se
   ssr: false,
   loading: () => <SectionSkeleton label="Loading outreach…" />,
 });
-const CitationsSection = dynamic(() => import("./_components/sections/citations-section"), {
+const AgentDashboard = dynamic(() => import("./_components/sections/agent-hub-section"), {
   ssr: false,
-  loading: () => <SectionSkeleton label="Loading citations…" />,
+  loading: () => <SectionSkeleton label="Loading agent…" />,
 });
-const WeeklyDigestSection = dynamic(() => import("./_components/sections/weekly-digest-section"), {
-  ssr: false,
-  loading: () => <SectionSkeleton label="Loading digest…" />,
-});
-const AgentDashboard = dynamic(
-  () => import("./_components/agent-dashboard").then((m) => m.SeoAgentDashboard),
-  { ssr: false, loading: () => <SectionSkeleton label="Loading agent…" /> },
-);
 const TasksBoard = dynamic(
   () => import("./_components/tasks-board").then((m) => m.SeoTasksBoard),
   { ssr: false, loading: () => <SectionSkeleton label="Loading tasks…" /> },
 );
 
-type SectionId = "pages" | "keywords" | "opportunities" | "briefs" | "outreach" | "citations" | "digest" | "agent" | "tasks";
+type SectionId = "ai" | "pages" | "keywords" | "opportunities" | "briefs" | "outreach" | "agent" | "tasks";
+
+// Legacy ?section= values that now live inside a merged tab.
+const SECTION_ALIASES: Record<string, SectionId> = {
+  citations: "opportunities",
+  digest: "agent",
+};
 
 const SECTIONS: { value: SectionId; label: string; description: string }[] = [
+  { value: "ai", label: "Creeda AI", description: "Chat with Creeda AI about your whole business and watch your live health pulse." },
   { value: "pages", label: "Pages & Audits", description: "Manage on-page SEO metadata and run AI audits for each public page." },
   { value: "keywords", label: "Keywords", description: "Track target keywords, pull Search Console rankings, and get AI keyword ideas." },
-  { value: "opportunities", label: "Opportunities", description: "Content gaps, backlink prospects, and unlinked brand mentions found by the agent." },
+  { value: "opportunities", label: "Opportunities", description: "Content gaps, backlink prospects, brand mentions, and AIO/GEO citations found by the agent." },
   { value: "briefs", label: "Briefs", description: "AI-generated content briefs ready to hand off to writers." },
   { value: "outreach", label: "Outreach", description: "Draft and track backlink/PR outreach emails." },
-  { value: "citations", label: "Citations", description: "Monitor AIO/GEO citations — where AI engines mention CreedaVA." },
-  { value: "digest", label: "Weekly Digest", description: "The agent's weekly synthesized SEO summary and email." },
-  { value: "agent", label: "Agent", description: "Run the autonomous SEO agent on demand and review its run history." },
+  { value: "agent", label: "Agent", description: "Run the autonomous SEO agent, review its run history, and read the weekly digest." },
   { value: "tasks", label: "Tasks", description: "SEO action items generated from agent findings." },
 ];
 
@@ -71,9 +72,10 @@ export default function SeoHubPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const rawSection = (searchParams?.get("section") ?? "pages") as SectionId;
+  const rawSection = searchParams?.get("section") ?? "ai";
   const section: SectionId = useMemo(() => {
-    return SECTIONS.find((s) => s.value === rawSection)?.value ?? "pages";
+    const aliased = SECTION_ALIASES[rawSection] ?? rawSection;
+    return SECTIONS.find((s) => s.value === aliased)?.value ?? "ai";
   }, [rawSection]);
 
   const handleChange = useCallback(
@@ -94,7 +96,7 @@ export default function SeoHubPage() {
     <div className="space-y-6">
       <PageHeader
         title="SEO Hub"
-        description="Your operational SEO workspace — pages, keywords, the autonomous agent, and outreach. For business-wide AI reports, use the AI Dashboard."
+        description="Your operational SEO workspace — Creeda AI, pages, keywords, the autonomous agent, and outreach."
       />
       <div>
         <AdminTabs tabs={tabs} activeTab={section} onChange={handleChange} />
@@ -103,13 +105,12 @@ export default function SeoHubPage() {
         )}
       </div>
       <Suspense fallback={<SectionSkeleton label="Loading…" />}>
+        {section === "ai" && <AiSection />}
         {section === "pages" && <PagesSection />}
         {section === "keywords" && <KeywordsSection />}
         {section === "opportunities" && <OpportunitiesSection />}
         {section === "briefs" && <BriefsSection />}
         {section === "outreach" && <OutreachSection />}
-        {section === "citations" && <CitationsSection />}
-        {section === "digest" && <WeeklyDigestSection />}
         {section === "agent" && <AgentDashboard />}
         {section === "tasks" && <TasksBoard />}
       </Suspense>

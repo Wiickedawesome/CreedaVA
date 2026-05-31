@@ -14,13 +14,13 @@ describe("AIActivityRedirect", () => {
     mockRedirect.mockClear();
   });
 
-  it("redirects to /admin/analytics/reports when rendered", () => {
+  it("redirects to the Creeda AI SEO hub section when rendered", () => {
     try {
       AIActivityRedirect();
     } catch {
       // Next.js redirect() throws a special error — allow it
     }
-    expect(mockRedirect).toHaveBeenCalledWith("/admin/analytics/reports");
+    expect(mockRedirect).toHaveBeenCalledWith("/admin/seo?section=ai");
     expect(mockRedirect).toHaveBeenCalledTimes(1);
   });
 
@@ -31,6 +31,6 @@ describe("AIActivityRedirect", () => {
       // allowed
     }
     const [target] = mockRedirect.mock.calls[0] ?? [];
-    expect(target).toBe("/admin/analytics/reports");
+    expect(target).toBe("/admin/seo?section=ai");
   });
 });

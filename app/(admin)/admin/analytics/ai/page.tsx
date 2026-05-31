@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { ADMIN_ROUTE_ALIASES } from "@/lib/utils/admin-route-aliases";
 
-// AI Activity has been merged into the AI Dashboard
+// AI Activity / the former AI Dashboard now live as Creeda AI in the SEO Hub.
 export default function AIActivityRedirect() {
-  redirect(ADMIN_ROUTE_ALIASES.analyticsReports);
+  redirect(ADMIN_ROUTE_ALIASES.seoCreedaAI);
 }
