@@ -3,7 +3,7 @@
 import React, { Suspense, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
-import { AdminTabs } from "@/components/admin";
+import { AdminTabs, PageHeader } from "@/components/admin";
 import type { Tab } from "@/components/admin/tabs";
 
 // Lazy-load every section so the hub stays light and each tab only pays its own bundle cost.
@@ -46,16 +46,16 @@ const TasksBoard = dynamic(
 
 type SectionId = "pages" | "keywords" | "opportunities" | "briefs" | "outreach" | "citations" | "digest" | "agent" | "tasks";
 
-const SECTIONS: { value: SectionId; label: string }[] = [
-  { value: "pages", label: "Pages & Audits" },
-  { value: "keywords", label: "Keywords" },
-  { value: "opportunities", label: "Opportunities" },
-  { value: "briefs", label: "Briefs" },
-  { value: "outreach", label: "Outreach" },
-  { value: "citations", label: "Citations" },
-  { value: "digest", label: "Weekly Digest" },
-  { value: "agent", label: "Agent" },
-  { value: "tasks", label: "Tasks" },
+const SECTIONS: { value: SectionId; label: string; description: string }[] = [
+  { value: "pages", label: "Pages & Audits", description: "Manage on-page SEO metadata and run AI audits for each public page." },
+  { value: "keywords", label: "Keywords", description: "Track target keywords, pull Search Console rankings, and get AI keyword ideas." },
+  { value: "opportunities", label: "Opportunities", description: "Content gaps, backlink prospects, and unlinked brand mentions found by the agent." },
+  { value: "briefs", label: "Briefs", description: "AI-generated content briefs ready to hand off to writers." },
+  { value: "outreach", label: "Outreach", description: "Draft and track backlink/PR outreach emails." },
+  { value: "citations", label: "Citations", description: "Monitor AIO/GEO citations — where AI engines mention CreedaVA." },
+  { value: "digest", label: "Weekly Digest", description: "The agent's weekly synthesized SEO summary and email." },
+  { value: "agent", label: "Agent", description: "Run the autonomous SEO agent on demand and review its run history." },
+  { value: "tasks", label: "Tasks", description: "SEO action items generated from agent findings." },
 ];
 
 function SectionSkeleton({ label }: { label: string }) {
@@ -88,10 +88,20 @@ export default function SeoHubPage() {
   );
 
   const tabs: Tab[] = SECTIONS.map((s) => ({ label: s.label, value: s.value }));
+  const activeSection = SECTIONS.find((s) => s.value === section);
 
   return (
     <div className="space-y-6">
-      <AdminTabs tabs={tabs} activeTab={section} onChange={handleChange} />
+      <PageHeader
+        title="SEO Hub"
+        description="Your operational SEO workspace — pages, keywords, the autonomous agent, and outreach. For business-wide AI reports, use the AI Dashboard."
+      />
+      <div>
+        <AdminTabs tabs={tabs} activeTab={section} onChange={handleChange} />
+        {activeSection && (
+          <p className="mt-3 text-sm text-gray-50">{activeSection.description}</p>
+        )}
+      </div>
       <Suspense fallback={<SectionSkeleton label="Loading…" />}>
         {section === "pages" && <PagesSection />}
         {section === "keywords" && <KeywordsSection />}

@@ -44,12 +44,6 @@ import {
   buildSEOContext,
   buildMarketingContext,
   buildOperationsContext,
-  buildKeywordContext,
-  buildLandingPageContext,
-  buildBookingContext,
-  buildBlogContext,
-  buildForumContext,
-  buildContentVelocityContext,
 } from "@/lib/utils/ai-data-context";
 import { lazyGenerateText, lazySendMessageStream, lazyGetCurrentMessages, lazyNewConversation, lazyGetConversationHistory, lazySwitchConversation } from "@/lib/firebase/ai-lazy";
 import { useAuth } from "@/lib/firebase/auth-context";
@@ -106,21 +100,6 @@ const CATEGORIES: CategoryDef[] = [
     promptTemplate: `Analyze the CreedaVA sales pipeline. Cover: lead volume by source, conversion rate per stage, average deal value, pipeline velocity (time in each stage), win/loss analysis, booking-to-customer conversion. Identify bottlenecks and recommend 5 improvements. Score 0-100.`,
   },
   {
-    id: "competitor",
-    title: "Competitive Positioning",
-    description: "Strategic positioning, market gaps, differentiation analysis",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 00-3-3.87" />
-        <path d="M16 3.13a4 4 0 010 7.75" />
-      </svg>
-    ),
-    contextBuilder: buildFullContext,
-    promptTemplate: `Based on CreedaVA&apos;s current data (service offerings, content, marketing channels, pricing), provide a competitive positioning analysis for the virtual assistant services market. Cover: strengths vs typical VA companies, market differentiation opportunities, service gaps, content strategy vs industry best practices, pricing positioning. Recommend 5 strategic moves. Score 0-100.`,
-  },
-  {
     id: "operational",
     title: "Operational Efficiency",
     description: "Task throughput, project delivery, team productivity",
@@ -147,18 +126,6 @@ const CATEGORIES: CategoryDef[] = [
     promptTemplate: `Analyze CreedaVA&apos;s marketing ROI across all channels. Cover: campaign budget vs spend vs conversions, platform performance comparison, social media content output and engagement patterns, email campaign effectiveness, landing page conversion rates. Calculate cost-per-lead and cost-per-conversion where possible. Recommend 5 optimizations. Score 0-100.`,
   },
   {
-    id: "gap-analysis",
-    title: "Competitive Gap Analysis",
-    description: "Bridges the gap between CreedaVA and market leaders",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" />
-      </svg>
-    ),
-    contextBuilder: buildFullContext,
-    promptTemplate: `Perform a competitive gap analysis for CreedaVA vs. top VA competitors (Belay Solutions, Time Etc, Boldly, Wishup, MyOutDesk). Compare: service breadth, pricing transparency, bilingual capabilities, AI integration, customer acquisition channels, content marketing quality, SEO authority. Identify the top 5 gaps where CreedaVA trails and 3 where it leads. For each gap, recommend specific actions to close it. Score 0-100.`,
-  },
-  {
     id: "growth-forecast",
     title: "Growth Forecast",
     description: "Revenue trends, lead projections, and scaling readiness",
@@ -170,90 +137,7 @@ const CATEGORIES: CategoryDef[] = [
     contextBuilder: buildFullContext,
     promptTemplate: `Create a 90-day growth forecast for CreedaVA. Analyze current trends in: lead volume, conversion rates, revenue trajectory, customer acquisition cost, churn signals. Project forward based on current momentum. Identify the #1 growth lever and #1 risk. Recommend 5 strategic bets to accelerate growth. Score 0-100 (growth readiness).`,
   },
-  {
-    id: "keyword-health",
-    title: "Keyword Health",
-    description: "Keyword coverage, difficulty balance, intent gaps, ranking potential",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="4 7 4 4 20 4 20 7" /><line x1="9" y1="20" x2="15" y2="20" /><line x1="12" y1="4" x2="12" y2="20" />
-      </svg>
-    ),
-    contextBuilder: buildKeywordContext,
-    promptTemplate: `Analyze CreedaVA&apos;s keyword portfolio health. Evaluate: keyword count vs. recommended coverage for a VA company, difficulty distribution (too many hard keywords?), search intent balance (informational vs. commercial vs. transactional), keyword-to-content mapping (are all keywords covered by blog posts?), missing high-value keywords competitors rank for. Rate keyword portfolio diversity and identify the 5 highest-opportunity keywords to target next. Score 0-100.`,
-  },
-  {
-    id: "landing-page-perf",
-    title: "Landing Page Performance",
-    description: "Conversion potential, messaging alignment, A/B opportunities",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" />
-      </svg>
-    ),
-    contextBuilder: buildLandingPageContext,
-    promptTemplate: `Evaluate CreedaVA&apos;s landing page effectiveness. For each landing page, assess: status (published vs. draft ratio), messaging alignment with campaigns, service coverage (are all VA services represented?), CTA clarity, potential conversion bottlenecks. Cross-reference with campaign data to check traffic-to-landing-page alignment. Identify pages that need refresh, new pages to create, and A/B test opportunities. Score 0-100.`,
-  },
-  {
-    id: "booking-retention",
-    title: "Booking & Retention",
-    description: "Cancellation patterns, no-shows, service demand, rebooking rates",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /><path d="M8 14h.01" /><path d="M12 14h.01" /><path d="M16 14h.01" /><path d="M8 18h.01" /><path d="M12 18h.01" />
-      </svg>
-    ),
-    contextBuilder: buildBookingContext,
-    promptTemplate: `Analyze CreedaVA&apos;s booking and client retention metrics. Calculate: booking completion rate, cancellation rate (pending → cancelled), no-show rate, most requested services, booking-to-customer conversion rate, rebooking frequency for existing customers. Identify: cancellation patterns (by day/service), services with highest drop-off, and opportunities to improve retention. Recommend 5 specific actions to reduce cancellations and increase repeat bookings. Score 0-100.`,
-  },
-  {
-    id: "blog-perf",
-    title: "Blog Performance",
-    description: "Publishing cadence, topic coverage, SEO alignment, content gaps",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
-      </svg>
-    ),
-    contextBuilder: buildBlogContext,
-    promptTemplate: `Analyze CreedaVA&apos;s blog performance and content strategy. Evaluate: publishing frequency (posts/month), draft-to-published ratio, topic diversity (tag coverage), SEO optimization (keyword alignment with blog titles/content), content freshness (stale posts needing updates). Compare output against industry benchmarks for VA companies (2-4 posts/week ideal). Identify: top-performing content patterns, content gaps for key service areas, and repurposing opportunities. Recommend 5 specific content actions. Score 0-100.`,
-  },
-  {
-    id: "forum-health",
-    title: "Forum Health",
-    description: "Community engagement, thread activity, response rates, growth",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-      </svg>
-    ),
-    contextBuilder: buildForumContext,
-    promptTemplate: `Evaluate CreedaVA&apos;s community forum health. Analyze: thread volume and growth trend, average replies per thread, engagement rate (likes per thread), unanswered threads (0 replies), flagged content percentage, most popular tags/topics, power users (most active authors). Assess the community&apos;s vitality: is engagement growing, stagnant, or declining? Identify: topics that spark the most discussion, content gaps the community is asking about, and moderation health. Recommend 5 community growth strategies. Score 0-100.`,
-  },
-  {
-    id: "content-velocity",
-    title: "Content Velocity",
-    description: "Cross-channel content output speed and publishing momentum",
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-      </svg>
-    ),
-    contextBuilder: buildContentVelocityContext,
-    promptTemplate: `Measure CreedaVA&apos;s content velocity across all channels. Calculate output rates for: blog posts (per week/month), social media posts (per platform per week), email campaigns (per month), landing pages created, forum engagement (threads/replies). Compare against VA industry benchmarks. Identify: fastest-producing channels, bottleneck channels (low output), content repurposing opportunities (blog → social → email), and the overall content-to-lead conversion pipeline. Recommend 5 actions to accelerate content velocity without sacrificing quality. Score 0-100.`,
-  },
 ];
-
-// The "essentials" surfaced by default on the On-Demand tab. Everything else
-// stays available behind a "Show all reports" toggle so the dashboard stops
-// feeling like a wall of 16 generators.
-const PRIMARY_CATEGORY_IDS = new Set<AIReportType>([
-  "performance",
-  "seo",
-  "pipeline",
-  "marketing",
-  "growth-forecast",
-]);
 
 // ─── Helper: format Firestore date ───────────────────
 
@@ -722,7 +606,6 @@ export default function AIReportsDashboard() {
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<AIReport | null>(null);
   const [categoryGenerating, setCategoryGenerating] = useState<string | null>(null);
-  const [showAllCategories, setShowAllCategories] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1149,7 +1032,7 @@ export default function AIReportsDashboard() {
     <div className="space-y-6">
       <PageHeader
         title="AI Dashboard"
-        description="AI-powered business intelligence — reports, insights, and recommendations"
+        description="Business-wide AI intelligence — reports, insights, and recommendations across sales, ops, and marketing. For hands-on SEO work, use the SEO Hub."
         actions={
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
           <AIPromptButton
@@ -1157,12 +1040,8 @@ export default function AIReportsDashboard() {
             description="Ask AI anything about your business data"
             placeholder="e.g. What are my biggest revenue risks? Which leads should I prioritize?"
             presets={[
-              { label: "Full Analysis", prompt: "Generate a comprehensive business health analysis. Cover all areas: sales pipeline, revenue, marketing, SEO, operations. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
               { label: "Quick Pulse", prompt: "Give me a quick business pulse. What are the 3 most important things I should know right now? Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array)." },
               { label: "Risk Assessment", prompt: "Identify the top business risks and vulnerabilities. Check for: stale leads, overdue tasks, low conversion rates, content gaps, marketing spend inefficiency. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
-              { label: "Revenue Forecast", prompt: "Forecast revenue for the next 3 months based on current pipeline, conversion rates, and customer retention. Include best/worst/likely scenarios. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
-              { label: "Competitor Benchmark", prompt: "Compare our KPIs against typical VA industry benchmarks. Highlight where we outperform and underperform. Suggest 3 areas to close the gap. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
-              { label: "Monthly Recap", prompt: "Write a monthly business recap covering wins, losses, key metrics changes, and strategic recommendations for next month. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
               { label: "Customer Health", prompt: "Assess overall customer health. Analyze churn risk, satisfaction indicators, upsell readiness, and lifetime value trends. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
               { label: "Growth Blockers", prompt: "Identify the top 5 growth blockers across sales, marketing, and operations. For each: root cause, impact, and specific fix. Format as JSON with title, summaryHtml (HTML), highlights (array), recommendations (array), score (0-100)." },
             ]}
@@ -1345,7 +1224,7 @@ export default function AIReportsDashboard() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(showAllCategories ? CATEGORIES : CATEGORIES.filter((c) => PRIMARY_CATEGORY_IDS.has(c.id))).map((cat) => (
+            {CATEGORIES.map((cat) => (
               <ReportCategoryCard
                 key={cat.id}
                 icon={cat.icon}
@@ -1356,18 +1235,6 @@ export default function AIReportsDashboard() {
                 generating={categoryGenerating === cat.id}
               />
             ))}
-          </div>
-
-          <div className="flex justify-center">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowAllCategories((v) => !v)}
-            >
-              {showAllCategories
-                ? `Show essentials only (${PRIMARY_CATEGORY_IDS.size})`
-                : `Show all reports (${CATEGORIES.length})`}
-            </Button>
           </div>
 
           {/* On-demand history */}

@@ -55,6 +55,7 @@ export function SeoAgentDashboard() {
   });
   const { toast } = useToast();
   const [running, setRunning] = useState<SeoAgentSkill | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [cutoff] = useState<number>(() => Date.now() - 7 * 86_400_000);
 
   const stats = useMemo(() => {
@@ -101,6 +102,17 @@ export function SeoAgentDashboard() {
     }
   }
 
+  async function handleRefresh() {
+    setRefreshing(true);
+    try {
+      refetch();
+      // Brief delay so the spinner is visible and the fetch can land.
+      await new Promise((r) => setTimeout(r, 600));
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   return (
     <div>
       <DashboardSection title="Last 7 days">
@@ -130,7 +142,14 @@ export function SeoAgentDashboard() {
         </div>
       </DashboardSection>
 
-      <DashboardSection title="Recent runs">
+      <DashboardSection
+        title="Recent runs"
+        action={
+          <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </Button>
+        }
+      >
         {loading ? (
           <p className="text-sm text-gray-500">Loading…</p>
         ) : runs.length === 0 ? (
