@@ -14,6 +14,7 @@
 
 import { db } from "../admin";
 import { getAgentConfig } from "./config";
+import { matchesBrand } from "./backlinks";
 import { writeBlogDraftsFromBriefs } from "./content-writer";
 import { injectInternalLinks } from "./internal-links";
 import type { SkillContext, SkillResult } from "./types";
@@ -146,6 +147,15 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
         kind?: string;
         score?: number;
       };
+      // Guard against loosely-matched brand mentions ("Creed Ave", "Creedova",
+      // etc.) that may already be sitting in backlink-prospects from before the
+      // search filter was tightened — don't draft outreach for them.
+      if (
+        prosp.kind === "unlinked-brand-mention" &&
+        !matchesBrand(`${prosp.title ?? ""} ${prosp.url ?? ""} ${prosp.domain ?? ""}`)
+      ) {
+        continue;
+      }
       const emailId = `email_${prosp.id}`;
       const draft = composeOutreachEmail(prosp);
       await db.collection("outreach-emails").doc(emailId).set(

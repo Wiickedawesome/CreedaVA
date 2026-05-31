@@ -20,11 +20,23 @@ interface OutreachEmail {
   error?: string;
 }
 
+// Strict brand matcher — mirrors functions/src/seo/backlinks.ts. Hides legacy
+// brand-mention drafts that were loosely matched ("Creed Ave", "Creedova", …)
+// before the search filter was tightened.
+const BRAND_PATTERN = /\bcreedava\b|\bcreeda\s+va\b/;
+
+function isFalseBrandMention(e: OutreachEmail): boolean {
+  if (e.kind !== "unlinked-brand-mention") return false;
+  const text = `${e.targetTitle ?? ""} ${e.targetUrl ?? ""} ${e.targetDomain ?? ""}`.toLowerCase();
+  return !BRAND_PATTERN.test(text);
+}
+
 export default function OutreachSection() {
   const { data: emails, loading, edit } = useCollection<OutreachEmail>("outreach-emails", {
     orderByField: "score",
     orderDirection: "desc",
   });
+  const visibleEmails = emails.filter((e) => !isFalseBrandMention(e));
   const { toast } = useToast();
   const [updating, setUpdating] = useState<string | null>(null);
   const [toInputs, setToInputs] = useState<Record<string, string>>({});
@@ -73,11 +85,11 @@ export default function OutreachSection() {
       <DashboardSection title="All drafts">
         {loading ? (
           <p className="text-sm text-gray-500">Loading…</p>
-        ) : emails.length === 0 ? (
+        ) : visibleEmails.length === 0 ? (
           <p className="text-sm text-gray-500">No drafts yet. The agent generates outreach every Sunday.</p>
         ) : (
           <div className="space-y-3">
-            {emails.map((e) => (
+            {visibleEmails.map((e) => (
               <div key={e.id} className="bg-card rounded-lg border border-border p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div className="min-w-0">

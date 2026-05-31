@@ -81,6 +81,24 @@ export async function runBacklinksCompetitor(ctx: SkillContext): Promise<SkillRe
 
 // ─── Saturday: unlinked brand mentions ───────────────
 
+/**
+ * Strict brand matcher. The search API matches loosely, so queries like
+ * "creeda va" also return "Creed Ave", "Creed Avenue", or the "Creedova"
+ * misspelling. Only treat text as a real mention when it genuinely contains
+ * our brand:
+ *   • "creedava" written as one word (covers "CreedaVA", "creedava.com"), or
+ *   • "creeda va" as two distinct tokens (NOT "creed ave"/"creed avenue").
+ */
+const BRAND_PATTERN = /\bcreedava\b|\bcreeda\s+va\b/;
+
+export function matchesBrand(text: string): boolean {
+  return BRAND_PATTERN.test(text.toLowerCase());
+}
+
+function isGenuineBrandMention(hit: SearchHit): boolean {
+  return matchesBrand(`${hit.title} ${hit.snippet} ${hit.link}`);
+}
+
 export async function runBrandMentions(ctx: SkillContext): Promise<SkillResult> {
   const queries = [
     `"creedava" -site:${OUR_DOMAIN}`,
@@ -92,6 +110,7 @@ export async function runBrandMentions(ctx: SkillContext): Promise<SkillResult> 
     name: "brand",
     queries,
     classify: () => "unlinked-brand-mention",
+    accept: isGenuineBrandMention,
     maxResultsPerQuery: 10,
     /** Brand mentions are high-priority by default. */
     scoreFloor: 65,
@@ -104,6 +123,8 @@ interface SweepConfig {
   name: string;
   queries: string[];
   classify: (hit: SearchHit) => "resources-page" | "guest-post" | "competitor-mention" | "unlinked-brand-mention";
+  /** Optional precision gate — drop hits that don't truly match the intent. */
+  accept?: (hit: SearchHit) => boolean;
   maxResultsPerQuery?: number;
   scoreFloor?: number;
 }
@@ -132,6 +153,7 @@ async function runProspectSweep(ctx: SkillContext, cfg: SweepConfig): Promise<Sk
         // Don't list competitors as backlink targets except in competitor sweep.
         continue;
       }
+      if (cfg.accept && !cfg.accept(hit)) continue;         // precision gate (e.g. real brand mention)
       const kind = cfg.classify(hit);
       const id = `${kind}__${slug(domain)}__${slug(hit.link).slice(0, 50)}`.slice(0, 380);
       const score = scoreProspect(hit, domain, cfg.scoreFloor ?? 0);
