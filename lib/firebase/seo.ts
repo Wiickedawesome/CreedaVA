@@ -22,6 +22,12 @@ import type { Metadata } from "next";
 const SITE_NAME = "CreedaVA";
 const SITE_URL = "https://creedava.com";
 
+function nonEmpty(value: unknown, fallbackValue: string): string {
+  if (typeof value !== "string") return fallbackValue;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : fallbackValue;
+}
+
 async function _getPageSEO(
   path: string,
   defaults: { title: string; description: string },
@@ -38,10 +44,10 @@ async function _getPageSEO(
     const seo = snapshot.empty ? null : (snapshot.docs[0].data() as PageSEO);
     if (!seo) return fallback(path, defaults);
 
-    const title = seo.title || defaults.title;
-    const description = seo.description || defaults.description;
-    const ogTitle = seo.ogTitle || title;
-    const ogDescription = seo.ogDescription || description;
+    const title = nonEmpty(seo.title, defaults.title);
+    const description = nonEmpty(seo.description, defaults.description);
+    const ogTitle = nonEmpty(seo.ogTitle, title);
+    const ogDescription = nonEmpty(seo.ogDescription, description);
     const pageUrl = `${SITE_URL}${path}`;
 
     return {

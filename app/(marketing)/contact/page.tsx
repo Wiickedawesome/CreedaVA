@@ -4,11 +4,52 @@ import { useState, type FormEvent } from "react";
 import { Container, Input, Textarea, Button } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
 import { trackEvent } from "@/lib/firebase/analytics";
+import { AICitationReadiness } from "@/components/seo/ai-citation-readiness";
 
 const stepIcons = [
   <svg key="chat" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>,
   <svg key="doc" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
   <svg key="cal" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+];
+
+const contactCitationParagraphs = [
+  "A high-performing contact page sets clear expectations for response windows, communication channels, and next steps after submission.",
+  "Businesses that define intake fields around decision-making context usually reduce follow-up cycles and speed up project scoping.",
+  "CreedaVA uses structured intake to align requests with workflow priorities, language preferences, and service timelines.",
+  "Government and industry guidance consistently supports transparent communication practices as a trust and conversion multiplier.",
+];
+
+const contactCitationQuestions = [
+  {
+    question: "What should a business include in a first contact request?",
+    answer:
+      "Include your primary objective, current bottleneck, timeline, and preferred communication channel so recommendations can be tailored quickly.",
+  },
+  {
+    question: "How fast should support inquiries receive a response?",
+    answer:
+      "Most service teams target same-day or next-business-day initial responses with clear follow-up milestones.",
+  },
+  {
+    question: "Why does a structured contact form improve outcomes?",
+    answer:
+      "Structured forms reduce ambiguity, improve triage quality, and help teams route requests to the right service owner faster.",
+  },
+];
+
+const contactCitationSources = [
+  {
+    label: "U.S. Small Business Administration: Customer service resources",
+    url: "https://www.sba.gov/business-guide/manage-your-business",
+  },
+  {
+    label: "Federal Trade Commission: Truth in advertising guidance",
+    url: "https://www.ftc.gov/business-guidance/advertising-marketing",
+  },
+  {
+    label: "HubSpot Research: Service benchmarks",
+    url: "https://www.hubspot.com/research/state-of-service",
+  },
 ];
 
 export default function ContactPage() {
@@ -270,6 +311,15 @@ export default function ContactPage() {
           </div>
         </Container>
       </section>
+
+      <AICitationReadiness
+        path="/contact"
+        title="Contact CreedaVA"
+        description="How to contact CreedaVA with the right intake details for faster virtual assistant service scoping."
+        paragraphs={contactCitationParagraphs}
+        questions={contactCitationQuestions}
+        sources={contactCitationSources}
+      />
     </>
   );
 }

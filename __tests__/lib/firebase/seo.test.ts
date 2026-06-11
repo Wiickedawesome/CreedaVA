@@ -154,6 +154,29 @@ describe("getPageSEO", () => {
     expect(meta.description).toBe("Plans and pricing");
   });
 
+  it("uses default title/description when Firestore doc has whitespace-only fields", async () => {
+    mockGet.mockResolvedValue(mockSnapshot({
+      id: "2b",
+      path: "/terms",
+      title: "   ",
+      description: "\n\t",
+      ogTitle: "   ",
+      ogDescription: "   ",
+    }));
+
+    const meta = await getPageSEO("/terms", {
+      title: "Terms of Service",
+      description: "Read our terms.",
+    });
+
+    expect(meta.title).toBe("Terms of Service");
+    expect(meta.description).toBe("Read our terms.");
+
+    const og = meta.openGraph as Record<string, unknown>;
+    expect(og.title).toBe("Terms of Service");
+    expect(og.description).toBe("Read our terms.");
+  });
+
   it("includes noIndex robots directive when set", async () => {
     mockGet.mockResolvedValue(mockSnapshot({
       id: "3",
