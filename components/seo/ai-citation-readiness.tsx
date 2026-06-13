@@ -74,7 +74,7 @@ export function AICitationReadiness({
         <Container size="md">
           <div className="max-w-4xl mx-auto space-y-6">
             <h2 className="text-2xl lg:text-3xl font-bold text-gray-100">
-              Evidence-based guidance and common questions
+              Frequently asked questions and guidance
             </h2>
 
             {paragraphs.map((paragraph, index) => (
