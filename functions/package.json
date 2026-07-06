@@ -51,6 +51,7 @@
     },
     "fast-xml-builder": "1.1.7",
     "rimraf": "6.1.2",
+    "ts-deepmerge": "8.0.0",
     "uuid": "14.0.0"
   },
   "private": true
