@@ -7,6 +7,8 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
@@ -19,19 +21,17 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@types/mailparser": "^3.4.6",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "firebase-admin": "^13.6.1",
     "firebase-functions": "^7.0.5",
     "googleapis": "^171.4.0",
-    "imapflow": "^1.2.10",
-    "mailparser": "^3.9.3",
     "nodemailer": "^9.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/nodemailer": "^7.0.11",
+    "firebase-functions-test": "^3.5.0",
     "typescript": "^5.9.3"
   },
   "overrides": {

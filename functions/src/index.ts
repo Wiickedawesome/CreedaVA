@@ -32,11 +32,14 @@ export { listDriveFiles, createClientFolder, uploadReportToDrive } from "./googl
 // Webhooks (forms, etc.)
 export { handleFormWebhook } from "./webhooks";
 
-// Inbox (IMAP)
+// Inbox (Gmail API)
 export { fetchInbox, fetchEmailMessage, listMailboxFolders, syncInboxToFirestore } from "./inbox";
 
 // Scheduled tasks
-export { weeklyReport, monthlyReport, dailyGoogleSync, weeklyAISEOReview, cleanupAnalytics } from "./scheduled";
+export { dailyDigest, weeklyReport, monthlyReport } from "./scheduled-reports";
+export { dailyGoogleSync } from "./scheduled-sync";
+export { weeklyAISEOReview } from "./scheduled-seo";
+export { cleanupAnalytics } from "./scheduled-cleanup";
 
 // SEO Agent (daily skill rotation + manual trigger)
 export {

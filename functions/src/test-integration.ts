@@ -66,7 +66,7 @@ async function testAds(config: Record<string, string>): Promise<string> {
 
   const customerId = config.customerId.replace(/-/g, "");
   const res = await fetch(
-    `https://googleads.googleapis.com/v18/customers/${customerId}/googleAds:searchStream`,
+    `https://googleads.googleapis.com/v19/customers/${customerId}/googleAds:searchStream`,
     {
       method: "POST",
       headers: {

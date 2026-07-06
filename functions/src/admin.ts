@@ -33,6 +33,8 @@ const ENV_FALLBACK: Record<string, Record<string, string>> = {
     user: "SMTP_USER",
     pass: "SMTP_PASS",
     aliases: "SMTP_ALIASES",
+    serviceAccountEmail: "GMAIL_SERVICE_ACCOUNT_EMAIL",
+    serviceAccountKey: "GMAIL_SERVICE_ACCOUNT_KEY",
   },
   "google-calendar": {
     calendarId: "GCAL_CALENDAR_ID",

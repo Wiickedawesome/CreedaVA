@@ -36,7 +36,7 @@ async function fetchGoogleAdsData(
   const customerId = config.customerId.replace(/-/g, "");
 
   const response = await fetch(
-    `https://googleads.googleapis.com/v18/customers/${customerId}/googleAds:searchStream`,
+    `https://googleads.googleapis.com/v19/customers/${customerId}/googleAds:searchStream`,
     {
       method: "POST",
       headers: {
