@@ -77,13 +77,12 @@ export const fetchBusinessReviews = onCall(
         readMask: "name,title,storefrontAddress",
       });
 
-      // Fetch reviews directly via REST. The reviews endpoint still lives on
-      // the legacy v4 My Business API and requires the full
-      // "accounts/{id}/locations/{id}" resource path.
+      // Fetch reviews via the Business Profile API v1.
+      // Google deprecated the legacy v4 endpoint in early 2026.
       if (!accountName) {
         throw new HttpsError("failed-precondition", "Google Business accountId required for reviews fetch.");
       }
-      const reviewsUrl = `https://mybusiness.googleapis.com/v4/${accountName}/${locationName}/reviews`;
+      const reviewsUrl = `https://mybusiness.googleapis.com/v1/${accountName}/${locationName}/reviews`;
       const reviewsRes = await authClient_fetch(auth, reviewsUrl);
 
       const reviews = reviewsRes?.reviews || [];
