@@ -75,7 +75,6 @@ export default async function PricingPage() {
         paragraphs={pricingCitationParagraphs}
         questions={pricingCitationQuestions}
         sources={pricingCitationSources}
-        showSection={true}
       />
     </>
   );
