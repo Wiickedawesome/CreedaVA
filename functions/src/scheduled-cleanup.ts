@@ -45,7 +45,7 @@ const DAY = 24 * 60 * 60 * 1000;
 export const cleanupAnalytics = onSchedule(
   {
     schedule: "0 2 * * *",
-    ...functionOptions.scheduled,
+    ...functionOptions.scheduledHeavy,
   },
   async () => {
     const deleted = await pruneCollection("analytics", 90 * DAY);
