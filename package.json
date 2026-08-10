@@ -71,7 +71,7 @@
       "http-proxy-agent": "7.0.2"
     },
     "fast-xml-builder": "1.1.7",
-    "postcss": "8.5.13",
+    "postcss": "8.5.26",
     "rimraf": "6.1.2",
     "uuid": "14.0.0"
   }
