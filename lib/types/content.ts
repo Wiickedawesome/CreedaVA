@@ -30,6 +30,8 @@ export interface BlogPost extends FirestoreDoc {
   translations?: Record<string, ContentTranslation>;
   scheduledAt?: string;        // ISO date — auto-publish at this time
   unpublishAt?: string;        // ISO date — auto-unpublish (sunset) at this time
+  /** Auto-injected Article JSON-LD from the SEO synthesizer. */
+  jsonLd?: object;
 }
 
 export type BlogPostFormData = Omit<BlogPost, keyof FirestoreDoc>;

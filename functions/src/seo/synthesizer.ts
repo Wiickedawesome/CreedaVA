@@ -58,6 +58,103 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
       });
       tasksWritten++;
     }
+
+    // ─ Thin-content → auto content-brief ────────────
+    for (const doc of audits.docs) {
+      const a = doc.data();
+      const issues = (a.issues as Array<{ code: string }> | undefined) ?? [];
+      const hasThin = issues.some((i) => i.code === "thin-content");
+      if (!hasThin) continue;
+      const briefId = `brief_expand_${slug(a.pathKey as string ?? "unknown")}`;
+      try {
+        await db.collection("content-briefs").doc(briefId).set(
+          {
+            type: "expand-thin-content",
+            keyword: a.pathKey,
+            status: "draft",
+            priority: 65,
+            rankingPage: a.url,
+            wordCount: a.wordCount ?? 0,
+            recommendedOutline: [
+              `Expand existing content on ${a.pathKey} (currently ${a.wordCount ?? 0} words)`,
+              "Add detailed explanations, examples, and supporting data",
+              "Include FAQ section with 3–5 relevant questions",
+              "Target 800+ words minimum",
+            ],
+            generatedAt: new Date().toISOString(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          { merge: true },
+        );
+        briefsWritten++;
+      } catch (err) {
+        console.warn("[synthesizer] thin-content brief failed:", err);
+      }
+    }
+
+    // ─ Blog schema-missing → auto-inject Article JSON-LD ──
+    for (const doc of audits.docs) {
+      const a = doc.data();
+      const issues = (a.issues as Array<{ code: string }> | undefined) ?? [];
+      const hasSchemaIssue = issues.some((i) => i.code === "schema-missing");
+      if (!hasSchemaIssue) continue;
+      const pathKey = a.pathKey as string ?? "";
+      // Only auto-inject for blog posts — marketing pages need human review.
+      if (!pathKey.startsWith("/blog/")) continue;
+      const blogSlug = pathKey.replace(/^\/blog\//, "");
+      if (!blogSlug) continue;
+      try {
+        const blogSnap = await db
+          .collection("blog")
+          .where("slug", "==", blogSlug)
+          .limit(1)
+          .get();
+        if (blogSnap.empty) continue;
+        const blogDoc = blogSnap.docs[0];
+        const blogData = blogDoc.data();
+        // Only write if jsonLd isn't already present.
+        if (blogData.jsonLd) continue;
+        const articleSchema = {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: blogData.title ?? "",
+          description: blogData.excerpt ?? blogData.metaDescription ?? "",
+          author: {
+            "@type": "Organization",
+            name: "CreedaVA",
+            url: "https://creedava.com",
+          },
+          publisher: {
+            "@type": "Organization",
+            name: "CreedaVA",
+            url: "https://creedava.com",
+          },
+          datePublished: blogData.publishedAt ?? blogData.createdAt?.toDate?.()?.toISOString?.() ?? new Date().toISOString(),
+          dateModified: blogData.updatedAt?.toDate?.()?.toISOString?.() ?? new Date().toISOString(),
+          mainEntityOfPage: {
+            "@type": "WebPage",
+            "@id": `https://creedava.com/blog/${blogSlug}`,
+          },
+        };
+        await blogDoc.ref.set(
+          { jsonLd: articleSchema, updatedAt: new Date() },
+          { merge: true },
+        );
+        await db.collection("ai-activity-log").add({
+          toolName: "auto_inject_article_schema",
+          domain: "seo",
+          risk: "auto",
+          decision: "auto-execute",
+          args: { blogId: blogDoc.id, slug: blogSlug },
+          result: { success: true },
+          executedAt: new Date(),
+        });
+        tasksWritten++;
+      } catch (err) {
+        console.warn("[synthesizer] schema inject failed:", err);
+      }
+    }
   }
 
   // ─ Convert striking-distance gaps into content briefs + tasks ──
@@ -103,6 +200,42 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
         sources: { briefs: [briefId], gaps: [gap.id] },
         affectedPath: gap.rankingPage ?? null,
         area: "content",
+      });
+      tasksWritten++;
+    }
+
+    // ─ Low-CTR gaps → meta rewrite tasks ─────────────
+    const lowCtr = gaps.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .filter((g) => (g as { type?: string }).type === "low-ctr")
+      .sort((a, b) => ((b as { priority?: number }).priority ?? 0) - ((a as { priority?: number }).priority ?? 0))
+      .slice(0, 10);
+
+    for (const g of lowCtr) {
+      const gap = g as {
+        id: string;
+        keyword: string;
+        currentPosition?: number;
+        impressions?: number;
+        ctr?: number;
+        rankingPage?: string;
+      };
+      const taskId = `task_rewrite_meta_${slug(gap.keyword)}`;
+      const ctrPct = ((gap.ctr ?? 0) * 100).toFixed(1);
+      await upsertTask(taskId, {
+        kind: "rewrite-meta",
+        title: `Rewrite meta for low-CTR keyword "${gap.keyword}" (${ctrPct}% CTR)`,
+        description: [
+          `Page: ${gap.rankingPage ?? "unknown"}`,
+          `Position: #${Math.round(gap.currentPosition ?? 0)}, ${gap.impressions ?? 0} impressions, ${ctrPct}% CTR`,
+          `Action: Rewrite the meta title and description to be more compelling and click-worthy.`,
+          `Focus on: clear value proposition, action verbs, and addressing searcher intent for "${gap.keyword}".`,
+        ].join("\n"),
+        priority: Math.min(90, (gap.impressions ?? 0) > 500 ? 80 : 65),
+        status: "todo",
+        sources: { gaps: [gap.id] },
+        affectedPath: gap.rankingPage ?? null,
+        area: "meta",
       });
       tasksWritten++;
     }
@@ -167,6 +300,9 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
           targetTitle: prosp.title,
           subject: draft.subject,
           body: draft.body,
+          // Default to the general contact inbox — admin can update before sending.
+          // The send trigger requires toEmail to be set or it marks the doc needs-recipient.
+          toEmail: "contact@creedava.com",
           status: "draft",
           score: prosp.score ?? 0,
           generatedAt: new Date().toISOString(),
@@ -205,7 +341,11 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
       history.sort((a, b) => a.dayKey.localeCompare(b.dayKey));
       const oldAvg = avg(history.slice(0, Math.floor(history.length / 2)).map((x) => x.position));
       const newAvg = avg(history.slice(Math.floor(history.length / 2)).map((x) => x.position));
-      if (newAvg - oldAvg >= 5) {
+      const drop = newAvg - oldAvg;
+      // Threshold scales with position tier — a drop from #3→6 is far more
+      // impactful than a drop from #60→63. Flat threshold created noise.
+      const threshold = oldAvg <= 10 ? 3 : oldAvg <= 20 ? 5 : 8;
+      if (drop >= threshold) {
         const id = `task_rankdrop_${slug(kw)}`;
         await upsertTask(id, {
           kind: "investigate-rank-drop",
@@ -220,6 +360,74 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
         tasksWritten++;
       }
     }
+  }
+
+  // ─ Competitor content gaps → high-priority briefs ──
+  try {
+    const compGaps = await db.collection("competitor-content-gaps")
+      .where("updatedAt", ">=", since)
+      .orderBy("priority", "desc")
+      .limit(10)
+      .get();
+    for (const doc of compGaps.docs) {
+      const gap = doc.data() as {
+        keyword?: string;
+        ourPage?: string;
+        competitorWordCount?: number;
+        ourWordCount?: number;
+        competitorHeadings?: number;
+        ourHeadings?: number;
+        competitorSchemaTypes?: string[];
+        priority?: number;
+      };
+      if (!gap.keyword) continue;
+      const briefId = `brief_comp_${slug(gap.keyword)}`;
+      const wordGap = (gap.competitorWordCount ?? 0) - (gap.ourWordCount ?? 0);
+      const headingGap = (gap.competitorHeadings ?? 0) - (gap.ourHeadings ?? 0);
+      await db.collection("content-briefs").doc(briefId).set(
+        {
+          keyword: gap.keyword,
+          type: "competitor-gap",
+          status: "draft",
+          priority: gap.priority ?? 75,
+          rankingPage: gap.ourPage,
+          recommendedOutline: [
+            wordGap > 0 ? `Add ~${wordGap} more words to match competitor depth` : "Word count is competitive",
+            headingGap > 0 ? `Add ${headingGap} more section headings for structure` : "Heading structure is competitive",
+            ...(gap.competitorSchemaTypes?.length ? [`Add schema: ${gap.competitorSchemaTypes.join(", ")}`] : []),
+            "Add more images, examples, or data to increase engagement",
+            "Include FAQ section targeting PAA questions",
+          ],
+          competitorAnalysis: {
+            wordGap,
+            headingGap,
+            competitorSchemaTypes: gap.competitorSchemaTypes ?? [],
+          },
+          generatedAt: new Date().toISOString(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        { merge: true },
+      );
+      briefsWritten++;
+      await upsertTask(`task_${briefId}`, {
+        kind: "improve-content",
+        title: `Close competitor content gap for "${gap.keyword}"`,
+        description: [
+          `Your page: ${gap.ourPage ?? "N/A"} (${gap.ourWordCount ?? 0} words, ${gap.ourHeadings ?? 0} headings)`,
+          `Top competitor: ${gap.competitorWordCount ?? 0} words, ${gap.competitorHeadings ?? 0} headings`,
+          wordGap > 0 ? `Need ~${wordGap} more words.` : "Word count is competitive.",
+        ].join("\n"),
+        priority: gap.priority ?? 75,
+        status: "todo",
+        sources: { competitorGaps: [doc.id] },
+        affectedPath: gap.ourPage ?? null,
+        area: "content",
+      });
+      tasksWritten++;
+    }
+  } catch (err) {
+    console.warn("[synthesizer] competitor-content-gaps read failed:", err);
   }
 
   // ─ Brief → blog draft pipeline ──────────────────

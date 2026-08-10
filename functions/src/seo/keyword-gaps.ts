@@ -20,9 +20,11 @@ const KNOWN_COMPETITORS = [
   "boldly.com",
   "wishup.co",
   "myoutdesk.com",
-  "fancyhands.com",
+  "taskbullet.com",
+  "woodbows.com",
+  "prialto.com",
+  "equivity.com",
   "zirtual.com",
-  "magic.com",
 ];
 
 export async function runKeywordGaps(ctx: SkillContext): Promise<SkillResult> {

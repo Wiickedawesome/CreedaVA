@@ -7,7 +7,7 @@ import { useCollection } from "@/hooks/useCollection";
 import { createWithId, subscribe } from "@/lib/firebase/firestore";
 import { cloudTestIntegration, cloudVerifyAllIntegrations } from "@/lib/firebase/cloud-functions";
 import type { IntegrationTestResult, VerifyAllResult } from "@/lib/firebase/cloud-functions";
-import { AIPromptButton, PageHeader, useToast } from "@/components/admin";
+import { PageHeader, useToast } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { useAdminTheme } from "@/hooks/useAdminTheme";
 import type { AdminTheme } from "@/hooks/useAdminTheme";
@@ -513,10 +513,6 @@ const { toast } = useToast();
   return (
     <div className="space-y-8">
       <PageHeader title="Settings" description="Profile, preferences, and integrations" />
-      <AIPromptButton
-        section="Settings AI"
-        description="I can help you configure integrations, explain settings, and troubleshoot connection issues."
-      />
       {/* ─── Profile ──────────────────────────────────── */}
       <section className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-3 mb-5">

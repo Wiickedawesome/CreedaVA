@@ -20,9 +20,11 @@ const COMPETITOR_DOMAINS = [
   "boldly.com",
   "wishup.co",
   "myoutdesk.com",
-  "fancyhands.com",
+  "taskbullet.com",
+  "woodbows.com",
+  "prialto.com",
+  "equivity.com",
   "zirtual.com",
-  "magic.com",
 ];
 
 const RESOURCE_TOPICS = [
@@ -34,6 +36,15 @@ const RESOURCE_TOPICS = [
   "remote executive assistant",
   "bilingual virtual assistant",
   "virtual assistant Belize",
+  // Local VA directories + outsourcing platforms
+  "virtual assistant directory",
+  "hire va directory",
+  "outsourcing platforms",
+  "remote team services",
+  // LinkedIn + HARO-style authority building
+  "virtual assistant linkedin article",
+  "hire remote assistant expert tips",
+  "small business outsourcing guide",
 ];
 
 const RESOURCE_PATTERNS = [
@@ -43,6 +54,10 @@ const RESOURCE_PATTERNS = [
   '"resources"',
   '"useful links"',
   '"list of"',
+  // Directory / listing patterns
+  '"submit your site"',
+  '"add a listing"',
+  '"suggest a resource"',
 ];
 
 // ─── Thursday: resources / guest-post pages ──────────

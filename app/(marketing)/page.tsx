@@ -12,7 +12,8 @@ export const revalidate = 300;
 export async function generateMetadata() {
   return getPageSEO("/", {
     title: "CreedaVA — Bilingual Virtual Assistants for Your Business",
-    description: "Hire dedicated bilingual virtual assistants from Belize. Save 20+ hours per week on admin, customer service, and more.",
+    description:
+      "Hire dedicated bilingual virtual assistants from Belize. Save 20+ hours a week on admin, customer service, social media, and more. Flexible plans, no long-term contracts.",
   });
 }
 

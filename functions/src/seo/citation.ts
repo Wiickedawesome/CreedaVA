@@ -61,10 +61,13 @@ export async function runCitationAudit(ctx: SkillContext): Promise<SkillResult> 
       $("a[href$='.gov'], a[href*='.gov/'], a[href$='.edu'], a[href*='.edu/'], cite").length > 0;
     const headingDepth = $("h2,h3,h4").length;
 
-    // PAA probe — pick the most distinctive H2 and ask Google for "people also ask"
+    // PAA probe — pick the most distinctive H2 and ask Google for "people also ask".
+    // Skip for utility/non-content pages where headings are UI labels, not topics.
+    const NON_CONTENT_PATHS = ["/contact", "/pricing", "/about", "/join", "/terms", "/privacy", "/login", "/faq"];
+    const isContentPage = !NON_CONTENT_PATHS.some((p) => urlToPathKey(entry.url) === p);
     let paaCoverage = 0;
     const seedHeading = headings.find((h) => h.length > 12) ?? headings[0];
-    if (seedHeading && ctx.hasQuota()) {
+    if (isContentPage && seedHeading && ctx.hasQuota()) {
       const hits = await searchWithQuota(ctx, `${seedHeading} virtual assistant`, 5);
       if (hits === null) {
         // quota exhausted — bail and resume here next run

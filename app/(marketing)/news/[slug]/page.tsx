@@ -97,7 +97,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   let jsonLd: object | null = null;
   if (post) {
-    jsonLd = blogPostingJsonLd({
+    jsonLd = post.jsonLd || blogPostingJsonLd({
       title: post.title,
       slug,
       excerpt: post.excerpt || post.metaDescription || "",

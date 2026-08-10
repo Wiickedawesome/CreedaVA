@@ -22,6 +22,7 @@ import {
   runBrandMentions,
 } from "./seo/backlinks";
 import { runSynthesizer } from "./seo/synthesizer";
+import { runSerpAnalysis } from "./seo/serp-analysis";
 import type { AgentSkill, SkillContext, SkillResult, SeoAgentConfigDoc } from "./seo/types";
 
 const SKILL_LOCK_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -199,6 +200,8 @@ async function dispatch(skill: AgentSkill, ctx: SkillContext): Promise<SkillResu
       return runBrandMentions(ctx);
     case "synthesizer":
       return runSynthesizer(ctx);
+    case "serp-analysis":
+      return runSerpAnalysis(ctx);
     default: {
       const exhaustive: never = skill;
       throw new Error(`Unknown SEO skill: ${exhaustive as string}`);

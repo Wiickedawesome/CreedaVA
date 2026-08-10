@@ -75,8 +75,9 @@ export async function runRankHistory(ctx: SkillContext): Promise<SkillResult> {
 
   // Persist as one doc per (keyword,page,day). Use stable IDs so re-runs upsert.
   const dayKey = new Date().toISOString().split("T")[0];
-  const batch = db.batch();
+  let batch = db.batch();
   let written = 0;
+  let batchCount = 0;
   for (const row of rows) {
     if (!row.keyword || !row.page) continue;
     const id = `${dayKey}__${slug(row.keyword)}__${slug(row.page)}`.slice(0, 380);
@@ -98,16 +99,20 @@ export async function runRankHistory(ctx: SkillContext): Promise<SkillResult> {
       { merge: true },
     );
     written++;
-    // Firestore batch limit is 500.
-    if (written % 450 === 0) {
+    batchCount++;
+    // Firestore batch limit is 500 — commit and start a fresh batch.
+    if (batchCount >= 450) {
       await batch.commit();
+      batch = db.batch();
+      batchCount = 0;
     }
   }
-  if (written % 450 !== 0) {
+  // Commit any remaining writes.
+  if (batchCount > 0) {
     try {
       await batch.commit();
     } catch (err) {
-      console.warn("[rank-history] batch commit failed:", err);
+      console.warn("[rank-history] final batch commit failed:", err);
     }
   }
 

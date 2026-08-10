@@ -31,12 +31,15 @@ interface AuditOutput {
   h1Count: number;
   canonical: string | null;
   ogTags: { property: string; content: string }[];
+  hreflangTags: { hreflang: string; href: string }[];
   jsonLdTypes: string[];
   internalLinks: number;
   externalLinks: number;
   imageCount: number;
   imagesMissingAlt: number;
   wordCount: number;
+  /** Raw body text for meta description extraction. */
+  bodyText: string;
   issues: {
     code: string;
     severity: "info" | "low" | "medium" | "high";
@@ -77,6 +80,13 @@ function auditOne(url: string, status: number, html: string, ms: number): AuditO
     const property = $(el).attr("property")?.trim();
     const content = $(el).attr("content")?.trim();
     if (property && content) ogTags.push({ property, content });
+  });
+
+  const hreflangTags: { hreflang: string; href: string }[] = [];
+  $("head link[rel='alternate'][hreflang]").each((_, el) => {
+    const hreflang = $(el).attr("hreflang")?.trim();
+    const href = $(el).attr("href")?.trim();
+    if (hreflang && href) hreflangTags.push({ hreflang, href });
   });
 
   const jsonLdTypes: string[] = [];
@@ -164,6 +174,11 @@ function auditOne(url: string, status: number, html: string, ms: number): AuditO
     issues.push({ code: "schema-missing", severity: "low", message: "No JSON-LD structured data", fix: "Add Article/FAQ/Breadcrumb schema." });
     score -= 4;
   }
+  // Bilingual site serves ?lang=es — hreflang tags should be present
+  if (hreflangTags.length === 0) {
+    issues.push({ code: "hreflang-missing", severity: "low", message: "No hreflang tags — risk of duplicate content for bilingual pages", fix: "Add hreflang alternate links for en + es." });
+    score -= 3;
+  }
   if (imgs.length > 0 && imagesMissingAlt > 0) {
     issues.push({
       code: "alt-missing",
@@ -196,12 +211,14 @@ function auditOne(url: string, status: number, html: string, ms: number): AuditO
     h1Count: h1s.length,
     canonical,
     ogTags,
+    hreflangTags,
     jsonLdTypes,
     internalLinks,
     externalLinks,
     imageCount: imgs.length,
     imagesMissingAlt,
     wordCount,
+    bodyText: text,
     issues,
   };
 }
@@ -285,17 +302,27 @@ export async function runOnPageAudit(ctx: SkillContext): Promise<SkillResult> {
 }
 
 /**
- * Apply trivially-safe fixes to page-seo:
- *   - if title is missing/short → fall back to <h1> text or capitalized path
- *   - if meta is missing → use first paragraph (handled in citation skill)
+ * Apply trivially-safe fixes to page-seo.
+ *
+ * Handles:
+ *   - title-missing / title-short → fallback to <h1> text or capitalized path
+ *   - meta-missing / meta-short   → extract first substantial sentence from body
+ *   - og-missing                   → write ogTitle + ogDescription from title/desc
  *
  * Records before/after on the audit and a seo-tasks doc for rollback visibility.
  */
 async function tryAutoApplyMeta(audit: AuditOutput): Promise<boolean> {
-  const fixable = audit.issues.find(
-    (i) => i.autoFixable && (i.code === "title-missing" || i.code === "title-short"),
+  const fixableCodes = new Set(
+    audit.issues
+      .filter((i) => i.autoFixable)
+      .map((i) => i.code),
   );
-  if (!fixable) return false;
+
+  const needsTitle = fixableCodes.has("title-missing") || fixableCodes.has("title-short");
+  const needsMeta = fixableCodes.has("meta-missing") || fixableCodes.has("meta-short");
+  const needsOg = fixableCodes.has("og-missing");
+
+  if (!needsTitle && !needsMeta && !needsOg) return false;
 
   // Look up existing page-seo doc by path.
   let existingId: string | null = null;
@@ -315,40 +342,72 @@ async function tryAutoApplyMeta(audit: AuditOutput): Promise<boolean> {
     return false;
   }
 
-  // Build a candidate title: prefer existing > suggestion.
-  const suggested =
-    audit.title && audit.title.length >= 30 && audit.title.length <= 60
-      ? audit.title
-      : `CreedaVA — ${audit.pathKey === "/" ? "Virtual Assistant Services" : prettyPath(audit.pathKey)}`;
+  // ─── Build candidate title ────────────────────────
+  let suggestedTitle: string | null = null;
+  if (needsTitle) {
+    suggestedTitle =
+      audit.title && audit.title.length >= 30 && audit.title.length <= 60
+        ? audit.title
+        : `CreedaVA — ${audit.pathKey === "/" ? "Virtual Assistant Services" : prettyPath(audit.pathKey)}`;
+    // Skip if already matches.
+    if (existing?.title === suggestedTitle) suggestedTitle = null;
+  }
+
+  // ─── Build candidate meta description ─────────────
+  let suggestedDesc: string | null = null;
+  if (needsMeta) {
+    suggestedDesc = extractFirstSentence(audit.bodyText);
+    // Skip if already matches or extraction failed.
+    if (!suggestedDesc || existing?.description === suggestedDesc) suggestedDesc = null;
+  }
+
+  // Nothing actionable after de-dup?
+  if (!suggestedTitle && !suggestedDesc && !needsOg) return false;
 
   const before = existing
-    ? { title: existing.title, description: existing.description }
+    ? { title: existing.title, description: existing.description, ogTitle: existing.ogTitle, ogDescription: existing.ogDescription }
     : null;
-  const after = { title: suggested, description: existing?.description };
 
-  // Skip if there's nothing to do.
-  if (existing?.title === suggested) return false;
+  // Build the update payload.
+  const update: Record<string, unknown> = { updatedAt: new Date() };
+  if (suggestedTitle) update.title = suggestedTitle;
+  if (suggestedDesc) update.description = suggestedDesc;
+
+  // ─── OG fields: derive from best available title + description ───
+  if (needsOg) {
+    const bestTitle = suggestedTitle ?? (existing?.title as string | undefined) ?? null;
+    const bestDesc = suggestedDesc ?? (existing?.description as string | undefined) ?? null;
+    if (bestTitle) update.ogTitle = bestTitle;
+    if (bestDesc) update.ogDescription = bestDesc;
+  }
+
+  const after = {
+    title: suggestedTitle ?? existing?.title,
+    description: suggestedDesc ?? existing?.description,
+    ogTitle: update.ogTitle ?? existing?.ogTitle,
+    ogDescription: update.ogDescription ?? existing?.ogDescription,
+  };
+
+  const fixedCodes: string[] = [];
+  if (suggestedTitle) fixedCodes.push(needsTitle ? "title-missing/short" : "");
+  if (suggestedDesc) fixedCodes.push("meta-description");
+  if (needsOg && (update.ogTitle || update.ogDescription)) fixedCodes.push("og-tags");
 
   try {
     if (existingId) {
-      await db.collection("page-seo").doc(existingId).set(
-        { title: suggested, updatedAt: new Date() },
-        { merge: true },
-      );
+      await db.collection("page-seo").doc(existingId).set(update, { merge: true });
     } else {
       await db.collection("page-seo").add({
         path: audit.pathKey,
-        title: suggested,
-        description: "",
+        ...update,
         createdAt: new Date(),
-        updatedAt: new Date(),
       });
     }
 
     await db.collection("seo-tasks").add({
       kind: "fix-meta",
-      title: `Auto-applied title for ${audit.pathKey}`,
-      description: `Fixed "${fixable.code}" by setting title to "${suggested}".`,
+      title: `Auto-applied meta fixes for ${audit.pathKey}`,
+      description: `Fixed: ${fixedCodes.filter(Boolean).join(", ")}.`,
       priority: 60,
       status: "done",
       sources: { audits: [audit.pathKey] },
@@ -368,7 +427,7 @@ async function tryAutoApplyMeta(audit: AuditOutput): Promise<boolean> {
       domain: "seo",
       risk: "auto",
       decision: "auto-execute",
-      args: { path: audit.pathKey, code: fixable.code, before, after },
+      args: { path: audit.pathKey, codes: fixedCodes, before, after },
       result: { success: true },
       executedAt: new Date(),
     });
@@ -378,6 +437,33 @@ async function tryAutoApplyMeta(audit: AuditOutput): Promise<boolean> {
     console.warn("[onpage-audit] auto-apply failed:", err);
     return false;
   }
+}
+
+/**
+ * Extract the first sentence of ≥70 chars from the body text.
+ * Used for auto-generating meta descriptions.
+ */
+function extractFirstSentence(bodyText: string): string | null {
+  if (!bodyText || bodyText.length < 70) return null;
+  // Split on sentence-ending punctuation followed by whitespace.
+  const sentences = bodyText.split(/(?<=[.!?])\s+/);
+  // Find the first sentence that's substantial (≥70 chars).
+  for (const s of sentences) {
+    const trimmed = s.trim();
+    if (trimmed.length >= 70) {
+      // Cap at 160 chars for meta description best practice.
+      return trimmed.length > 160 ? trimmed.slice(0, 157) + "..." : trimmed;
+    }
+  }
+  // Fallback: concatenate until we hit 70+ chars.
+  let combined = "";
+  for (const s of sentences) {
+    combined += (combined ? " " : "") + s.trim();
+    if (combined.length >= 70) {
+      return combined.length > 160 ? combined.slice(0, 157) + "..." : combined;
+    }
+  }
+  return null;
 }
 
 function prettyPath(p: string): string {

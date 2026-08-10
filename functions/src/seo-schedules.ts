@@ -4,7 +4,7 @@
  * Daily skill rotation (America/Belize):
  *   Mon 03:00 → onpage-audit (uses some quota for follow-ups), and rank-history at 03:30 (zero CS quota)
  *   Tue 02:00 → keyword-gaps
- *   Wed 02:00 → citation-audit
+ *   Wed 02:00 → citation-audit, 03:00 → serp-analysis
  *   Thu 02:00 → backlinks-resources
  *   Fri 02:00 → backlinks-competitor
  *   Sat 02:00 → brand-mentions
@@ -60,6 +60,13 @@ export const seoAgentWed = onSchedule(
   },
 );
 
+export const seoAgentWedSerp = onSchedule(
+  { schedule: "0 3 * * 3", timeZone: TZ, region: REGION, memory: "1GiB", timeoutSeconds: 540, secrets: [GEMINI_API_KEY] },
+  async () => {
+    await runSeoAgent({ skill: "serp-analysis", source: "scheduled" });
+  },
+);
+
 export const seoAgentThu = onSchedule(
   { schedule: "0 2 * * 4", timeZone: TZ, region: REGION, memory: "512MiB", timeoutSeconds: 540, secrets: [GEMINI_API_KEY] },
   async () => {
@@ -95,6 +102,7 @@ const VALID_SKILLS: AgentSkill[] = [
   "rank-history",
   "keyword-gaps",
   "citation-audit",
+  "serp-analysis",
   "backlinks-resources",
   "backlinks-competitor",
   "brand-mentions",
