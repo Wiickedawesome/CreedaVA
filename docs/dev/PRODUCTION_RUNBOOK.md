@@ -8,9 +8,6 @@ This runbook covers production deploy, validation, and rollback for `creedava.co
 
 - Branch is up to date with `main`
 - CI is green (`Workflow lint`, app quality gates, functions build)
-- Required GitHub secrets are set:
-  - `FIREBASE_PROJECT_ID`
-  - `FIREBASE_TOKEN`
 - App Hosting variables are configured in `apphosting.yaml`
   - `NEXT_PUBLIC_GA_MEASUREMENT_ID`
   - `NEXT_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY` (when App Check is enabled)
@@ -34,18 +31,30 @@ cd functions && npm run build && cd ..
 SITE_URL=https://creedava.com npm run smoke:prod
 ```
 
-## Deploy (GitHub Actions)
+## Deploy
 
-Use workflow: `Deploy Firebase`
+There are two independent targets. A git push does not deploy either one on its own.
 
-- Environment: `production`
-- Optional input: `site_url` (default `https://creedava.com`)
+### 1. Next.js app (`creedava.com`)
 
-The workflow runs:
-1. Lint, tests, app build
-2. Functions build
-3. Firebase deploy (`firestore:rules,storage,functions`)
-4. Post-deploy smoke checks
+Served by the Firebase App Hosting backend `creeda-va-host` (us-east4).
+
+1. Merge/push to `main` and wait for CI to go green
+2. Firebase console → App Hosting → `creeda-va-host` → **Rollouts** → *Roll out* on the new commit
+   (or `firebase apphosting:rollouts:create creeda-va-host --git-commit <sha>`)
+3. Confirm the rollout reaches `SUCCEEDED` before verifying the site
+
+If no new rollout appears after a push, create one manually — production keeps
+serving the previous build until a rollout succeeds.
+
+### 2. Cloud Functions, Firestore rules and indexes, Storage rules
+
+```bash
+firebase deploy --only functions,firestore:rules,firestore:indexes,storage
+```
+
+Changes under `functions/` and `firestore.rules` only reach production through
+this deploy, never through an App Hosting rollout.
 
 ## Post-Deploy Manual Verification
 
@@ -79,7 +88,7 @@ the curated defaults in code apply. Re-running it is a no-op once clean.
 If production issues occur:
 
 1. Revert the faulty commit on `main`
-2. Re-run `Deploy Firebase` workflow
+2. Roll out the revert commit from App Hosting (see *Deploy* above)
 3. Confirm smoke checks pass
 4. Re-run manual verification checklist
 
