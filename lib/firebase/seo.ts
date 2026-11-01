@@ -22,10 +22,43 @@ import type { Metadata } from "next";
 const SITE_NAME = "CreedaVA";
 const SITE_URL = "https://creedava.com";
 
+/**
+ * Reject values corrupted by the SEO agent before the crawler fix:
+ * inline JSON-LD was captured as body text and written into `description`.
+ */
+function isUsableMetaValue(value: string): boolean {
+  return !value.includes('"@context"');
+}
+
 function nonEmpty(value: unknown, fallbackValue: string): string {
   if (typeof value !== "string") return fallbackValue;
   const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : fallbackValue;
+  return trimmed.length > 0 && isUsableMetaValue(trimmed) ? trimmed : fallbackValue;
+}
+
+/**
+ * Canonical + hreflang alternates for a route path.
+ *
+ * Every marketing page serves EN and ES from the same URL (the locale is a
+ * cookie), so only the English URL is crawlable — pointing `es-US` at
+ * `?lang=es` would advertise a Spanish page that renders English to crawlers.
+ * Add an `es-US` entry only if language-specific URLs are introduced.
+ */
+export function pageAlternates(path: string): NonNullable<Metadata["alternates"]> {
+  const url = canonicalUrl(path);
+
+  return {
+    canonical: url,
+    languages: {
+      "en-US": url,
+      "x-default": url,
+    },
+  };
+}
+
+/** Absolute site URL for a route path (the homepage has no trailing slash). */
+function canonicalUrl(path: string): string {
+  return `${SITE_URL}${path === "/" ? "" : path}`;
 }
 
 async function _getPageSEO(
@@ -48,16 +81,14 @@ async function _getPageSEO(
     const description = nonEmpty(seo.description, defaults.description);
     const ogTitle = nonEmpty(seo.ogTitle, title);
     const ogDescription = nonEmpty(seo.ogDescription, description);
-    const pageUrl = `${SITE_URL}${path}`;
+    const pageUrl = canonicalUrl(path);
 
     return {
       title,
       description,
       keywords: seo.keywords,
       ...(seo.noIndex ? { robots: { index: false, follow: false } } : {}),
-      alternates: {
-        canonical: pageUrl,
-      },
+      alternates: pageAlternates(path),
       openGraph: {
         title: ogTitle,
         description: ogDescription,
@@ -81,14 +112,12 @@ function fallback(
   path: string,
   defaults: { title: string; description: string },
 ): Metadata {
-  const pageUrl = `${SITE_URL}${path}`;
+  const pageUrl = canonicalUrl(path);
 
   return {
     title: defaults.title,
     description: defaults.description,
-    alternates: {
-      canonical: pageUrl,
-    },
+    alternates: pageAlternates(path),
     openGraph: {
       title: defaults.title,
       description: defaults.description,

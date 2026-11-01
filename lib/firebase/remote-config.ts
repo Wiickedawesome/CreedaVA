@@ -7,7 +7,7 @@
  *
  * Use cases:
  *   - Feature flags (toggle AI features, forum, etc.)
- *   - A/B test CTA copy and pricing page layout
+ *   - A/B test CTA copy and packages section layout
  *   - Switch AI model versions without redeployment
  *   - Adjust scheduling/availability windows
  *
@@ -41,7 +41,7 @@ const DEFAULTS = {
   // Marketing / CTA
   cta_hero_text: "Get Started Today",
   cta_hero_subtext: "Save time, reduce costs, and scale your operations.",
-  cta_pricing_text: "Start Your Free Trial",
+  cta_packages_text: "View Packages",
 
   // Scheduling
   booking_lead_time_hours: 24,

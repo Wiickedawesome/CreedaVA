@@ -24,9 +24,7 @@ export const metadata: Metadata = {
     "Professional virtual assistant services for businesses. Save time, reduce costs, and scale your operations with CreedaVA.",
   keywords: ["virtual assistant", "business services", "remote assistant", "bilingual virtual assistant", "CreedaVA"],
   metadataBase: new URL("https://creedava.com"),
-  alternates: {
-    canonical: "https://creedava.com",
-  },
+  // Canonical + hreflang are page-specific; each page's generateMetadata sets them.
   openGraph: {
     title: "CreedaVA — Virtual Assistant Services",
     description:

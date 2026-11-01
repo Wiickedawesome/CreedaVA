@@ -620,7 +620,7 @@ const seoTools: FunctionDeclaration[] = [
       properties: {
         pagePath: {
           type: SchemaType.STRING,
-          description: "The route path to generate SEO for (e.g., '/services', '/pricing')",
+          description: "The route path to generate SEO for (e.g., '/services', '/about')",
         },
       },
       required: ["pagePath"],

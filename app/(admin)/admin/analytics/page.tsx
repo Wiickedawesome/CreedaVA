@@ -326,7 +326,6 @@ function ConversionFunnel({
   const stages = [
     { label: "Homepage", match: (p: string) => p === "/" || p === "" },
     { label: "Services", match: (p: string) => p.includes("/services") },
-    { label: "Pricing", match: (p: string) => p.includes("/pricing") },
     { label: "Contact", match: (p: string) => p.includes("/contact") },
   ];
 

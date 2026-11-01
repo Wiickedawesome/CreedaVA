@@ -4,23 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
-
-const serviceHrefs = [
-  "/services#administrative",
-  "/services#customer",
-  "/services#social",
-  "/services#data",
-  "/services#bookkeeping",
-  "/services#web",
-  "/services#real-estate",
-  "/services#insurance",
-  "/services#ai-streamlining",
-];
+import { SERVICE_ANCHORS } from "@/lib/constants/services";
 
 const companyHrefs = [
   { href: "/about", key: "about" as const },
   { href: "/news", key: "news" as const },
-  { href: "/pricing", key: "pricing" as const },
   { href: "/contact", key: "contact" as const },
 ];
 
@@ -61,13 +49,13 @@ export function Footer() {
                 {t.footer.servicesCol}
               </h4>
               <ul className="space-y-3">
-                {t.footer.serviceLinks.map((label, i) => (
-                  <li key={i}>
+                {SERVICE_ANCHORS.map((anchor, i) => (
+                  <li key={anchor}>
                     <Link
-                      href={serviceHrefs[i]}
+                      href={`/services#${anchor}`}
                       className="text-sm text-gray-50 hover:text-white transition-colors"
                     >
-                      {label}
+                      {t.footer.serviceLinks[i]}
                     </Link>
                   </li>
                 ))}

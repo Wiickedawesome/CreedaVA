@@ -199,11 +199,11 @@ export function HomeContent({
                 {t.home.ctaBookConsultation}
               </Link>
               <Link
-                href="/pricing"
-                data-analytics-cta="home_footer_pricing"
+                href="/services#packages"
+                data-analytics-cta="home_footer_packages"
                 className="inline-flex items-center justify-center px-8 py-3 border-2 border-white text-white font-medium rounded-md hover:bg-white/10 transition-colors"
               >
-                {t.home.ctaViewPricing}
+                {t.home.ctaViewPackages}
               </Link>
             </div>
           </div>

@@ -26,7 +26,6 @@ const DEFAULT_PAGES: Omit<PageSEO, "id" | "createdAt" | "updatedAt">[] = [
   { path: "/", title: "CreedaVA — Virtual Assistant Services", description: "Professional virtual assistant services for businesses. Save time, reduce costs, and scale your operations with CreedaVA." },
   { path: "/services", title: "Services", description: "Explore CreedaVA's professional virtual assistant services including administrative support, customer service, social media management, and more." },
   { path: "/about", title: "About", description: "Learn about CreedaVA — a Belize-based virtual assistant agency bridging opportunity and talent for global businesses." },
-  { path: "/pricing", title: "Pricing", description: "Simple, transparent pricing for CreedaVA virtual assistant services. Choose the plan that fits your business." },
   { path: "/news", title: "News & Blog", description: "Stay up to date with the latest news, tips, and insights from CreedaVA." },
   { path: "/contact", title: "Contact", description: "Get in touch with CreedaVA. We'd love to hear about your business needs." },
   { path: "/faq", title: "FAQ", description: "Frequently asked questions about CreedaVA's virtual assistant services, pricing, onboarding, and more." },

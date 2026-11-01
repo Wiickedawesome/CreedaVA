@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
+import { pageAlternates } from "@/lib/firebase/seo";
 import ForumThreadContent from "./thread-content";
 
 interface Props {
@@ -27,9 +28,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!canUseAdminDb) {
     return {
-      title: "Forum Thread | CreedaVA Forum",
+      title: "Forum Thread",
       description: "Join the discussion on the CreedaVA community forum.",
-      alternates: { canonical: `https://creedava.com/forum/${id}` },
+      alternates: pageAlternates(`/forum/${id}`),
     };
   }
 
@@ -42,11 +43,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : "Join the discussion on the CreedaVA community forum.";
 
     return {
-      title: `${title} | CreedaVA Forum`,
+      title: `${title} — Forum`,
       description,
-      alternates: { canonical: `https://creedava.com/forum/${id}` },
+      alternates: pageAlternates(`/forum/${id}`),
       openGraph: {
-        title: `${title} | CreedaVA Forum`,
+        title: `${title} — Forum`,
         description,
         type: "article",
         url: `https://creedava.com/forum/${id}`,
@@ -54,9 +55,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch {
     return {
-      title: "Forum Thread | CreedaVA Forum",
+      title: "Forum Thread",
       description: "Join the discussion on the CreedaVA community forum.",
-      alternates: { canonical: `https://creedava.com/forum/${id}` },
+      alternates: pageAlternates(`/forum/${id}`),
     };
   }
 }

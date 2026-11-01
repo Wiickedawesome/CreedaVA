@@ -62,3 +62,7 @@ jobs:
       - name: Type-check + build
         working-directory: functions
         run: npm run build
+
+      - name: Unit tests
+        working-directory: functions
+        run: npm test

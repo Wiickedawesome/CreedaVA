@@ -8,7 +8,6 @@ import {
   blogPostingJsonLd,
   webPageJsonLd,
   forumPostingJsonLd,
-  pricingJsonLd,
   contactPageJsonLd,
 } from "@/lib/utils/structured-data";
 
@@ -151,10 +150,10 @@ describe("Structured Data (JSON-LD)", () => {
       const ld = webPageJsonLd({
         name: "Pricing",
         description: "Our plans",
-        url: "/pricing",
+        url: "/services",
       });
       expect(ld["@type"]).toBe("WebPage");
-      expect(ld.url).toBe(`${SITE}/pricing`);
+      expect(ld.url).toBe(`${SITE}/services`);
     });
 
     it("keeps absolute URLs as-is", () => {
@@ -196,22 +195,6 @@ describe("Structured Data (JSON-LD)", () => {
         replyCount: 0,
       });
       expect(ld.text.length).toBe(200);
-    });
-  });
-
-  // ─── pricingJsonLd ──────────────────────────────────
-
-  describe("pricingJsonLd", () => {
-    it("returns Product with offers", () => {
-      const ld = pricingJsonLd([
-        { name: "Basic", price: 499, description: "10 hrs/month" },
-        { name: "Pro", price: 999, description: "25 hrs/month" },
-      ]);
-      expect(ld["@type"]).toBe("Product");
-      expect(ld.offers).toHaveLength(2);
-      expect(ld.offers[0].price).toBe(499);
-      expect(ld.offers[0].priceCurrency).toBe("USD");
-      expect(ld.offers[1].name).toBe("Pro");
     });
   });
 

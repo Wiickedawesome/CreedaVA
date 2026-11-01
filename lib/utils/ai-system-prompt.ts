@@ -102,8 +102,8 @@ BRAND VOICE:
 PUBLIC PAGES (marketing site — creedava.com):
 - / (Homepage) — Hero, services overview, stats, testimonials, CTA
 - /services — Full service catalog with details
+- /services#packages — Service packages (Starter, Professional, Enterprise; hours + features, no published pricing)
 - /about — Company story, team, mission, values
-- /pricing — Service plans and pricing tiers
 - /news — Blog hub (SEO content, guides, industry insights)
 - /news/[slug] — Individual blog posts (rendered as rich HTML)
 - /contact — Contact form, phone, email, map
@@ -877,25 +877,27 @@ Use helper classes on your elements:
 CONVERSION PATTERNS (proven layouts that drive action):
 ════════════════════════════
 
-PRICING COMPARISON TABLE (3-column):
+PACKAGE COMPARISON TABLE (3-column):
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin:40px 0" class="cv-grid-3">
   <!-- Standard -->
   <div class="cv-lift" style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:20px;padding:32px;text-align:center">
     <p style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:#697077;margin-bottom:8px">Starter</p>
-    <p style="font-size:40px;font-weight:700;color:#002D72">$999<span style="font-size:16px;font-weight:400;color:#697077">/mo</span></p>
+    <p style="font-size:20px;font-weight:700;color:#002D72">160 hours/month</p>
     <div style="border-top:1px solid #DDE1E6;margin:20px 0;padding-top:20px">
       <!-- benefits list -->
     </div>
-    <a href="/join" style="display:block;padding:14px;background:#F9FBFF;color:#005148;font-weight:600;border-radius:8px;text-decoration:none">Get Started</a>
+    <a href="/contact" style="display:block;padding:14px;background:#F9FBFF;color:#005148;font-weight:600;border-radius:8px;text-decoration:none">Get a Quote</a>
   </div>
   <!-- Popular (highlighted) -->
   <div class="cv-lift cv-pulse" style="background:linear-gradient(135deg,#005148,#007A6D);border-radius:20px;padding:32px;text-align:center;color:white;position:relative;transform:scale(1.05)">
     <span style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 20px;background:#FF6B35;color:white;border-radius:100px;font-size:12px;font-weight:700;text-transform:uppercase">Most Popular</span>
     <p style="font-size:14px;text-transform:uppercase;letter-spacing:1px;opacity:0.8;margin-bottom:8px">Professional</p>
-    <p style="font-size:40px;font-weight:700">$1,799<span style="font-size:16px;font-weight:400;opacity:0.8">/mo</span></p>
-    <a href="/join" style="display:block;padding:14px;background:white;color:#005148;font-weight:700;border-radius:8px;text-decoration:none">Start Free Trial</a>
+    <p style="font-size:20px;font-weight:700">160 hours/month</p>
+    <a href="/contact" style="display:block;padding:14px;background:white;color:#005148;font-weight:700;border-radius:8px;text-decoration:none">Get a Quote</a>
   </div>
 </div>
+
+NOTE: Never publish prices, rates, or "starting at $X" claims. Packages are quoted per client.
 
 ROI CALCULATOR LAYOUT:
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;margin:48px 0" class="cv-grid-2">
@@ -1006,7 +1008,7 @@ COMPETITOR SEO ANALYSIS — WHERE THEY RANK AND WE DON'T:
 - "bilingual virtual assistant" — ZERO strong competitors → OUR BIGGEST OPPORTUNITY
 - "virtual assistant for small business" — Time Etc #2 → Target with case studies + long-form guides
 - "executive assistant services" — Boldly #1 → Differentiate on bilingual + AI augmentation
-- "virtual assistant pricing" — All competitors rank → Create transparent pricing comparison page
+- "virtual assistant pricing" — All competitors rank → Publish value/ROI and cost-comparison content (no published prices)
 
 INDUSTRY TRENDS TO LEVERAGE:
 - AI-augmented VA services (hybrid human+AI productivity) — we have this, competitors don't highlight it
@@ -1148,7 +1150,7 @@ HOW AI SEARCH ENGINES SELECT SOURCES:
    - "How to..." queries → Create step-by-step process content
    - "Best..." queries → Create comparison/ranking content with clear criteria
    - "What is..." queries → Create definitive definitional content
-   - Cost/pricing queries → Create transparent pricing breakdowns
+   - Cost/pricing queries → Create value/ROI breakdowns and link to /services#packages (never quote prices)
    - "vs" queries → Create head-to-head comparison content
 
 5. ENTITY OPTIMIZATION:
@@ -1221,7 +1223,7 @@ CREEDAVA GEO PRIORITIES:
 1. Publish monthly "VA Industry Report" with original data → highest citation potential
 2. Create definitive "What is a Virtual Assistant?" page → foundational entity content
 3. Build comparison pages: "CreedaVA vs Belay vs Time Etc" → AI comparison queries
-4. Publish pricing transparency page → AI pricing queries
+4. Publish cost-comparison and ROI content → AI pricing queries
 5. Create bilingual content hub → dominate Spanish AI queries (near-zero competition)`;
 
 // ─── SERP — Search Engine Results Page Mastery ───────
@@ -1354,7 +1356,7 @@ CreedaVA should run SEM strategically with clear ROI tracking.
    WINNING FORMULAS:
    - "Save 20+ Hours/Week | Hire a VA Today"
    - "Bilingual Virtual Assistants | English & Spanish Support"
-   - "From $999/mo | Dedicated VA for Your Business"
+   - "Book a Free Consultation | Dedicated VA for Your Business"
    - "500+ Happy Clients | Start Your Free Consultation"
    
    PIN REQUIREMENTS:
@@ -1383,7 +1385,7 @@ CreedaVA should run SEM strategically with clear ROI tracking.
 
 6. TRACKING & ATTRIBUTION:
    - Primary conversions: Form submissions, phone calls, booked consultations
-   - Micro-conversions: PDF downloads, newsletter signups, pricing page visits
+   - Micro-conversions: PDF downloads, newsletter signups, packages section visits
    - Attribution model: Data-driven (default for Google Ads)
    - GCLID tracking for full-funnel attribution
    - Offline conversion import from CRM (close rate per keyword)
@@ -1424,14 +1426,14 @@ Master these tools to extract actionable insights.
    
    CUSTOM EVENTS:
    - cta_click (params: cta_text, cta_location, page_path)
-   - pricing_view (params: plan_name, page_path)
+   - packages_view (params: package_name, page_path)
    - consultation_booked (params: service_type, source)
    - chat_initiated (params: page_path, time_on_page)
    - testimonial_interaction (params: testimonial_id, action)
 
 2. GA4 EXPLORATION TECHNIQUES:
    FUNNEL ANALYSIS:
-   Step 1: Landing page view → Step 2: Services/Pricing view → Step 3: CTA click → Step 4: Form submit → Step 5: Lead created
+   Step 1: Landing page view → Step 2: Services/Packages view → Step 3: CTA click → Step 4: Form submit → Step 5: Lead created
    - Identify drop-off points in each funnel step
    - Compare funnel performance by traffic source
    - Segment by device and user demographics
@@ -1492,7 +1494,7 @@ Master these tools to extract actionable insights.
    CONVERSION:
    - Goal conversion rate by page (target: >3% for service pages, >5% for landing pages)
    - Lead form completion rate (target: >15% of form starters)
-   - Micro-conversion rates (pricing page view, CTA click, resource download)
+   - Micro-conversion rates (packages section view, CTA click, resource download)
    - Conversion path length (touches before converting)
 
    RETENTION:
@@ -1587,8 +1589,7 @@ export const TECHNICAL_SEO_EXPERTISE = `TECHNICAL SEO DEEP DIVE — Infrastructu
 4. URL ARCHITECTURE:
    - creedava.com/ → Homepage
    - creedava.com/services → Services hub
-   - creedava.com/services/[service-slug] → Individual services
-   - creedava.com/pricing → Pricing page
+   - creedava.com/services#packages → Service packages
    - creedava.com/news → Blog hub
    - creedava.com/news/[post-slug] → Blog posts
    - creedava.com/lp/[campaign-slug] → Landing pages
@@ -1910,7 +1911,7 @@ FORMATTING (RICH HTML):
 - Highlight key phrases: <strong style="color:#005148">key phrase</strong>
 - Space paragraphs well: style="margin-bottom:16px" on <p> tags
 - Use unordered lists with spacing for key takeaways
-- Link to relevant CreedaVA pages: /services, /pricing, /join, /about
+- Link to relevant CreedaVA pages: /services, /services#packages, /join, /about
 - Include a styled discussion prompt at the end: <p style="background:linear-gradient(135deg,#005148,#007A6D);color:white;padding:16px 20px;border-radius:12px;font-weight:600;margin-top:24px">What are your thoughts? Share your experience below!</p>
 - Do NOT include <style> tags, CSS animations, or complex SVGs — keep it clean and readable
 - Do NOT include images — forums are text-focused
@@ -1919,7 +1920,7 @@ ENGAGEMENT PATTERNS:
 - End every thread with a question: "What has been your experience with…?"
 - Reference specific data when available (CRM stats, industry reports)
 - Mention related threads for internal linking: "As we discussed in [topic]…"
-- Include at least one CreedaVA service link where naturally relevant (/services, /pricing, /join)
+- Include at least one CreedaVA service link where naturally relevant (/services, /services#packages, /join)
 
 ═══════════════════════════════════
 REPLY GENERATION
@@ -2054,7 +2055,7 @@ CREATIVE REQUIREMENTS
 - Add hover effects using cv-lift class for cards (box-shadow: 0 10px 25px rgba(0,0,0,0.1), transform: translateY(-4px))
 - Use wave SVG dividers between major sections for visual flow
 - Include 1-2 Unsplash photos at strategic points (hero area, testimonials)
-- Use CONVERSION PATTERNS: pricing tables, ROI comparisons, guarantee sections, urgency banners
+- Use CONVERSION PATTERNS: package comparison tables, ROI comparisons, guarantee sections, urgency banners
 - Mix layouts: grids, icon+text rows, centered blocks, stat banners, flip cards
 - Include responsive @media queries for mobile rendering
 
@@ -2119,7 +2120,7 @@ Landing pages support WebPage JSON-LD (generated automatically). Ensure:
 - slug: 2-4 keyword-rich words, hyphenated (e.g., "virtual-assistant-belize")
 - Include primary keyword in H2 headings and first paragraph
 - Use alt text on all images with target keywords
-- Internal links: /services, /pricing, /about, /join as relevant
+- Internal links: /services, /services#packages, /about, /join as relevant
 
 ═══════════════════════════════════
 TECHNICAL RULES
@@ -2187,8 +2188,8 @@ INTERNAL LINKING
 ═══════════════════════════════════
 
 Every blog post MUST include internal links to relevant CreedaVA pages:
-- Service pages: /services (general), /services#administrative, /services#customer-service, etc.
-- Pricing: /pricing — link when discussing cost, value, ROI
+- Service pages: /services (general) plus section anchors: #administrative, #customer, #social, #data, #bookkeeping, #web, #real-estate, #insurance, #workflow-optimization
+- Packages: /services#packages — link when discussing cost, value, ROI (never quote a price)
 - Join/CTA: /join — link in CTA sections and when discussing getting started
 - About: /about — link when discussing CreedaVA's credentials, team, Belize operations
 - Contact: /contact — link when inviting questions or consultations

@@ -4,7 +4,6 @@ const en = {
     home: "Home",
     services: "Services",
     about: "About",
-    pricing: "Pricing",
     news: "News",
     contact: "Contact",
     signIn: "Sign In",
@@ -74,7 +73,7 @@ const en = {
     ctaDesc:
       "Join businesses that trust CreedaVA to handle their operations. Book a free consultation today.",
     ctaBookConsultation: "Book a Consultation",
-    ctaViewPricing: "View Pricing",
+    ctaViewPackages: "View Packages",
   },
 
   // ─── Services ──────────────────────────────────
@@ -192,6 +191,62 @@ const en = {
         ],
       },
     ],
+    packages: {
+      title: "Service Packages",
+      description:
+        "Three ways to work with us. Every package is staffed by a dedicated bilingual assistant \u2014 tell us what you need and we\u2019ll send a tailored quote.",
+      ctaButton: "Get a quote",
+      items: [
+        {
+          id: "starter",
+          name: "Starter",
+          hours: "160 hours/month",
+          desc: "Full-time dedicated support for businesses that need consistent assistance",
+          features: [
+            "Dedicated full-time VA",
+            "Bilingual support available",
+            "Priority response",
+            "Advanced task management",
+            "Weekly progress reports",
+            "Process documentation",
+            "Team collaboration tools",
+          ],
+        },
+        {
+          id: "professional",
+          badge: "Most Popular",
+          name: "Professional",
+          hours: "160 hours/month",
+          desc: "Premium full-time support with senior VAs and specialized expertise",
+          features: [
+            "Dedicated senior VA",
+            "Bilingual support available",
+            "Priority support 24/7",
+            "Weekly sync meetings",
+            "Advanced reporting & analytics",
+            "Process optimization",
+            "Specialized skills & training",
+            "Account manager",
+          ],
+        },
+        {
+          id: "enterprise",
+          name: "Enterprise",
+          hours: "Custom hours",
+          desc: "Tailored solutions for organizations with complex needs",
+          features: [
+            "Multiple VAs & specialists",
+            "Bilingual & multilingual support",
+            "24/7 priority support",
+            "Dedicated account manager",
+            "Custom workflows & integrations",
+            "Team lead coordination",
+            "SLA guarantees",
+            "Onboarding & training support",
+          ],
+        },
+      ],
+    },
     ctaTitle: "Need a Custom Solution?",
     ctaDesc:
       "We can tailor our services to meet your specific business requirements. Let\u2019s discuss what you need.",
@@ -226,75 +281,6 @@ const en = {
     ctaTitle: "Let\u2019s Work Together",
     ctaDesc: "Ready to take your business to the next level? We\u2019d love to hear from you.",
     ctaButton: "Get in Touch",
-  },
-
-  // ─── Pricing ───────────────────────────────────
-  pricing: {
-    heroTitle: "Simple, Transparent Pricing",
-    heroDesc: "No hidden fees. Transparent, straightforward pricing. Choose the plan that works for your business and scale as you grow.",
-    plans: [
-      {
-        name: "Starter",
-        price: "$1,499/month",
-        hours: "160 hours/month",
-        desc: "Full-time dedicated support for businesses that need consistent assistance",
-        features: [
-          "Dedicated full-time VA",
-          "Bilingual support available",
-          "Priority response",
-          "Advanced task management",
-          "Weekly progress reports",
-          "Process documentation",
-          "Team collaboration tools",
-        ],
-      },
-      {
-        name: "Professional",
-        badge: "Most Popular",
-        price: "$1,799/month",
-        hours: "160 hours/month",
-        desc: "Premium full-time support with senior VAs and specialized expertise",
-        features: [
-          "Dedicated senior VA",
-          "Bilingual support available",
-          "Priority support 24/7",
-          "Weekly sync meetings",
-          "Advanced reporting & analytics",
-          "Process optimization",
-          "Specialized skills & training",
-          "Account manager",
-        ],
-      },
-      {
-        name: "Enterprise",
-        price: "Custom",
-        hours: "Custom hours",
-        desc: "Tailored solutions for organizations with complex needs",
-        features: [
-          "Multiple VAs & specialists",
-          "Bilingual & multilingual support",
-          "24/7 priority support",
-          "Dedicated account manager",
-          "Custom workflows & integrations",
-          "Team lead coordination",
-          "SLA guarantees",
-          "Onboarding & training support",
-        ],
-      },
-    ],
-    ctaButton: "Get Started",
-    customTitle: "Need to Establish a Business?",
-    customDesc:
-      "From EIN registration and business licensing to website setup and beyond \u2014 we handle the administrative groundwork so you can launch with confidence.",
-    customButton: "Talk to Us Today",
-    faqTitle: "Frequently Asked Questions",
-    faqs: [
-      { q: "Can I switch plans?", a: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle." },
-      { q: "What if I need more hours?", a: "Additional hours can be purchased at any time. We also offer rollover on unused hours for Professional plan subscribers." },
-      { q: "What\u2019s included in onboarding?", a: "Onboarding includes a needs assessment, VA matching, brand-specific training, and full setup of your communication and workflow channels \u2014 all at no extra cost. Most clients are up and running within 5\u20137 business days." },
-      { q: "How do I get matched with a VA?", a: "After signing up, we assess your needs and pair you with a VA whose skills and experience match your requirements." },
-    ],
-    seeMore: "See more",
   },
 
   // ─── Contact ───────────────────────────────────
@@ -411,7 +397,7 @@ const en = {
         questions: [
           {
             q: "How much do your services cost?",
-            a: "Our pricing depends on the plan and hours you need. Visit our Pricing page for detailed plan options, or contact us for a custom quote tailored to your requirements.",
+            a: "Our pricing depends on the package and hours you need. See the service packages on our Services page, or contact us for a custom quote tailored to your requirements.",
           },
           {
             q: "Are there any setup fees?",
@@ -466,7 +452,6 @@ const en = {
     companyLinks: {
       about: "About Us",
       news: "News & Blog",
-      pricing: "Pricing",
       contact: "Contact",
     },
     supportLinks: {

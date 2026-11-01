@@ -57,6 +57,20 @@ The workflow runs:
 - Booking flow loads slots and submits from `https://creedava.com/join`
 - Admin auth flow works end-to-end (`/login` → `/admin`)
 
+### One-off: repair `page-seo`
+
+The on-page audit used to capture inline JSON-LD as body text, which wrote JSON
+blobs into `page-seo.description` / `ogDescription`. The site now ignores those
+values at read time, but the stored data should be cleaned once:
+
+```bash
+GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/repair-page-seo.mjs
+GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/repair-page-seo.mjs --apply
+```
+
+It also deletes the retired `/pricing` entry and strips duplicated `| CreedaVA`
+title suffixes.
+
 ## Rollback
 
 If production issues occur:

@@ -1,5 +1,5 @@
 import { Container } from "@/components/ui";
-import { faqJsonLd } from "@/lib/utils/structured-data";
+import { faqJsonLd, webPageJsonLd } from "@/lib/utils/structured-data";
 
 interface CitationQuestion {
   question: string;
@@ -19,9 +19,10 @@ interface AICitationReadinessProps {
   questions: CitationQuestion[];
   sources: CitationSource[];
   /**
-   * When true, renders the full visible FAQ section on the page.
-   * When false (default), only the invisible JSON-LD schema tags are emitted
-   * plus a small "See all FAQs" link at the bottom.
+   * When true, renders the full visible FAQ section on the page and emits
+   * FAQPage structured data. When false (default), only the WebPage JSON-LD
+   * is emitted plus a small "See all FAQs" link — Google requires FAQ markup
+   * to be backed by FAQ content that is visible on the page.
    */
   showSection?: boolean;
 }
@@ -40,42 +41,24 @@ export function AICitationReadiness({
   const normalizedPath = path === "/" ? "" : path;
   const pageUrl = `${SITE_URL}${normalizedPath}`;
 
-  const articleJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: title,
+  const pageJsonLd = webPageJsonLd({
+    name: title,
     description,
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": pageUrl,
-    },
-    author: {
-      "@type": "Organization",
-      name: "CreedaVA",
-      url: SITE_URL,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "CreedaVA",
-      url: SITE_URL,
-      logo: {
-        "@type": "ImageObject",
-        url: `${SITE_URL}/logo.webp`,
-      },
-    },
-    about: questions.map((item) => item.question),
-  };
+    url: pageUrl,
+  });
 
   return (
     <>
-      {/* Invisible JSON-LD schema — always emitted for SEO/AI citation signals */}
+      {/* JSON-LD schema for AI citation signals */}
+      {showSection && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(questions)) }}
+        />
+      )}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(questions)) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
       />
 
       {showSection ? (

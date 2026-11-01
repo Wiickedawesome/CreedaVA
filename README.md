@@ -92,7 +92,7 @@ npm run dev          # → http://localhost:3000
 
 ```
 app/
-├─ (marketing)/        ← Public pages (Home, Services, About, Pricing, News, etc.)
+├─ (marketing)/        ← Public pages (Home, Services, About, News, etc.)
 │  └─ layout.tsx       ← Shared Navbar + Footer
 ├─ (admin)/admin/      ← Protected CRM (17 pages)
 ├─ login/              ← Google sign-in (domain-restricted)

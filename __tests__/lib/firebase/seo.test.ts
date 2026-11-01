@@ -46,7 +46,7 @@ function mockSnapshot(data?: Record<string, unknown>) {
   };
 }
 
-import { getPageSEO } from "@/lib/firebase/seo";
+import { getPageSEO, pageAlternates } from "@/lib/firebase/seo";
 
 describe("getPageSEO", () => {
   beforeEach(() => {
@@ -140,18 +140,18 @@ describe("getPageSEO", () => {
   it("uses default title/description when Firestore doc has empty fields", async () => {
     mockGet.mockResolvedValue(mockSnapshot({
       id: "2",
-      path: "/pricing",
+      path: "/services",
       title: "",
       description: "",
     }));
 
-    const meta = await getPageSEO("/pricing", {
-      title: "Pricing",
-      description: "Plans and pricing",
+    const meta = await getPageSEO("/services", {
+      title: "Services",
+      description: "Service catalog and packages",
     });
 
-    expect(meta.title).toBe("Pricing");
-    expect(meta.description).toBe("Plans and pricing");
+    expect(meta.title).toBe("Services");
+    expect(meta.description).toBe("Service catalog and packages");
   });
 
   it("uses default title/description when Firestore doc has whitespace-only fields", async () => {
@@ -227,5 +227,22 @@ describe("getPageSEO", () => {
     expect(og.images?.[0].url).toBe("https://creedava.com/news-og.png");
     expect(og.images?.[0].width).toBe(1200);
     expect(og.images?.[0].height).toBe(630);
+  });
+
+  describe("pageAlternates", () => {
+    it("normalizes the homepage canonical without a trailing slash", () => {
+      expect(pageAlternates("/").canonical).toBe("https://creedava.com");
+    });
+
+    it("keeps the route path in the canonical", () => {
+      expect(pageAlternates("/services").canonical).toBe("https://creedava.com/services");
+    });
+
+    it("does not advertise an uncrawlable Spanish URL", () => {
+      const languages = pageAlternates("/services").languages as Record<string, string>;
+      expect(languages["en-US"]).toBe("https://creedava.com/services");
+      expect(languages["x-default"]).toBe("https://creedava.com/services");
+      expect(languages["es-US"]).toBeUndefined();
+    });
   });
 });

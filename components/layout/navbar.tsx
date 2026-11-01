@@ -11,7 +11,6 @@ const navRoutes = [
   { href: "/", key: "home" as const },
   { href: "/services", key: "services" as const },
   { href: "/about", key: "about" as const },
-  { href: "/pricing", key: "pricing" as const },
   { href: "/news", key: "news" as const },
   { href: "/contact", key: "contact" as const },
 ];

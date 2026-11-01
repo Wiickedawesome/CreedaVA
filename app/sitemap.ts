@@ -30,12 +30,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${BASE}/pricing`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
       url: `${BASE}/news`,
       lastModified: new Date(),
       changeFrequency: "daily",
@@ -136,8 +130,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.6,
       };
     });
-  } catch {
-    // No credentials available — return static pages only
+  } catch (err) {
+    // Missing credentials or a failed query — still serve the static pages,
+    // but surface the failure instead of silently returning an incomplete sitemap.
+    console.error("[sitemap] dynamic content query failed:", err);
   }
 
   return [...staticPages, ...blogPages, ...lpPages, ...forumPages];

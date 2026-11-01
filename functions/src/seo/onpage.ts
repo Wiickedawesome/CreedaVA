@@ -17,7 +17,7 @@ import type { SkillContext, SkillResult } from "./types";
 const FETCH_TIMEOUT_MS = 15_000;
 const MAX_URLS_PER_RUN = 80;
 
-interface AuditOutput {
+export interface AuditOutput {
   url: string;
   pathKey: string;
   score: number;
@@ -65,7 +65,7 @@ async function fetchWithTimeout(url: string): Promise<{ status: number; html: st
   }
 }
 
-function auditOne(url: string, status: number, html: string, ms: number): AuditOutput {
+export function auditOne(url: string, status: number, html: string, ms: number): AuditOutput {
   const pathKey = urlToPathKey(url);
   const $ = cheerio.load(html);
 
@@ -125,7 +125,11 @@ function auditOne(url: string, status: number, html: string, ms: number): AuditO
     if (alt === undefined || alt.trim() === "") imagesMissingAlt++;
   });
 
-  const text = $("body").text().replace(/\s+/g, " ").trim();
+  // Strip non-visible nodes first: cheerio's .text() includes <script> contents,
+  // which would feed inline JSON-LD into bodyText (and then into meta descriptions).
+  const $visibleBody = $("body").clone();
+  $visibleBody.find("script, style, noscript, template").remove();
+  const text = $visibleBody.text().replace(/\s+/g, " ").trim();
   const wordCount = text ? text.split(/\s+/).length : 0;
 
   const issues: AuditOutput["issues"] = [];

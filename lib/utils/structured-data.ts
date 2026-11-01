@@ -176,30 +176,6 @@ export function forumPostingJsonLd(opts: {
   };
 }
 
-// ─── Product + Offer (pricing page) ──────────────────
-
-export function pricingJsonLd(
-  plans: { name: string; price: number; description: string }[],
-) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: `${ORG_NAME} Virtual Assistant Services`,
-    description:
-      "Dedicated bilingual virtual assistant services for businesses",
-    brand: { "@type": "Brand", name: ORG_NAME },
-    offers: plans.map((p) => ({
-      "@type": "Offer",
-      name: p.name,
-      description: p.description,
-      price: p.price,
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-      url: `${SITE}/pricing`,
-    })),
-  };
-}
-
 // ─── ContactPage ─────────────────────────────────────
 
 export function contactPageJsonLd() {

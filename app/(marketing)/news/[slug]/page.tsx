@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
+import { pageAlternates } from "@/lib/firebase/seo";
 import { blogPostingJsonLd } from "@/lib/utils/structured-data";
 import { BlogPostContent } from "./blog-post-content";
 import type { BlogPost } from "@/lib/types/content";
@@ -60,11 +61,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const title = post.title;
     const description = post.metaDescription || post.excerpt || "";
     return {
-      title: `${title} | CreedaVA News`,
+      title: `${title} — News`,
       description,
-      alternates: { canonical: `https://creedava.com/news/${slug}` },
+      alternates: pageAlternates(`/news/${slug}`),
       openGraph: {
-        title: `${title} | CreedaVA News`,
+        title: `${title} — News`,
         description,
         type: "article",
         url: `https://creedava.com/news/${slug}`,
@@ -79,12 +80,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
   return {
-    title: `${title} | CreedaVA News`,
-    alternates: {
-      canonical: `https://creedava.com/news/${slug}`,
-    },
+    title: `${title} — News`,
+    alternates: pageAlternates(`/news/${slug}`),
     openGraph: {
-      title: `${title} | CreedaVA News`,
+      title: `${title} — News`,
       type: "article",
       url: `https://creedava.com/news/${slug}`,
     },

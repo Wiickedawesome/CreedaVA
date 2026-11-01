@@ -35,9 +35,8 @@ CreedaVA is a virtual assistant services platform built with **Next.js 16** (App
 │   │   ├── faq/                # FAQ page
 │   │   ├── forum/              # Community forum
 │   │   ├── news/               # Blog / news
-│   │   ├── pricing/            # Pricing tiers
+│   │   ├── services/           # Service catalog + packages
 │   │   ├── privacy/            # Privacy policy
-│   │   ├── services/           # Services overview
 │   │   ├── terms/              # Terms of service
 │   │   └── lp/                 # Landing pages
 │   ├── (admin)/admin/          # Protected CRM dashboard

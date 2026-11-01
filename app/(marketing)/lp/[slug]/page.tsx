@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
+import { pageAlternates } from "@/lib/firebase/seo";
 import LpContent from "./lp-content";
 
 interface Props {
@@ -39,11 +40,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         const title = lp.title || slug.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
         const description = lp.metaDescription || lp.excerpt || "";
         return {
-          title: `${title} | CreedaVA`,
+          title,
           description,
-          alternates: { canonical: `https://creedava.com/lp/${slug}` },
+          alternates: pageAlternates(`/lp/${slug}`),
           openGraph: {
-            title: `${title} | CreedaVA`,
+            title,
             description,
             url: `https://creedava.com/lp/${slug}`,
             type: "website",
@@ -61,9 +62,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
   return {
-    title: `${title} | CreedaVA`,
+    title,
+    alternates: pageAlternates(`/lp/${slug}`),
     openGraph: {
-      title: `${title} | CreedaVA`,
+      title,
       url: `https://creedava.com/lp/${slug}`,
       type: "website",
     },

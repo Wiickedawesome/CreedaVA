@@ -326,7 +326,7 @@ export default function LandingPagesPage() {
                   { label: "Service Promo", prompt: "Create a landing page promoting CreedaVA's executive assistant services with 'Get Started' CTA" },
                   { label: "Event Signup", prompt: "Create a landing page for a free webinar about how VAs can transform your business" },
                   { label: "Case Study LP", prompt: "Create a landing page showcasing a client success story with key metrics, testimonial, and a CTA to book a consultation" },
-                  { label: "Pricing Page", prompt: "Create a landing page comparing VA service plans (Basic, Professional, Enterprise) with features, pricing, and a CTA for each tier" },
+                  { label: "Packages Page", prompt: "Create a landing page comparing our three virtual assistant packages (Starter, Professional, Enterprise) with features and a CTA for each tier" },
                   { label: "Free Trial", prompt: "Create a landing page offering a free 1-week virtual assistant trial. Highlight zero-risk, no commitment, and immediate value" },
                   { label: "Industry Focus", prompt: "Create a landing page targeting real estate agents who need virtual assistant support. Address their specific pain points and workflows" },
                   { label: "Seasonal Offer", prompt: "Create a limited-time promotional landing page with urgency elements, a special discount, and countdown-style messaging for VA services" },

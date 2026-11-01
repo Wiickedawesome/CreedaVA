@@ -6,7 +6,6 @@ const es: Dictionary = {
     home: "Inicio",
     services: "Servicios",
     about: "Nosotros",
-    pricing: "Precios",
     news: "Noticias",
     contact: "Contacto",
     signIn: "Iniciar Sesi\u00f3n",
@@ -76,7 +75,7 @@ const es: Dictionary = {
     ctaDesc:
       "\u00danete a las empresas que conf\u00edan en CreedaVA para manejar sus operaciones. Agenda una consulta gratuita hoy.",
     ctaBookConsultation: "Agendar Consulta",
-    ctaViewPricing: "Ver Precios",
+    ctaViewPackages: "Ver Paquetes",
   },
 
   // ─── Services ──────────────────────────────────
@@ -194,6 +193,62 @@ const es: Dictionary = {
         ],
       },
     ],
+    packages: {
+      title: "Paquetes de Servicios",
+      description:
+        "Tres formas de trabajar con nosotros. Cada paquete incluye un asistente biling\u00fce dedicado \u2014 cu\u00e9ntanos qu\u00e9 necesitas y te enviaremos una cotizaci\u00f3n a medida.",
+      ctaButton: "Solicitar cotizaci\u00f3n",
+      items: [
+        {
+          id: "starter",
+          name: "Inicial",
+          hours: "160 horas/mes",
+          desc: "Soporte dedicado de tiempo completo para empresas que necesitan asistencia consistente",
+          features: [
+            "AV dedicado de tiempo completo",
+            "Soporte biling\u00fce disponible",
+            "Respuesta prioritaria",
+            "Gesti\u00f3n avanzada de tareas",
+            "Informes semanales de progreso",
+            "Documentaci\u00f3n de procesos",
+            "Herramientas de colaboraci\u00f3n en equipo",
+          ],
+        },
+        {
+          id: "professional",
+          badge: "M\u00e1s Popular",
+          name: "Profesional",
+          hours: "160 horas/mes",
+          desc: "Soporte premium de tiempo completo con AVs senior y experiencia especializada",
+          features: [
+            "AV senior dedicado",
+            "Soporte biling\u00fce disponible",
+            "Soporte prioritario 24/7",
+            "Reuniones semanales de sincronizaci\u00f3n",
+            "An\u00e1lisis e informes avanzados",
+            "Optimizaci\u00f3n de procesos",
+            "Habilidades y capacitaci\u00f3n especializada",
+            "Gerente de cuenta",
+          ],
+        },
+        {
+          id: "enterprise",
+          name: "Empresarial",
+          hours: "Horas personalizadas",
+          desc: "Soluciones a medida para organizaciones con necesidades complejas",
+          features: [
+            "M\u00faltiples AVs y especialistas",
+            "Soporte biling\u00fce y multiling\u00fce",
+            "Soporte prioritario 24/7",
+            "Gerente de cuenta dedicado",
+            "Flujos de trabajo e integraciones personalizados",
+            "Coordinaci\u00f3n de l\u00edder de equipo",
+            "Garant\u00edas SLA",
+            "Soporte de incorporaci\u00f3n y capacitaci\u00f3n",
+          ],
+        },
+      ],
+    },
     ctaTitle: "\u00bfNecesitas una Soluci\u00f3n Personalizada?",
     ctaDesc:
       "Podemos adaptar nuestros servicios para cumplir con los requisitos espec\u00edficos de tu negocio. Hablemos de lo que necesitas.",
@@ -228,75 +283,6 @@ const es: Dictionary = {
     ctaTitle: "Trabajemos Juntos",
     ctaDesc: "\u00bfListo para llevar tu negocio al siguiente nivel? Nos encantar\u00eda saber de ti.",
     ctaButton: "Ponte en Contacto",
-  },
-
-  // ─── Pricing ───────────────────────────────────
-  pricing: {
-    heroTitle: "Precios Simples y Transparentes",
-    heroDesc: "Sin cargos ocultos. Precios transparentes y directos. Elige el plan que funcione para tu negocio y escala a medida que creces.",
-    plans: [
-      {
-        name: "Inicial",
-        price: "$1,499/mes",
-        hours: "160 horas/mes",
-        desc: "Soporte dedicado de tiempo completo para empresas que necesitan asistencia consistente",
-        features: [
-          "AV dedicado de tiempo completo",
-          "Soporte biling\u00fce disponible",
-          "Respuesta prioritaria",
-          "Gesti\u00f3n avanzada de tareas",
-          "Informes semanales de progreso",
-          "Documentaci\u00f3n de procesos",
-          "Herramientas de colaboraci\u00f3n en equipo",
-        ],
-      },
-      {
-        name: "Profesional",
-        badge: "M\u00e1s Popular",
-        price: "$1,799/mes",
-        hours: "160 horas/mes",
-        desc: "Soporte premium de tiempo completo con AVs senior y experiencia especializada",
-        features: [
-          "AV senior dedicado",
-          "Soporte biling\u00fce disponible",
-          "Soporte prioritario 24/7",
-          "Reuniones semanales de sincronizaci\u00f3n",
-          "An\u00e1lisis e informes avanzados",
-          "Optimizaci\u00f3n de procesos",
-          "Habilidades y capacitaci\u00f3n especializada",
-          "Gerente de cuenta",
-        ],
-      },
-      {
-        name: "Empresarial",
-        price: "Personalizado",
-        hours: "Horas personalizadas",
-        desc: "Soluciones a medida para organizaciones con necesidades complejas",
-        features: [
-          "M\u00faltiples AVs y especialistas",
-          "Soporte biling\u00fce y multiling\u00fce",
-          "Soporte prioritario 24/7",
-          "Gerente de cuenta dedicado",
-          "Flujos de trabajo e integraciones personalizados",
-          "Coordinaci\u00f3n de l\u00edder de equipo",
-          "Garant\u00edas SLA",
-          "Soporte de incorporaci\u00f3n y capacitaci\u00f3n",
-        ],
-      },
-    ],
-    ctaButton: "Empezar",
-    customTitle: "\u00bfNecesitas Establecer un Negocio?",
-    customDesc:
-      "Desde el registro de EIN y licencias comerciales hasta la creaci\u00f3n de tu sitio web y m\u00e1s \u2014 nos encargamos del trabajo administrativo para que lances tu negocio con confianza.",
-    customButton: "Habla con Nosotros Hoy",
-    faqTitle: "Preguntas Frecuentes",
-    faqs: [
-      { q: "\u00bfPuedo cambiar de plan?", a: "S\u00ed, puedes mejorar o reducir tu plan en cualquier momento. Los cambios toman efecto al inicio de tu pr\u00f3ximo ciclo de facturaci\u00f3n." },
-      { q: "\u00bfQu\u00e9 pasa si necesito m\u00e1s horas?", a: "Se pueden comprar horas adicionales en cualquier momento. Tambi\u00e9n ofrecemos rollover de horas no utilizadas para suscriptores del plan Profesional." },
-      { q: "\u00bfQu\u00e9 incluye la incorporaci\u00f3n?", a: "La incorporaci\u00f3n incluye una evaluaci\u00f3n de necesidades, emparejamiento con el AV adecuado, capacitaci\u00f3n espec\u00edfica de tu marca y la configuraci\u00f3n completa de canales de comunicaci\u00f3n y flujo de trabajo \u2014 todo sin costo adicional. La mayor\u00eda de los clientes est\u00e1n operativos en 5 a 7 d\u00edas h\u00e1biles." },
-      { q: "\u00bfC\u00f3mo me emparejan con un AV?", a: "Despu\u00e9s de registrarte, evaluamos tus necesidades y te emparejamos con un AV cuyas habilidades y experiencia coincidan con tus requisitos." },
-    ],
-    seeMore: "Ver m\u00e1s",
   },
 
   // ─── Contact ───────────────────────────────────
@@ -413,7 +399,7 @@ const es: Dictionary = {
         questions: [
           {
             q: "\u00bfCu\u00e1nto cuestan sus servicios?",
-            a: "Nuestros precios dependen del plan y las horas que necesites. Visita nuestra p\u00e1gina de Precios para opciones detalladas de planes, o cont\u00e1ctanos para una cotizaci\u00f3n personalizada adaptada a tus requisitos.",
+            a: "Nuestros precios dependen del paquete y las horas que necesites. Consulta los paquetes de servicios en nuestra p\u00e1gina de Servicios, o cont\u00e1ctanos para una cotizaci\u00f3n personalizada adaptada a tus requisitos.",
           },
           {
             q: "\u00bfHay cargos de configuraci\u00f3n?",
@@ -468,7 +454,6 @@ const es: Dictionary = {
     companyLinks: {
       about: "Nosotros",
       news: "Noticias y Blog",
-      pricing: "Precios",
       contact: "Contacto",
     },
     supportLinks: {

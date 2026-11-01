@@ -1,18 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ui";
+import { PACKAGES_ANCHOR, SERVICE_ANCHORS } from "@/lib/constants/services";
 import type { Dictionary } from "@/lib/i18n";
-
-const serviceIds = [
-  "administrative",
-  "customer",
-  "social",
-  "data",
-  "bookkeeping",
-  "web",
-  "real-estate",
-  "insurance",
-  "workflow-optimization",
-];
 
 const serviceIcons = [
   <svg key="admin" className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>,
@@ -50,9 +39,9 @@ export function ServicesContent({ t }: { t: Dictionary }) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {t.services.categories.map((service, i) => (
               <div
-                key={serviceIds[i]}
-                id={serviceIds[i]}
-                className="group bg-white border border-border rounded-2xl p-8 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
+                key={SERVICE_ANCHORS[i]}
+                id={SERVICE_ANCHORS[i]}
+                className="group bg-white border border-border rounded-2xl p-8 scroll-mt-24 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
               >
                 <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                   {serviceIcons[i]}
@@ -75,6 +64,108 @@ export function ServicesContent({ t }: { t: Dictionary }) {
                 </ul>
               </div>
             ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* Service Packages */}
+      <section id={PACKAGES_ANCHOR} className="py-20 lg:py-28 bg-gray-10 scroll-mt-20">
+        <Container>
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-100 mb-4">
+              {t.services.packages.title}
+            </h2>
+            <p className="text-lg text-gray-60 leading-relaxed">
+              {t.services.packages.description}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {t.services.packages.items.map((pkg, i) => {
+              const popular = i === 1;
+              return (
+                <div
+                  key={pkg.id}
+                  id={`package-${pkg.id}`}
+                  className={`relative rounded-2xl p-8 scroll-mt-24 ${
+                    popular
+                      ? "bg-primary text-white ring-4 ring-primary/20 md:scale-105"
+                      : "bg-white border border-border"
+                  }`}
+                >
+                  {"badge" in pkg && (
+                    <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-accent text-white text-sm font-medium rounded-full">
+                      {pkg.badge}
+                    </span>
+                  )}
+
+                  <div className="mb-8">
+                    <h3
+                      className={`text-xl font-bold mb-1 ${
+                        popular ? "text-white" : "text-gray-100"
+                      }`}
+                    >
+                      {pkg.name}
+                    </h3>
+                    <p
+                      className={`text-sm font-semibold mb-2 ${
+                        popular ? "text-white/90" : "text-gray-100"
+                      }`}
+                    >
+                      {pkg.hours}
+                    </p>
+                    <p
+                      className={`text-sm ${
+                        popular ? "text-white/70" : "text-gray-60"
+                      }`}
+                    >
+                      {pkg.desc}
+                    </p>
+                  </div>
+
+                  <ul className="space-y-3 mb-8">
+                    {pkg.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-3">
+                        <svg
+                          className={`w-5 h-5 mt-0.5 shrink-0 ${
+                            popular ? "text-white" : "text-success"
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        <span
+                          className={`text-sm ${
+                            popular ? "text-white/90" : "text-gray-70"
+                          }`}
+                        >
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    href="/contact"
+                    data-analytics-cta={`package_${pkg.id}_quote`}
+                    className={`block w-full text-center py-3 rounded-md font-medium transition-colors ${
+                      popular
+                        ? "bg-white text-primary hover:bg-gray-10"
+                        : "bg-primary text-white hover:bg-primary-hover"
+                    }`}
+                  >
+                    {t.services.packages.ctaButton}
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </Container>
       </section>
