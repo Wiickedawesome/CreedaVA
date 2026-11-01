@@ -55,9 +55,12 @@ export async function POST(request: Request) {
       sessionCookie = await adminAuth.createSessionCookie(token, {
         expiresIn: SESSION_MAX_AGE * 1000, // milliseconds
       });
-    } catch {
-      // Fallback: store verified token directly if session cookie creation fails
-      sessionCookie = token;
+    } catch (err) {
+      console.error("[/api/session] session cookie creation failed:", err);
+      return NextResponse.json(
+        { error: "Session creation failed" },
+        { status: 500 },
+      );
     }
 
     const cookieStore = await cookies();

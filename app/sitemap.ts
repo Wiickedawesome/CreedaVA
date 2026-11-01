@@ -3,6 +3,13 @@ import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 
 const BASE = "https://creedava.com";
 
+/**
+ * Static marketing pages rarely change between deploys. Using a single
+ * timestamp (the server start, i.e. the deploy) keeps `lastModified` honest
+ * instead of reporting every page as changed on every request.
+ */
+const BUILD_DATE = new Date();
+
 /** Convert a Firestore Timestamp (or missing value) to a Date */
 function toDate(ts: { toDate?: () => Date } | undefined): Date {
   return ts?.toDate?.() ?? new Date();
@@ -13,61 +20,61 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: BASE,
-      lastModified: new Date(),
+      lastModified: BUILD_DATE,
       changeFrequency: "weekly",
       priority: 1.0,
     },
     {
       url: `${BASE}/services`,
-      lastModified: new Date(),
+      lastModified: BUILD_DATE,
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
       url: `${BASE}/about`,
-      lastModified: new Date(),
+      lastModified: BUILD_DATE,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${BASE}/news`,
-      lastModified: new Date(),
+      lastModified: BUILD_DATE,
       changeFrequency: "daily",
       priority: 0.7,
     },
     {
       url: `${BASE}/contact`,
-      lastModified: new Date(),
+      lastModified: BUILD_DATE,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${BASE}/forum`,
-      lastModified: new Date(),
+      lastModified: BUILD_DATE,
       changeFrequency: "daily",
       priority: 0.6,
     },
     {
       url: `${BASE}/join`,
-      lastModified: new Date(),
+      lastModified: BUILD_DATE,
       changeFrequency: "monthly",
       priority: 0.6,
     },
     {
       url: `${BASE}/faq`,
-      lastModified: new Date(),
+      lastModified: BUILD_DATE,
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${BASE}/privacy`,
-      lastModified: new Date(),
+      lastModified: BUILD_DATE,
       changeFrequency: "yearly",
       priority: 0.3,
     },
     {
       url: `${BASE}/terms`,
-      lastModified: new Date(),
+      lastModified: BUILD_DATE,
       changeFrequency: "yearly",
       priority: 0.3,
     },

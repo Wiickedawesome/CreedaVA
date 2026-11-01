@@ -3,7 +3,6 @@
  */
 
 import { test, expect, vi, beforeEach, afterEach, describe } from "vitest";
-import * as admin from "firebase-admin";
 import functionsTest from "firebase-functions-test";
 import { HttpsError } from "firebase-functions/v2/https";
 

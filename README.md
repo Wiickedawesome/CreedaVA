@@ -6,7 +6,7 @@
 <p align="center">
   <a href="https://creedava.com"><img src="https://img.shields.io/badge/live-creedava.com-005148?style=flat-square&logo=google-chrome&logoColor=white" alt="Live Site"></a>
   <img src="https://img.shields.io/badge/TypeScript-99.6%25-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/tests-137%20passing-22C55E?style=flat-square&logo=vitest&logoColor=white" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-335%20passing-22C55E?style=flat-square&logo=vitest&logoColor=white" alt="Tests">
   <img src="https://img.shields.io/badge/lint-clean-22C55E?style=flat-square&logo=eslint&logoColor=white" alt="Lint">
   <img src="https://img.shields.io/badge/license-proprietary-E8A317?style=flat-square" alt="License">
 </p>
@@ -51,7 +51,7 @@ CreedaVA is a full-stack platform for a Belize-based virtual assistant agency. I
 | **Styling** | Tailwind CSS v4 | Design tokens via `@theme inline` |
 | **Backend** | Firebase 12.9 | Auth, Firestore, Storage, Cloud Functions |
 | **AI** | Gemini 2.0/2.5 Flash | Content gen, translation, SEO audits |
-| **Testing** | Vitest + RTL | Unit tests across 17 test files |
+| **Testing** | Vitest + RTL | Unit tests across 30 test files |
 | **Linting** | ESLint 9 | Flat config, clean |
 
 ## Quick Start

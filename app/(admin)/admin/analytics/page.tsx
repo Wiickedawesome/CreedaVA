@@ -549,22 +549,6 @@ export default function AnalyticsPage() {
   );
 
   // ─── Computed Data ─────────────────────────────────
-  const pageViews = useMemo(
-    () => filtered.filter((e) => e.eventType === "page_view").length,
-    [filtered],
-  );
-
-  const interactions = useMemo(
-    () =>
-      filtered.filter(
-        (e) =>
-          e.eventType === "button_click" ||
-          e.eventType === "form_submission" ||
-          e.eventType === "chat_interaction",
-      ).length,
-    [filtered],
-  );
-
   const uniquePages = useMemo(() => {
     const pages = new Set(filtered.map((e) => e.page).filter(Boolean));
     return pages.size;

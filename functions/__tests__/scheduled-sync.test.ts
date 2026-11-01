@@ -2,8 +2,7 @@
  * Unit tests for scheduled sync functions.
  */
 
-import { test, expect, vi, beforeEach, afterEach, describe } from "vitest";
-import * as admin from "firebase-admin";
+import { test, expect, vi, beforeEach, describe } from "vitest";
 import functionsTest from "firebase-functions-test";
 
 // Initialize firebase-functions-test

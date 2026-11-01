@@ -2,7 +2,7 @@
   "name": "creedava-functions",
   "version": "1.0.1",
   "packageManager": "npm@11.12.1",
-  "description": "CreedaVA Cloud Functions — email, calendar, ads, search console integrations",
+  "description": "CreedaVA Cloud Functions \u2014 email, calendar, ads, search console integrations",
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
@@ -26,11 +26,10 @@
     "firebase-admin": "^13.6.1",
     "firebase-functions": "^7.0.5",
     "googleapis": "^171.4.0",
-    "nodemailer": "^9.0.0"
+    "nodemailer": "^10.3.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
-    "@types/nodemailer": "^7.0.11",
     "firebase-functions-test": "^3.5.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.12"
@@ -51,9 +50,12 @@
       "http-proxy-agent": "7.0.2"
     },
     "fast-xml-builder": "1.1.7",
-    "rimraf": "6.1.2",
+    "rimraf": "6.1.3",
     "ts-deepmerge": "8.0.0",
-    "uuid": "14.0.0"
+    "uuid": "14.0.0",
+    "glob": "14.0.3",
+    "qs": "6.17.1",
+    "express": "4.22.3"
   },
   "private": true
 }
