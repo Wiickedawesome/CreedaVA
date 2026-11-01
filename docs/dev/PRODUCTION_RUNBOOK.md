@@ -45,7 +45,17 @@ Served by the Firebase App Hosting backend `creeda-va-host` (us-east4).
 3. Confirm the rollout reaches `SUCCEEDED` before verifying the site
 
 If no new rollout appears after a push, create one manually — production keeps
-serving the previous build until a rollout succeeds.
+serving the previous build until a rollout succeeds. Pushes do create a *build*
+automatically; only the rollout step is manual.
+
+Creating a rollout through the API needs the **numeric** project number inside
+the build path, otherwise the call fails with "must conform to
+projects/{project}/locations/{location}/backends/{backend}/builds/{build}":
+
+```bash
+POST .../v1beta/projects/creeda-va/locations/us-east4/backends/creeda-va-host/rollouts?rolloutId=<id>
+{ "build": "projects/53722795216/locations/us-east4/backends/creeda-va-host/builds/<build-id>" }
+```
 
 ### 2. Cloud Functions, Firestore rules and indexes, Storage rules
 
