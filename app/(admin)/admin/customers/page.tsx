@@ -192,8 +192,8 @@ export default function CustomersPage() {
       if (!search) return true;
       const q = search.toLowerCase();
       return (
-        c.name.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q) ||
+        (c.name ?? "").toLowerCase().includes(q) ||
+        (c.email ?? "").toLowerCase().includes(q) ||
         (c.company?.toLowerCase().includes(q) ?? false)
       );
     });
@@ -350,7 +350,7 @@ export default function CustomersPage() {
         await add(form);
         // Cross-sync to contacts — only if email not already in contacts
         const alreadyInContacts = contacts.some(
-          (c) => c.email.toLowerCase() === form.email.toLowerCase(),
+          (c) => (c.email ?? "").toLowerCase() === form.email.toLowerCase(),
         );
         if (!alreadyInContacts && form.email) {
           await addContact({
