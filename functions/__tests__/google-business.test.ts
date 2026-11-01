@@ -3,12 +3,7 @@
  */
 
 import { test, expect, vi, beforeEach, afterEach, describe } from "vitest";
-import functionsTest from "firebase-functions-test";
 import { HttpsError } from "firebase-functions/v2/https";
-
-const testEnv = functionsTest({
-  projectId: "test-project",
-});
 
 describe("google-business", () => {
   beforeEach(() => {
@@ -119,5 +114,3 @@ describe("google-business", () => {
     });
   });
 });
-
-testEnv.cleanup();

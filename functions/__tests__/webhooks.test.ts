@@ -3,11 +3,6 @@
  */
 
 import { test, expect, vi, beforeEach, afterEach, describe } from "vitest";
-import functionsTest from "firebase-functions-test";
-
-const testEnv = functionsTest({
-  projectId: "test-project",
-});
 
 describe("handleFormWebhook", () => {
   beforeEach(() => {
@@ -442,5 +437,3 @@ describe("getAvailableSlots", () => {
     });
   });
 });
-
-testEnv.cleanup();

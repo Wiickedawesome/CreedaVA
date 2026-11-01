@@ -3,13 +3,8 @@
  */
 
 import { test, expect, vi, beforeEach, describe } from "vitest";
-import functionsTest from "firebase-functions-test";
 
 // Initialize firebase-functions-test
-const testEnv = functionsTest({
-  projectId: "test-project",
-});
-
 describe("scheduled-sync", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -50,5 +45,3 @@ describe("scheduled-sync", () => {
     });
   });
 });
-
-testEnv.cleanup();

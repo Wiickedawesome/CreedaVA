@@ -3,7 +3,6 @@
  */
 
 import { test, expect, vi, beforeEach, afterEach, describe } from "vitest";
-import functionsTest from "firebase-functions-test";
 import { HttpsError } from "firebase-functions/v2/https";
 import { toGA4PropertyResourceName } from "../src/google-analytics-property";
 
@@ -16,10 +15,6 @@ interface GAResponse {
   rows?: GARow[];
   totals?: GARow[];
 }
-
-const testEnv = functionsTest({
-  projectId: "test-project",
-});
 
 describe("google-analytics", () => {
   beforeEach(() => {
@@ -191,5 +186,3 @@ describe("google-analytics", () => {
     });
   });
 });
-
-testEnv.cleanup();
