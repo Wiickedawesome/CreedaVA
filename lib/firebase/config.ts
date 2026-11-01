@@ -22,26 +22,47 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
 };
 
-// Initialize Firebase (client-side only)
-const app = typeof window !== "undefined" 
-  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
-  : ({} as FirebaseApp);
+/**
+ * The client SDK only works in the browser; server code must use the Admin SDK
+ * (lib/firebase-admin). On the server these exports are placeholders that throw
+ * a descriptive error on first use, instead of handing out `{}` and failing
+ * later with a confusing "x.collection is not a function".
+ */
+function clientOnly<T extends object>(name: string): T {
+  return new Proxy({} as T, {
+    get() {
+      throw new Error(
+        `Firebase ${name} is browser-only. Use the Admin SDK (lib/firebase-admin) in server code.`,
+      );
+    },
+  });
+}
 
-const auth = typeof window !== "undefined" ? getAuth(app) : ({} as Auth);
-const db = typeof window !== "undefined" ? getFirestore(app) : ({} as Firestore);
-const storage = typeof window !== "undefined" ? getStorage(app) : ({} as FirebaseStorage);
+const isBrowser = typeof window !== "undefined";
+
+// Initialize Firebase (client-side only)
+const app: FirebaseApp = isBrowser
+  ? getApps().length === 0
+    ? initializeApp(firebaseConfig)
+    : getApp()
+  : clientOnly<FirebaseApp>("app");
+
+const auth: Auth = isBrowser ? getAuth(app) : clientOnly<Auth>("auth");
+const db: Firestore = isBrowser ? getFirestore(app) : clientOnly<Firestore>("db");
+const storage: FirebaseStorage = isBrowser
+  ? getStorage(app)
+  : clientOnly<FirebaseStorage>("storage");
 
 // ─── GA4 Analytics ───────────────────────────────────
 // Lazy-init: only in browser, only when supported
 let _analytics: Analytics | null = null;
 
 async function getGA4(): Promise<Analytics | null> {
-  if (typeof window === "undefined") return null;
+  if (!isBrowser) return null;
   if (_analytics) return _analytics;
   const { isSupported, getAnalytics } = await import("firebase/analytics");
   const supported = await isSupported();
   if (!supported) return null;
-  if (!app) return null;
   _analytics = getAnalytics(app);
   return _analytics;
 }

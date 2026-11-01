@@ -7,11 +7,11 @@
  *
  * IMPORTANT: This file is imported by server components (generateMetadata) and
  * must use the Firebase Admin SDK — NOT the client Firebase SDK. The client SDK
- * (lib/firebase/config.ts) only initializes `db` inside `if (typeof window !== "undefined")`,
- * so `db` is always `undefined` on the server. The Admin SDK (lib/firebase-admin.ts)
- * uses Application Default Credentials in hosted server contexts. Local
- * production builds skip Firestore metadata reads when no Admin credentials are
- * available and use the provided defaults.
+ * (lib/firebase/config.ts) throws a descriptive error if its exports are used
+ * outside the browser. The Admin SDK (lib/firebase-admin.ts) uses Application
+ * Default Credentials in hosted server contexts. Local production builds skip
+ * Firestore metadata reads when no Admin credentials are available and use the
+ * provided defaults.
  */
 
 import { unstable_cache } from "next/cache";
