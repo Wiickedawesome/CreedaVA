@@ -58,7 +58,13 @@ export type SEOKeywordFormData = Omit<SEOKeyword, keyof FirestoreDoc>;
 export interface SEOAudit extends FirestoreDoc {
   url: string;
   score: number;
-  issues: { severity: "high" | "medium" | "low"; issue: string; fix: string }[];
+  /** `suggestion` is the legacy field name still present in older audits. */
+  issues: {
+    severity: "high" | "medium" | "low";
+    issue: string;
+    fix?: string;
+    suggestion?: string;
+  }[];
   suggestedTitle: string;
   suggestedDescription: string;
   suggestedH1: string;

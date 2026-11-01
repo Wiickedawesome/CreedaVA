@@ -636,7 +636,7 @@ export default function SeoContentSection() {
                         <StatusBadge status={issue.severity} variant={severityVariant[issue.severity]} />
                         <span className="text-sm font-medium text-gray-90">{issue.issue}</span>
                       </div>
-                      <p className="text-xs text-gray-60 ml-17">{issue.fix}</p>
+                      <p className="text-xs text-gray-60 ml-17">{issue.fix || issue.suggestion}</p>
                     </div>
                   ))}
                 </div>

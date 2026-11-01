@@ -54,9 +54,9 @@ export function OnPageAuditsList() {
                   {a.score}
                 </div>
               </div>
-              {a.issues.length > 0 && (
+              {(a.issues?.length ?? 0) > 0 && (
                 <ul className="text-xs space-y-1">
-                  {a.issues.map((i, idx) => (
+                  {(a.issues ?? []).map((i, idx) => (
                     <li key={idx} className="flex items-start gap-2">
                       <span
                         className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium uppercase ${

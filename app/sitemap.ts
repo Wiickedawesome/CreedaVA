@@ -4,6 +4,13 @@ import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 const BASE = "https://creedava.com";
 
 /**
+ * Render per request: the build container has no Application Default
+ * Credentials, so a prerendered sitemap would contain static pages only and
+ * drop blog posts, landing pages and forum threads.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * Static marketing pages rarely change between deploys. Using a single
  * timestamp (the server start, i.e. the deploy) keeps `lastModified` honest
  * instead of reporting every page as changed on every request.
@@ -13,6 +20,14 @@ const BUILD_DATE = new Date();
 /** Convert a Firestore Timestamp (or missing value) to a Date */
 function toDate(ts: { toDate?: () => Date } | undefined): Date {
   return ts?.toDate?.() ?? new Date();
+}
+
+/** Sort query snapshots by `updatedAt` (newest first) without a composite index. */
+function newestFirst<T extends { data: () => { updatedAt?: { toDate?: () => Date } } }>(
+  docs: T[],
+): T[] {
+  const time = (doc: T) => doc.data().updatedAt?.toDate?.()?.getTime() ?? 0;
+  return [...docs].sort((a, b) => time(b) - time(a));
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -90,25 +105,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
+    // Sort in code: `where(status) + orderBy(updatedAt)` needs a composite index
+    // per collection, and a missing one made every dynamic query fail — the
+    // sitemap silently listed static pages only.
     const [blogSnap, lpSnap, forumSnap] = await Promise.all([
-      adminDb
-        .collection("blog")
-        .where("status", "==", "published")
-        .orderBy("updatedAt", "desc")
-        .get(),
-      adminDb
-        .collection("landing-pages")
-        .where("status", "==", "published")
-        .orderBy("updatedAt", "desc")
-        .get(),
-      adminDb
-        .collection("forum")
-        .where("status", "==", "open")
-        .orderBy("updatedAt", "desc")
-        .get(),
+      adminDb.collection("blog").where("status", "==", "published").get(),
+      adminDb.collection("landing-pages").where("status", "==", "published").get(),
+      adminDb.collection("forum").where("status", "==", "open").get(),
     ]);
 
-    blogPages = blogSnap.docs.map((doc) => {
+    blogPages = newestFirst(blogSnap.docs).map((doc) => {
       const d = doc.data();
       return {
         url: `${BASE}/news/${d.slug}`,
@@ -118,7 +124,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    lpPages = lpSnap.docs.map((doc) => {
+    lpPages = newestFirst(lpSnap.docs).map((doc) => {
       const d = doc.data();
       return {
         url: `${BASE}/lp/${d.slug}`,
@@ -128,7 +134,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    forumPages = forumSnap.docs.map((doc) => {
+    forumPages = newestFirst(forumSnap.docs).map((doc) => {
       const d = doc.data();
       return {
         url: `${BASE}/forum/${doc.id}`,
