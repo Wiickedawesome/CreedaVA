@@ -16,6 +16,7 @@ import {
   TOOL_USE_GUIDELINES,
   PAGE_CONTEXT_MAP,
 } from "@/lib/utils/ai-system-prompt";
+import { ALL_SPECIALISTS } from "@/lib/utils/ai-specialists";
 import {
   MAX_SYSTEM_INSTRUCTION_LENGTH,
   MAX_USER_CONTENT_LENGTH,
@@ -300,5 +301,20 @@ describe("AI System Prompt", () => {
       );
       expect(prompt.userContent.length).toBeLessThanOrEqual(MAX_USER_CONTENT_LENGTH);
     });
+
+    it.each(ALL_SPECIALISTS.map((s) => [s.codename, s] as const))(
+      "%s chat prompt fits the system instruction limit",
+      (_codename, specialist) => {
+        const prompt = buildTrainedPrompt("Chat", "prompt", "context", {
+          ...specialist.promptOptions,
+          specialistIntro: specialist.intro,
+          includeToolGuidelines: true,
+          pageContext: "page context",
+        });
+        expect(prompt.systemInstruction.length).toBeLessThanOrEqual(
+          MAX_SYSTEM_INSTRUCTION_LENGTH,
+        );
+      },
+    );
   });
 });
