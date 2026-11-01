@@ -127,7 +127,6 @@ export default function ProjectDetailPage() {
   const goals: ProjectGoal[] = (project?.goals || []).map((g) => ({ ...g, status: resolveGoalStatus(g) }));
   const completedGoals = goals.filter((g) => g.status === "completed").length;
   const activeGoals = goals.filter((g) => g.status === "active").length;
-  const _goalValue = goals.reduce((sum, g) => sum + (g.value || 0), 0);
 
   // ─── Goal → Task helpers ──────────────────────────
   function tasksForGoal(goalId: string) {
@@ -138,28 +137,6 @@ export default function ProjectDetailPage() {
   function goalStatusLabel(s: GoalStatus | undefined) {
     if (!s) return "Planning";
     return s === "on-hold" ? "On Hold" : s.charAt(0).toUpperCase() + s.slice(1);
-  }
-
-  function _goalStatusColor(s: GoalStatus | undefined) {
-    switch (s) {
-      case "planning": return "bg-slate-100 text-slate-600 border-slate-200";
-      case "active": return "bg-blue-50 text-blue-700 border-blue-200";
-      case "on-hold": return "bg-amber-50 text-amber-700 border-amber-200";
-      case "completed": return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "cancelled": return "bg-red-50 text-red-700 border-red-200";
-      default: return "bg-gray-10 text-gray-50 border-border";
-    }
-  }
-
-  function _goalStatusDot(s: GoalStatus | undefined) {
-    switch (s) {
-      case "planning": return "bg-slate-400";
-      case "active": return "bg-blue-500";
-      case "on-hold": return "bg-amber-500";
-      case "completed": return "bg-emerald-500";
-      case "cancelled": return "bg-red-500";
-      default: return "bg-gray-30";
-    }
   }
 
   // ─── Helpers ───────────────────────────────────────
@@ -248,20 +225,6 @@ export default function ProjectDetailPage() {
     setGoalModalOpen(false);
   }
 
-  async function _changeGoalStatus(goalId: string, newStatus: GoalStatus) {
-    if (!project) return;
-    const updated = (project.goals || []).map((g) =>
-      g.id === goalId ? { ...g, status: newStatus } : g,
-    );
-    await edit(project.id, { goals: updated });
-    const goal = updated.find((g) => g.id === goalId);
-    addHistoryEntry(`Goal status → ${goalStatusLabel(newStatus)}`, goal?.title);
-    toast(`Goal marked as ${goalStatusLabel(newStatus)}`);
-
-    // Sync project status based on goal statuses
-    await syncProjectStatusFromGoals(updated);
-  }
-
   /** Infer the project status from the aggregate of all goal statuses */
   async function syncProjectStatusFromGoals(updatedGoals: ProjectGoal[]) {
     if (!project || updatedGoals.length === 0) return;
@@ -292,14 +255,6 @@ export default function ProjectDetailPage() {
       addHistoryEntry(`Project status → ${newProjectStatus}`, "Auto-updated from goals");
       toast(`Project status updated to ${newProjectStatus}`);
     }
-  }
-
-  async function _deleteGoal(goalId: string) {
-    if (!project) return;
-    const goal = (project.goals || []).find((g) => g.id === goalId);
-    const updated = (project.goals || []).filter((g) => g.id !== goalId);
-    await edit(project.id, { goals: updated });
-    addHistoryEntry("Goal removed", goal?.title);
   }
 
   // ─── Drive handlers ────────────────────────────────

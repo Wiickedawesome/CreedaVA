@@ -9,6 +9,7 @@
 
 import { buildContentPrompt, buildLandingPagePrompt } from "@/lib/utils/ai-system-prompt";
 import type { TrainedPrompt } from "@/lib/utils/ai-system-prompt";
+import { parseAiJson } from "@/lib/utils/ai-json";
 
 /** Input to all generation functions — either a plain string or a split prompt */
 export type PromptInput = string | TrainedPrompt;
@@ -153,10 +154,7 @@ export async function generateJSON<T = unknown>(input: PromptInput): Promise<T> 
       userContent: input.userContent + "\n\nReturn ONLY valid JSON, no markdown fences.",
     };
   }
-  const raw = await generateText(adjusted);
-  // Strip potential markdown fences the model might still add
-  const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-  return JSON.parse(cleaned) as T;
+  return parseAiJson<T>(await generateText(adjusted));
 }
 
 // ─── Domain-specific AI functions ────────────────────

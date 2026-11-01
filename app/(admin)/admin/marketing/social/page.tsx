@@ -1,6 +1,7 @@
 "use client";
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
+import { parseAiJson } from "@/lib/utils/ai-json";
 import { useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -14,7 +15,6 @@ import {
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { AIPromptButton } from "@/components/admin";
-import { lazyGenerateSocialPosts as generateSocialPosts } from "@/lib/firebase/ai-lazy";
 import type { SocialPost } from "@/lib/types/content";
 
 const platformIcon: Record<string, string> = {
@@ -212,15 +212,10 @@ export default function SocialMediaPage() {
             ]}
             onResult={(raw) => {
               try {
-                const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-                const result = JSON.parse(cleaned);
-                setPreviews(result.posts || []);
+                setPreviews(parseAiJson<{ posts?: typeof previews }>(raw).posts || []);
                 setPreviewOpen(true);
               } catch {
-                generateSocialPosts(raw.slice(0, 200)).then((r) => {
-                  setPreviews(r.posts);
-                  setPreviewOpen(true);
-                }).catch(() => toast("AI generation failed", "error"));
+                toast("AI returned an unreadable response — try again", "error");
               }
             }}
             buildPrompt={(input) =>

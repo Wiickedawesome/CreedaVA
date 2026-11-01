@@ -14,12 +14,13 @@ import {
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { AIPromptButton, RichTextEditor } from "@/components/admin";
-import { lazyGenerateBlogPost as generateBlogPost } from "@/lib/firebase/ai-lazy";
 import { uploadImage, uploadFile } from "@/lib/firebase/storage";
 import { cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
 import type { BlogPost, BlogPostFormData } from "@/lib/types/content";
 import Image from "next/image";
 import { translateBlogInBackground } from "@/lib/firebase/translate";
+import { parseAiJson } from "@/lib/utils/ai-json";
+import { slugify } from "@/lib/utils/slug";
 
 const emptyPost: BlogPostFormData = {
   title: "",
@@ -192,7 +193,10 @@ export default function BlogPage() {
       toast("Title is required", "error");
       return;
     }
-    if (!form.slug.trim()) {
+    // Derive a URL-safe slug from the title when none was typed — a raw title
+    // saved as the slug produced unreachable URLs like /news/My%20Post.
+    const slug = slugify(form.slug || form.title);
+    if (!slug) {
       toast("Slug is required", "error");
       return;
     }
@@ -200,10 +204,10 @@ export default function BlogPage() {
     setSaving(true);
     try {
       if (selected) {
-        await edit(selected.id, form);
+        await edit(selected.id, { ...form, slug });
         toast("Post updated");
       } else {
-        await add(form);
+        await add({ ...form, slug });
         toast("Post created");
       }
       setModalOpen(false);
@@ -337,30 +341,18 @@ export default function BlogPage() {
               previewLabel="Preview Post"
               onResult={(raw) => {
                 try {
-                  const result = JSON.parse(raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim());
-                  const generated: BlogPostFormData = {
-                    title: result.title || "",
-                    slug: result.slug || "",
-                    excerpt: result.excerpt || "",
-                    content: result.content || "",
-                    tags: result.tags || [],
-                    metaDescription: result.metaDescription || "",
-                    status: "draft",
-                    featuredImage: "",
-                    images: [],
-                    attachments: [],
-                  };
+                  const result = parseAiJson<Partial<BlogPostFormData>>(raw);
                   setSelected(null);
-                  setForm(generated);
+                  setForm({
+                    ...emptyPost,
+                    ...result,
+                    status: "draft",
+                    tags: result.tags ?? [],
+                  });
                   setModalOpen(true);
                   toast("AI content loaded — edit and save when ready", "success");
                 } catch {
-                  generateBlogPost(raw.slice(0, 200)).then((r) => {
-                    setSelected(null);
-                    setForm({ title: r.title, slug: r.slug, excerpt: r.excerpt, content: r.content, tags: r.tags, metaDescription: r.metaDescription, status: "draft", featuredImage: "", images: [], attachments: [] });
-                    setModalOpen(true);
-                    toast("AI content loaded — edit and save when ready", "success");
-                  }).catch(() => toast("AI generation failed", "error"));
+                  toast("AI returned an unreadable response — try again", "error");
                 }
               }}
               buildPrompt={(input) =>

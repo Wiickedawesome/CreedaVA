@@ -14,6 +14,7 @@
  */
 
 import { generateText } from "./ai";
+import { parseAiJson } from "@/lib/utils/ai-json";
 import { create, createWithId } from "./firestore";
 import { cloudWebSearch } from "./cloud-functions";
 import {
@@ -107,6 +108,50 @@ function autoDetectWebModules(pagePath: string): Partial<AnalyzeOptions> {
   return {};
 }
 
+/** Resolve the module flags for a page + caller overrides. */
+function promptOptions(
+  pageContext: string,
+  options: AnalyzeOptions,
+  auto: Partial<AnalyzeOptions>,
+): Parameters<typeof buildTrainedPrompt>[3] {
+  return {
+    includeCompetitors: options.includeCompetitors ?? true,
+    includeKPIs: options.includeKPIs ?? true,
+    includeSEOAlgorithms: options.includeSEOAlgorithms ?? true,
+    includeMarketIntel: options.includeMarketIntel ?? false,
+    includeDesignSystem: options.includeDesignSystem ?? false,
+    includeCreativeFramework: options.includeCreativeFramework ?? false,
+    includeBlogRules: options.includeBlogRules ?? false,
+    includeAIO: options.includeAIO ?? auto.includeAIO ?? false,
+    includeGEO: options.includeGEO ?? auto.includeGEO ?? false,
+    includeSERP: options.includeSERP ?? auto.includeSERP ?? false,
+    includeSEM: options.includeSEM ?? auto.includeSEM ?? false,
+    includeAnalytics: options.includeAnalytics ?? auto.includeAnalytics ?? false,
+    includeTechnicalSEO: options.includeTechnicalSEO ?? auto.includeTechnicalSEO ?? false,
+    includeAuthority: options.includeAuthority ?? auto.includeAuthority ?? false,
+    includeCRO: options.includeCRO ?? auto.includeCRO ?? false,
+    includeWebMastery: options.includeWebMastery ?? false,
+    pageContext,
+    customInstructions: options.customInstructions,
+    webSearchResults: options.webSearchResults,
+  };
+}
+
+/** Load page context and assemble the trained prompt for this request. */
+async function buildEnginePrompt(
+  pagePath: string,
+  userPrompt: string,
+  options: AnalyzeOptions,
+): Promise<ReturnType<typeof buildTrainedPrompt>> {
+  const ctx = await loadPageAwareContext(pagePath);
+  return buildTrainedPrompt(
+    ctx.section,
+    userPrompt,
+    ctx.dataContext,
+    promptOptions(ctx.pageContext, options, autoDetectWebModules(pagePath)),
+  );
+}
+
 /**
  * The main AI entry point. Automatically loads relevant Firestore data
  * based on the current admin page, builds a fully-trained prompt, and
@@ -118,38 +163,7 @@ export async function analyzeAndRespond(
   userPrompt: string,
   options: AnalyzeOptions = {},
 ): Promise<string> {
-  // Load page-aware context (fetches relevant Firestore collections)
-  const ctx = await loadPageAwareContext(pagePath);
-  const auto = autoDetectWebModules(pagePath);
-
-  const trained = buildTrainedPrompt(
-    ctx.section,
-    userPrompt,
-    ctx.dataContext,
-    {
-      includeCompetitors: options.includeCompetitors ?? true,
-      includeKPIs: options.includeKPIs ?? true,
-      includeSEOAlgorithms: options.includeSEOAlgorithms ?? true,
-      includeMarketIntel: options.includeMarketIntel ?? false,
-      includeDesignSystem: options.includeDesignSystem ?? false,
-      includeCreativeFramework: options.includeCreativeFramework ?? false,
-      includeBlogRules: options.includeBlogRules ?? false,
-      includeAIO: options.includeAIO ?? auto.includeAIO ?? false,
-      includeGEO: options.includeGEO ?? auto.includeGEO ?? false,
-      includeSERP: options.includeSERP ?? auto.includeSERP ?? false,
-      includeSEM: options.includeSEM ?? auto.includeSEM ?? false,
-      includeAnalytics: options.includeAnalytics ?? auto.includeAnalytics ?? false,
-      includeTechnicalSEO: options.includeTechnicalSEO ?? auto.includeTechnicalSEO ?? false,
-      includeAuthority: options.includeAuthority ?? auto.includeAuthority ?? false,
-      includeCRO: options.includeCRO ?? auto.includeCRO ?? false,
-      includeWebMastery: options.includeWebMastery ?? false,
-      pageContext: ctx.pageContext,
-      customInstructions: options.customInstructions,
-      webSearchResults: options.webSearchResults,
-    },
-  );
-
-  return generateText(trained);
+  return generateText(await buildEnginePrompt(pagePath, userPrompt, options));
 }
 
 /**
@@ -160,39 +174,12 @@ export async function analyzeAndRespondJSON<T = unknown>(
   userPrompt: string,
   options: AnalyzeOptions = {},
 ): Promise<T> {
-  const ctx = await loadPageAwareContext(pagePath);
-  const auto = autoDetectWebModules(pagePath);
-
-  const trained = buildTrainedPrompt(
-    ctx.section,
-    userPrompt + "\n\nReturn ONLY valid JSON, no markdown fences.",
-    ctx.dataContext,
-    {
-      includeCompetitors: options.includeCompetitors ?? true,
-      includeKPIs: options.includeKPIs ?? true,
-      includeSEOAlgorithms: options.includeSEOAlgorithms ?? true,
-      includeMarketIntel: options.includeMarketIntel ?? false,
-      includeDesignSystem: options.includeDesignSystem ?? false,
-      includeCreativeFramework: options.includeCreativeFramework ?? false,
-      includeBlogRules: options.includeBlogRules ?? false,
-      includeAIO: options.includeAIO ?? auto.includeAIO ?? false,
-      includeGEO: options.includeGEO ?? auto.includeGEO ?? false,
-      includeSERP: options.includeSERP ?? auto.includeSERP ?? false,
-      includeSEM: options.includeSEM ?? auto.includeSEM ?? false,
-      includeAnalytics: options.includeAnalytics ?? auto.includeAnalytics ?? false,
-      includeTechnicalSEO: options.includeTechnicalSEO ?? auto.includeTechnicalSEO ?? false,
-      includeAuthority: options.includeAuthority ?? auto.includeAuthority ?? false,
-      includeCRO: options.includeCRO ?? auto.includeCRO ?? false,
-      includeWebMastery: options.includeWebMastery ?? false,
-      pageContext: ctx.pageContext,
-      customInstructions: options.customInstructions,
-      webSearchResults: options.webSearchResults,
-    },
+  const trained = await buildEnginePrompt(
+    pagePath,
+    `${userPrompt}\n\nReturn ONLY valid JSON, no markdown fences.`,
+    options,
   );
-
-  const raw = await generateText(trained);
-  const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-  return JSON.parse(cleaned) as T;
+  return parseAiJson<T>(await generateText(trained));
 }
 
 // ─── SEO Analysis Engine ─────────────────────────────
@@ -426,15 +413,13 @@ export async function generateAndSaveReport(
     systemInstruction: reportPrompt.systemInstruction,
     userContent: reportPrompt.userContent + "\n\nReturn ONLY valid JSON, no markdown fences.",
   };
-  const raw = await generateText(jsonPrompt);
-  const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-  const report = JSON.parse(cleaned) as {
+  const report = parseAiJson<{
     title: string;
     summaryHtml: string;
     highlights: string[];
     recommendations: string[];
     score?: number;
-  };
+  }>(await generateText(jsonPrompt));
 
   const id = await create("reports", {
     ...report,
@@ -497,12 +482,8 @@ Return ONLY valid JSON array — no markdown, no code fences:
     { includeCompetitors: true, includeKPIs: true, includeMarketIntel: true },
   );
 
-  const raw = await generateText(prompt);
-
   try {
-    // Strip markdown fences if present
-    const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-    const presets: DynamicPreset[] = JSON.parse(cleaned);
+    const presets = parseAiJson<DynamicPreset[]>(await generateText(prompt));
 
     if (!Array.isArray(presets) || presets.length === 0) return;
 

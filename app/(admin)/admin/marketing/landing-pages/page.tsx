@@ -13,7 +13,7 @@ import {
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { AIPromptButton, RichTextEditor } from "@/components/admin";
-import { lazyGenerateLandingPage as generateLandingPage } from "@/lib/firebase/ai-lazy";
+import { parseAiJson } from "@/lib/utils/ai-json";
 import { buildLandingPagePrompt } from "@/lib/utils/ai-system-prompt";
 import type { LandingPage } from "@/lib/types/content";
 import { uploadImage, uploadFile } from "@/lib/firebase/storage";
@@ -346,8 +346,14 @@ export default function LandingPagesPage() {
             previewLabel="Preview Page"
             onResult={(raw) => {
               try {
-                const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-                const result = JSON.parse(cleaned);
+                const result = parseAiJson<{
+                  title?: string;
+                  slug?: string;
+                  headline?: string;
+                  subheadline?: string;
+                  ctaText?: string;
+                  bodyHtml?: string;
+                }>(raw);
                 setSelected(null);
                 setForm({
                   title: result.title || "",
@@ -362,25 +368,9 @@ export default function LandingPagesPage() {
                   attachments: [],
                 });
                 setModalOpen(true);
-                toast("AI content loaded \u2014 edit and save when ready", "success");
+                toast("AI content loaded — edit and save when ready", "success");
               } catch {
-                generateLandingPage(raw.slice(0, 200), "Get Started").then((r) => {
-                  setSelected(null);
-                  setForm({
-                    title: r.title || "",
-                    slug: r.slug || "",
-                    headline: r.headline || "",
-                    subheadline: r.subheadline || "",
-                    ctaText: r.ctaText || "Get Started",
-                    ctaEmail: "contact@creedava.com",
-                    bodyHtml: r.bodyHtml || "",
-                    status: "draft",
-                    images: [],
-                    attachments: [],
-                  });
-                  setModalOpen(true);
-                  toast("AI content loaded \u2014 edit and save when ready", "success");
-                }).catch(() => toast("AI generation failed", "error"));
+                toast("AI returned an unreadable response — try again", "error");
               }
             }}
             buildPrompt={(input) => buildLandingPagePrompt(input)}

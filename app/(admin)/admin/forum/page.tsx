@@ -1,6 +1,7 @@
 "use client";
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
+import { parseAiJson } from "@/lib/utils/ai-json";
 import { useState, useRef } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -56,8 +57,8 @@ export default function ForumPage() {
     .filter(
       (t) =>
         !search ||
-        t.title.toLowerCase().includes(search.toLowerCase()) ||
-        t.author.toLowerCase().includes(search.toLowerCase()),
+        (t.title ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        (t.author ?? "").toLowerCase().includes(search.toLowerCase()),
     );
 
   const tabs = [
@@ -369,8 +370,7 @@ export default function ForumPage() {
               ]}
               onResult={(raw) => {
                 try {
-                  const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-                  const result = JSON.parse(cleaned) as { title: string; content: string; tags: string[] };
+                  const result = parseAiJson<{ title: string; content: string; tags: string[] }>(raw);
                   setCreateForm({
                     title: result.title,
                     content: result.content,

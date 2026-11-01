@@ -1,6 +1,7 @@
 "use client";
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
+import { parseAiJson } from "@/lib/utils/ai-json";
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -15,7 +16,6 @@ import {
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { AIPromptButton, RichTextEditor } from "@/components/admin";
-import { lazyGenerateEmail as generateEmail } from "@/lib/firebase/ai-lazy";
 import {
   cloudSendEmail,
   cloudSendBulkEmail,
@@ -232,8 +232,8 @@ export default function EmailsPage() {
     setForm({
       subject: email.subject,
       body: email.body,
-      previewText: email.previewText,
-      purpose: email.purpose,
+      previewText: email.previewText ?? "",
+      purpose: email.purpose ?? "",
       status: email.status,
       images: email.images || [],
       attachments: email.attachments || [],
@@ -540,8 +540,7 @@ export default function EmailsPage() {
               ]}
               onResult={(raw) => {
                 try {
-                  const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-                  const result = JSON.parse(cleaned);
+                  const result = parseAiJson<{ subject?: string; body?: string; previewText?: string }>(raw);
                   setForm({
                     subject: result.subject || "",
                     body: result.body || "",
@@ -555,22 +554,7 @@ export default function EmailsPage() {
                   setComposeOpen(true);
                   toast("AI content loaded — edit and send when ready", "success");
                 } catch {
-                  generateEmail(raw.slice(0, 200), "", "professional")
-                    .then((r) => {
-                      setForm({
-                        subject: r.subject || "",
-                        body: r.body || "",
-                        previewText: r.previewText || "",
-                        purpose: "",
-                        status: "draft",
-                        images: [],
-                        attachments: [],
-                      });
-                      setSelected(null);
-                      setComposeOpen(true);
-                      toast("AI content loaded", "success");
-                    })
-                    .catch(() => toast("AI generation failed", "error"));
+                  toast("AI returned an unreadable response — try again", "error");
                 }
               }}
               buildPrompt={(input) =>

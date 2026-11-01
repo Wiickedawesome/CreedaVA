@@ -5,7 +5,6 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
-import type { Analytics } from "firebase/analytics";
 
 // For production on modern hosting (Vercel/App Hosting), force the use of
 // the firebaseapp.com domain for auth to avoid rewrite issues & 404s.
@@ -54,29 +53,26 @@ const storage: FirebaseStorage = isBrowser
   : clientOnly<FirebaseStorage>("storage");
 
 // ─── GA4 Analytics ───────────────────────────────────
-// Lazy-init: only in browser, only when supported
-let _analytics: Analytics | null = null;
+// gtag.js is loaded and configured once by app/(marketing)/layout.tsx. Calling
+// firebase/analytics getAnalytics() as well shipped a second gtag instance and
+// logged "measurement ID does not match" warnings, so events reuse the global.
 
-async function getGA4(): Promise<Analytics | null> {
-  if (!isBrowser) return null;
-  if (_analytics) return _analytics;
-  const { isSupported, getAnalytics } = await import("firebase/analytics");
-  const supported = await isSupported();
-  if (!supported) return null;
-  _analytics = getAnalytics(app);
-  return _analytics;
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
 }
 
-/** Log a GA4 event alongside custom Firestore analytics */
+/**
+ * Send a GA4 event through the gtag instance loaded by the marketing layout.
+ * No-op on the server and on routes that don't load gtag (e.g. /admin).
+ */
 async function logGA4Event(
   eventName: string,
   params?: Record<string, unknown>,
 ): Promise<void> {
-  const analytics = await getGA4();
-  if (analytics) {
-    const { logEvent } = await import("firebase/analytics");
-    logEvent(analytics, eventName, params);
-  }
+  if (!isBrowser || typeof window.gtag !== "function") return;
+  window.gtag("event", eventName, params);
 }
 
-export { app, auth, db, storage, getGA4, logGA4Event };
+export { app, auth, db, storage, logGA4Event };

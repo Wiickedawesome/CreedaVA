@@ -17,9 +17,9 @@ import {
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { AIPromptButton } from "@/components/admin";
-import { lazySuggestKeywords as suggestKeywords } from "@/lib/firebase/ai-lazy";
 import { cloudFetchSearchConsoleData } from "@/lib/firebase/cloud-functions";
 import type { SEOKeyword } from "@/lib/types/content";
+import { parseAiJson } from "@/lib/utils/ai-json";
 import { RankingsTable } from "../rankings-table";
 
 const intentVariant: Record<string, "default" | "success" | "warning" | "error" | "info"> = {
@@ -298,16 +298,12 @@ export default function KeywordsSection() {
             ]}
             onResult={(raw) => {
               try {
-                const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-                const result = JSON.parse(cleaned);
-                setSuggestions(result.keywords || []);
+                setSuggestions(
+                  parseAiJson<{ keywords?: { keyword: string; searchIntent: string; difficulty: string; suggestedTitle: string }[] }>(raw).keywords || [],
+                );
                 setSuggestOpen(true);
               } catch {
-                // Try direct suggestKeywords call
-                suggestKeywords(raw.slice(0, 100)).then((r) => {
-                  setSuggestions(r.keywords);
-                  setSuggestOpen(true);
-                }).catch(() => toast("AI generation failed", "error"));
+                toast("AI returned an unreadable response — try again", "error");
               }
             }}
             buildPrompt={(input) =>

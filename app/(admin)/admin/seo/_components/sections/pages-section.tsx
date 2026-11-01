@@ -17,9 +17,9 @@ import {
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { AIPromptButton } from "@/components/admin";
-import { lazyAnalyzeSEO as analyzeSEO } from "@/lib/firebase/ai-lazy";
 import type { SEOAudit, PageSEO } from "@/lib/types/content";
 import { OnPageAuditsList } from "../onpage-audits";
+import { parseAiJson } from "@/lib/utils/ai-json";
 
 // ─── Default page SEO values ─────────────────────────
 const DEFAULT_PAGES: Omit<PageSEO, "id" | "createdAt" | "updatedAt">[] = [
@@ -38,6 +38,51 @@ const severityVariant: Record<string, "success" | "warning" | "error"> = {
   medium: "warning",
   high: "error",
 };
+
+/** Shape returned by the SEO audit prompt (fields are all optional). */
+interface AiAudit {
+  url?: string;
+  score?: number;
+  suggestedTitle?: string;
+  suggestedDescription?: string;
+  suggestedH1?: string;
+  missingElements?: string[];
+  issues?: { issue?: string; severity?: string; fix?: string; suggestion?: string }[];
+}
+
+/** Normalise an AI audit into the stored shape the UI renders. */
+function toAuditInput(
+  result: AiAudit,
+): Omit<SEOAudit, "id" | "createdAt" | "updatedAt"> {
+  return {
+    url: result.url || "AI Analysis",
+    score: result.score ?? 0,
+    suggestedTitle: result.suggestedTitle ?? "",
+    suggestedDescription: result.suggestedDescription ?? "",
+    suggestedH1: result.suggestedH1 ?? "",
+    missingElements: result.missingElements ?? [],
+    issues: (result.issues ?? []).map((issue) => ({
+      issue: issue.issue ?? "",
+      severity:
+        issue.severity === "high" || issue.severity === "low" ? issue.severity : "medium",
+      // Older prompts returned `suggestion`; the UI reads `fix`.
+      fix: issue.fix || issue.suggestion || "",
+    })),
+  };
+}
+
+/**
+ * Saved entries can be missing fields (cleared by a repair, or written before
+ * a field existed). Drop blanks so the curated defaults fill the gaps instead
+ * of rendering `undefined` — `p.description.length` used to crash the table.
+ */
+function definedOnly(entry: PageSEO): Partial<PageSEO> {
+  const defined: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(entry)) {
+    if (value !== undefined && value !== null && value !== "") defined[key] = value;
+  }
+  return defined as Partial<PageSEO>;
+}
 
 export default function SeoContentSection() {
   const { data: seoEntries, loading: seoLoading, add: addSeo, edit: editSeo } = useCollection<PageSEO>("page-seo", {
@@ -66,8 +111,6 @@ export default function SeoContentSection() {
   }>({ path: "", title: "", description: "", ogTitle: "", ogDescription: "", ogImage: "", keywords: "", noIndex: false });
 
   // AI Audit state
-  const [url, setUrl] = useState("");
-  const [_generating, setGenerating] = useState(false);
   const [selected, setSelected] = useState<SEOAudit | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -83,13 +126,18 @@ export default function SeoContentSection() {
     const pages = DEFAULT_PAGES.map((d) => {
       const saved = existing.get(d.path);
       return saved
-        ? { ...saved, isDefault: false }
+        ? { ...d, ...definedOnly(saved), isDefault: false }
         : { ...d, id: `default-${d.path}`, isDefault: true };
     });
     // Include custom Firestore entries whose paths are not in DEFAULT_PAGES
     for (const entry of seoEntries) {
       if (!defaultPaths.has(entry.path)) {
-        pages.push({ ...entry, isDefault: false });
+        pages.push({
+          ...entry,
+          title: entry.title ?? "",
+          description: entry.description ?? "",
+          isDefault: false,
+        });
       }
     }
     return pages;
@@ -173,22 +221,6 @@ export default function SeoContentSection() {
       toast("Failed to seed pages", "error");
     } finally {
       setSeeding(false);
-    }
-  }
-
-  // ─── AI Audit handlers ────────────────────────────
-  async function _handleAnalyze() {
-    if (!url.trim()) return;
-    setGenerating(true);
-    try {
-      const result = await analyzeSEO(url);
-      await addAudit({ url, ...result });
-      toast("SEO audit complete!", "success");
-      setUrl("");
-    } catch {
-      toast("Analysis failed — try again", "error");
-    } finally {
-      setGenerating(false);
     }
   }
 
@@ -320,20 +352,14 @@ export default function SeoContentSection() {
             ]}
             onResult={(raw) => {
               try {
-                const cleaned = raw.replace(/```(?:json)?\s*/g, "").replace(/```\s*$/g, "").trim();
-                const result = JSON.parse(cleaned);
-                addAudit({ url: result.url || "AI Analysis", ...result });
+                addAudit(toAuditInput(parseAiJson<AiAudit>(raw)));
                 toast("SEO audit complete!", "success");
               } catch {
-                // Use analyzeSEO directly as fallback
-                analyzeSEO(raw.slice(0, 200)).then((r) => {
-                  addAudit({ url: raw.slice(0, 200), ...r });
-                  toast("SEO audit complete!", "success");
-                }).catch(() => toast("Analysis failed", "error"));
+                toast("AI returned an unreadable response — try again", "error");
               }
             }}
             buildPrompt={(input) =>
-              buildTrainedPrompt("SEO Audit", `Analyze this URL/topic: "${input}"\n\nReturn ONLY valid JSON with:\n- url: the analyzed URL or topic\n- score: numeric SEO score 0-100\n- suggestedTitle: improved page title\n- suggestedDescription: improved meta description\n- issues: array of { issue: string, severity: "low"|"medium"|"high", suggestion: string }\n- recommendations: array of strings with specific improvements\n\nNo markdown fences.`, "", { includeCompetitors: true, includeKPIs: true })
+              buildTrainedPrompt("SEO Audit", `Analyze this URL/topic: "${input}"\n\nReturn ONLY valid JSON with:\n- url: the analyzed URL or topic\n- score: numeric SEO score 0-100\n- suggestedTitle: improved page title\n- suggestedDescription: improved meta description\n- issues: array of { issue: string, severity: "low"|"medium"|"high", fix: string }\n- recommendations: array of strings with specific improvements\n\nNo markdown fences.`, "", { includeCompetitors: true, includeKPIs: true })
             }
           />
         }

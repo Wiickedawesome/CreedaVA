@@ -31,6 +31,11 @@ import {
 import type { Content, Part } from "@google/generative-ai";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebase-admin";
+import {
+  MAX_CONVERSATION_PARTS,
+  MAX_SYSTEM_INSTRUCTION_LENGTH,
+  MAX_USER_CONTENT_LENGTH,
+} from "@/lib/constants/ai";
 import { ALL_TOOLS } from "@/lib/firebase/ai-tools";
 import { checkRateLimit, checkGroundedSearchLimit } from "./rate-limit";
 
@@ -121,16 +126,17 @@ export async function POST(req: NextRequest) {
   const { type, userContent, systemInstruction, contents } = body;
 
   // 3b. Input validation
-  const MAX_INPUT_LENGTH = 50_000;
-  if (userContent && userContent.length > MAX_INPUT_LENGTH) {
+  if (userContent && userContent.length > MAX_USER_CONTENT_LENGTH) {
     return NextResponse.json(
-      { error: `Input too long (max ${MAX_INPUT_LENGTH} characters)` },
+      { error: `Input too long (max ${MAX_USER_CONTENT_LENGTH} characters)` },
       { status: 400 },
     );
   }
-  if (systemInstruction && systemInstruction.length > MAX_INPUT_LENGTH) {
+  if (systemInstruction && systemInstruction.length > MAX_SYSTEM_INSTRUCTION_LENGTH) {
     return NextResponse.json(
-      { error: `System instruction too long (max ${MAX_INPUT_LENGTH} characters)` },
+      {
+        error: `System instruction too long (${systemInstruction.length} chars, max ${MAX_SYSTEM_INSTRUCTION_LENGTH})`,
+      },
       { status: 400 },
     );
   }
@@ -140,7 +146,7 @@ export async function POST(req: NextRequest) {
       (sum, c) => sum + (Array.isArray(c.parts) ? c.parts.length : 0),
       0,
     );
-    if (totalParts > 500) {
+    if (totalParts > MAX_CONVERSATION_PARTS) {
       return NextResponse.json(
         { error: "Conversation history too large" },
         { status: 400 },

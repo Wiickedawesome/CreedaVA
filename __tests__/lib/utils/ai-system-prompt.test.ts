@@ -16,6 +16,10 @@ import {
   TOOL_USE_GUIDELINES,
   PAGE_CONTEXT_MAP,
 } from "@/lib/utils/ai-system-prompt";
+import {
+  MAX_SYSTEM_INSTRUCTION_LENGTH,
+  MAX_USER_CONTENT_LENGTH,
+} from "@/lib/constants/ai";
 
 describe("AI System Prompt", () => {
   // ─── Constants exist and are non-empty ──────────────
@@ -272,6 +276,29 @@ describe("AI System Prompt", () => {
     it("does not include blog rules when isBlog is false", () => {
       const result = buildContentPrompt("Email AI", "Write email", "");
       expect(result.systemInstruction).not.toContain("BLOG & ARTICLE CONTENT");
+    });
+  });
+
+  // ─── API proxy limits ───────────────────────────────
+  // A 50k cap silently rejected blog and landing-page generation; keep every
+  // builder under the limit the /api/ai proxy enforces.
+
+  describe("stays within /api/ai limits", () => {
+    const builders = [
+      { name: "default", build: () => buildTrainedPrompt("X", "prompt") },
+      { name: "blog", build: () => buildContentPrompt("Blog", "prompt", "", { isBlog: true }) },
+      { name: "forum", build: () => buildContentPrompt("Forum", "prompt", "", { isForum: true }) },
+      { name: "social", build: () => buildContentPrompt("Social", "prompt") },
+      { name: "landing page", build: () => buildLandingPagePrompt("prompt") },
+      { name: "report", build: () => buildReportPrompt("Weekly", "prompt", "data") },
+    ];
+
+    it.each(builders)("$name prompt fits the system instruction limit", ({ build }) => {
+      const prompt = build();
+      expect(prompt.systemInstruction.length).toBeLessThanOrEqual(
+        MAX_SYSTEM_INSTRUCTION_LENGTH,
+      );
+      expect(prompt.userContent.length).toBeLessThanOrEqual(MAX_USER_CONTENT_LENGTH);
     });
   });
 });

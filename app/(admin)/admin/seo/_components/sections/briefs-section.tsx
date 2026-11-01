@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import { PageHeader, DashboardSection, StatusBadge, useToast } from "@/components/admin";
 import { Button } from "@/components/ui";
+import { slugify } from "@/lib/utils/slug";
 
 interface ContentBrief {
   id: string;
@@ -81,11 +82,7 @@ export default function BriefsSection() {
   async function createBlogDraft(brief: ContentBrief) {
     setBusyId(brief.id);
     try {
-      const slug = brief.keyword
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "")
-        .slice(0, 80);
+      const slug = slugify(brief.keyword);
       const outlineHtml = brief.recommendedOutline?.length
         ? brief.recommendedOutline.map((item) => `<h2>${item}</h2>\n<p></p>`).join("\n")
         : "<p></p>";

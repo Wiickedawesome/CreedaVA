@@ -327,61 +327,6 @@ export default function AdminDashboardPage() {
     );
   }, [leads]);
 
-  const _leadSources = useMemo(() => {
-    const counts: Record<string, number> = {};
-    leads.forEach((l) => {
-      counts[l.source || "other"] = (counts[l.source || "other"] || 0) + 1;
-    });
-    return counts;
-  }, [leads]);
-
-  const _sourceColors: Record<string, string> = {
-    website: "#005148",
-    referral: "#007A6D",
-    social: "#0043CE",
-    ad: "#F1C21B",
-    email: "#4589FF",
-    "cold-call": "#878D96",
-    other: "#A2A9B0",
-  };
-
-  const funnel = useMemo(
-    () => [
-      {
-        label: "New",
-        count: leads.filter((l) => l.status === "new").length,
-        color: "#4589FF",
-      },
-      {
-        label: "Contacted",
-        count: leads.filter((l) => l.status === "contacted").length,
-        color: "#0043CE",
-      },
-      {
-        label: "Qualified",
-        count: leads.filter((l) => l.status === "qualified").length,
-        color: "#6929C4",
-      },
-      {
-        label: "Proposal",
-        count: leads.filter((l) => l.status === "proposal").length,
-        color: "#9F1853",
-      },
-      {
-        label: "Won",
-        count: leads.filter((l) => l.status === "won").length,
-        color: "#198038",
-      },
-      {
-        label: "Lost",
-        count: leads.filter((l) => l.status === "lost").length,
-        color: "#DA1E28",
-      },
-    ],
-    [leads],
-  );
-  const _maxFunnel = Math.max(...funnel.map((f) => f.count), 1);
-
 
   // Sparkline data (simulate weekly distribution from totals)
   const leadsSparkline = useMemo(() => {
