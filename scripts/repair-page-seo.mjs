@@ -5,7 +5,8 @@
  * meta descriptions could contain inline JSON-LD. This script:
  *   - deletes the retired /pricing entry
  *   - removes descriptions / OG descriptions that contain JSON-LD
- *   - strips a duplicated "| CreedaVA" suffix from titles
+ *   - strips a duplicated "CreedaVA" brand from titles, falling back to the
+ *     code default when the stored title carries no extra information
  *
  * The site already ignores corrupted values at read time, so running this is
  * about cleaning the stored data, not about fixing rendering.
@@ -23,14 +24,27 @@ const APPLY = process.argv.includes("--apply");
 const PROJECT_ID = process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "creeda-va";
 const RETIRED_PATH = "/pricing";
 const TEXT_FIELDS = ["description", "ogDescription"];
+const TITLE_FIELDS = ["title", "ogTitle"];
+const BRAND_PREFIX = /^CreedaVA\s*[|—–-]\s*/;
 const BRAND_SUFFIX = /\s*[|—–-]\s*CreedaVA\s*$/;
+const REMOVE = Symbol("remove");
 
 function containsJsonLd(value) {
   return typeof value === "string" && value.includes('"@context"');
 }
 
-function withoutBrandSuffix(value) {
-  return typeof value === "string" ? value.replace(BRAND_SUFFIX, "").trim() : value;
+/**
+ * Strip a duplicated brand from a stored title.
+ * Returns the cleaned title, REMOVE when the title adds nothing over the code
+ * default (empty, or just the page name), or null when it should stay as-is.
+ */
+function normalizeTitle(value) {
+  if (typeof value !== "string" || value.trim() === "") return null;
+
+  const stripped = value.replace(BRAND_PREFIX, "").replace(BRAND_SUFFIX, "").trim();
+  if (!stripped.includes(" ")) return REMOVE;
+
+  return stripped === value ? null : stripped;
 }
 
 async function main() {
@@ -56,9 +70,10 @@ async function main() {
       if (containsJsonLd(data[field])) update[field] = FieldValue.delete();
     }
 
-    for (const field of ["title", "ogTitle"]) {
-      const cleaned = withoutBrandSuffix(data[field]);
-      if (cleaned && cleaned !== data[field]) update[field] = cleaned;
+    for (const field of TITLE_FIELDS) {
+      const next = normalizeTitle(data[field]);
+      if (next === REMOVE) update[field] = FieldValue.delete();
+      else if (next) update[field] = next;
     }
 
     if (Object.keys(update).length === 0) continue;

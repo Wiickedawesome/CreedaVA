@@ -68,8 +68,11 @@ GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/repair-page-s
 GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/repair-page-seo.mjs --apply
 ```
 
-It also deletes the retired `/pricing` entry and strips duplicated `| CreedaVA`
-title suffixes.
+It also deletes the retired `/pricing` entry and strips duplicated `CreedaVA`
+branding from titles, dropping titles that say nothing beyond the page name so
+the curated defaults in code apply. Re-running it is a no-op once clean.
+
+**Status: applied** (1 deleted, 9 repaired).
 
 ## Rollback
 
