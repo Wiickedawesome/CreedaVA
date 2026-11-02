@@ -22,10 +22,10 @@ const es: Dictionary = {
     heroCtaPrimary: "Empezar",
     heroCtaSecondary: "Ver Servicios",
     stats: {
-      tasksCompleted: "Tareas Completadas",
-      clientSatisfaction: "Satisfacci\u00f3n del Cliente",
+      serviceCategories: "Categor\u00edas de Servicio",
+      supportPlans: "Planes de Soporte",
       availability: "Soporte Biling\u00fce",
-      happyClients: "Clientes Satisfechos",
+      onboardingDays: "D\u00edas de Incorporaci\u00f3n",
     },
     howItWorks: "C\u00f3mo Funciona",
     howItWorksDesc:

@@ -3,12 +3,17 @@ import Image from "next/image";
 import { Container } from "@/components/ui";
 import type { Dictionary } from "@/lib/i18n";
 
-const DEFAULT_STAT_VALUES = ["500+", "98%", "EN/ES", "50+"];
+// Every figure here must be checkable on the site itself. The previous values
+// ("500+" tasks, "98%" satisfaction, "50+" clients) were not substantiated by
+// anything — the CRM held 0 active clients — which is an advertising-claims
+// exposure. These four are verifiable: SERVICE_ANCHORS.length is 12, there are
+// 3 packages, the site is bilingual, and the onboarding copy says 5–7 days.
+const DEFAULT_STAT_VALUES = ["12", "3", "EN/ES", "5–7"];
 const statKeys = [
-  "tasksCompleted",
-  "clientSatisfaction",
+  "serviceCategories",
+  "supportPlans",
   "availability",
-  "happyClients",
+  "onboardingDays",
 ] as const;
 
 const stepIcons = [

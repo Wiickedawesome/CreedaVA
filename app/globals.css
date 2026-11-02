@@ -202,13 +202,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Typography utilities */
-h1 { font-size: var(--font-size-h1); font-weight: 700; line-height: var(--leading-tight); }
-h2 { font-size: var(--font-size-h2); font-weight: 700; line-height: var(--leading-tight); }
-h3 { font-size: var(--font-size-h3); font-weight: 700; line-height: var(--leading-tight); }
-h4 { font-size: var(--font-size-h4); font-weight: 500; line-height: var(--leading-normal); }
-h5 { font-size: var(--font-size-h5); font-weight: 500; line-height: var(--leading-normal); }
-h6 { font-size: var(--font-size-h6); font-weight: 500; line-height: var(--leading-normal); }
+/* Heading defaults.
+   These MUST live in @layer base. Tailwind v4 puts utilities in
+   @layer utilities, and unlayered CSS outranks every layer regardless of
+   specificity — so as bare element rules these silently beat every text-*
+   size utility, leaving 91 of 109 headings stuck at the default size. */
+@layer base {
+  h1 { font-size: var(--font-size-h1); font-weight: 700; line-height: var(--leading-tight); }
+  h2 { font-size: var(--font-size-h2); font-weight: 700; line-height: var(--leading-tight); }
+  h3 { font-size: var(--font-size-h3); font-weight: 700; line-height: var(--leading-tight); }
+  h4 { font-size: var(--font-size-h4); font-weight: 500; line-height: var(--leading-normal); }
+  h5 { font-size: var(--font-size-h5); font-weight: 500; line-height: var(--leading-normal); }
+  h6 { font-size: var(--font-size-h6); font-weight: 500; line-height: var(--leading-normal); }
+}
 
 /* 54px does not fit a phone. On a 320px viewport the /join h1 renders
    "Consultation" at 309px inside 273px of space, which forced 20px of

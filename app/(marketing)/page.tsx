@@ -17,7 +17,9 @@ export async function generateMetadata() {
   });
 }
 
-const DEFAULT_STATS = ["500+", "98%", "EN/ES", "50+"];
+// Must match DEFAULT_STAT_VALUES in home-content.tsx. All four are verifiable
+// from the site; see the note there for why the old social-proof numbers went.
+const DEFAULT_STATS = ["12", "3", "EN/ES", "5–7"];
 
 const homeCitationParagraphs = [
   "Virtual assistant performance improves when workflows are documented, outcomes are measurable, and response standards are defined before onboarding begins.",

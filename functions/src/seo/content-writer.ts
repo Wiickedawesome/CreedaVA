@@ -64,6 +64,12 @@ export async function writeBlogDraftsFromBriefs(
   for (const brief of candidates) {
     try {
       const blog = await composeBlogDraft(brief);
+      if (!blog) {
+        // No AI output, so there is no post. Leave the brief untouched (it has
+        // no blogId yet) and let the next run pick it up.
+        skipped++;
+        continue;
+      }
       const blogRef = db.collection("blog").doc(blog.slug);
       await blogRef.set(
         {
@@ -116,7 +122,7 @@ interface BlogDraft {
   featuredImage: string;
 }
 
-async function composeBlogDraft(brief: BriefDoc): Promise<BlogDraft> {
+async function composeBlogDraft(brief: BriefDoc): Promise<BlogDraft | null> {
   const keyword = (brief.keyword ?? "virtual assistants").trim();
   const outline =
     brief.recommendedOutline && brief.recommendedOutline.length
@@ -124,15 +130,21 @@ async function composeBlogDraft(brief: BriefDoc): Promise<BlogDraft> {
       : defaultOutline(keyword);
 
   const apiKey = process.env.GEMINI_API_KEY;
-  if (apiKey) {
-    try {
-      const ai = await tryGemini(apiKey, keyword, outline);
-      if (ai) return ai;
-    } catch (err) {
-      console.warn("[seo-agent] Gemini draft failed; using template:", err);
-    }
+  if (!apiKey) {
+    console.warn(
+      "[seo-agent] GEMINI_API_KEY missing — skipping brief",
+      brief.id,
+      "rather than writing a placeholder post.",
+    );
+    return null;
   }
-  return templateDraft(keyword, outline);
+
+  try {
+    return await tryGemini(apiKey, keyword, outline);
+  } catch (err) {
+    console.warn("[seo-agent] Gemini draft failed for brief", brief.id, err);
+    return null;
+  }
 }
 
 async function tryGemini(
@@ -193,30 +205,6 @@ ${thumbnailPromptList()}`;
   };
 }
 
-function templateDraft(keyword: string, outline: string[]): BlogDraft {
-  const title = toTitleCase(keyword) + ": A Practical Guide";
-  const excerpt = `Everything you need to know about ${keyword} for US small businesses.`;
-  const sections = outline
-    .map(
-      (s) => `<h2>${escapeHtml(s)}</h2>
-<p>This section covers ${escapeHtml(s.toLowerCase())} in depth, including how CreedaVA helps small US firms succeed with ${escapeHtml(keyword)}.</p>`,
-    )
-    .join("\n");
-  const content = `<p>${escapeHtml(excerpt)}</p>
-${sections}
-<p><strong>Ready to get started?</strong> <a href="/contact">Book a discovery call</a> to see how a bilingual VA from CreedaVA can support your team.</p>`;
-  return {
-    title,
-    slug: slugify(title),
-    excerpt,
-    content,
-    tags: [keyword, "virtual assistants", "small business"].slice(0, 5),
-    metaDescription: excerpt.slice(0, 160),
-    lang: "en",
-    featuredImage: pickFeaturedImage(`${title} ${keyword}`),
-  };
-}
-
 function defaultOutline(keyword: string): string[] {
   return [
     `What is ${keyword}?`,
@@ -234,15 +222,4 @@ function slugify(s: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 80);
-}
-
-function toTitleCase(s: string): string {
-  return s.replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
 }

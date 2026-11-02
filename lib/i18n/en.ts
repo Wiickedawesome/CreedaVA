@@ -20,10 +20,10 @@ const en = {
     heroCtaPrimary: "Get Started",
     heroCtaSecondary: "View Services",
     stats: {
-      tasksCompleted: "Tasks Completed",
-      clientSatisfaction: "Client Satisfaction",
+      serviceCategories: "Service Categories",
+      supportPlans: "Support Plans",
       availability: "Bilingual Support",
-      happyClients: "Happy Clients",
+      onboardingDays: "Days to Onboard",
     },
     howItWorks: "How It Works",
     howItWorksDesc:
