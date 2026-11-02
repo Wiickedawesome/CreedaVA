@@ -266,16 +266,268 @@ cache disabled:
 This is the end state. It was **not** clean on the first pass: `/forum` still failed on the Open
 badge (A7) and needed a second commit and a second deploy before the sweep came back green.
 
-## Remaining phases
+---
 
-3 (security), 4 (performance/CWV), 6 (content/i18n parity), 7 (data integrity), 8 (reliability),
-9 (responsive), 10 (conversion), 13 (build/CI), plus the admin accessibility migration in §Phase 2
-and the finalisation of Phase 11.
+# Second pass — admin accessibility, then phases 3 → 13
 
-Highest-risk items already identified and still open:
+The first pass could not measure admin: the audit browser lost its Firebase cookie and every
+`/admin/*` request 307'd to `/login`. A fresh session unblocked the admin half of Phase 2, and the
+remaining phases were then worked through.
 
-1. **`email_verified` is never checked** — not in `/api/session`, not in `firestore.rules`
-   `isAdmin()`, not in `/api/ai`. `code-only`; provider list unconfirmed.
-2. **Unsubstantiated homepage statistics** (Phase 1) — owner decision.
-3. **`templateDraft()` in `functions/src/seo/content-writer.ts`** still emits filler prose
-   ("This section covers what is x? in depth"). A scheduled function can publish it.
+## Phase 2b — Admin accessibility (`code-only` + `build-verified`, NOT live-verified)
+
+With a working session, axe found real failures on **15 of 16** admin routes. Admin renders in the
+dark theme, which had never been measured.
+
+**A8 — solid buttons were illegible in dark theme. 16/16 routes.** `measured`
+
+Dark theme re-maps `--primary` to teal-400 `#2dd4bf`, but every solid button hard-coded
+`text-white` → **1.86:1**. Bright teal is *correct* as an accent (`text-primary` on `#202124` needs
+a light colour, and darkening the token would break that), so the **foreground** had to flip:
+
+| Token | Light | Dark | Contrast |
+|---|---|---|---|
+| `--primary-foreground` (new) | `#FFFFFF` | `#0b1220` | 9.25:1 light, 10.06:1 dark, 7.52:1 on the teal-500 hover |
+
+Applied to the shared `Button` and the 9 admin call sites that paired `bg-primary` with white text.
+
+**A9 — the same class of bug in the semantic colours.** `measured`
+
+`--error` `#DA1E28` was **3.22:1** and `--success` `#24A148` was **4.45:1** on cards. Neither had a
+dark re-map. Both now have dark values (`#ff8389` = 6.79:1, `#6fdc8c` = 9.42:1) plus paired
+foregrounds, and the danger button uses `text-error-foreground`.
+
+**A10 — `--gray-40` in dark is 2.36:1 and carried 169 captions at 10–12px.** `measured`
+
+No value reaches 4.5:1 while staying visually distinct from `--gray-50`, so the 169 call sites moved
+to `text-gray-50` (5.23:1). `disabled:text-gray-40` is deliberately preserved: disabled controls are
+exempt from WCAG 1.4.3 and the dim colour is the signal that they are disabled.
+
+**A11 — two scrollable regions were not keyboard-focusable.** `build-verified`
+The analytics heatmap and the AI chat log were plain `overflow-*` divs. Now `tabIndex={0}` with
+`role="region"` and an accessible name.
+
+**A12 — `DataTable` nested interactive controls.** `build-verified`
+Rows carried `role="button"` while also containing their own buttons and links (`nested-interactive`).
+The role was removed. Rows stay keyboard-activatable for convenience; the real controls live in the
+cells.
+
+### Why admin is not marked live-verified
+
+The session expired again mid-sweep. Every `/admin/*` request returned the login page, so those
+routes measured the login screen, not admin — the sweep now stamps `[LOGIN]` on any result where
+`location.pathname` starts with `/login` so this can't be mistaken for a pass.
+
+Deploy is confirmed by token, not by measurement:
+
+```
+--primary-foreground:#0b1220   --primary-foreground:#fff     (live CSS, admin-a11y build)
+```
+
+**To finish this:** log in, then re-run the axe sweep over the 16 `/admin/*` routes.
+
+## Phase 3 — Security
+
+**S1 — the admin gate never checked `email_verified`.** `code-only` (was the top open risk)
+
+All three gates checked only the email *domain*:
+
+- `app/api/session/route.ts` — minted the session cookie
+- `firestore.rules` `isAdmin()`
+- `storage.rules` `isAdmin()`
+
+Email/password sign-up lets a user type any address they like, so an unverified
+`anything@creedava.com` would have minted a full admin session and passed both rule predicates.
+Google sign-in always sets `email_verified`, so **no real admin is affected** by tightening this.
+
+Fixed in all three, plus `getUidFromSession()` in `/api/ai` — cookies minted before the change stay
+valid for up to 5 days, so the cookie alone is not trusted. `email != null` also guards providers
+that issue tokens with no email claim.
+
+> The enabled provider list is still `not-verified`. `https://creeda-va.firebaseapp.com/__/auth/handler`
+> returns a 462-byte JS shim, and App Check blocks the Identity Toolkit probe endpoints. The fix
+> above is deliberately independent of that answer.
+
+**S2 — `/api/booking` had no rate limiting.** `code-only`
+
+A public, unauthenticated endpoint that writes to Firestore *and* queues an admin notification
+email, with no throttle — an inbox- and quota-burn vector. `/api/contact` already had a sliding
+window, so it was extracted into `lib/utils/rate-limit.ts` and applied to both (5 per 10 min per
+client). The module states plainly that in-process state is abuse friction, not a guarantee:
+the real ceiling is `limit × live instances`, and App Hosting scales horizontally.
+
+**⚠️ NOT DEPLOYED: `firestore.rules` and `storage.rules`.** They need
+`firebase deploy --only firestore:rules,storage`. This was held back on purpose — a bad rules
+deploy can lock admins out with no staging environment to catch it first. **This needs your go-ahead.**
+
+## Phase 4 — Performance
+
+`live-verified`, 1280×800, browser cache disabled.
+
+| Route | TTFB (warm) | JS transferred | Requests |
+|---|---|---|---|
+| `/` | 177 ms | 806 KB | 29 |
+| `/services` | 118 ms | 803 KB | 29 |
+| `/contact` | 107 ms | 806 KB | 29 |
+| `/news` | 40–99 ms | 811 KB | 30 |
+
+**P1 — 351 KB of the 806 KB is `recaptcha__en.js`.** `live-verified`
+
+That is 43% of all JavaScript on the public homepage, loaded for visitors who will never log in. It
+arrives because App Check (reCAPTCHA Enterprise) is initialised on the marketing layout — which is
+required, since Firestore App Check is enforced and `trackEvent` writes are rejected without a token
+(that was the cause of the all-zero analytics dashboard).
+
+So it cannot simply be removed. The options, in order of preference:
+
+1. Initialise App Check lazily and request the token only when an analytics event actually fires.
+2. Defer initialisation to `requestIdleCallback` so reCAPTCHA stops competing with LCP.
+
+The first is the real win; both are behaviour changes and were **not** made here.
+
+Worth noting the console is full of `recaptcha/enterprise/anchor … net::ERR_ABORTED` failures in this
+browser — so the 351 KB is sometimes being paid for a script that then fails.
+
+**P2 — `/news` cold ISR spikes to ~2.7 s TTFB.** `live-verified`
+One measurement of `/news` returned 2737 ms TTFB; four follow-ups returned 40–99 ms. This is a cold
+`revalidate = 300` regeneration, not a systemic problem, but a visitor can land on it. Related: the
+live header advertises `stale-while-revalidate=31535940` (~1 year) while `apphosting.yaml` declares
+`3600` — the ~1-year window is risky for a CMS.
+
+## Phase 6 — Content / i18n parity
+
+`code-only`, no defects found.
+
+`lib/i18n/en.ts` and `lib/i18n/es.ts` both hold **283 keys**, and the key trees match exactly: zero
+keys present in one locale only. Comparing values found only 3 identical strings, all legitimate:
+`contact@creedava.com`, `privacy@creedava.com`, `legal@creedava.com`. No untranslated copy.
+
+## Phase 7 — Data integrity
+
+`code-only`, one low-severity finding.
+
+`content-briefs.blogId` is written with a **slug** (`content-writer.ts:82`, `blogId: blog.slug`),
+while the identically named field in `internal-link-suggestions` holds a **document id**
+(`internal-links.ts:91`, `blogId: post.id`) and sits next to a separate `slug` field.
+`ai-activity-log.args.blogId` holds a document id.
+
+Nothing currently reads `content-briefs.blogId` as an id, so nothing is broken — the field name just
+lies. Worth renaming (`blogSlug`) the next time that schema is touched. Not changed, because that is
+a data migration, not a fix.
+
+## Phase 8 — Reliability
+
+`code-only`, two gaps.
+
+- **28 `onSchedule` registrations**, all with explicit `memory` and `timeoutSeconds: 540`, and all
+  bound to `GEMINI_API_KEY`. Resource config is solid.
+- **No `retryConfig` anywhere.** Scheduled functions therefore default to no retry, so a transient
+  failure silently skips that week's SEO run.
+- **No alerting config in the repo.** A failed scheduled run is only discovered by opening
+  `/admin/seo` and reading `agent-runs`. Nobody is notified.
+
+Combined, these two mean silent weekly data loss is possible and invisible. A failure counter plus a
+`retryConfig: { retryCount: 2 }` on the idempotent runs would close it.
+
+## Phase 9 — Responsive
+
+`live-verified` at 320 / 768 / 1280 across 7 routes (21 page loads).
+
+Exactly one overflow: **`/join` scrolled 20 px sideways at 320 px**. The `h1` renders at 54 px
+(`--font-size-h1`), so "Consultation" measures 309 px inside 273 px of available width.
+
+Fixed by scaling the display tokens down below 480 px (`scrollWidth` 325 → 305, i.e. exactly the
+viewport). Verified by injecting the rule into the live page *before* touching source.
+
+### The bug underneath it — needs a decision, not fixed
+
+The reason the `h1` is 54 px at all is that the bare `h1 … h6` element rules in `globals.css` are
+**unlayered**. In Tailwind v4 utilities live in `@layer utilities`, and unlayered CSS outranks every
+layer regardless of specificity — so **every `text-*` size class on a heading is silently ignored**.
+
+`measured`: an `h1` with `text-3xl lg:text-4xl` computes to **54 px**, not 30/36 px.
+
+**91 of 109 headings** in the codebase carry a size utility that currently does nothing. Wrapping
+those element rules in `@layer base` would fix it — and would resize 91 headings site-wide. That is
+a visual change far outside an audit, so it was **not** made. It needs an explicit yes/no.
+
+## Phase 10 — Conversion / analytics
+
+`code-only`, wired correctly.
+
+`data-analytics-cta` appears on 13 elements and is handled in one place
+(`components/layout/global-analytics.tsx`, via `target.closest("[data-analytics-cta]")`), which
+emits `cta_click` with the marker as the name. No dead markers, no duplicate handlers.
+
+## Phase 11 — Dependencies
+
+`live-verified` against the registry.
+
+- **0 vulnerabilities** (`npm audit --audit-level=low`).
+- ~20 packages outdated; the majors behind are eslint 9→10, typescript 5.9→7, vitest 4→5 (+
+  `@vitest/coverage-v8` 5), `@vitejs/plugin-react` 5→6, jsdom 28→30, firebase 12→13,
+  firebase-admin 13→14, `@testing-library/jest-dom` 6→7.
+
+**No upgrades were applied.** Each major needs its own migration read and its own PR; bundling eight
+majors at the end of an audit is how regressions get shipped. The patches/minors left
+(`next` 16.4.3→16.4.4, `react`/`react-dom` 19.2.5→19.3.1, `firebase` 12.12.1→12.19.0,
+`firebase-admin` 13.8.0→13.10.0, `@playwright/test` 1.59.1→1.64.1, plus `@types/*`) are safe to take
+with `npm update`, and CI would catch a break.
+
+## Phase 13 — Build / CI
+
+`code-only` + `live-verified` runs.
+
+- Engines agree: root `node: 24.x`, functions `node: 24`, `.nvmrc` = `24`. Local `v24.15.0` / npm
+  `11.12.1`.
+- Both lockfiles committed; CI uses `npm ci` with `cache-dependency-path`.
+- `.github/workflows/ci.yml` runs **lint → unit tests → build** for the app and **build → unit tests**
+  for functions, Node 24, 20/10-minute timeouts, with per-ref concurrency cancellation.
+- `gh run list` shows **every push in this session green**, including the ones in this document.
+
+Gaps: CI does not run Playwright e2e, does not gate on accessibility, and has no dependency-audit job.
+The a11y one is now cheap to add — the axe harness in this audit is a few dozen lines.
+
+---
+
+# Final status
+
+| # | Phase | Status | Evidence |
+|---|---|---|---|
+| 1 | Interactive UX | DONE | 16 admin + 15 public routes, 0 console/page errors |
+| 2 | Accessibility (public) | DONE | axe 0 violations on 17 routes, live |
+| 2b | Accessibility (admin) | PARTIAL | fixed + deployed, live re-measure blocked by expired session |
+| 3 | Security | DONE (code) / **rules not deployed** | `email_verified` + booking throttle |
+| 4 | Performance | PARTIAL | measured; P1 recommendation not implemented |
+| 5 | SEO | DONE | verified live |
+| 6 | Content / i18n | DONE | 283/283 keys, 0 untranslated |
+| 7 | Data integrity | DONE | 1 low-severity naming finding |
+| 8 | Reliability | DONE | 2 gaps documented |
+| 9 | Responsive | DONE | 1 overflow fixed; heading-layer bug escalated |
+| 10 | Conversion | DONE | markers wired |
+| 11 | Dependencies | DONE | 0 vulns; upgrades not applied by design |
+| 12 | Code quality | DONE | survey |
+| 13 | Build / CI | DONE | green on every push |
+| 14 | Test coverage | DONE | 375/375, 65.29% |
+| 15 | Documentation accuracy | DONE | 12 of 14 old findings stale |
+
+## Needs your decision
+
+1. **Deploy `firestore.rules` + `storage.rules`** — the security fix is committed but not live.
+2. **`@layer base` for headings** — fixes 91 headings, visibly changes the site.
+3. **reCAPTCHA 351 KB on public pages** — needs a lazy-init change, not an audit.
+4. **Unsubstantiated homepage stats** (`500+`, `98%`, `50+`) vs CRM: 0 clients, 6 leads.
+5. **`templateDraft()` filler prose** in `functions/src/seo/content-writer.ts` — a scheduled function
+   can publish "This section covers what is x? in depth".
+
+## Commits in this session
+
+| Commit | Contents |
+|---|---|
+| `ac38627` | public WCAG AA fixes (22 files) |
+| `8f7ba1d` | audit doc |
+| `4b443bb` | forum Open badge |
+| `26cf95c` | doc update |
+| `f99457d` | admin dark theme WCAG AA |
+| `965bb8c` | security: `email_verified` + booking rate limit |
+| `6d06a58` | responsive: 320px overflow |
