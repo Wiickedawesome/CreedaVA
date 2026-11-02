@@ -210,6 +210,18 @@ h4 { font-size: var(--font-size-h4); font-weight: 500; line-height: var(--leadin
 h5 { font-size: var(--font-size-h5); font-weight: 500; line-height: var(--leading-normal); }
 h6 { font-size: var(--font-size-h6); font-weight: 500; line-height: var(--leading-normal); }
 
+/* 54px does not fit a phone. On a 320px viewport the /join h1 renders
+   "Consultation" at 309px inside 273px of space, which forced 20px of
+   horizontal page scroll. Scale the display sizes down on the narrowest
+   screens; tokens are used, so every heading follows. */
+@media (max-width: 479px) {
+  :root {
+    --font-size-h1: 2.25rem; /* 36px */
+    --font-size-h2: 1.875rem; /* 30px */
+    --font-size-h3: 1.5rem; /* 24px */
+  }
+}
+
 /* Focus ring utility */
 *:focus-visible {
   outline: 2px solid var(--ring);
