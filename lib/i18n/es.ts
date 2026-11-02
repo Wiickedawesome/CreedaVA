@@ -202,10 +202,10 @@ const es: Dictionary = {
         {
           id: "starter",
           name: "Inicial",
-          hours: "160 horas/mes",
-          desc: "Soporte dedicado de tiempo completo para empresas que necesitan asistencia consistente",
+          hours: "80 horas/mes",
+          desc: "Soporte dedicado de medio tiempo para empresas que necesitan asistencia consistente",
           features: [
-            "AV dedicado de tiempo completo",
+            "AV dedicado de medio tiempo",
             "Soporte biling\u00fce disponible",
             "Respuesta prioritaria",
             "Gesti\u00f3n avanzada de tareas",

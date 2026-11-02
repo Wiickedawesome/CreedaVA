@@ -200,10 +200,10 @@ const en = {
         {
           id: "starter",
           name: "Starter",
-          hours: "160 hours/month",
-          desc: "Full-time dedicated support for businesses that need consistent assistance",
+          hours: "80 hours/month",
+          desc: "Part-time dedicated support for businesses that need consistent assistance",
           features: [
-            "Dedicated full-time VA",
+            "Dedicated part-time VA",
             "Bilingual support available",
             "Priority response",
             "Advanced task management",

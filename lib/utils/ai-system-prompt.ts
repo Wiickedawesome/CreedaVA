@@ -882,7 +882,7 @@ PACKAGE COMPARISON TABLE (3-column):
   <!-- Standard -->
   <div class="cv-lift" style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:20px;padding:32px;text-align:center">
     <p style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:#697077;margin-bottom:8px">Starter</p>
-    <p style="font-size:20px;font-weight:700;color:#002D72">160 hours/month</p>
+    <p style="font-size:20px;font-weight:700;color:#002D72">80 hours/month</p>
     <div style="border-top:1px solid #DDE1E6;margin:20px 0;padding-top:20px">
       <!-- benefits list -->
     </div>

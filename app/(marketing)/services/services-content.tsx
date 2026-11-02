@@ -33,41 +33,6 @@ export function ServicesContent({ t }: { t: Dictionary }) {
         </Container>
       </section>
 
-      {/* Services Tile Grid */}
-      <section className="py-20 lg:py-28">
-        <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {t.services.categories.map((service, i) => (
-              <div
-                key={SERVICE_ANCHORS[i]}
-                id={SERVICE_ANCHORS[i]}
-                className="group bg-white border border-border rounded-2xl p-8 scroll-mt-24 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
-              >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                  {serviceIcons[i]}
-                </div>
-                <h3 className="text-xl font-bold text-gray-100 mb-3">
-                  {service.title}
-                </h3>
-                <p className="text-gray-60 text-sm leading-relaxed mb-5">
-                  {service.desc}
-                </p>
-                <ul className="space-y-2">
-                  {service.features.map((feature, fi) => (
-                    <li key={fi} className="flex items-start gap-2">
-                      <svg className="w-4 h-4 text-primary mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className="text-gray-70 text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
       {/* Service Packages */}
       <section id={PACKAGES_ANCHOR} className="py-20 lg:py-28 bg-gray-10 scroll-mt-20">
         <Container>
@@ -166,6 +131,41 @@ export function ServicesContent({ t }: { t: Dictionary }) {
                 </div>
               );
             })}
+          </div>
+        </Container>
+      </section>
+
+      {/* Services Tile Grid */}
+      <section className="py-20 lg:py-28">
+        <Container>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {t.services.categories.map((service, i) => (
+              <div
+                key={SERVICE_ANCHORS[i]}
+                id={SERVICE_ANCHORS[i]}
+                className="group bg-white border border-border rounded-2xl p-8 scroll-mt-24 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
+              >
+                <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                  {serviceIcons[i]}
+                </div>
+                <h3 className="text-xl font-bold text-gray-100 mb-3">
+                  {service.title}
+                </h3>
+                <p className="text-gray-60 text-sm leading-relaxed mb-5">
+                  {service.desc}
+                </p>
+                <ul className="space-y-2">
+                  {service.features.map((feature, fi) => (
+                    <li key={fi} className="flex items-start gap-2">
+                      <svg className="w-4 h-4 text-primary mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-70 text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </Container>
       </section>
