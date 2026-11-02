@@ -112,6 +112,16 @@ sweep, so the live measurement understated it: **all 8 tabs would have produced 
 Added an `as?: "h1" | "h2"` prop (defaults to `h1`, so no existing caller changes) and set
 `as="h2"` on all 8 sections.
 
+**A7 — Forum "Open" badge.** `live-verified` + `measured`
+
+`text-green-600` (`#00a544`) renders the status badge at 12px bold. That is below the 18.66px bold
+threshold for large text, so it needs 4.5:1; it measured **3.25:1** on white. `green-700`
+(`#008138`) measures **5.00:1** and is close in hue. `forum-list.tsx`, `thread-content.tsx`.
+
+This one was invisible to every earlier run: the local production build contains no forum posts,
+so the badge never rendered. It only appeared when the same sweep was re-run against the live site
+once the first fix had deployed.
+
 ### Open — admin dark theme
 
 `BLOCKED` from live verification: the audit browser session lost its Firebase cookie partway
@@ -232,11 +242,29 @@ against the code first.**
 | Build | `npm run build` | ✓ |
 | Accessibility | axe, 20 public routes | 20/20 clean |
 
-## Commit
+## Commits
 
-`ac38627` — `fix(a11y): meet WCAG 2.2 AA on all public pages` (22 files).
-Pushed to `main`; App Hosting rebuilds automatically in roughly 12 minutes.
-`live-verified` status of the deploy: **pending at time of writing** — see the note below.
+| Commit | Contents |
+|---|---|
+| `ac38627` | `fix(a11y): meet WCAG 2.2 AA on all public pages` — 22 files |
+| `8f7ba1d` | `docs(audit): add 15-phase full site audit with evidence tags` |
+| `4b443bb` | `fix(a11y): darken forum Open badge to green-700` |
+
+All three pushed to `main`. App Hosting rebuilt and rolled each automatically.
+
+## Live verification after deploy — `live-verified`
+
+Re-ran the full axe sweep against `https://creedava.com` once the builds rolled, with browser HTTP
+cache disabled:
+
+```
+/  /about  /services  /contact  /faq  /forum  /join  /news  /privacy  /terms
+/satisfaction  /satisfaction/demo  /lp  /login  /nonexistent-page-xyz  /es  /es/services
+                                       → 0 violations (17 routes)
+```
+
+This is the end state. It was **not** clean on the first pass: `/forum` still failed on the Open
+badge (A7) and needed a second commit and a second deploy before the sweep came back green.
 
 ## Remaining phases
 
