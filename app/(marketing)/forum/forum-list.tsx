@@ -498,7 +498,7 @@ export function ForumList() {
                     <span
                       className={`text-xs font-bold uppercase tracking-wider ${
                         thread.status === "open"
-                          ? "text-green-600"
+                          ? "text-green-700"
                           : "text-gray-40"
                       }`}
                     >

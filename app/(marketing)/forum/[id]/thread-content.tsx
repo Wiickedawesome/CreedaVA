@@ -350,7 +350,7 @@ function ThreadContent({ id }: { id: string }) {
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <span
                   className={`text-xs font-bold uppercase tracking-wider ${
-                    thread.status === "open" ? "text-green-600" : "text-gray-60"
+                    thread.status === "open" ? "text-green-700" : "text-gray-60"
                   }`}
                 >
                   {thread.status === "open" ? t.forum.open : t.forum.closed}
