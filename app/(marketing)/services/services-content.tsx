@@ -19,27 +19,13 @@ export function ServicesContent({ t }: { t: Dictionary }) {
 
   return (
     <>
-      {/* Hero */}
-      <section className="py-20 lg:py-28 bg-linear-to-b from-gray-10 to-white">
-        <Container>
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-100 mb-6">
-              {t.services.heroTitle}
-            </h1>
-            <p className="text-lg text-gray-60 leading-relaxed">
-              {t.services.heroDesc}
-            </p>
-          </div>
-        </Container>
-      </section>
-
       {/* Service Packages */}
       <section id={PACKAGES_ANCHOR} className="py-20 lg:py-28 bg-gray-10 scroll-mt-20">
         <Container>
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-100 mb-4">
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-100 mb-4">
               {t.services.packages.title}
-            </h2>
+            </h1>
             <p className="text-lg text-gray-60 leading-relaxed">
               {t.services.packages.description}
             </p>
@@ -131,6 +117,20 @@ export function ServicesContent({ t }: { t: Dictionary }) {
                 </div>
               );
             })}
+          </div>
+        </Container>
+      </section>
+
+      {/* Services Heading */}
+      <section className="py-20 lg:py-28 bg-linear-to-b from-gray-10 to-white">
+        <Container>
+          <div className="text-center max-w-3xl mx-auto">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-100 mb-6">
+              {t.services.heroTitle}
+            </h2>
+            <p className="text-lg text-gray-60 leading-relaxed">
+              {t.services.heroDesc}
+            </p>
           </div>
         </Container>
       </section>
