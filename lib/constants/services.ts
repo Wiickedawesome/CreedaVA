@@ -7,6 +7,9 @@
  */
 export const SERVICE_ANCHORS = [
   "administrative",
+  "executive",
+  "hr-recruiting",
+  "legal",
   "customer",
   "social",
   "data",

@@ -95,6 +95,42 @@ const en = {
         ],
       },
       {
+        title: "Executive & C-Suite Support",
+        desc: "Senior-level support for founders and executives who need their time protected and their operations running without friction.",
+        features: [
+          "Inbox triage and priority filtering",
+          "Complex calendar and meeting coordination",
+          "Board and investor meeting preparation",
+          "Travel planning and itinerary management",
+          "Expense reports and receipt tracking",
+          "Confidential document handling",
+        ],
+      },
+      {
+        title: "HR & Recruiting Support",
+        desc: "Reduce time-to-hire and keep people operations organized with trained recruiting and HR administrative assistance.",
+        features: [
+          "Job posting and candidate sourcing",
+          "Resume screening and shortlisting",
+          "Interview scheduling and coordination",
+          "Offer letters and onboarding paperwork",
+          "Benefits enrollment support",
+          "Employee records and compliance files",
+        ],
+      },
+      {
+        title: "Legal Administrative Support",
+        desc: "Organized clerical support for solo and small law firms \u2014 managed files, controlled calendars, and clean document workflows under attorney supervision.",
+        features: [
+          "Client intake and conflict-check data entry",
+          "Document assembly and formatting",
+          "Discovery indexing and Bates numbering",
+          "Docket and deadline calendar management",
+          "Filing preparation and court logistics",
+          "Time-entry and billing support",
+        ],
+      },
+      {
         title: "Customer Service",
         desc: "Deliver exceptional customer experiences across all channels with trained support professionals.",
         features: [
@@ -440,6 +476,9 @@ const en = {
     supportCol: "Support",
     serviceLinks: [
       "Administrative Support",
+      "Executive & C-Suite Support",
+      "HR & Recruiting Support",
+      "Legal Administrative Support",
       "Customer Service",
       "Social Media Management",
       "Data Entry & Research",

@@ -97,6 +97,42 @@ const es: Dictionary = {
         ],
       },
       {
+        title: "Soporte Ejecutivo y para Alta Direcci\u00f3n",
+        desc: "Soporte de nivel s\u00e9nior para fundadores y ejecutivos que necesitan proteger su tiempo y mantener sus operaciones sin fricci\u00f3n.",
+        features: [
+          "Triaje de correo y filtrado de prioridades",
+          "Coordinaci\u00f3n de calendario complejo y reuniones",
+          "Preparaci\u00f3n de reuniones de junta e inversores",
+          "Planificaci\u00f3n de viajes y gesti\u00f3n de itinerarios",
+          "Informes de gastos y seguimiento de recibos",
+          "Manejo de documentos confidenciales",
+        ],
+      },
+      {
+        title: "Soporte de RR. HH. y Reclutamiento",
+        desc: "Reduce el tiempo de contrataci\u00f3n y mant\u00e9n las operaciones de personal organizadas con asistencia administrativa capacitada en reclutamiento y RR. HH.",
+        features: [
+          "Publicaci\u00f3n de vacantes y b\u00fasqueda de candidatos",
+          "Filtrado y preselecci\u00f3n de curr\u00edculos",
+          "Programaci\u00f3n y coordinaci\u00f3n de entrevistas",
+          "Cartas de oferta y papeleo de incorporaci\u00f3n",
+          "Soporte para inscripci\u00f3n de beneficios",
+          "Expedientes de empleados y archivos de cumplimiento",
+        ],
+      },
+      {
+        title: "Soporte Administrativo Legal",
+        desc: "Soporte administrativo organizado para despachos de abogados peque\u00f1os: archivos gestionados, calendarios controlados y flujos de documentos limpios bajo supervisi\u00f3n de un abogado.",
+        features: [
+          "Recepci\u00f3n de clientes y entrada de datos de conflicto",
+          "Ensamblaje y formato de documentos",
+          "Indexaci\u00f3n de descubrimiento y numeraci\u00f3n Bates",
+          "Gesti\u00f3n de expedientes y calendario de plazos",
+          "Preparaci\u00f3n de presentaciones y log\u00edstica judicial",
+          "Soporte de registro de horas y facturaci\u00f3n",
+        ],
+      },
+      {
         title: "Servicio al Cliente",
         desc: "Ofrece experiencias excepcionales al cliente en todos los canales con profesionales de soporte capacitados.",
         features: [
@@ -442,6 +478,9 @@ const es: Dictionary = {
     supportCol: "Soporte",
     serviceLinks: [
       "Soporte Administrativo",
+      "Soporte Ejecutivo y Alta Direcci\u00f3n",
+      "Soporte de RR. HH. y Reclutamiento",
+      "Soporte Administrativo Legal",
       "Servicio al Cliente",
       "Gesti\u00f3n de Redes Sociales",
       "Entrada de Datos e Investigaci\u00f3n",
