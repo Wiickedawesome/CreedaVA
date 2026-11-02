@@ -11,8 +11,17 @@ service cloud.firestore {
 
     // Helper: check if user belongs to CreedaVA domain
     // Uses email match instead of hd claim (hd only works with Google Workspace)
+    //
+    // email_verified is REQUIRED. Without it, any account whose address merely
+    // *claims* @creedava.com is an admin. Google sign-in always sets this true,
+    // so the only thing this blocks is a self-registered, unverified address
+    // (email/password sign-up lets a user type whatever address they like).
+    // email != null guards providers that issue tokens without an email claim.
     function isAdmin() {
-      return isAuth() && request.auth.token.email.matches('.*@creedava[.]com$');
+      return isAuth()
+        && request.auth.token.email != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.matches('.*@creedava[.]com$');
     }
 
     // Blog posts — public read, admin write

@@ -48,6 +48,17 @@ export async function POST(request: Request) {
       );
     }
 
+    // Require a VERIFIED email. Domain alone is not enough: email/password
+    // sign-up lets a user type any address they like, so without this an
+    // unverified `anything@creedava.com` would mint a full admin session.
+    // Google sign-in always sets email_verified, so real admins are unaffected.
+    if (decoded.email_verified !== true) {
+      return NextResponse.json(
+        { error: "Email address is not verified" },
+        { status: 403 },
+      );
+    }
+
     // Create a short-lived Firebase session cookie instead of storing the raw ID token.
     // Session cookies survive token refresh and respect admin-level revocation.
     let sessionCookie: string;

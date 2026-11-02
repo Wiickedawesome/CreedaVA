@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
+import { createRateLimiter } from "@/lib/utils/rate-limit";
 
 /** Escape HTML entities to prevent XSS in email templates. */
 function escapeHtml(str: string): string {
@@ -20,8 +21,19 @@ function clamp(v: unknown, max: number): string {
   return typeof v === "string" ? v.trim().slice(0, max) : "";
 }
 
+// This endpoint is unauthenticated, writes to Firestore and queues an admin
+// notification email, so an unlimited caller can burn quota and inbox space.
+const limiter = createRateLimiter({ windowMs: 10 * 60 * 1000, max: 5 });
+
 export async function POST(req: NextRequest) {
   try {
+    if (process.env.NODE_ENV === "production" && limiter.isLimited(req)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(limiter.retryAfterSeconds) } },
+      );
+    }
+
     const body = await req.json();
     const {
       firstName,

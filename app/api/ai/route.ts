@@ -47,6 +47,11 @@ async function getUidFromSession(): Promise<string | null> {
     const session = cookieStore.get("__session")?.value;
     if (!session) return null;
     const decoded = await adminAuth.verifySessionCookie(session, true);
+    // Re-check the admin gate here as well. /api/session is the only place that
+    // mints these cookies, but cookies minted before the gate tightened live for
+    // up to 5 days, so don't trust the cookie alone.
+    if (!decoded.email?.endsWith("@creedava.com")) return null;
+    if (decoded.email_verified !== true) return null;
     return decoded.uid;
   } catch {
     return null;

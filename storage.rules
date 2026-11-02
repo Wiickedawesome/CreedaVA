@@ -5,8 +5,14 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    // email_verified is required — see the same predicate in firestore.rules.
+    // A self-registered account can claim any @creedava.com address, and an
+    // unverified claim must not grant storage write access.
     function isAdmin() {
-      return isAuth() && request.auth.token.email.matches('.*@creedava[.]com$');
+      return isAuth()
+        && request.auth.token.email != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.matches('.*@creedava[.]com$');
     }
 
     // Publicly readable marketing/media assets, admin managed.
