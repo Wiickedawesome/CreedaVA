@@ -90,6 +90,7 @@ export default function OpportunitiesSection() {
   return (
     <div className="space-y-6">
       <PageHeader
+        as="h2"
         title="Opportunities"
         description="Keyword gaps the SEO agent surfaces from Search Console + competitor probes. Track promising ones to manage them in the Keywords tab."
       />

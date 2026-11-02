@@ -35,6 +35,7 @@ export default function CitationsSection() {
   return (
     <div className="space-y-6">
       <PageHeader
+        as="h2"
         title="LLM Citation Readiness"
         description="How well each page is structured for AI Overviews, ChatGPT, Perplexity, and other LLM citation engines. Lower scores need the most work."
       />

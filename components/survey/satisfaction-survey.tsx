@@ -278,7 +278,7 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
                     className="flex flex-col items-center gap-2 p-2 sm:p-3 rounded-xl border-2 border-transparent hover:border-gray-20 hover:bg-gray-10 transition-all cursor-pointer hover:scale-110 active:scale-95"
                   >
                     <FaceIcon value={r.value} size={44} />
-                    <span className="text-xs font-medium text-gray-50">{r[lang]}</span>
+                    <span className="text-xs font-medium text-gray-60">{r[lang]}</span>
                   </button>
                 ))}
               </div>

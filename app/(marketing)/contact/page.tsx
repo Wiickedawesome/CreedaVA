@@ -261,7 +261,7 @@ export default function ContactPage() {
                 <h4 className="font-bold text-gray-100 mb-2">
                   {t.contact.bookTitle}
                 </h4>
-                <p className="text-sm text-gray-60 mb-4">
+                <p className="text-sm text-gray-70 mb-4">
                   {t.contact.bookDesc}
                 </p>
                 <a

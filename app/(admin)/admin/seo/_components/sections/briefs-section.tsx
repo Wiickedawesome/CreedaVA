@@ -107,6 +107,7 @@ export default function BriefsSection() {
   return (
     <div>
       <PageHeader
+        as="h2"
         title="Content Briefs"
         description="Auto-generated weekly from striking-distance keywords (positions 11–30). Convert to a task when ready to write."
       />

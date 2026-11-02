@@ -10,7 +10,12 @@
   --gray-90: #1B3A5C;
   --gray-80: #4D5358;
   --gray-70: #697077;
-  --gray-60: #878D96;
+  /* gray-60 was #878D96 = 3.34:1 on white, below the WCAG AA floor of 4.5:1
+     despite carrying body copy at 14–18px. #6D747D clears it (4.72:1 white,
+     4.56:1 on --gray-10). gray-50 is deliberately left light: it is the muted
+     text colour on the dark #1B2A4A footer, so darkening it here would drop
+     the footer to ~3:1. Light-surface gray-50 text uses gray-60 instead. */
+  --gray-60: #6D747D;
   --gray-50: #A2A9B0;
   --gray-40: #C1C7CD;
   --gray-30: #DDE1E6;

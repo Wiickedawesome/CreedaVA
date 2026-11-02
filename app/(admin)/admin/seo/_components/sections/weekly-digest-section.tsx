@@ -28,6 +28,7 @@ export default function WeeklyDigestSection() {
   return (
     <div className="space-y-6">
       <PageHeader
+        as="h2"
         title="Weekly Digest"
         description="Latest weekly synthesizer + scheduled reports. Each captures findings the SEO agent collected during the prior 7 days."
       />

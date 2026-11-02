@@ -104,7 +104,7 @@ export function ForumAuthModal({
       <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-50 hover:text-gray-80 text-xl leading-none"
+          className="absolute top-3 right-3 text-gray-60 hover:text-gray-80 text-xl leading-none"
         >
           &times;
         </button>
@@ -113,7 +113,7 @@ export function ForumAuthModal({
           {mode === "signIn" ? t.forum.signIn : t.forum.signUp}
         </h2>
         {mode === "signUp" && (
-          <p className="text-xs text-gray-40 mb-4">
+          <p className="text-xs text-gray-60 mb-4">
             {t.forum.signUpSubtitle}
           </p>
         )}
@@ -157,7 +157,7 @@ export function ForumAuthModal({
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   aria-label={t.forum.country}
-                  className={`${inputClass} ${!country ? "text-gray-40" : ""}`}
+                  className={`${inputClass} ${!country ? "text-gray-60" : ""}`}
                 >
                   <option value="" disabled>
                     {t.forum.country}
@@ -223,7 +223,7 @@ export function ForumAuthModal({
           </button>
         </form>
 
-        <div className="mt-4 text-center text-xs text-gray-50">
+        <div className="mt-4 text-center text-xs text-gray-60">
           {mode === "signIn" ? (
             <>
               {t.forum.noAccount}{" "}

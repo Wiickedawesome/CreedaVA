@@ -333,6 +333,7 @@ export default function SeoContentSection() {
   return (
     <div className="space-y-6">
       <PageHeader
+        as="h2"
         title="SEO Content"
         description="Manage page metadata and run AI content audits"
         actions={

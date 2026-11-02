@@ -22,7 +22,7 @@ export function NewsList({ posts }: NewsListProps) {
         <svg className="w-12 h-12 mx-auto text-gray-30 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 19.5v-15A2.5 2.5 0 016.5 2H20v20H6.5a2.5 2.5 0 010-5H20" />
         </svg>
-        <p className="text-gray-50 text-sm">{t.news.noPostsYet}</p>
+        <p className="text-gray-60 text-sm">{t.news.noPostsYet}</p>
       </div>
     );
   }
@@ -68,7 +68,7 @@ export function NewsList({ posts }: NewsListProps) {
                 <span className="px-2.5 py-0.5 bg-primary/10 text-primary text-xs font-medium rounded-full">
                   {category}
                 </span>
-                <span className="text-xs text-gray-50">{readTime} {t.news.minRead}</span>
+                <span className="text-xs text-gray-60">{readTime} {t.news.minRead}</span>
               </div>
               <h3 className="text-lg font-bold text-gray-100 mb-2 group-hover:text-primary transition-colors line-clamp-2">
                 {getTranslatedTitle(post, locale)}
@@ -76,7 +76,7 @@ export function NewsList({ posts }: NewsListProps) {
               <p className="text-sm text-gray-60 leading-relaxed line-clamp-3 mb-4">
                 {getTranslatedExcerpt(post, locale)}
               </p>
-              <p className="text-xs text-gray-50">{date}</p>
+              <p className="text-xs text-gray-60">{date}</p>
             </div>
           </Link>
         );

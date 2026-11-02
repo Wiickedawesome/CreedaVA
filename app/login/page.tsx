@@ -124,7 +124,7 @@ function LoginComponent() {
           <button
             onClick={handleSignIn}
             disabled={signingIn || redirecting}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#849b9f] hover:bg-[#73898d] text-white rounded-lg shadow-sm text-sm font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#5E7377] hover:bg-[#4F6367] text-white rounded-lg shadow-sm text-sm font-medium transition-colors"
           >
             <svg className="w-5 h-5 bg-white rounded-full p-0.5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -140,7 +140,7 @@ function LoginComponent() {
           <p className="mt-4 text-sm text-red-600">{error}</p>
         )}
 
-        <p className="mt-8 text-xs text-gray-400">
+        <p className="mt-8 text-xs text-gray-60">
           Only authorized CreedaVA team members can sign in.
         </p>
       </div>

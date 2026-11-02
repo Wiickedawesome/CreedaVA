@@ -27,7 +27,7 @@ function ForumHeader() {
           <h1 className="text-xl font-bold text-gray-100">
             {t.forum.title}
           </h1>
-          <p className="text-sm text-gray-40">{t.forum.subtitle}</p>
+          <p className="text-sm text-gray-60">{t.forum.subtitle}</p>
         </div>
 
         {user && profile && (
@@ -44,7 +44,7 @@ function ForumHeader() {
 
             {showProfile && (
               <div className="absolute right-0 top-full mt-1 bg-white border border-gray-20 rounded shadow-lg py-1 min-w-30 z-10">
-                <div className="px-3 py-1.5 text-xs text-gray-50 border-b border-gray-20">
+                <div className="px-3 py-1.5 text-xs text-gray-60 border-b border-gray-20">
                   {profile.email}
                 </div>
                 <button

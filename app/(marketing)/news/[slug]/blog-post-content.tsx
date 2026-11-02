@@ -21,7 +21,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
         <Container size="md">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-100 mb-3">{t.news.postNotFound}</h1>
-            <p className="text-gray-50 mb-6">{t.news.postNotFoundDesc}</p>
+            <p className="text-gray-60 mb-6">{t.news.postNotFoundDesc}</p>
             <Link href="/news" className="text-primary hover:text-primary-light font-medium transition-colors">
               &larr; {t.news.backToNews}
             </Link>
@@ -56,7 +56,7 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
               <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-medium rounded-full">
                 {category}
               </span>
-              <span className="text-sm text-gray-50">{date}</span>
+              <span className="text-sm text-gray-60">{date}</span>
             </div>
             <h1 className="text-3xl lg:text-5xl font-bold text-gray-100 leading-tight mb-6">
               {title}

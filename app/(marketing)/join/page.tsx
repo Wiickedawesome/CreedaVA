@@ -231,7 +231,7 @@ export default function JoinPage() {
               <strong className="text-gray-90">{formatDate(selectedDate, dateLocale)}</strong> {t.join.atTime}{" "}
               <strong className="text-gray-90">{formatTime(selectedTime)}</strong> {t.join.belizeTime}.
             </p>
-            <p className="text-gray-50 text-sm mb-6">
+            <p className="text-gray-60 text-sm mb-6">
               {t.join.successInvite} <strong>{form.email}</strong> {t.join.successShortly}
             </p>
             <Link
@@ -273,7 +273,7 @@ export default function JoinPage() {
                 >
                   {s}
                 </div>
-                <span className={`text-sm font-medium ${step >= s ? "text-gray-90" : "text-gray-40"}`}>
+                <span className={`text-sm font-medium ${step >= s ? "text-gray-90" : "text-gray-60"}`}>
                   {s === 1 ? t.join.step1 : t.join.step2}
                 </span>
                 {s < 2 && (
@@ -290,7 +290,7 @@ export default function JoinPage() {
                 <h2 className="text-lg font-bold text-gray-100 mb-1">
                   {t.join.selectDateTime}
                 </h2>
-                <p className="text-sm text-gray-50 mb-6">
+                <p className="text-sm text-gray-60 mb-6">
                   {t.join.timezoneNote}
                 </p>
 
@@ -341,7 +341,7 @@ export default function JoinPage() {
                         {/* Day headers */}
                         <div className="grid grid-cols-7 mb-1">
                           {t.join.days.map((d) => (
-                            <div key={d} className="text-center text-xs font-medium text-gray-40 py-2">
+                            <div key={d} className="text-center text-xs font-medium text-gray-60 py-2">
                               {d}
                             </div>
                           ))}
@@ -384,7 +384,7 @@ export default function JoinPage() {
                       <div className="lg:w-48 shrink-0">
                         {selectedDate ? (
                           <>
-                            <p className="text-xs font-medium text-gray-50 mb-3 uppercase tracking-wide">
+                            <p className="text-xs font-medium text-gray-60 mb-3 uppercase tracking-wide">
                               {formatDate(selectedDate, dateLocale)}
                             </p>
                             <div className="flex flex-row flex-wrap lg:flex-col gap-2 max-h-72 lg:overflow-y-auto">
@@ -404,13 +404,13 @@ export default function JoinPage() {
                                   </button>
                                 ))
                               ) : (
-                                <p className="text-sm text-gray-40">{t.join.noTimesAvailable}</p>
+                                <p className="text-sm text-gray-60">{t.join.noTimesAvailable}</p>
                               )}
                             </div>
                           </>
                         ) : (
                           <div className="flex items-center justify-center h-full">
-                            <p className="text-sm text-gray-40 text-center">
+                            <p className="text-sm text-gray-60 text-center">
                               {t.join.selectDatePrompt}
                             </p>
                           </div>
@@ -438,7 +438,7 @@ export default function JoinPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-lg font-bold text-gray-100">{t.join.yourDetails}</h2>
-                    <p className="text-sm text-gray-50">
+                    <p className="text-sm text-gray-60">
                       {formatDate(selectedDate, dateLocale)} {t.join.atTime} {formatTime(selectedTime)} {t.join.belizeTime}
                     </p>
                   </div>

@@ -284,7 +284,7 @@ function ThreadContent({ id }: { id: string }) {
         <h1 className="text-xl font-bold text-gray-100 mb-2">
           {t.forum.threadNotFound}
         </h1>
-        <p className="text-sm text-gray-50 mb-4">
+        <p className="text-sm text-gray-60 mb-4">
           {t.forum.threadNotFoundDesc}
         </p>
         <Link
@@ -312,7 +312,7 @@ function ThreadContent({ id }: { id: string }) {
         {/* Back nav */}
         <Link
           href="/forum"
-          className="inline-flex items-center gap-1 text-sm text-gray-40 hover:text-primary mb-4 transition-colors"
+          className="inline-flex items-center gap-1 text-sm text-gray-60 hover:text-primary mb-4 transition-colors"
         >
           {t.forum.backToForum}
         </Link>
@@ -326,7 +326,7 @@ function ThreadContent({ id }: { id: string }) {
                 onClick={handleLikeThread}
                 aria-label="Like thread"
                 className={`p-1 rounded transition-colors ${
-                  threadLiked ? "text-primary" : "text-gray-40 hover:text-primary"
+                  threadLiked ? "text-primary" : "text-gray-60 hover:text-primary"
                 }`}
               >
                 <svg
@@ -350,7 +350,7 @@ function ThreadContent({ id }: { id: string }) {
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <span
                   className={`text-xs font-bold uppercase tracking-wider ${
-                    thread.status === "open" ? "text-green-600" : "text-gray-40"
+                    thread.status === "open" ? "text-green-600" : "text-gray-60"
                   }`}
                 >
                   {thread.status === "open" ? t.forum.open : t.forum.closed}
@@ -369,7 +369,7 @@ function ThreadContent({ id }: { id: string }) {
                 {getTranslatedTitle(thread, locale)}
               </h1>
 
-              <div className="text-xs text-gray-40 mb-4">
+              <div className="text-xs text-gray-60 mb-4">
                 {t.forum.postedBy}{" "}
                 <span className="text-gray-60 font-medium">{thread.author}</span>
                 {" \u00b7 "}
@@ -390,7 +390,7 @@ function ThreadContent({ id }: { id: string }) {
                 </div>
               )}
               {thread.translations && thread.lang && thread.lang !== locale && thread.translations[locale] && (
-                <span className="inline-block mt-2 text-[10px] text-gray-40 italic">
+                <span className="inline-block mt-2 text-[10px] text-gray-60 italic">
                   {t.forum.autoTranslated}
                 </span>
               )}
@@ -414,7 +414,7 @@ function ThreadContent({ id }: { id: string }) {
               )}
 
               {/* Thread action bar */}
-              <div className="mt-4 flex items-center gap-5 text-xs text-gray-40">
+              <div className="mt-4 flex items-center gap-5 text-xs text-gray-60">
                 <button
                   onClick={handleLikeThread}
                   className={`flex items-center gap-1.5 hover:text-primary transition-colors ${
@@ -489,7 +489,7 @@ function ThreadContent({ id }: { id: string }) {
         <div className="mt-4 border border-gray-20 rounded bg-white p-4">
           {user && profile ? (
             <form onSubmit={handleReply}>
-              <div className="text-xs text-gray-40 mb-2">
+              <div className="text-xs text-gray-60 mb-2">
                 {t.forum.addComment}{" "}
                 <span className="text-gray-60 font-medium">
                   {profile.displayName}
@@ -515,7 +515,7 @@ function ThreadContent({ id }: { id: string }) {
           ) : (
             <button
               onClick={() => setAuthModal(true)}
-              className="w-full text-center py-4 text-sm text-gray-50 hover:text-primary transition-colors"
+              className="w-full text-center py-4 text-sm text-gray-60 hover:text-primary transition-colors"
             >
               {t.forum.signInToReply}
             </button>
@@ -538,7 +538,7 @@ function ThreadContent({ id }: { id: string }) {
                     className={`px-2 py-0.5 rounded transition-colors ${
                       sort === s
                         ? "bg-primary text-white"
-                        : "text-gray-40 hover:bg-gray-10"
+                        : "text-gray-60 hover:bg-gray-10"
                     }`}
                   >
                     {s === "new"
@@ -569,7 +569,7 @@ function ThreadContent({ id }: { id: string }) {
                         className={`p-1 rounded transition-colors ${
                           liked
                             ? "text-primary"
-                            : "text-gray-40 hover:text-primary"
+                            : "text-gray-60 hover:text-primary"
                         }`}
                       >
                         <svg
@@ -584,7 +584,7 @@ function ThreadContent({ id }: { id: string }) {
                         </svg>
                       </button>
                       <span
-                        className={`text-xs font-bold ${liked ? "text-primary" : "text-gray-50"}`}
+                        className={`text-xs font-bold ${liked ? "text-primary" : "text-gray-60"}`}
                       >
                         {reply.likes || 0}
                       </span>
@@ -592,7 +592,7 @@ function ThreadContent({ id }: { id: string }) {
 
                     {/* Reply content */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs text-gray-40 mb-1">
+                      <div className="text-xs text-gray-60 mb-1">
                         <span className="text-gray-60 font-medium">
                           {reply.author}
                         </span>
@@ -603,7 +603,7 @@ function ThreadContent({ id }: { id: string }) {
                         {getTranslatedContent(reply, locale)}
                       </p>
                       {reply.translations && reply.lang && reply.lang !== locale && reply.translations[locale] && (
-                        <span className="inline-block mt-1 text-[10px] text-gray-40 italic">
+                        <span className="inline-block mt-1 text-[10px] text-gray-60 italic">
                           {t.forum.autoTranslated}
                         </span>
                       )}

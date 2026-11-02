@@ -79,6 +79,7 @@ export default function OutreachSection() {
   return (
     <div>
       <PageHeader
+        as="h2"
         title="Outreach Drafts"
         description="Auto-drafted backlink emails. Review, edit (in your mail client), then mark sent."
       />

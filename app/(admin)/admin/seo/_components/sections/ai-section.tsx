@@ -428,6 +428,7 @@ export default function AiSection() {
   return (
     <div className="space-y-6">
       <PageHeader
+        as="h2"
         title="Creeda AI"
         description="Chat with Creeda AI about your whole business and watch your live health pulse. It has access to all your dashboard data and remembers your conversations."
       />

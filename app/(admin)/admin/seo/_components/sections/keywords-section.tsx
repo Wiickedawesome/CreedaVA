@@ -278,6 +278,7 @@ export default function KeywordsSection() {
   return (
     <div className="space-y-6">
       <PageHeader
+        as="h2"
         title="Keywords"
         description="Track SEO keywords and get AI-powered suggestions"
         actions={
