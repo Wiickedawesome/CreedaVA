@@ -490,7 +490,7 @@ export default function BlogPage() {
                   <div key={i} className="relative group w-full h-20">
                     <Image src={url} alt={`Blog image ${i + 1}`} fill className="rounded-lg object-cover" />
                     {url === form.featuredImage && (
-                      <span className="absolute top-1 left-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded">Featured</span>
+                      <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded">Featured</span>
                     )}
                     <div className="absolute top-1 right-1 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity">
                       {url !== form.featuredImage && (
@@ -514,7 +514,7 @@ export default function BlogPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-40">No images — upload or import from Drive</p>
+              <p className="text-xs text-gray-50">No images — upload or import from Drive</p>
             )}
           </div>
 
@@ -535,12 +535,12 @@ export default function BlogPage() {
                 {form.attachments!.map((att, i) => (
                   <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-gray-10 text-sm">
                     <div className="flex items-center gap-2 min-w-0">
-                      <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                      <svg className="w-4 h-4 text-gray-50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                       <a href={att.url} target="_blank" rel="noopener noreferrer" className="text-gray-70 hover:text-primary truncate">{att.name}</a>
                     </div>
                     <button
                       onClick={() => removeAttachment(i)}
-                      className="text-gray-40 hover:text-red-500 shrink-0 ml-2"
+                      className="text-gray-50 hover:text-red-500 shrink-0 ml-2"
                       aria-label="Remove attachment"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -549,7 +549,7 @@ export default function BlogPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-40">No attachments</p>
+              <p className="text-xs text-gray-50">No attachments</p>
             )}
           </div>
         </div>
@@ -584,7 +584,7 @@ export default function BlogPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
         ) : driveFiles.length === 0 ? (
-          <p className="text-sm text-gray-40 text-center py-12">No files found in Drive</p>
+          <p className="text-sm text-gray-50 text-center py-12">No files found in Drive</p>
         ) : (
           <div className="space-y-1 max-h-96 overflow-y-auto">
             {driveFiles.map((f) => (
@@ -599,7 +599,7 @@ export default function BlogPage() {
                   )}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-100 truncate">{f.name}</p>
-                    <p className="text-xs text-gray-40">{f.mimeType}</p>
+                    <p className="text-xs text-gray-50">{f.mimeType}</p>
                   </div>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => handleImportDriveFile(f)}>

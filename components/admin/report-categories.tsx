@@ -42,7 +42,7 @@ export function ReportCategoryCard({
           <h4 className="text-sm font-semibold text-gray-90">{title}</h4>
           <p className="text-xs text-gray-50 mt-0.5 leading-relaxed">{description}</p>
           {lastDate && (
-            <p className="text-[10px] text-gray-40 mt-1.5">Last run: {lastDate}</p>
+            <p className="text-[10px] text-gray-50 mt-1.5">Last run: {lastDate}</p>
           )}
         </div>
       </div>
@@ -143,7 +143,7 @@ export function ScheduledReportCard({
       )}
 
       {lastDate && (
-        <p className="text-[10px] text-gray-40 mb-3">
+        <p className="text-[10px] text-gray-50 mb-3">
           Generated: {lastDate.toLocaleString()}
         </p>
       )}
@@ -230,7 +230,7 @@ export function InsightCard({ insight, onPin, onDismiss }: InsightCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h5 className="text-sm font-medium text-gray-90">{insight.title}</h5>
-            <span className="text-[10px] text-gray-40 capitalize rounded-full bg-card/60 px-2 py-0.5">
+            <span className="text-[10px] text-gray-50 capitalize rounded-full bg-card/60 px-2 py-0.5">
               {insight.area}
             </span>
             {insight.pinned && (
@@ -245,7 +245,7 @@ export function InsightCard({ insight, onPin, onDismiss }: InsightCardProps) {
           {onPin && (
             <button
               onClick={onPin}
-              className="p-1 rounded hover:bg-card/60 text-gray-40 hover:text-primary transition-colors cursor-pointer"
+              className="p-1 rounded hover:bg-card/60 text-gray-50 hover:text-primary transition-colors cursor-pointer"
               title={insight.pinned ? "Unpin" : "Pin"}
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -257,7 +257,7 @@ export function InsightCard({ insight, onPin, onDismiss }: InsightCardProps) {
           {onDismiss && (
             <button
               onClick={onDismiss}
-              className="p-1 rounded hover:bg-card/60 text-gray-40 hover:text-gray-70 transition-colors cursor-pointer"
+              className="p-1 rounded hover:bg-card/60 text-gray-50 hover:text-gray-70 transition-colors cursor-pointer"
               title="Dismiss"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -307,7 +307,7 @@ export function BusinessPulse({ score, areas }: BusinessPulseProps) {
 
       {score === null ? (
         <div className="text-center py-6">
-          <p className="text-sm text-gray-40">Generate your first report to see health metrics</p>
+          <p className="text-sm text-gray-50">Generate your first report to see health metrics</p>
         </div>
       ) : (
         <>
@@ -338,7 +338,7 @@ export function BusinessPulse({ score, areas }: BusinessPulseProps) {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className={`text-2xl font-bold ${color}`}>{displayScore}</span>
-                <span className="text-xs text-gray-40">/ 100</span>
+                <span className="text-xs text-gray-50">/ 100</span>
               </div>
             </div>
           </div>

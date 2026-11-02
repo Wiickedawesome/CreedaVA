@@ -259,7 +259,7 @@ export default function SeoContentSection() {
       render: (p) => (
         <div>
           <span className="font-medium text-gray-90">{p.path === "/" ? "Homepage" : p.path.replace(/^\//, "").replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
-          <span className="block text-xs text-gray-40">{p.path}</span>
+          <span className="block text-xs text-gray-50">{p.path}</span>
         </div>
       ),
     },
@@ -495,32 +495,32 @@ export default function SeoContentSection() {
               placeholder="/custom-page"
             />
             {!editForm.id && (
-              <p className="text-xs text-gray-40 mt-1">Enter the URL path, e.g. /blog or /landing/promo</p>
+              <p className="text-xs text-gray-50 mt-1">Enter the URL path, e.g. /blog or /landing/promo</p>
             )}
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-50 mb-1">
-              Title Tag <span className="text-gray-40">({editForm.title.length}/60)</span>
+              Title Tag <span className="text-gray-50">({editForm.title.length}/60)</span>
             </label>
             <Input
               value={editForm.title}
               onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
               placeholder="Page title for search results"
             />
-            <p className="text-xs text-gray-40 mt-1">Shows as the page title in Google search results and browser tabs.</p>
+            <p className="text-xs text-gray-50 mt-1">Shows as the page title in Google search results and browser tabs.</p>
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-50 mb-1">
-              Meta Description <span className="text-gray-40">({editForm.description.length}/160)</span>
+              Meta Description <span className="text-gray-50">({editForm.description.length}/160)</span>
             </label>
             <textarea
-              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-90 placeholder:text-gray-40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-90 placeholder:text-gray-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               rows={3}
               value={editForm.description}
               onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
               placeholder="Page description for search results"
             />
-            <p className="text-xs text-gray-40 mt-1">Shows below the title in Google. Aim for 120-160 characters.</p>
+            <p className="text-xs text-gray-50 mt-1">Shows below the title in Google. Aim for 120-160 characters.</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -543,7 +543,7 @@ export default function SeoContentSection() {
           <div>
             <label className="block text-xs font-medium text-gray-50 mb-1">OG Description (optional)</label>
             <textarea
-              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-90 placeholder:text-gray-40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-90 placeholder:text-gray-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               rows={2}
               value={editForm.ogDescription}
               onChange={(e) => setEditForm((f) => ({ ...f, ogDescription: e.target.value }))}

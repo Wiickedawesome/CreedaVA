@@ -44,7 +44,7 @@ export function AdminTabs({ tabs, defaultValue, activeTab, onChange, className =
                 current === tab.value
                   ? "border-primary text-primary"
                   : tab.disabled
-                    ? "border-transparent text-gray-40 cursor-not-allowed"
+                    ? "border-transparent text-gray-50 cursor-not-allowed"
                     : "border-transparent text-gray-70 hover:text-gray-90 hover:border-gray-30"
               }
             `}

@@ -240,7 +240,7 @@ export default function LandingPagesPage() {
       render: (p) => (
         <div>
           <p className="text-sm font-medium text-gray-90">{p.title}</p>
-          <p className="text-xs text-gray-40">/{p.slug}</p>
+          <p className="text-xs text-gray-50">/{p.slug}</p>
         </div>
       ),
     },
@@ -400,7 +400,7 @@ export default function LandingPagesPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-90">Customer Satisfaction Survey</p>
-              <p className="text-xs text-gray-40">/satisfaction/[token] — Customer feedback collection page</p>
+              <p className="text-xs text-gray-50">/satisfaction/[token] — Customer feedback collection page</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -476,7 +476,7 @@ export default function LandingPagesPage() {
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
               <span className="font-medium">View Page</span>
-              <span className="text-gray-40">creedava.com/lp/{selected.slug}</span>
+              <span className="text-gray-50">creedava.com/lp/{selected.slug}</span>
             </a>
           )}
 
@@ -543,7 +543,7 @@ export default function LandingPagesPage() {
               <option value="info@creedava.com">info@creedava.com</option>
               <option value="john@creedava.com">john@creedava.com</option>
             </select>
-            <p className="text-xs text-gray-40 mt-1">Form submissions from this page will be sent to this email</p>
+            <p className="text-xs text-gray-50 mt-1">Form submissions from this page will be sent to this email</p>
           </div>
           <RichTextEditor
             label="Page Body"
@@ -579,7 +579,7 @@ export default function LandingPagesPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-40">No images &mdash; upload or import from Drive</p>
+              <p className="text-xs text-gray-50">No images &mdash; upload or import from Drive</p>
             )}
           </div>
 
@@ -598,12 +598,12 @@ export default function LandingPagesPage() {
                 {form.attachments.map((att, i) => (
                   <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-gray-10 text-sm">
                     <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 text-gray-70 hover:text-primary">
-                      <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                      <svg className="w-4 h-4 text-gray-50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                       <span className="truncate">{att.name}</span>
                     </a>
                     <button
                       onClick={() => removeLpAttachment(i)}
-                      className="text-gray-40 hover:text-red-500 shrink-0 ml-2"
+                      className="text-gray-50 hover:text-red-500 shrink-0 ml-2"
                       aria-label="Remove attachment"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -612,7 +612,7 @@ export default function LandingPagesPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-40">No attachments</p>
+              <p className="text-xs text-gray-50">No attachments</p>
             )}
           </div>
         </div>
@@ -647,7 +647,7 @@ export default function LandingPagesPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
         ) : driveFiles.length === 0 ? (
-          <p className="text-sm text-gray-40 text-center py-12">No files found in Drive</p>
+          <p className="text-sm text-gray-50 text-center py-12">No files found in Drive</p>
         ) : (
           <div className="space-y-1 max-h-96 overflow-y-auto">
             {driveFiles.map((f) => (
@@ -662,7 +662,7 @@ export default function LandingPagesPage() {
                   )}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-100 truncate">{f.name}</p>
-                    <p className="text-xs text-gray-40">{f.mimeType}</p>
+                    <p className="text-xs text-gray-50">{f.mimeType}</p>
                   </div>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => handleLpImportDrive(f)}>
@@ -714,7 +714,7 @@ export default function LandingPagesPage() {
               <p className="text-base text-gray-60 leading-relaxed mb-6 max-w-lg mx-auto">
                 {previewPage.subheadline}
               </p>
-              <span className="inline-block bg-primary text-white px-6 py-2.5 rounded-lg font-semibold text-sm">
+              <span className="inline-block bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-semibold text-sm">
                 {previewPage.ctaText || "Get Started"}
               </span>
             </div>
@@ -722,7 +722,7 @@ export default function LandingPagesPage() {
             {/* Body preview */}
             {previewPage.bodyHtml && (
               <div className="rounded-xl border border-border p-6">
-                <p className="text-xs font-medium text-gray-40 uppercase tracking-wider mb-3">Page Body</p>
+                <p className="text-xs font-medium text-gray-50 uppercase tracking-wider mb-3">Page Body</p>
                 <div
                   className="prose prose-sm max-w-none prose-headings:text-gray-100 prose-p:text-gray-70 prose-a:text-primary prose-strong:text-gray-90"
                   dangerouslySetInnerHTML={{ __html: previewPage.bodyHtml }}
@@ -807,7 +807,7 @@ export default function LandingPagesPage() {
               <p className="text-sm font-medium text-green-600">Active</p>
             </div>
           </div>
-          <p className="text-xs text-gray-40">
+          <p className="text-xs text-gray-50">
             This page is generated from code. To edit its design, modify the component at <code className="text-primary">app/(marketing)/satisfaction/[token]/page.tsx</code>.
             The email template can be edited from Emails → Drafts.
           </p>

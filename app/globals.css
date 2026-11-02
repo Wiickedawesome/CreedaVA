@@ -27,12 +27,17 @@
   --primary-light: #007A6D;
   --primary-hover: #003D36;
   --primary-active: #00332C;
+  /* Text/icon colour for anything sitting ON --primary. Light theme's primary is
+     a dark green, so white is correct here (9.25:1). Dark theme flips this. */
+  --primary-foreground: #FFFFFF;
   --accent: #00685C;
   --success: #24A148;
   --warning: #F1C21B;
   --error: #DA1E28;
   --error-hover: #B81922;
   --error-active: #8C1016;
+  --error-foreground: #FFFFFF;
+  --success-foreground: #FFFFFF;
   --info: #0043CE; /* IBM Blue 70 — distinct from --primary */
 
   /* Section Backgrounds */
@@ -126,7 +131,24 @@
     --primary: #2dd4bf;       /* Teal-400 (bright teal) */
     --primary-light: #5eead4; /* Teal-300 */
     --primary-hover: #14b8a6; /* Teal-500 */
+    /* Teal-400 is a BRIGHT accent, so white text on it measures 1.86:1 and fails
+       WCAG AA badly. The accent has to stay bright to read as `text-primary` on
+       a #202124 page, so the foreground flips to near-black instead:
+       10.06:1 on teal-400, 7.52:1 on the teal-500 hover. */
+    --primary-foreground: #0b1220;
     
+    /* Semantic colours are ALSO re-mapped for dark mode. The light-theme reds and
+       greens are tuned for white paper; on a #202124 page #DA1E28 is 3.22:1 and
+       #24A148 is 4.45:1 on cards, both below AA. These are the dark-theme
+       equivalents from the same hue families, with foregrounds paired so solid
+       fills stay readable. */
+    --success: #6fdc8c;   /* 9.42:1 on #202124, 8.73:1 on cards */
+    --error: #ff8389;     /* 6.79:1 on #202124, 6.29:1 on cards */
+    --error-hover: #fa4d56;
+    --error-active: #e01e2b;
+    --error-foreground: #0b1220;
+    --success-foreground: #0b1220;
+
     /* Footer */
     --footer-bg: #181818; 
     
@@ -140,6 +162,7 @@
   --color-primary: var(--primary);
   --color-primary-light: var(--primary-light);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
   --color-primary-active: var(--primary-active);
   --color-accent: var(--accent);
   --color-muted: var(--muted);
@@ -151,6 +174,8 @@
   --color-error: var(--error);
   --color-error-hover: var(--error-hover);
   --color-error-active: var(--error-active);
+  --color-error-foreground: var(--error-foreground);
+  --color-success-foreground: var(--success-foreground);
   --color-info: var(--info);
   --color-footer-bg: var(--footer-bg);
   --color-linkedin: var(--linkedin);

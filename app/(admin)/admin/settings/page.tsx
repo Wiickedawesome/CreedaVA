@@ -540,7 +540,7 @@ const { toast } = useToast();
           <div>
             <p className="font-medium text-foreground">{user?.displayName ?? "Unknown"}</p>
             <p className="text-sm text-gray-60">{user?.email ?? ""}</p>
-            <p className="text-xs text-gray-40 mt-0.5">Signed in via Google</p>
+            <p className="text-xs text-gray-50 mt-0.5">Signed in via Google</p>
           </div>
         </div>
       </section>
@@ -590,7 +590,7 @@ const { toast } = useToast();
           <label className="flex items-center justify-between cursor-pointer">
             <div>
               <p className="text-sm text-gray-80">Email Notifications</p>
-              <p className="text-xs text-gray-40">Alerts for new leads and bookings</p>
+              <p className="text-xs text-gray-50">Alerts for new leads and bookings</p>
             </div>
             <span
               className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${emailNotifications ? "bg-primary" : "bg-gray-30"}`}
@@ -611,7 +611,7 @@ const { toast } = useToast();
           <label className="flex items-center justify-between cursor-pointer">
             <div>
               <p className="text-sm text-gray-80">Weekly Digest</p>
-              <p className="text-xs text-gray-40">Weekly summary of CRM activity</p>
+              <p className="text-xs text-gray-50">Weekly summary of CRM activity</p>
             </div>
             <span
               className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${weeklyDigest ? "bg-primary" : "bg-gray-30"}`}
@@ -685,13 +685,13 @@ const { toast } = useToast();
                 {icon}
                 {label}
                 {isActive && value === "auto" && (
-                  <span className="text-[10px] text-gray-40 font-normal">(default)</span>
+                  <span className="text-[10px] text-gray-50 font-normal">(default)</span>
                 )}
               </button>
               );
             })}
           </div>
-          <p className="text-[11px] text-gray-40 mt-3">
+          <p className="text-[11px] text-gray-50 mt-3">
             {adminTheme === "auto"
               ? "Currently following your OS setting."
               : adminTheme === "dark"
@@ -721,7 +721,7 @@ const { toast } = useToast();
             <h2 className="text-sm font-semibold text-foreground tracking-wide uppercase">Integrations</h2>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-40">{connectedCount} of {PROVIDERS.length} connected</span>
+            <span className="text-xs text-gray-50">{connectedCount} of {PROVIDERS.length} connected</span>
             <Button
               variant="secondary"
               size="sm"
@@ -766,7 +766,7 @@ const { toast } = useToast();
                   className="flex w-full items-center gap-4 p-4 text-left"
                   onClick={() => setExpandedProvider(expanded ? null : provider.id)}
                 >
-                  <div className={`flex items-center justify-center w-9 h-9 rounded-lg shrink-0 ${enabled ? "bg-primary/10 text-primary" : "bg-gray-10 text-gray-40"}`}>
+                  <div className={`flex items-center justify-center w-9 h-9 rounded-lg shrink-0 ${enabled ? "bg-primary/10 text-primary" : "bg-gray-10 text-gray-50"}`}>
                     {provider.icon}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -816,7 +816,7 @@ const { toast } = useToast();
                     <p className="text-xs text-gray-50 truncate">{provider.description}</p>
                   </div>
                   <svg
-                    className={`h-4 w-4 text-gray-40 shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 text-gray-50 shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />

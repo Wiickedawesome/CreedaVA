@@ -62,7 +62,7 @@ export function SeoTasksBoard() {
               </div>
               <div className="space-y-2">
                 {grouped[col].length === 0 ? (
-                  <p className="text-xs text-gray-400 italic">No tasks</p>
+                  <p className="text-xs text-gray-500 italic">No tasks</p>
                 ) : (
                   grouped[col].map((t) => (
                     <div key={t.id} className="bg-card rounded border border-border p-3">

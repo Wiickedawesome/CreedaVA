@@ -644,7 +644,7 @@ export default function CustomersPage() {
           <div className="space-y-3">
             {/* Health Score Badge */}
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium text-gray-40 uppercase tracking-wide">Health Score</span>
+              <span className="text-xs font-medium text-gray-50 uppercase tracking-wide">Health Score</span>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                 avgHealthScore >= 70 ? "bg-emerald-500/10 text-emerald-300" :
                 avgHealthScore >= 40 ? "bg-amber-500/10 text-amber-300" :
@@ -659,11 +659,11 @@ export default function CustomersPage() {
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full shrink-0 color-dot" style={{ '--dot-c': seg.color } as React.CSSProperties} />
                       <span className="text-sm font-medium text-gray-80">{seg.label}</span>
-                      <span className="text-xs text-gray-40">{seg.sublabel}</span>
+                      <span className="text-xs text-gray-50">{seg.sublabel}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-gray-90">{seg.count}</span>
-                      <span className="text-xs text-gray-40">({pct}%)</span>
+                      <span className="text-xs text-gray-50">({pct}%)</span>
                     </div>
                   </div>
                   <div className="h-2 bg-gray-10 rounded-full overflow-hidden">
@@ -689,7 +689,7 @@ export default function CustomersPage() {
         <DashboardSection title="Customer Source">
           <div className="space-y-3">
             {sourceDistribution.length === 0 ? (
-              <p className="text-sm text-gray-40 text-center py-4">No source data yet</p>
+              <p className="text-sm text-gray-50 text-center py-4">No source data yet</p>
             ) : (
               sourceDistribution.map((item, i) => {
                 const pct = customers.length > 0 ? Math.round((item.count / customers.length) * 100) : 0;
@@ -699,7 +699,7 @@ export default function CustomersPage() {
                       <span className="text-sm text-gray-80">{item.source}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-gray-90">{item.count}</span>
-                        <span className="text-xs text-gray-40">({pct}%)</span>
+                        <span className="text-xs text-gray-50">({pct}%)</span>
                       </div>
                     </div>
                     <div className="h-2 bg-gray-10 rounded-full overflow-hidden">
@@ -929,7 +929,7 @@ export default function CustomersPage() {
             {driveFiles.map((f) => (
               <div key={f.id} className="flex items-center justify-between py-2.5">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="w-4 h-4 text-gray-50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     {f.type === "folder"
                       ? <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
                       : <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>
@@ -938,7 +938,7 @@ export default function CustomersPage() {
                   <span className="text-sm text-gray-80 truncate">{f.name}</span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs text-gray-40">{new Date(f.modifiedAt).toLocaleDateString()}</span>
+                  <span className="text-xs text-gray-50">{new Date(f.modifiedAt).toLocaleDateString()}</span>
                   <a href={f.webLink} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
                     Open
                   </a>
@@ -1005,7 +1005,7 @@ export default function CustomersPage() {
               aria-label="Email Body HTML"
               onChange={(e) => setSurveyEmail({ ...surveyEmail, html: e.target.value })}
             />
-            <p className="text-xs text-gray-40 mt-1">
+            <p className="text-xs text-gray-50 mt-1">
               Use <code className="text-primary">{"{{CUSTOMER_NAME}}"}</code> and <code className="text-primary">{"{{SURVEY_LINK}}"}</code> as placeholders.
             </p>
           </div>
@@ -1029,7 +1029,7 @@ export default function CustomersPage() {
               <div className={`text-4xl font-bold tabular-nums ${
                 healthReport.overallHealth >= 75 ? "text-green-600" :
                 healthReport.overallHealth >= 50 ? "text-yellow-600" : "text-red-600"
-              }`}>{healthReport.overallHealth}<span className="text-lg font-normal text-gray-40">/100</span></div>
+              }`}>{healthReport.overallHealth}<span className="text-lg font-normal text-gray-50">/100</span></div>
               <div>
                 <p className="text-sm font-semibold text-gray-80">Overall Health Score</p>
                 <p className="text-xs text-gray-50 mt-0.5">Retention: {healthReport.retentionScore}/100 · {healthReport.mrrTrend}</p>

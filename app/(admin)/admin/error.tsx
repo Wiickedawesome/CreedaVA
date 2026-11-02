@@ -51,13 +51,13 @@ export default function AdminError({
         <div className="flex gap-3 justify-center">
           <button
             onClick={reset}
-            className="px-5 py-2 text-sm font-medium rounded-md bg-primary text-white hover:bg-primary-hover transition-colors"
+            className="px-5 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
           >
             Try Again
           </button>
           <a
             href="/admin"
-            className="px-5 py-2 text-sm font-medium rounded-md border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors"
+            className="px-5 py-2 text-sm font-medium rounded-md border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
           >
             Dashboard
           </a>

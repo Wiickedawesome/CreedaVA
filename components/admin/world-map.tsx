@@ -134,7 +134,7 @@ export function WorldMap({ countryData }: WorldMapProps) {
   if (countryData.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-6">
-        <div className="h-87.5 flex flex-col items-center justify-center text-gray-40">
+        <div className="h-87.5 flex flex-col items-center justify-center text-gray-50">
           <svg className="w-16 h-16 mb-4 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="12" cy="12" r="10" />
             <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -176,7 +176,7 @@ export function WorldMap({ countryData }: WorldMapProps) {
           </div>
         )}
         {!topology && !error && (
-          <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-40">
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-50">
             Loading map…
           </div>
         )}

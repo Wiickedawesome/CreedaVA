@@ -361,7 +361,7 @@ export default function BookingsPage() {
             Synced
           </span>
         ) : (
-          <span className="text-xs text-gray-40">—</span>
+          <span className="text-xs text-gray-50">—</span>
         ),
     },
     { key: "source", header: "Source", render: (b) => <span className="capitalize">{b.source || "—"}</span> },
@@ -614,7 +614,7 @@ export default function BookingsPage() {
                   </p>
                 ) : (
                   <p className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-gray-40">Not synced yet</span>
+                    <span className="text-xs text-gray-50">Not synced yet</span>
                     <Button
                       size="sm"
                       variant="outline"

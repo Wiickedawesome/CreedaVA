@@ -212,7 +212,7 @@ function AIChatBox({ allData }: { allData: AllCollections }) {
         </div>
         <div>
           <h3 className="text-sm font-semibold text-gray-90">Creeda AI</h3>
-          <p className="text-[10px] text-gray-40">Powered by Gemini &middot; Persistent memory</p>
+          <p className="text-[10px] text-gray-50">Powered by Gemini &middot; Persistent memory</p>
         </div>
         {generating ? (
           <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] text-primary">
@@ -223,7 +223,7 @@ function AIChatBox({ allData }: { allData: AllCollections }) {
           <div className="ml-auto flex items-center gap-1">
             <button
               onClick={handleToggleHistory}
-              className={`text-[10px] p-1 rounded transition-colors cursor-pointer ${showHistory ? "text-primary bg-primary/10" : "text-gray-40 hover:text-primary"}`}
+              className={`text-[10px] p-1 rounded transition-colors cursor-pointer ${showHistory ? "text-primary bg-primary/10" : "text-gray-50 hover:text-primary"}`}
               title="Conversation history"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -233,7 +233,7 @@ function AIChatBox({ allData }: { allData: AllCollections }) {
             </button>
             <button
               onClick={handleNewConversation}
-              className="text-[10px] text-gray-40 hover:text-primary transition-colors p-1 cursor-pointer"
+              className="text-[10px] text-gray-50 hover:text-primary transition-colors p-1 cursor-pointer"
               title="Start a new conversation"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -250,7 +250,7 @@ function AIChatBox({ allData }: { allData: AllCollections }) {
         <div className="border-b border-border bg-gray-10/50 max-h-48 overflow-y-auto shrink-0">
           <div className="px-3 py-2 text-[10px] font-medium text-gray-50 uppercase tracking-wider">Past Conversations</div>
           {pastConversations.length === 0 && (
-            <p className="px-3 py-3 text-xs text-gray-40 text-center">No past conversations</p>
+            <p className="px-3 py-3 text-xs text-gray-50 text-center">No past conversations</p>
           )}
           {pastConversations.map((convo) => (
             <button
@@ -261,7 +261,7 @@ function AIChatBox({ allData }: { allData: AllCollections }) {
               }`}
             >
               <div className="truncate">{convo.title || "Untitled"}</div>
-              <div className="text-[10px] text-gray-40 mt-0.5">
+              <div className="text-[10px] text-gray-50 mt-0.5">
                 {convo.messages?.length || 0} messages
                 {convo.updatedAt ? ` · ${new Date(typeof convo.updatedAt === "string" ? convo.updatedAt : (convo.updatedAt as { seconds: number }).seconds * 1000).toLocaleDateString()}` : ""}
               </div>
@@ -271,13 +271,19 @@ function AIChatBox({ allData }: { allData: AllCollections }) {
       )}
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3">
+      <div
+        ref={scrollRef}
+        className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3"
+        tabIndex={0}
+        role="region"
+        aria-label="Conversation messages, scroll to read"
+      >
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             <div
               className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed ${
                 msg.role === "user"
-                  ? "bg-primary text-white rounded-br-sm"
+                  ? "bg-primary text-primary-foreground rounded-br-sm"
                   : "bg-gray-10 text-gray-80 rounded-bl-sm"
               }`}
             >
@@ -333,12 +339,12 @@ function AIChatBox({ allData }: { allData: AllCollections }) {
             placeholder="Ask about your website..."
             aria-label="Ask about your website"
             disabled={generating}
-            className="flex-1 rounded-lg border border-border bg-gray-10 px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-colors disabled:opacity-50"
+            className="flex-1 rounded-lg border border-border bg-gray-10 px-3 py-2 text-sm text-gray-80 placeholder:text-gray-50 outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-colors disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={!input.trim() || generating}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white hover:bg-primary-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
             aria-label="Send question"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

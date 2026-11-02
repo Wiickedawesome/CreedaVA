@@ -678,7 +678,7 @@ function AIPromptDialog({
                 <div className="flex flex-col gap-1 flex-1 min-w-0">
                   {presetGroups.map((group) => (
                     <div key={group.groupLabel} className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-[10px] text-gray-40 shrink-0 font-medium w-14 truncate">{group.groupLabel}</span>
+                      <span className="text-[10px] text-gray-50 shrink-0 font-medium w-14 truncate">{group.groupLabel}</span>
                       {group.items.slice(0, 4).map((p) => (
                         <button
                           key={p.label}
@@ -812,7 +812,7 @@ function AIPromptDialog({
               </div>
               <button
                 onClick={() => setShowSwitcher(p => !p)}
-                className="ml-0.5 rounded-full p-0.5 hover:bg-gray-20/80 transition-colors cursor-pointer text-gray-40"
+                className="ml-0.5 rounded-full p-0.5 hover:bg-gray-20/80 transition-colors cursor-pointer text-gray-50"
                 title="Switch specialist"
                 type="button"
               >
@@ -822,7 +822,7 @@ function AIPromptDialog({
               </button>
               {showSwitcher && (
                 <div className="absolute z-50 top-full mt-1 left-0 rounded-xl border border-border bg-card shadow-xl p-2.5 w-64">
-                  <p className="text-[10px] text-gray-40 mb-1.5">Switch specialist</p>
+                  <p className="text-[10px] text-gray-50 mb-1.5">Switch specialist</p>
                   <div className="flex flex-wrap gap-1.5">
                     {ALL_SPECIALISTS.map(s => (
                       <button
@@ -844,7 +844,7 @@ function AIPromptDialog({
             <div className="flex items-center gap-1">
               <button
                 onClick={handleToggleHistory}
-                className={`p-1 rounded transition-colors cursor-pointer ${showHistory ? "text-primary bg-primary/10" : "text-gray-40 hover:text-primary"}`}
+                className={`p-1 rounded transition-colors cursor-pointer ${showHistory ? "text-primary bg-primary/10" : "text-gray-50 hover:text-primary"}`}
                 title="Conversation history"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -853,7 +853,7 @@ function AIPromptDialog({
               </button>
               <button
                 onClick={handleNewChat}
-                className="p-1 text-gray-40 hover:text-primary transition-colors cursor-pointer"
+                className="p-1 text-gray-50 hover:text-primary transition-colors cursor-pointer"
                 title="New conversation"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -868,7 +868,7 @@ function AIPromptDialog({
             <div className="border border-border rounded-lg bg-card max-h-40 overflow-y-auto mb-2 shrink-0">
               <div className="px-3 py-1.5 text-[10px] font-medium text-gray-50 uppercase tracking-wider border-b border-border">Past Conversations</div>
               {pastConversations.length === 0 && (
-                <p className="px-3 py-3 text-xs text-gray-40 text-center">No past conversations</p>
+                <p className="px-3 py-3 text-xs text-gray-50 text-center">No past conversations</p>
               )}
               {pastConversations.map((convo) => (
                 <button
@@ -879,7 +879,7 @@ function AIPromptDialog({
                   }`}
                 >
                   <div className="truncate">{convo.title || "Untitled"}</div>
-                  <div className="text-[10px] text-gray-40 mt-0.5">
+                  <div className="text-[10px] text-gray-50 mt-0.5">
                     {convo.messages?.length || 0} messages
                     {convo.updatedAt ? ` · ${new Date(typeof convo.updatedAt === "string" ? convo.updatedAt : (convo.updatedAt as { seconds: number }).seconds * 1000).toLocaleDateString()}` : ""}
                   </div>
@@ -891,7 +891,7 @@ function AIPromptDialog({
           {/* Chat messages area */}
           <div className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
             {!chatLoaded && (
-              <div className="flex items-center justify-center py-8 text-sm text-gray-40">
+              <div className="flex items-center justify-center py-8 text-sm text-gray-50">
                 Loading conversation&hellip;
               </div>
             )}
@@ -906,7 +906,7 @@ function AIPromptDialog({
                 </div>
                 <p className="text-sm font-medium mb-1 specialist-tagline">{activeSpecialist.tagline}</p>
                 <p className="text-sm text-gray-60 max-w-xs">{description}</p>
-                <p className="text-xs text-gray-40 mt-1">I remember our conversations across pages</p>
+                <p className="text-xs text-gray-50 mt-1">I remember our conversations across pages</p>
               </div>
             )}
             {chatMessages.map((msg, i) => (
@@ -917,7 +917,7 @@ function AIPromptDialog({
                 <div
                   className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                     msg.role === "user"
-                      ? "bg-primary text-white rounded-br-md"
+                      ? "bg-primary text-primary-foreground rounded-br-md"
                       : "bg-gray-10 text-gray-80 border border-border rounded-bl-md border-l-2"
                   }`}
                   style={msg.role === "assistant" ? { borderLeftColor: "var(--sc)" } : undefined}
@@ -930,7 +930,7 @@ function AIPromptDialog({
                   {/* Tool usage badges */}
                   {msg.role === "assistant" && msg.toolsUsed && msg.toolsUsed.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-border/50">
-                      <span className="text-[10px] text-gray-40 mr-1 self-center">Tools:</span>
+                      <span className="text-[10px] text-gray-50 mr-1 self-center">Tools:</span>
                       {msg.toolsUsed.map((tool, ti) => (
                         <span
                           key={ti}
@@ -949,14 +949,14 @@ function AIPromptDialog({
                     <div className="flex items-center gap-2 mt-1.5">
                       <button
                         onClick={() => handleCopyChatMessage(msg.content)}
-                        className="text-xs text-gray-40 hover:text-primary transition-colors cursor-pointer"
+                        className="text-xs text-gray-50 hover:text-primary transition-colors cursor-pointer"
                       >
                         Copy
                       </button>
                       <span className="text-gray-30 text-xs">·</span>
                       <button
                         onClick={() => handleSaveNote(msg.content)}
-                        className="text-xs text-gray-40 hover:text-primary transition-colors cursor-pointer"
+                        className="text-xs text-gray-50 hover:text-primary transition-colors cursor-pointer"
                       >
                         Save Note
                       </button>
@@ -982,7 +982,7 @@ function AIPromptDialog({
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-amber-600">Action requires confirmation</p>
                       <p className="text-xs text-gray-60 mt-0.5">{action.impactSummary}</p>
-                      <p className="text-[10px] text-gray-40 mt-1 font-mono">{action.toolName.replace(/_/g, " ")}</p>
+                      <p className="text-[10px] text-gray-50 mt-1 font-mono">{action.toolName.replace(/_/g, " ")}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <Button
                           size="sm"
@@ -1035,7 +1035,7 @@ function AIPromptDialog({
               onChange={(e) => setPrompt(e.target.value.slice(0, maxChars))}
               onKeyDown={handleKeyDown}
               placeholder={placeholder || `Ask Creeda AI about ${section.toLowerCase()}\u2026`}
-              className="w-full min-h-16 max-h-32 rounded-lg border border-border bg-gray-10/50 px-4 py-2.5 text-sm text-gray-90 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 resize-none leading-relaxed"
+              className="w-full min-h-16 max-h-32 rounded-lg border border-border bg-gray-10/50 px-4 py-2.5 text-sm text-gray-90 placeholder:text-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 resize-none leading-relaxed"
               disabled={generating}
               rows={2}
             />
@@ -1060,7 +1060,7 @@ function AIPromptDialog({
               <div className="flex flex-col gap-1 flex-1 min-w-0">
                 {presetGroups.map((group) => (
                   <div key={group.groupLabel} className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-[10px] text-gray-40 shrink-0 font-medium w-14 truncate">{group.groupLabel}</span>
+                    <span className="text-[10px] text-gray-50 shrink-0 font-medium w-14 truncate">{group.groupLabel}</span>
                     {group.items.slice(0, 4).map((p) => (
                       <button
                         key={p.label}
@@ -1094,7 +1094,7 @@ function AIPromptDialog({
               </div>
             )}
           </div>
-          <span className="text-xs text-gray-40 tabular-nums">
+          <span className="text-xs text-gray-50 tabular-nums">
             {prompt.length}/{maxChars}
           </span>
           <Button
@@ -1122,7 +1122,7 @@ function AIPromptDialog({
           </div>
           <button
             onClick={() => setShowSwitcher(p => !p)}
-            className="ml-0.5 rounded-full p-0.5 hover:bg-gray-20/80 transition-colors cursor-pointer text-gray-40"
+            className="ml-0.5 rounded-full p-0.5 hover:bg-gray-20/80 transition-colors cursor-pointer text-gray-50"
             title="Switch specialist"
             type="button"
           >
@@ -1132,7 +1132,7 @@ function AIPromptDialog({
           </button>
           {showSwitcher && (
             <div className="absolute z-50 top-full mt-1 left-0 rounded-xl border border-border bg-card shadow-xl p-2.5 w-64">
-              <p className="text-[10px] text-gray-40 mb-1.5">Switch specialist</p>
+              <p className="text-[10px] text-gray-50 mb-1.5">Switch specialist</p>
               <div className="flex flex-wrap gap-1.5">
                 {ALL_SPECIALISTS.map(s => (
                   <button
@@ -1156,7 +1156,7 @@ function AIPromptDialog({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value.slice(0, maxChars))}
           placeholder={placeholder || `What would you like to create or analyze for ${section.toLowerCase()}?`}
-          className="w-full min-h-48 max-h-[50vh] rounded-lg border border-border bg-gray-10/50 px-4 py-3 text-sm text-gray-90 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 resize-y leading-relaxed"
+          className="w-full min-h-48 max-h-[50vh] rounded-lg border border-border bg-gray-10/50 px-4 py-3 text-sm text-gray-90 placeholder:text-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 resize-y leading-relaxed"
           disabled={generating}
         />
       </div>

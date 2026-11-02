@@ -71,7 +71,7 @@ const EVENT_COLORS: Record<CalendarEvent["color"], { bg: string; text: string; d
   green: { bg: "bg-green-500/10", text: "text-green-500", dot: "bg-green-500" },
   yellow: { bg: "bg-amber-500/10", text: "text-amber-500", dot: "bg-amber-500" },
   red: { bg: "bg-red-500/10", text: "text-red-500", dot: "bg-red-500" },
-  gray: { bg: "bg-gray-500/10", text: "text-gray-400", dot: "bg-gray-400" },
+  gray: { bg: "bg-gray-500/10", text: "text-gray-500", dot: "bg-gray-400" },
 };
 
 // ─── Component ───────────────────────────────────────
@@ -179,7 +179,7 @@ export default function CalendarView({ events, onDateClick, loading }: CalendarV
                 <span
                   className={[
                     "inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium",
-                    isToday ? "bg-primary text-white" : "",
+                    isToday ? "bg-primary text-primary-foreground" : "",
                     !isToday && isCurrentMonth ? "text-gray-80" : "",
                     !isToday && !isCurrentMonth ? "text-gray-30" : "",
                   ].join(" ")}
@@ -204,7 +204,7 @@ export default function CalendarView({ events, onDateClick, loading }: CalendarV
                       );
                     })}
                     {dayEvents.length > 3 && (
-                      <span className="text-[10px] text-gray-40 pl-1">+{dayEvents.length - 3} more</span>
+                      <span className="text-[10px] text-gray-50 pl-1">+{dayEvents.length - 3} more</span>
                     )}
                   </div>
                 )}
@@ -233,7 +233,7 @@ export default function CalendarView({ events, onDateClick, loading }: CalendarV
             <button
               type="button"
               onClick={() => setSelectedDate(null)}
-              className="text-gray-40 hover:text-gray-70"
+              className="text-gray-50 hover:text-gray-70"
               aria-label="Close"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -241,7 +241,7 @@ export default function CalendarView({ events, onDateClick, loading }: CalendarV
           </div>
 
           {selectedEvents.length === 0 ? (
-            <p className="text-sm text-gray-40 text-center py-4">No events on this day</p>
+            <p className="text-sm text-gray-50 text-center py-4">No events on this day</p>
           ) : (
             <div className="space-y-2">
               {selectedEvents
@@ -269,12 +269,12 @@ export default function CalendarView({ events, onDateClick, loading }: CalendarV
                               </span>
                             )}
                             {ev.status && (
-                              <span className="text-[10px] uppercase tracking-wider font-medium text-gray-40">
+                              <span className="text-[10px] uppercase tracking-wider font-medium text-gray-50">
                                 {ev.status}
                               </span>
                             )}
                             {ev.type === "calendar-event" && (
-                              <span className="text-[10px] text-gray-40">
+                              <span className="text-[10px] text-gray-50">
                                 <svg className="w-3 h-3 inline mr-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
                                 Google Calendar
                               </span>

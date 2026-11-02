@@ -347,7 +347,7 @@ export default function LeadsPage() {
                 </div>
               )}
             </div>
-          ) : <p className="text-sm text-gray-40 text-center py-8">No leads yet</p>}
+          ) : <p className="text-sm text-gray-50 text-center py-8">No leads yet</p>}
         </DashboardSection>
 
         <DashboardSection title="Lead Sources">
@@ -365,7 +365,7 @@ export default function LeadsPage() {
                 </div>
               ))}
             </div>
-          ) : <p className="text-sm text-gray-40 text-center py-8">No source data</p>}
+          ) : <p className="text-sm text-gray-50 text-center py-8">No source data</p>}
         </DashboardSection>
       </div>
 

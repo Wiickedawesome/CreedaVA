@@ -304,7 +304,7 @@ export default function ForumPage() {
           ) : null}
           <div>
             <p className="text-sm font-medium text-gray-90">{t.title}</p>
-            <p className="text-xs text-gray-40">by {t.author}</p>
+            <p className="text-xs text-gray-50">by {t.author}</p>
           </div>
         </div>
       ),
@@ -396,14 +396,14 @@ export default function ForumPage() {
 
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input
             type="text"
             placeholder="Search threads…"
-            className="w-full rounded-lg border border-border bg-gray-10/50 py-2 pl-10 pr-3 text-sm text-gray-80 placeholder:text-gray-40 focus:border-primary focus:outline-none"
+            className="w-full rounded-lg border border-border bg-gray-10/50 py-2 pl-10 pr-3 text-sm text-gray-80 placeholder:text-gray-50 focus:border-primary focus:outline-none"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -468,7 +468,7 @@ export default function ForumPage() {
                 status={selected.status}
                 variant={selected.status === "flagged" ? "error" : selected.status === "open" ? "success" : "default"}
               />
-              <span className="text-xs text-gray-40">{selected.replies} replies</span>
+              <span className="text-xs text-gray-50">{selected.replies} replies</span>
             </div>
             <div>
               <p className="text-xs text-gray-50">Author</p>
@@ -522,7 +522,7 @@ export default function ForumPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-gray-40">No images</p>
+                <p className="text-xs text-gray-50">No images</p>
               )}
             </div>
 
@@ -538,7 +538,7 @@ export default function ForumPage() {
                   onChange={(e) => setDetailLinkInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addDetailLink(); } }}
                   placeholder="https://..."
-                  className="flex-1 rounded-lg border border-border px-3 py-1.5 text-sm text-gray-80 placeholder:text-gray-40 focus:border-primary focus:outline-none"
+                  className="flex-1 rounded-lg border border-border px-3 py-1.5 text-sm text-gray-80 placeholder:text-gray-50 focus:border-primary focus:outline-none"
                 />
                 <Button variant="outline" size="sm" onClick={addDetailLink}>
                   + Add
@@ -549,12 +549,12 @@ export default function ForumPage() {
                   {selected.links!.map((url, i) => (
                     <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-gray-10 text-sm">
                       <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 text-gray-70 hover:text-primary">
-                        <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+                        <svg className="w-4 h-4 text-gray-50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
                         <span className="truncate">{url}</span>
                       </a>
                       <button
                         onClick={() => removeDetailLink(i)}
-                        className="text-gray-40 hover:text-red-500 shrink-0 ml-2"
+                        className="text-gray-50 hover:text-red-500 shrink-0 ml-2"
                         aria-label="Remove link"
                       >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -563,7 +563,7 @@ export default function ForumPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-gray-40">No links</p>
+                <p className="text-xs text-gray-50">No links</p>
               )}
             </div>
           </div>
@@ -623,7 +623,7 @@ export default function ForumPage() {
           <div>
             <label className="block text-sm font-medium text-gray-70 mb-1">Content</label>
             <textarea
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:border-primary focus:outline-none min-h-30"
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm text-gray-80 placeholder:text-gray-50 focus:border-primary focus:outline-none min-h-30"
               value={createForm.content}
               onChange={(e) => setCreateForm({ ...createForm, content: e.target.value })}
               placeholder="Thread content..."
@@ -662,7 +662,7 @@ export default function ForumPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-40">No images — upload or import from Drive</p>
+              <p className="text-xs text-gray-50">No images — upload or import from Drive</p>
             )}
           </div>
 
@@ -678,7 +678,7 @@ export default function ForumPage() {
                 onChange={(e) => setLinkInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addForumLink(); } }}
                 placeholder="https://..."
-                className="flex-1 rounded-lg border border-border px-3 py-1.5 text-sm text-gray-80 placeholder:text-gray-40 focus:border-primary focus:outline-none"
+                className="flex-1 rounded-lg border border-border px-3 py-1.5 text-sm text-gray-80 placeholder:text-gray-50 focus:border-primary focus:outline-none"
               />
               <Button variant="outline" size="sm" onClick={addForumLink}>
                 + Add
@@ -689,17 +689,17 @@ export default function ForumPage() {
                 {createForm.links.map((url, i) => (
                   <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-gray-10 text-sm">
                     <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 text-gray-70 hover:text-primary">
-                      <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
+                      <svg className="w-4 h-4 text-gray-50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
                       <span className="truncate">{url}</span>
                     </a>
-                    <button onClick={() => removeForumLink(i)} className="text-gray-40 hover:text-red-500 shrink-0 ml-2" aria-label="Remove link">
+                    <button onClick={() => removeForumLink(i)} className="text-gray-50 hover:text-red-500 shrink-0 ml-2" aria-label="Remove link">
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-40">No links</p>
+              <p className="text-xs text-gray-50">No links</p>
             )}
           </div>
         </div>
@@ -712,7 +712,7 @@ export default function ForumPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
         ) : driveFiles.length === 0 ? (
-          <p className="text-sm text-gray-40 text-center py-12">No files found in Drive</p>
+          <p className="text-sm text-gray-50 text-center py-12">No files found in Drive</p>
         ) : (
           <div className="space-y-1 max-h-96 overflow-y-auto">
             {driveFiles.map((f) => (
@@ -727,7 +727,7 @@ export default function ForumPage() {
                   )}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-100 truncate">{f.name}</p>
-                    <p className="text-xs text-gray-40">{f.mimeType}</p>
+                    <p className="text-xs text-gray-50">{f.mimeType}</p>
                   </div>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => driveTarget === "detail" ? handleDetailImportDrive(f) : handleForumImportDrive(f)}>

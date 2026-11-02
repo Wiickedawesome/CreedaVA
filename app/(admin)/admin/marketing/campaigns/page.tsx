@@ -363,7 +363,7 @@ export default function CampaignsPage() {
       render: (ec) => (
         <div className="text-sm">
           <p className="text-gray-80">{ec.stats.sent} sent</p>
-          <p className="text-xs text-gray-40">{ec.stats.opened} opened · {ec.stats.clicked} clicked</p>
+          <p className="text-xs text-gray-50">{ec.stats.opened} opened · {ec.stats.clicked} clicked</p>
         </div>
       ),
     },
@@ -402,7 +402,7 @@ export default function CampaignsPage() {
       render: (c) => (
         <div className="text-sm">
           <p className="text-gray-80">${c.budget.toLocaleString()}</p>
-          <p className="text-xs text-gray-40">${c.spent.toLocaleString()} spent</p>
+          <p className="text-xs text-gray-50">${c.spent.toLocaleString()} spent</p>
         </div>
       ),
     },
@@ -412,7 +412,7 @@ export default function CampaignsPage() {
       render: (c) => (
         <div className="text-sm">
           <p className="text-gray-80">{c.clicks.toLocaleString()} clicks</p>
-          <p className="text-xs text-gray-40">{ctr(c)}% CTR</p>
+          <p className="text-xs text-gray-50">{ctr(c)}% CTR</p>
         </div>
       ),
     },

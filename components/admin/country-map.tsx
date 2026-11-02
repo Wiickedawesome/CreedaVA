@@ -23,7 +23,7 @@ export function CountryMap({ countryData }: CountryMapProps) {
   if (countryData.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-6">
-        <div className="h-75 flex flex-col items-center justify-center text-gray-40">
+        <div className="h-75 flex flex-col items-center justify-center text-gray-50">
           <svg className="w-16 h-16 mb-4 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -53,12 +53,12 @@ export function CountryMap({ countryData }: CountryMapProps) {
             <div key={c.countryCode} className="group">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-gray-40 w-6">#{index + 1}</span>
+                  <span className="text-xs font-semibold text-gray-50 w-6">#{index + 1}</span>
                   <span className="text-sm text-gray-80">{c.country}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-gray-90">{c.count}</span>
-                  <span className="text-xs text-gray-40">visitors</span>
+                  <span className="text-xs text-gray-50">visitors</span>
                 </div>
               </div>
               <div className="w-full bg-gray-10 rounded-full h-3 overflow-hidden">
@@ -74,7 +74,7 @@ export function CountryMap({ countryData }: CountryMapProps) {
 
       {/* Legend */}
       <div className="mt-6 pt-4 border-t border-border">
-        <div className="flex items-center justify-between text-xs text-gray-40">
+        <div className="flex items-center justify-between text-xs text-gray-50">
           <span>Less Traffic</span>
           <div className="flex items-center gap-2">
             <div className="w-8 h-3 rounded bg-primary/30"></div>

@@ -271,11 +271,16 @@ function PeakHoursHeatmap({
   const maxVal = Math.max(...grid.flat(), 1);
 
   return (
-    <div className="overflow-x-auto">
+    <div
+      className="overflow-x-auto"
+      tabIndex={0}
+      role="region"
+      aria-label="Hourly traffic heatmap, scroll horizontally"
+    >
       <div className="inline-grid gap-0.5" style={{ gridTemplateColumns: `40px repeat(24, 1fr)` }}>
         <div />
         {hours.map((h) => (
-          <div key={h} className="text-[9px] text-gray-40 text-center w-5">
+          <div key={h} className="text-[9px] text-gray-50 text-center w-5">
             {h}
           </div>
         ))}
@@ -300,7 +305,7 @@ function PeakHoursHeatmap({
         ))}
       </div>
       <div className="flex items-center gap-2 mt-2">
-        <span className="text-[10px] text-gray-40">Less</span>
+        <span className="text-[10px] text-gray-50">Less</span>
         {[0.04, 0.2, 0.4, 0.6, 0.85, 1].map((o) => (
           <div
             key={o}
@@ -308,7 +313,7 @@ function PeakHoursHeatmap({
             style={{ backgroundColor: `rgba(0, 81, 72, ${o})` }}
           />
         ))}
-        <span className="text-[10px] text-gray-40">More</span>
+        <span className="text-[10px] text-gray-50">More</span>
       </div>
     </div>
   );
@@ -386,7 +391,7 @@ function ConversionFunnel({
           </div>
         );
       })}
-      <p className="text-xs text-gray-40 mt-2">
+      <p className="text-xs text-gray-50 mt-2">
         Conversion: {counts[0]?.value > 0 && counts[3]?.value > 0
           ? `${((counts[3].value / counts[0].value) * 100).toFixed(1)}%`
           : "N/A"}{" "}
@@ -753,7 +758,7 @@ export default function AnalyticsPage() {
                     key={p}
                     className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                       period === p
-                        ? "bg-primary text-white"
+                        ? "bg-primary text-primary-foreground"
                         : "bg-gray-10 text-gray-60 hover:bg-gray-20"
                     }`}
                     onClick={() => setPeriod(p)}
@@ -806,7 +811,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
             <span className="text-sm font-medium text-primary">Google Analytics 4</span>
-            <span className="text-xs text-gray-40">· last {daysFilter}d</span>
+            <span className="text-xs text-gray-50">· last {daysFilter}d</span>
             {realtimeUsers !== null && (
               <span className="ml-auto flex items-center gap-1.5 text-xs text-primary">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -843,7 +848,7 @@ export default function AnalyticsPage() {
               {timeSeries.length > 1 ? (
                 <AreaChart data={timeSeries} color="var(--primary)" height={140} />
               ) : (
-                <p className="text-sm text-gray-40 text-center py-8">
+                <p className="text-sm text-gray-50 text-center py-8">
                   Not enough data to chart
                 </p>
               )}
@@ -859,7 +864,7 @@ export default function AnalyticsPage() {
                   ).toLocaleString()}
                 />
               ) : (
-                <p className="text-sm text-gray-40 text-center py-8">
+                <p className="text-sm text-gray-50 text-center py-8">
                   No events yet
                 </p>
               )}
@@ -872,7 +877,7 @@ export default function AnalyticsPage() {
               {topPages.length > 0 ? (
                 <HorizontalBar data={topPages} />
               ) : (
-                <p className="text-sm text-gray-40 text-center py-8">
+                <p className="text-sm text-gray-50 text-center py-8">
                   No page data yet
                 </p>
               )}
@@ -1082,7 +1087,7 @@ export default function AnalyticsPage() {
                 </table>
               </div>
             ) : (
-              <p className="text-sm text-gray-40 text-center py-8">
+              <p className="text-sm text-gray-50 text-center py-8">
                 No page data yet
               </p>
             )}
@@ -1099,7 +1104,7 @@ export default function AnalyticsPage() {
                   ).toLocaleString()}
                 />
               ) : (
-                <p className="text-sm text-gray-40 text-center py-8">
+                <p className="text-sm text-gray-50 text-center py-8">
                   No events
                 </p>
               )}
@@ -1202,7 +1207,7 @@ export default function AnalyticsPage() {
                   })}
                   {sortedEvents.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="px-4 py-8 text-center text-gray-40">
+                      <td colSpan={4} className="px-4 py-8 text-center text-gray-50">
                         No events recorded yet
                       </td>
                     </tr>
@@ -1211,7 +1216,7 @@ export default function AnalyticsPage() {
               </table>
             </div>
             {sortedEvents.length > 100 && (
-              <p className="text-xs text-gray-40 text-center mt-3">
+              <p className="text-xs text-gray-50 text-center mt-3">
                 Showing 100 of {sortedEvents.length} events
               </p>
             )}

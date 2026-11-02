@@ -365,7 +365,7 @@ export default function AdminDashboardPage() {
             <button
               onClick={handleRunDailyStatus}
               disabled={dailyRunning}
-              className="inline-flex items-center gap-2 rounded-lg border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-primary hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-lg border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {dailyRunning ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -492,7 +492,7 @@ export default function AdminDashboardPage() {
               {trafficData.length > 1 && trafficData.some((d) => d.value > 0) ? (
                 <TrafficAreaChart data={trafficData} />
               ) : (
-                <p className="text-sm text-gray-40 text-center py-8">
+                <p className="text-sm text-gray-50 text-center py-8">
                   No traffic data yet
                 </p>
               )}
@@ -570,7 +570,7 @@ export default function AdminDashboardPage() {
               }
             >
               {openTasks.length === 0 && leads.length === 0 ? (
-                <p className="text-sm text-gray-40 text-center py-6">
+                <p className="text-sm text-gray-50 text-center py-6">
                   No recent activity
                 </p>
               ) : (
@@ -591,7 +591,7 @@ export default function AdminDashboardPage() {
                         <p className="text-sm text-gray-80 truncate">
                           {lead.name}
                         </p>
-                        <p className="text-xs text-gray-40">New lead</p>
+                        <p className="text-xs text-gray-50">New lead</p>
                       </div>
                     </div>
                   ))}
@@ -616,7 +616,7 @@ export default function AdminDashboardPage() {
                         <p className="text-sm text-gray-80 truncate">
                           {task.title}
                         </p>
-                        <p className="text-xs text-gray-40">
+                        <p className="text-xs text-gray-50">
                           {task.priority} priority
                         </p>
                       </div>
@@ -630,7 +630,7 @@ export default function AdminDashboardPage() {
               <div className="space-y-2">
                 {syncLog ? (
                   <>
-                    <p className="text-xs text-gray-40">
+                    <p className="text-xs text-gray-50">
                       Last sync: {new Date(syncLog.completedAt).toLocaleString()}
                     </p>
                     <div className="space-y-1.5">
@@ -645,7 +645,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </>
                 ) : (
-                  <p className="text-sm text-gray-40">No sync data yet — runs daily at 6 AM</p>
+                  <p className="text-sm text-gray-50">No sync data yet — runs daily at 6 AM</p>
                 )}
                 <div className="pt-2 border-t border-gray-10">
                   <div className="flex items-center justify-between">
@@ -751,7 +751,7 @@ export default function AdminDashboardPage() {
                       <span className="text-gray-70">{l.lever}</span>
                       <div className="text-right">
                         <span className="text-green-600 font-semibold">+${l.estimatedImpactDollars.toLocaleString()}/mo</span>
-                        <p className="text-xs text-gray-40">{l.timeToImpact}</p>
+                        <p className="text-xs text-gray-50">{l.timeToImpact}</p>
                       </div>
                     </div>
                   ))}
@@ -776,7 +776,7 @@ export default function AdminDashboardPage() {
                 <h4 className="text-sm font-semibold text-gray-80 mb-2">Key Assumptions</h4>
                 <ul className="space-y-1">
                   {forecastReport.keyAssumptions.map((a, i) => (
-                    <li key={i} className="text-xs text-gray-60 flex gap-2"><span className="text-gray-40 shrink-0">&bull;</span>{a}</li>
+                    <li key={i} className="text-xs text-gray-60 flex gap-2"><span className="text-gray-50 shrink-0">&bull;</span>{a}</li>
                   ))}
                 </ul>
               </div>

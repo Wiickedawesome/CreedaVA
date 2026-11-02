@@ -428,7 +428,7 @@ export default function EmailsPage() {
         <div className={`min-w-0 ${!m.seen ? "font-semibold" : ""}`}>
           <p className="text-sm text-gray-90 truncate">{m.fromName || m.from}</p>
           {m.fromName && m.fromName !== m.from && (
-            <p className="text-xs text-gray-40 truncate">{m.from}</p>
+            <p className="text-xs text-gray-50 truncate">{m.from}</p>
           )}
         </div>
       ),
@@ -441,7 +441,7 @@ export default function EmailsPage() {
           <p className={`text-sm truncate max-w-md ${!m.seen ? "text-gray-90 font-medium" : "text-gray-70"}`}>
             {m.subject}
           </p>
-          <p className="text-xs text-gray-40 truncate max-w-md">{m.preview}</p>
+          <p className="text-xs text-gray-50 truncate max-w-md">{m.preview}</p>
         </div>
       ),
     },
@@ -468,7 +468,7 @@ export default function EmailsPage() {
       header: "",
       render: (m) =>
         m.hasAttachments ? (
-          <svg className="w-4 h-4 text-gray-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-4 h-4 text-gray-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
           </svg>
         ) : null,
@@ -622,7 +622,7 @@ export default function EmailsPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-90">Satisfaction Survey Email</p>
-                <p className="text-xs text-gray-40">{surveyTemplate.subject}</p>
+                <p className="text-xs text-gray-50">{surveyTemplate.subject}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -724,7 +724,7 @@ export default function EmailsPage() {
                 <p className="text-sm font-medium text-gray-90">{selectedInbox.fromName}</p>
                 <p className="text-xs text-gray-50">{selectedInbox.from}</p>
               </div>
-              <p className="text-xs text-gray-40">{new Date(selectedInbox.date).toLocaleString()}</p>
+              <p className="text-xs text-gray-50">{new Date(selectedInbox.date).toLocaleString()}</p>
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-50">
               <span>To:</span>
@@ -862,7 +862,7 @@ export default function EmailsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-40">No images</p>
+              <p className="text-xs text-gray-50">No images</p>
             )}
           </div>
 
@@ -883,12 +883,12 @@ export default function EmailsPage() {
                 {form.attachments.map((att, i) => (
                   <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-gray-10 text-sm">
                     <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 min-w-0 text-gray-70 hover:text-primary">
-                      <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                      <svg className="w-4 h-4 text-gray-50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                       <span className="truncate">{att.name}</span>
                     </a>
                     <button
                       onClick={() => removeEmailAttachment(i)}
-                      className="text-gray-40 hover:text-red-500 shrink-0 ml-2"
+                      className="text-gray-50 hover:text-red-500 shrink-0 ml-2"
                       aria-label="Remove attachment"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -897,7 +897,7 @@ export default function EmailsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-40">No attachments</p>
+              <p className="text-xs text-gray-50">No attachments</p>
             )}
           </div>
         </div>
@@ -945,13 +945,13 @@ export default function EmailsPage() {
           <div>
             <label className="text-xs font-medium text-gray-50 uppercase tracking-wide">Recipients</label>
             <textarea
-              className="mt-1 w-full rounded-lg border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 placeholder:text-gray-40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="mt-1 w-full rounded-lg border border-border bg-gray-10/50 px-3 py-2 text-sm text-gray-80 placeholder:text-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               rows={4}
               placeholder={"email1@example.com\nemail2@example.com"}
               value={bulkRecipients}
               onChange={(e) => setBulkRecipients(e.target.value)}
             />
-            <p className="text-xs text-gray-40 mt-1">One email per line, or separate with commas</p>
+            <p className="text-xs text-gray-50 mt-1">One email per line, or separate with commas</p>
           </div>
           <p className="text-xs text-gray-50">
             {bulkRecipients.split(/[,;\n]+/).map((e) => e.trim()).filter(Boolean).length} recipient(s)
@@ -993,7 +993,7 @@ export default function EmailsPage() {
                 .replace(/\{\{SURVEY_LINK\}\}/g, "/satisfaction/demo")
               }}
             />
-            <p className="text-xs text-gray-40 text-center">
+            <p className="text-xs text-gray-50 text-center">
               This template is sent from the Customers page when requesting satisfaction feedback.
               <br />Placeholders <code className="text-primary">{'{{CUSTOMER_NAME}}'}</code> and <code className="text-primary">{'{{SURVEY_LINK}}'}</code> are replaced automatically.
             </p>

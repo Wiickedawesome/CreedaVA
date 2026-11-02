@@ -650,7 +650,7 @@ export default function KeywordsSection() {
                       <p className="text-sm font-medium text-gray-90 truncate">{q.query}</p>
                       <p className="text-xs text-gray-50">{q.clicks} clicks · {q.impressions} impr · pos {q.position.toFixed(1)}</p>
                     </div>
-                    <span className="text-xs text-gray-40">{(q.ctr * 100).toFixed(1)}% CTR</span>
+                    <span className="text-xs text-gray-50">{(q.ctr * 100).toFixed(1)}% CTR</span>
                     <Button size="sm" variant="outline" onClick={() => handleAddConsoleKeyword(q)}>
                       + Add
                     </Button>

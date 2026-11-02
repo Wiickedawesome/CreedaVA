@@ -214,7 +214,7 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
       header: "Project",
       render: (t) => t.projectName ? (
         <span className="text-xs text-primary font-medium">{t.projectName}</span>
-      ) : <span className="text-gray-40">—</span>,
+      ) : <span className="text-gray-50">—</span>,
     },
     {
       key: "status",
@@ -374,7 +374,7 @@ ${form.projectName ? `<p>Project: ${form.projectName}</p>` : ""}
                   Reminder: {new Date(form.reminder.date).toLocaleDateString()}{form.reminder.time ? ` at ${form.reminder.time}` : ""}
                 </span>
               ) : (
-                <span className="text-gray-40">No reminder set</span>
+                <span className="text-gray-50">No reminder set</span>
               )}
             </div>
             <Button variant="outline" size="sm" onClick={() => {

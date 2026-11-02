@@ -104,7 +104,11 @@ export function DataTable<T>({
                   }
                 }}
                 tabIndex={onRowClick ? 0 : undefined}
-                role={onRowClick ? "button" : undefined}
+                // Deliberately NOT role="button": rows routinely contain their own
+                // buttons and links, and nesting interactive controls inside an
+                // interactive row confuses screen readers and breaks focus order
+                // (axe `nested-interactive`). The row stays keyboard-activatable
+                // for convenience; the real controls live inside the cells.
                 className={`border-b border-border last:border-0 ${
                   onRowClick ? "cursor-pointer hover:bg-gray-10" : ""
                 }`}

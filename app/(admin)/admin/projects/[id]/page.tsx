@@ -428,7 +428,7 @@ export default function ProjectDetailPage() {
       header: "Goal",
       render: (t) => t.goalName ? (
         <span className="text-xs text-primary font-medium">{t.goalName}</span>
-      ) : <span className="text-gray-40">—</span>,
+      ) : <span className="text-gray-50">—</span>,
     },
     {
       key: "status",
@@ -492,7 +492,7 @@ export default function ProjectDetailPage() {
       header: "Tasks",
       render: (g) => {
         const gt = tasksForGoal(g.id);
-        return gt.length > 0 ? <span className="text-xs text-gray-50">{gt.filter(t => t.status === "done").length}/{gt.length} done</span> : <span className="text-gray-40">—</span>;
+        return gt.length > 0 ? <span className="text-xs text-gray-50">{gt.filter(t => t.status === "done").length}/{gt.length} done</span> : <span className="text-gray-50">—</span>;
       },
     },
   ];
@@ -619,7 +619,7 @@ export default function ProjectDetailPage() {
 
           <DashboardSection title="Recent Activity">
             {(project.history || []).length === 0 ? (
-              <p className="text-sm text-gray-40 text-center py-6">No activity yet</p>
+              <p className="text-sm text-gray-50 text-center py-6">No activity yet</p>
             ) : (
               <div className="space-y-3 max-h-64 overflow-y-auto">
                 {[...(project.history || [])].reverse().slice(0, 8).map((entry, i) => (
@@ -628,7 +628,7 @@ export default function ProjectDetailPage() {
                     <div>
                       <p className="text-sm text-gray-80">{entry.action}</p>
                       {entry.detail && <p className="text-xs text-gray-50">{entry.detail}</p>}
-                      <p className="text-xs text-gray-40">{new Date(entry.date).toLocaleString()}</p>
+                      <p className="text-xs text-gray-50">{new Date(entry.date).toLocaleString()}</p>
                     </div>
                   </div>
                 ))}
@@ -688,7 +688,7 @@ export default function ProjectDetailPage() {
       {activeTab === "history" && (
         <div className="space-y-3">
           {(project.history || []).length === 0 ? (
-            <p className="text-sm text-gray-40 text-center py-12">No history entries yet</p>
+            <p className="text-sm text-gray-50 text-center py-12">No history entries yet</p>
           ) : (
             <div className="relative pl-6 border-l-2 border-border space-y-4 max-h-[60vh] overflow-y-auto">
               {[...(project.history || [])].reverse().map((entry, i) => (
@@ -697,7 +697,7 @@ export default function ProjectDetailPage() {
                   <div>
                     <p className="text-sm font-medium text-gray-80">{entry.action}</p>
                     {entry.detail && <p className="text-xs text-gray-50 mt-0.5">{entry.detail}</p>}
-                    <p className="text-xs text-gray-40 mt-0.5">{new Date(entry.date).toLocaleString()}</p>
+                    <p className="text-xs text-gray-50 mt-0.5">{new Date(entry.date).toLocaleString()}</p>
                   </div>
                 </div>
               ))}
@@ -723,7 +723,7 @@ export default function ProjectDetailPage() {
               <pre className="text-sm text-gray-80 whitespace-pre-wrap font-sans leading-relaxed">{project.notes}</pre>
             </div>
           ) : (
-            <p className="text-sm text-gray-40 text-center py-8">No notes yet</p>
+            <p className="text-sm text-gray-50 text-center py-8">No notes yet</p>
           )}
         </div>
       )}
@@ -760,14 +760,14 @@ export default function ProjectDetailPage() {
             <div className="rounded-xl border border-border bg-card p-8 text-center">
               <svg className="w-12 h-12 text-gray-30 mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
               <p className="text-sm text-gray-50 mb-1">No Drive folder linked to this project</p>
-              <p className="text-xs text-gray-40">Create a folder to store client files, proposals, and deliverables</p>
+              <p className="text-xs text-gray-50">Create a folder to store client files, proposals, and deliverables</p>
             </div>
           ) : driveFiles.length > 0 ? (
             <div className="rounded-xl border border-border bg-card divide-y divide-border">
               {driveFiles.map((f) => (
                 <div key={f.id} className="flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className="w-4 h-4 text-gray-50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       {f.type === "folder"
                         ? <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
                         : <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>
@@ -776,7 +776,7 @@ export default function ProjectDetailPage() {
                     <span className="text-sm text-gray-80 truncate">{f.name}</span>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-xs text-gray-40">{new Date(f.modifiedAt).toLocaleDateString()}</span>
+                    <span className="text-xs text-gray-50">{new Date(f.modifiedAt).toLocaleDateString()}</span>
                     <a href={f.webLink} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
                       Open
                     </a>
@@ -936,7 +936,7 @@ export default function ProjectDetailPage() {
             {driveFiles.map((f) => (
               <div key={f.id} className="flex items-center justify-between py-2.5">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <svg className="w-4 h-4 text-gray-40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="w-4 h-4 text-gray-50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     {f.type === "folder"
                       ? <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
                       : <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>
@@ -945,7 +945,7 @@ export default function ProjectDetailPage() {
                   <span className="text-sm text-gray-80 truncate">{f.name}</span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs text-gray-40">{new Date(f.modifiedAt).toLocaleDateString()}</span>
+                  <span className="text-xs text-gray-50">{new Date(f.modifiedAt).toLocaleDateString()}</span>
                   <a href={f.webLink} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
                     Open
                   </a>
