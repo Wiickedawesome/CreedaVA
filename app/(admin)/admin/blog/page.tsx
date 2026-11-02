@@ -21,6 +21,7 @@ import Image from "next/image";
 import { translateBlogInBackground } from "@/lib/firebase/translate";
 import { parseAiJson } from "@/lib/utils/ai-json";
 import { slugify } from "@/lib/utils/slug";
+import { pickFeaturedImage, thumbnailPromptList } from "@/lib/constants/blog-images";
 
 const emptyPost: BlogPostFormData = {
   title: "",
@@ -51,6 +52,7 @@ export default function BlogPage() {
   const [selected, setSelected] = useState<BlogPost | null>(null);
   const [form, setForm] = useState<BlogPostFormData>(emptyPost);
   const [uploading, setUploading] = useState(false);
+  const [backfilling, setBackfilling] = useState(false);
 
   // Drive import
   const [driveOpen, setDriveOpen] = useState(false);
@@ -185,6 +187,34 @@ export default function BlogPage() {
         attachments: [...(form.attachments || []), { name: file.name, url: file.webLink, type: file.mimeType }],
       });
       toast(`File "${file.name}" attached from Drive`, "success");
+    }
+  }
+
+  // ── Thumbnail backfill ────────────────────────────
+  // Gives posts that were written before thumbnail support a deterministic
+  // featured image. Only touches posts where the field is empty, so any
+  // manually uploaded image is never overwritten.
+  async function handleBackfillThumbnails() {
+    const missing = posts.filter((p) => !p.featuredImage);
+    if (missing.length === 0) {
+      toast("All posts already have a thumbnail", "success");
+      return;
+    }
+    setBackfilling(true);
+    let updated = 0;
+    try {
+      for (const post of missing) {
+        const seed = [post.title, ...(post.tags ?? []), post.excerpt]
+          .filter(Boolean)
+          .join(" ");
+        await edit(post.id, { featuredImage: pickFeaturedImage(seed) });
+        updated++;
+      }
+      toast(`Added thumbnails to ${updated} post(s)`, "success");
+    } catch {
+      toast(`Thumbnails added to ${updated} post(s), then failed`, "error");
+    } finally {
+      setBackfilling(false);
     }
   }
 
@@ -323,6 +353,15 @@ export default function BlogPage() {
         description="Create and manage blog posts — AI-assisted writing included"
         actions={
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBackfillThumbnails}
+              isLoading={backfilling}
+              title="Assign a thumbnail to any post that does not have one"
+            >
+              Add missing thumbnails
+            </Button>
             <AIPromptButton
               section="Blog AI"
               description="Generate a full blog post from a topic description. The AI will create a title, slug, excerpt, content, tags, and meta description."
@@ -348,6 +387,13 @@ export default function BlogPage() {
                     ...result,
                     status: "draft",
                     tags: result.tags ?? [],
+                    featuredImage:
+                      result.featuredImage ||
+                      pickFeaturedImage(
+                        [result.title, ...(result.tags ?? []), result.excerpt]
+                          .filter(Boolean)
+                          .join(" "),
+                      ),
                   });
                   setModalOpen(true);
                   toast("AI content loaded — edit and save when ready", "success");
@@ -356,7 +402,7 @@ export default function BlogPage() {
                 }
               }}
               buildPrompt={(input) =>
-                buildTrainedPrompt("Blog", `Write a complete blog post about: "${input}"\n\nReturn ONLY valid JSON with these fields:\n- title: compelling blog title (SEO-optimized, under 60 chars)\n- slug: URL-friendly slug\n- excerpt: 1-2 sentence summary\n- content: full blog post as VISUALLY RICH HTML. Use the CREATIVE HTML DESIGN FRAMEWORK patterns:\n  Start with a <style> tag for CSS animations (cv- prefix classes).\n  Include gradient stat banners for key numbers, teal-bordered callout boxes for insights,\n  SVG checkmark icon lists for benefits, wave dividers between sections,\n  <details>/<summary> FAQ sections, and a gradient CTA section linking to /join.\n  Use varied heading sizes (h2/h3), short paragraphs, and inline styles for visual emphasis.\n  ALL styles must be inline (style=\"...\") — this renders via dangerouslySetInnerHTML.\n- tags: array of 3-5 relevant tags\n- metaDescription: SEO meta description (150-160 chars)\n\nReturn ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, includeDesignSystem: true, includeCreativeFramework: true, includeBlogRules: true, includeCRO: true })
+                buildTrainedPrompt("Blog", `Write a complete blog post about: "${input}"\n\nReturn ONLY valid JSON with these fields:\n- title: compelling blog title (SEO-optimized, under 60 chars)\n- slug: URL-friendly slug\n- excerpt: 1-2 sentence summary\n- content: full blog post as VISUALLY RICH HTML. Use the CREATIVE HTML DESIGN FRAMEWORK patterns:\n  Start with a <style> tag for CSS animations (cv- prefix classes).\n  Include gradient stat banners for key numbers, teal-bordered callout boxes for insights,\n  SVG checkmark icon lists for benefits, wave dividers between sections,\n  <details>/<summary> FAQ sections, and a gradient CTA section linking to /join.\n  Use varied heading sizes (h2/h3), short paragraphs, and inline styles for visual emphasis.\n  NEVER use <h1> — the page renders the post title as the only H1.\n  ALL styles must be inline (style=\"...\") — this renders via dangerouslySetInnerHTML.\n- tags: array of 3-5 relevant tags\n- metaDescription: SEO meta description (150-160 chars)\n- featuredImage: thumbnail used on the listing card and social preview. Copy EXACTLY ONE full URL from the approved list below, choosing the best topical match:\n${thumbnailPromptList()}\n\nReturn ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, includeDesignSystem: true, includeCreativeFramework: true, includeBlogRules: true, includeCRO: true })
               }
             />
             <Button size="sm" onClick={() => openModal()}>

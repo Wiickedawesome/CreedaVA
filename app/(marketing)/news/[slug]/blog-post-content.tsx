@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Container } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n";
 import { getTranslatedTitle, getTranslatedContent } from "@/lib/firebase/translate";
+import { demoteBodyH1 } from "@/lib/utils/blog-content";
 import type { BlogPost } from "@/lib/types/content";
 
 interface BlogPostContentProps {
@@ -31,7 +32,8 @@ export function BlogPostContent({ post }: BlogPostContentProps) {
   }
 
   const title = getTranslatedTitle(post, locale);
-  const content = getTranslatedContent(post, locale);
+  // The title above is the page's only <h1>; demote any AI-authored heading.
+  const content = demoteBodyH1(getTranslatedContent(post, locale));
   const category = post.tags[0] || "General";
   const date = post.publishedAt
     ? new Date(post.publishedAt).toLocaleDateString(locale === "es" ? "es-ES" : "en-US", {

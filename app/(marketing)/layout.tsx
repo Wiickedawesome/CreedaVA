@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { ForceTheme } from "@/components/layout/force-theme";
 import Script from "next/script";
 import { Suspense } from "react";
 
@@ -70,7 +71,9 @@ gtag('config', '${GA_MEASUREMENT_ID}');`}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
-      <div data-theme="light">
+      <div>
+        {/* Admin toggles <html data-theme>; clear it so public pages never inherit dark. */}
+        <ForceTheme theme="light" />
         <Navbar />
         <main id="main-content" className="min-h-screen">{children}</main>
         <Footer />

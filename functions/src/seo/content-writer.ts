@@ -19,6 +19,7 @@
 
 import { db } from "../admin";
 import type { SeoAgentConfigDoc } from "./types";
+import { isApprovedThumbnail, pickFeaturedImage, thumbnailPromptList } from "./thumbnails";
 
 interface BriefDoc {
   id: string;
@@ -111,6 +112,8 @@ interface BlogDraft {
   tags: string[];
   metaDescription: string;
   lang: string;
+  /** Unsplash CDN URL used as the post thumbnail + OG image. */
+  featuredImage: string;
 }
 
 async function composeBlogDraft(brief: BriefDoc): Promise<BlogDraft> {
@@ -147,7 +150,7 @@ async function tryGemini(
     };
   };
   const genAI = new mod.GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   const prompt = `You are an SEO writer for CreedaVA, a bilingual (English/Spanish) virtual assistant agency in Belize serving US small businesses.
 
 Write a blog post draft targeting the keyword: "${keyword}"
@@ -159,10 +162,14 @@ Return ONLY valid JSON (no markdown fences) with these exact fields:
 {
   "title": "<SEO title under 60 chars>",
   "excerpt": "<1-2 sentence summary>",
-  "content": "<HTML body, ~700-900 words, with <h2>, <p>, and <ul> tags. No <html> or <body> wrapper. End with a CTA paragraph linking to /contact.>",
+  "content": "<HTML body, ~700-900 words, with <h2>, <p>, and <ul> tags. NEVER use <h1> — the page renders the title as the only H1. No <html> or <body> wrapper. End with a CTA paragraph linking to /contact.>",
   "tags": ["3-5", "topical", "tags"],
-  "metaDescription": "<under 160 chars>"
-}`;
+  "metaDescription": "<under 160 chars>",
+  "featuredImage": "<one URL copied verbatim from the APPROVED THUMBNAILS list that best matches the topic>"
+}
+
+APPROVED THUMBNAILS (choose exactly one, return the full URL):
+${thumbnailPromptList()}`;
   const result = await model.generateContent(prompt);
   const raw = result.response.text();
   const cleaned = raw
@@ -171,6 +178,9 @@ Return ONLY valid JSON (no markdown fences) with these exact fields:
     .trim();
   const parsed = JSON.parse(cleaned) as Partial<BlogDraft>;
   if (!parsed.title || !parsed.content) return null;
+  const chosenImage = isApprovedThumbnail(parsed.featuredImage)
+    ? String(parsed.featuredImage)
+    : "";
   return {
     title: String(parsed.title).slice(0, 70),
     slug: slugify(parsed.title ?? keyword),
@@ -179,6 +189,7 @@ Return ONLY valid JSON (no markdown fences) with these exact fields:
     tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5).map(String) : [keyword],
     metaDescription: (parsed.metaDescription ?? parsed.excerpt ?? "").slice(0, 160),
     lang: "en",
+    featuredImage: chosenImage || pickFeaturedImage(`${parsed.title} ${keyword}`),
   };
 }
 
@@ -202,6 +213,7 @@ ${sections}
     tags: [keyword, "virtual assistants", "small business"].slice(0, 5),
     metaDescription: excerpt.slice(0, 160),
     lang: "en",
+    featuredImage: pickFeaturedImage(`${title} ${keyword}`),
   };
 }
 

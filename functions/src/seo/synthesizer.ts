@@ -101,8 +101,9 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
       if (!hasSchemaIssue) continue;
       const pathKey = a.pathKey as string ?? "";
       // Only auto-inject for blog posts — marketing pages need human review.
-      if (!pathKey.startsWith("/blog/")) continue;
-      const blogSlug = pathKey.replace(/^\/blog\//, "");
+      // Blog posts are served from /news/:slug, not /blog/:slug.
+      if (!pathKey.startsWith("/news/")) continue;
+      const blogSlug = pathKey.replace(/^\/news\//, "");
       if (!blogSlug) continue;
       try {
         const blogSnap = await db
@@ -134,7 +135,7 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
           dateModified: blogData.updatedAt?.toDate?.()?.toISOString?.() ?? new Date().toISOString(),
           mainEntityOfPage: {
             "@type": "WebPage",
-            "@id": `https://creedava.com/blog/${blogSlug}`,
+            "@id": `https://creedava.com/news/${blogSlug}`,
           },
         };
         await blogDoc.ref.set(

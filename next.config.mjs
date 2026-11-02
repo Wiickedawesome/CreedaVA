@@ -25,6 +25,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "firebasestorage.googleapis.com",
       },
+      {
+        // Curated Unsplash thumbnails for blog featured images.
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
   },
 

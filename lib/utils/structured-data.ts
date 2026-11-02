@@ -10,7 +10,8 @@
 
 const SITE = "https://creedava.com";
 const ORG_NAME = "CreedaVA";
-const LOGO = `${SITE}/images/logo.webp`;
+/** Served from public/logo.webp — /images/logo.webp does not exist. */
+const LOGO = `${SITE}/logo.webp`;
 const PHONE = "+1-844-702-2202";
 
 // ─── Shared fragments ────────────────────────────────
