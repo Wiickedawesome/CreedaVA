@@ -511,14 +511,95 @@ The a11y one is now cheap to add — the axe harness in this audit is a few doze
 | 14 | Test coverage | DONE | 375/375, 65.29% |
 | 15 | Documentation accuracy | DONE | 12 of 14 old findings stale |
 
-## Needs your decision
+## Decisions — all resolved
 
-1. **Deploy `firestore.rules` + `storage.rules`** — the security fix is committed but not live.
-2. **`@layer base` for headings** — fixes 91 headings, visibly changes the site.
-3. **reCAPTCHA 351 KB on public pages** — needs a lazy-init change, not an audit.
-4. **Unsubstantiated homepage stats** (`500+`, `98%`, `50+`) vs CRM: 0 clients, 6 leads.
-5. **`templateDraft()` filler prose** in `functions/src/seo/content-writer.ts` — a scheduled function
-   can publish "This section covers what is x? in depth".
+All five were approved and completed. Detail below; each was verified after deploy.
+
+### 1. Rules deployed ✅ `live-verified`
+
+`firebase deploy --only firestore:rules,storage` → both compiled and released to `creeda-va`.
+Public Firestore traffic still succeeds after the change: a fresh load of `/` issued 4 requests to
+`firestore.googleapis.com`, **all HTTP 200**, so public reads/writes and App Check still work.
+
+The tightened predicate is live in both files. Because Google sign-in always sets `email_verified`,
+existing admin accounts are unaffected — but this could not be re-confirmed by logging in, so treat
+**admin access after this deploy as unverified until someone signs in**.
+
+### 2. Heading layer fixed ✅ `live-verified`
+
+Wrapped `h1…h6` in `@layer base`. Verified live:
+
+| Element | Class | Before | After |
+|---|---|---|---|
+| `/join` h1 | `text-3xl lg:text-4xl` | 54 px | **36 px** |
+| `/services` h1 | `text-3xl lg:text-4xl` | 54 px | **36 px** |
+| `/services` h2 | `text-4xl lg:text-5xl` | 42 px | **48 px** |
+| `/services` h3 | `text-xl` | 32 px | **20 px** |
+
+Guarded with a 36-load sweep (12 routes × 320/768/1280): **no horizontal overflow, no heading under
+14 px, no h1 over 70 px**, and axe still clean. The `@media (max-width:479px)` token override from
+the earlier responsive fix is retained — it still applies to the few headings that declare no size
+utility.
+
+**Expected visual change:** headings across the site now render smaller than they did, because they
+are finally honouring their own classes. If any page now reads too small, the fix is to edit that
+heading's utility, not to revert the layer.
+
+### 3. reCAPTCHA deferred ✅ `live-verified`
+
+`FirebaseInit` now initialises on first idle **or** first interaction, whichever comes first.
+Measured on the live homepage after deploy:
+
+- FCP: **320 ms**
+- reCAPTCHA requests start: **634 ms and 690 ms** → entirely after first paint
+- Bytes: still **351 KB** of 767 KB total JS
+
+**The bytes did not shrink.** This moves the cost off the critical path; it does not remove it.
+Eliminating it means routing browser writes through server endpoints so App Check is not needed on
+public pages — a larger change, still open.
+
+Interaction is a trigger deliberately: a click that causes a Firestore write needs a token minted
+before the write leaves, so idle-only would have raced it. `__tests__/lib/firebase/firebase-init.test.tsx`
+now asserts both the deferral and the run-once guarantee.
+
+### 4. Homepage stats replaced ✅ `live-verified`
+
+The old values claimed `500+` tasks, `98%` satisfaction and `50+` clients against a CRM holding
+0 active clients. All four now state something checkable on the site itself:
+
+| Value | Label | Why it is verifiable |
+|---|---|---|
+| `12` | Service Categories | `SERVICE_ANCHORS.length === 12` |
+| `3` | Support Plans | packages `starter` / `professional` / `enterprise` |
+| `EN/ES` | Bilingual Support | the site ships both locales |
+| `5–7` | Days to Onboard | the site's own onboarding copy says 5–7 business days |
+
+Labels renamed in both locales. Live check confirms `500+`, `98%` and `50+` are gone.
+`settings/homepage-stats` in Firestore can still override all four without a deploy.
+
+### 5. No more filler drafts ✅ `deployed`
+
+`templateDraft()` is deleted. When `GEMINI_API_KEY` is missing or Gemini throws,
+`composeBlogDraft()` returns `null` and the brief is **skipped** — left with no `blogId` so the next
+run retries it — instead of becoming a placeholder post. `toTitleCase()` and `escapeHtml()` went with
+it (they existed only for the template).
+
+Deployed: `functions:seoAgentSun` (the weekly synthesizer schedule) and `functions:seoAgentRun`
+(manual trigger). Both report `Successful update operation`.
+`content-writer` has 65 functions tests passing.
+
+## Final state
+
+| Check | Result |
+|---|---|
+| Public axe (WCAG 2.2 AA) | **16/16 routes clean**, live |
+| Unit tests | 376 root + 65 functions, all passing |
+| `tsc --noEmit` | clean, root and functions |
+| Lint | 0 errors |
+| Build | ✓ |
+| CI | green on every push |
+| Rules | deployed |
+| Functions | deployed |
 
 ## Commits in this session
 
@@ -531,3 +612,17 @@ The a11y one is now cheap to add — the axe harness in this audit is a few doze
 | `f99457d` | admin dark theme WCAG AA |
 | `965bb8c` | security: `email_verified` + booking rate limit |
 | `6d06a58` | responsive: 320px overflow |
+| `3102b81` | phases 3–13 documentation |
+| `53bc367` | heading layer, deferred App Check, honest stats, no filler drafts |
+
+## Still open (not blockers)
+
+1. **reCAPTCHA bytes** — deferred, not eliminated. Needs server-side write endpoints.
+2. **Admin accessibility not re-measured live** — session expired; admin a11y is fixed and deployed
+   but unconfirmed in a browser. `--gray-40` dark was resolved by migration, so a re-run should pass.
+3. **Admin access unverified after the rules deploy** — sign in once to confirm.
+4. **No `retryConfig` and no alerting** on 28 scheduled functions: a failed weekly run is silent.
+5. **Dependency majors** — 8 behind, deliberately not upgraded.
+6. **CI gaps** — no e2e, no a11y gate, no audit job.
+7. **`content-briefs.blogId` stores a slug** while identically named fields elsewhere store ids.
+8. **P2**: `/news` cold ISR can hit ~2.7 s TTFB, and the live `stale-while-revalidate` is ~1 year.
