@@ -78,9 +78,15 @@ updatedAt     Timestamp
 - Maps LinkedIn 401/403 to an actionable message rather than echoing the raw payload.
 - Logs successful posts to `linkedin-posts` with the returned `postId`.
 
-Under the hood this calls `POST https://api.linkedin.com/v2/ugcPosts` with
+Under the hook this calls `POST https://api.linkedin.com/v2/ugcPosts` with
 `X-Restli-Protocol-Version: 2.0.0` and `LinkedIn-Version: 20241101`. The new post's id comes
 back in the `x-restli-id` response header, not the body.
+
+> **Known issue:** `ugcPosts` is the legacy API. Microsoft's docs are titled "UGC Post API
+> (Legacy)" and state that the Posts API replaces it. The current endpoint is
+> `POST https://api.linkedin.com/rest/posts`, which also supports images, documents,
+> multi-image, polls and articles. This still works today but should be migrated before
+> anything is built on top of it. See `linkedin-build-plan.md` Phase 1.
 
 ## Known limits
 
@@ -90,7 +96,9 @@ These are hard API limits, not missing work:
   that the user must re-run the authorize flow. A scheduled job that emails a reminder
   before `expiresAt` is the practical mitigation.
 - **No read endpoints.** Feed reading, post analytics, follower counts, and page insights
-  all require partner approval. Nothing here can report how a post performed.
+  all require partner approval. Nothing here can report how a post performed. Reading even
+  our own past posts needs `r_member_social`, which is a private permission granted case by
+  case, so the `linkedin-posts` collection is the only history we will have.
 - **Personal feed only.** Posts appear as the authorising member, not as CreedaVA the
   company page.
 - **150 posts per day** per member; 100,000 per day per app.
