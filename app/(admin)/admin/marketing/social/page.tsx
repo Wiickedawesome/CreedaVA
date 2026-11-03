@@ -192,8 +192,8 @@ export default function SocialMediaPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="LinkedIn"
-        description="Create and publish LinkedIn posts"
+        title="Social Media"
+        description="AI-generated social posts for all your platforms"
         actions={
           <div className="flex items-center gap-2">
           <AIPromptButton

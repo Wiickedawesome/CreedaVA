@@ -140,7 +140,7 @@ const marketingItems: NavItem[] = [
     ),
   },
   {
-    label: "LinkedIn",
+    label: "Social Media",
     href: "/admin/marketing/social",
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

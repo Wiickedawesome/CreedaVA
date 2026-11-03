@@ -209,6 +209,42 @@ GBP_SERVICE_ACCOUNT_KEY={"type":"service_account",...}
 
 ---
 
+## LinkedIn — deliberately not integrated
+
+There is no LinkedIn API integration, and adding one is not planned. Recorded here so
+nobody rebuilds it without knowing why it was removed.
+
+**The blocker:** everything available with a normal OAuth token posts as the *authorising
+member's personal profile*, never as the CreedaVA company page. Posting as the page needs
+`w_organization_social`, which requires the LinkedIn partner product plus an ADMINISTRATOR
+role on the page — approval takes weeks and is not guaranteed.
+
+**What is off limits regardless of approval:**
+
+| Scope | Availability |
+| --- | --- |
+| `w_member_social` — post as a person | Self-serve, instant |
+| `r_member_social` — read back your own posts, comments, likes | Private permission, approved users only |
+| `r_organization_social` — read company posts, engagement, insights | Partner only |
+
+So even with a working token we could write posts and never read a single impression,
+click, comment or follower count. `integrations/linkedin` is not a data source.
+
+**How social content actually works today:** Admin → Marketing → Social Media generates
+platform-specific drafts (LinkedIn, Twitter, Facebook, Instagram) with AI. Copy the
+LinkedIn one into LinkedIn's own composer. That composer has better preview, mention
+autocomplete and image handling than anything we would build, and it costs nothing to
+maintain.
+
+**Do not reintroduce:**
+- OAuth routes, tokens, or a `LINKEDIN_CLIENT_SECRET`
+- Any "publish to LinkedIn" button — it would publish to a personal profile
+- Any scheduling or analytics dashboard — no read access exists to populate it
+- Browser-automation or rented-account approaches (the sbl.so/Expandi model): they breach
+  LinkedIn's User Agreement and the ban lands on the account, not the vendor
+
+---
+
 ## Verification
 
 ### From the Admin UI
