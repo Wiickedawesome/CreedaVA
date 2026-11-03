@@ -748,41 +748,6 @@ const analyticsTools: FunctionDeclaration[] = [
 registerTool("fetch_analytics_report", "analytics", "read-only");
 registerTool("fetch_realtime_analytics", "analytics", "read-only");
 
-// ─── Social Media Tools ──────────────────────────────
-
-const socialTools: FunctionDeclaration[] = [
-  {
-    name: "create_social_draft",
-    description:
-      "Create a social media post draft. Saves to Firestore as a draft — does not post to any platform.",
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        platform: {
-          type: SchemaType.STRING,
-          description: "Target platform: 'linkedin', 'facebook', 'instagram', 'twitter'",
-        },
-        topic: {
-          type: SchemaType.STRING,
-          description: "Topic or theme for the social post",
-        },
-        content: {
-          type: SchemaType.STRING,
-          description: "Post content text",
-        },
-        hashtags: {
-          type: SchemaType.ARRAY,
-          items: { type: SchemaType.STRING },
-          description: "Hashtags to include",
-        },
-      },
-      required: ["platform", "topic", "content"],
-    },
-  },
-];
-
-registerTool("create_social_draft", "social", "draft");
-
 // ─── Combined Tool Set ───────────────────────────────
 
 /** All tool declarations combined for Gemini */
@@ -797,7 +762,6 @@ export const ALL_TOOLS: FunctionDeclarationsTool = {
     ...seoTools,
     ...webSearchTools,
     ...analyticsTools,
-    ...socialTools,
   ],
 };
 

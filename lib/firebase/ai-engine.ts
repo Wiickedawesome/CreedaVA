@@ -96,9 +96,6 @@ function autoDetectWebModules(pagePath: string): Partial<AnalyzeOptions> {
   if (p.startsWith("marketing/landing")) {
     return { includeCRO: true, includeAIO: true, includeSERP: true };
   }
-  if (p.startsWith("marketing/social")) {
-    return { includeAuthority: true };
-  }
   if (p === "analytics" || p.startsWith("analytics")) {
     return { includeAnalytics: true, includeSERP: true, includeCRO: true };
   }

@@ -26,7 +26,6 @@ vi.mock("@/lib/utils/ai-data-context", () => ({
   buildCustomerLTVContext: vi.fn(() => "ltv-context"),
   buildLeadResponseContext: vi.fn(() => "lead-context"),
   buildEmailEngagementContext: vi.fn(() => "email-context"),
-  buildSocialEngagementContext: vi.fn(() => "social-context"),
 }));
 
 import {
@@ -94,7 +93,7 @@ describe("getPageConfig", () => {
     const expectedPages = [
       "analytics", "blog", "bookings", "contacts", "customers",
       "emails", "forum", "leads", "marketing/campaigns",
-      "marketing/landing-pages", "marketing/social", "projects",
+      "marketing/landing-pages", "projects",
       "seo/content", "seo/keywords", "tasks",
     ];
     for (const page of expectedPages) {

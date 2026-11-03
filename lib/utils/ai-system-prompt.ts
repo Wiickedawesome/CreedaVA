@@ -127,7 +127,6 @@ ADMIN DASHBOARD (protected — /admin/*):
 - /admin/leads — Sales pipeline, lead scoring, conversion tracking
 - /admin/marketing/campaigns — Ad campaign management (Google Ads, social)
 - /admin/marketing/landing-pages — Landing page creation and performance
-- /admin/marketing/social — Social media planning and publishing
 - /admin/projects — Project management with SMART goals, phases, history
 - /admin/seo/content — Content optimization, audits, suggestions
 - /admin/seo/keywords — Keyword tracking, gap analysis, ranking monitoring
@@ -2335,7 +2334,7 @@ You have access to real tools that interact with CreedaVA's live systems. Follow
 
 ## Risk Awareness
 - **Read-only tools** (list, fetch, search, get): Auto-execute. No side effects.
-- **Draft tools** (create_blog_draft, create_landing_page_draft, create_social_draft): Auto-execute. Content is saved as draft — user can review before publishing.
+- **Draft tools** (create_blog_draft, create_landing_page_draft): Auto-execute. Content is saved as draft — user can review before publishing.
 - **Auto tools** (create_task, create_forum_thread, reply_to_thread, update_lead_status): Auto-execute. Low-risk write operations.
 - **Destructive tools** (send_email, send_bulk_email, publish_blog_post, flag_thread, close_thread): STOP and ask for user confirmation. Clearly describe what will happen before executing.
 
@@ -2641,10 +2640,6 @@ Cross-reference: Lead source attribution, conversion data, cost per acquisition,
 Key actions: Identify low-converting pages, suggest copy/CTA improvements, recommend new landing pages for gap keywords.
 Apply CRO expertise: persuasion sequence, form optimization, trust elements, psychological triggers. Apply AIO: ensure pages are cited by AI.
 Cross-reference: Traffic data, lead conversion by landing page, SEO keyword targets, CRO metrics.`,
-
-  "marketing/social": `You are on the SOCIAL MEDIA page. Focus on: engagement rates, content calendar, platform performance, audience growth.
-Key actions: Suggest content types by platform, recommend posting schedule, identify viral content opportunities.
-Cross-reference: Campaign data, blog content for social amplification, trending topics.`,
 
   projects: `You are on the PROJECTS page. Focus on: delivery status, budget utilization, timeline adherence, resource allocation.
 Key actions: Flag at-risk projects, suggest resource optimizations, identify scope creep, recommend process improvements.

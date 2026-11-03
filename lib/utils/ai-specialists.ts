@@ -10,7 +10,7 @@
  *   ARIA     — Chief of Staff         (/admin, /admin/bookings)
  *   ORACLE   — Growth Strategist      (/admin/seo/*, /admin/analytics)
  *   NOVA     — Content Creator        (/admin/blog, /admin/forum, /admin/marketing/landing-pages)
- *   MAVERICK — Marketing Director     (/admin/marketing/campaigns, /admin/marketing/social, /admin/emails)
+ *   MAVERICK — Marketing Director     (/admin/marketing/campaigns, /admin/emails)
  *   SCOUT    — Sales Analyst          (/admin/leads, /admin/contacts, /admin/customers)
  *   ATLAS    — Operations Manager     (/admin/tasks, /admin/projects)
  *   GUIDE    — Configuration AI       (/admin/settings)
@@ -302,7 +302,6 @@ const ROUTE_MAP: Record<string, SpecialistConfig> = {
   forum: NOVA,
   "marketing/landing-pages": NOVA,
   "marketing/campaigns": MAVERICK,
-  "marketing/social": MAVERICK,
   emails: MAVERICK,
   leads: SCOUT,
   contacts: SCOUT,

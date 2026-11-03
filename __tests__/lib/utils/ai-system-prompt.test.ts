@@ -77,7 +77,6 @@ describe("AI System Prompt", () => {
         "leads",
         "marketing/campaigns",
         "marketing/landing-pages",
-        "marketing/social",
         "projects",
         "seo/content",
         "seo/keywords",

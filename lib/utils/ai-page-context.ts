@@ -38,7 +38,6 @@ import {
   buildCustomerLTVContext,
   buildLeadResponseContext,
   buildEmailEngagementContext,
-  buildSocialEngagementContext,
 } from "./ai-data-context";
 import { getPageContext } from "./ai-system-prompt";
 
@@ -100,11 +99,6 @@ const PAGE_CONFIGS: Record<string, PageConfig> = {
     section: "Landing Pages AI",
     collections: ["landingPages", "campaigns", "leads"],
     contextBuilder: buildLandingPageContext,
-  },
-  "marketing/social": {
-    section: "Social Media AI",
-    collections: ["socialPosts", "campaigns"],
-    contextBuilder: buildSocialEngagementContext,
   },
   projects: {
     section: "Projects AI",

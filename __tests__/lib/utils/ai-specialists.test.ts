@@ -26,7 +26,6 @@ describe("getSpecialist", () => {
 
   it("returns MAVERICK for marketing pages", () => {
     expect(getSpecialist("/admin/marketing/campaigns")).toMatchObject({ codename: "MAVERICK" });
-    expect(getSpecialist("/admin/marketing/social")).toMatchObject({ codename: "MAVERICK" });
     expect(getSpecialist("/admin/emails")).toMatchObject({ codename: "MAVERICK" });
   });
 

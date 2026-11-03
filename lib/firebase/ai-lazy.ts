@@ -35,13 +35,6 @@ export async function lazyAnalyzeSEO(
   return analyzeSEO(...args);
 }
 
-export async function lazyGenerateSocialPosts(
-  ...args: Parameters<typeof import("./ai").generateSocialPosts>
-) {
-  const { generateSocialPosts } = await import("./ai");
-  return generateSocialPosts(...args);
-}
-
 export async function lazyGenerateEmail(
   ...args: Parameters<typeof import("./ai").generateEmail>
 ) {

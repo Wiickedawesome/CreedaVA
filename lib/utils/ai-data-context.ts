@@ -295,13 +295,6 @@ export function buildEmailEngagementContext(data: AllCollections): string {
   return sections.join("\n");
 }
 
-export function buildSocialEngagementContext(data: AllCollections): string {
-  const sections = ["SOCIAL MEDIA ENGAGEMENT CONTEXT"];
-  if (data.socialPosts?.length) sections.push(summarizeSocial(data.socialPosts));
-  if (data.campaigns?.length) sections.push(summarizeCampaigns(data.campaigns));
-  return sections.join("\n");
-}
-
 export function buildRevenueAttributionContext(data: AllCollections): string {
   const sections = ["REVENUE ATTRIBUTION CONTEXT"];
   if (data.leads?.length) sections.push(summarizeLeads(data.leads));

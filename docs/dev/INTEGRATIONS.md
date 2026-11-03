@@ -209,17 +209,28 @@ GBP_SERVICE_ACCOUNT_KEY={"type":"service_account",...}
 
 ---
 
-## LinkedIn — deliberately not integrated
+## Social media and LinkedIn — deliberately removed
 
-There is no LinkedIn API integration, and adding one is not planned. Recorded here so
-nobody rebuilds it without knowing why it was removed.
+Neither is part of the product. Both were built, neither worked properly, both were
+removed. Recorded here so nobody rebuilds them without knowing why.
 
-**The blocker:** everything available with a normal OAuth token posts as the *authorising
-member's personal profile*, never as the CreedaVA company page. Posting as the page needs
+### What was removed, and when
+
+| Removed | When | Reason |
+| --- | --- | --- |
+| `app/api/linkedin/{authorize,callback,publish}` | 2026-11-02 | Posts to a personal profile, never the company page |
+| `LINKEDIN_*` env vars, `LINKEDIN_CLIENT_SECRET` | 2026-11-02 | No longer referenced |
+| `app/(admin)/admin/marketing/social` page | 2026-11-02 | Duplicated LinkedIn's own composer, worse |
+| Sidebar "Social Media" entry | 2026-11-02 | Page is gone |
+| `create_social_draft` AI tool | 2026-11-02 | Wrote to a collection with no UI left to manage it |
+| `generateSocialPosts` / `buildSocialEngagementContext` | 2026-11-02 | Dead once the page was gone |
+
+### Why LinkedIn cannot be integrated the way it would need to be
+
+Everything available with a normal OAuth token posts as the *authorising member's personal
+profile*, never as the CreedaVA company page. Posting as the page needs
 `w_organization_social`, which requires the LinkedIn partner product plus an ADMINISTRATOR
 role on the page — approval takes weeks and is not guaranteed.
-
-**What is off limits regardless of approval:**
 
 | Scope | Availability |
 | --- | --- |
@@ -228,20 +239,29 @@ role on the page — approval takes weeks and is not guaranteed.
 | `r_organization_social` — read company posts, engagement, insights | Partner only |
 
 So even with a working token we could write posts and never read a single impression,
-click, comment or follower count. `integrations/linkedin` is not a data source.
+click, comment or follower count. Any scheduling or analytics UI would have no data to
+populate it.
 
-**How social content actually works today:** Admin → Marketing → Social Media generates
-platform-specific drafts (LinkedIn, Twitter, Facebook, Instagram) with AI. Copy the
-LinkedIn one into LinkedIn's own composer. That composer has better preview, mention
-autocomplete and image handling than anything we would build, and it costs nothing to
-maintain.
+### Why the AI drafting page went too
 
-**Do not reintroduce:**
+It generated copy for four platforms in one JSON blob, which is not how anyone actually
+posts. LinkedIn's own composer has better preview, mention autocomplete and image handling
+than anything we would build, and it costs nothing to maintain. The AI prompt was doing
+the only valuable part, and that is available directly from the assistant.
+
+### Do not reintroduce
+
 - OAuth routes, tokens, or a `LINKEDIN_CLIENT_SECRET`
 - Any "publish to LinkedIn" button — it would publish to a personal profile
-- Any scheduling or analytics dashboard — no read access exists to populate it
+- Any social scheduling or analytics dashboard — no read access exists to populate it
 - Browser-automation or rented-account approaches (the sbl.so/Expandi model): they breach
   LinkedIn's User Agreement and the ban lands on the account, not the vendor
+
+### Left in place on purpose
+
+The `social-posts` collection, its `SocialPost` type, and its Firestore rules still exist,
+because the collection may contain historical data. Nothing writes to it any more, so it
+is read-only legacy. Delete the rules and type once the collection is confirmed empty.
 
 ---
 

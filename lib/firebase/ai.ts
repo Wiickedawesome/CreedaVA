@@ -246,34 +246,6 @@ Return JSON with:
   `);
 }
 
-/** Generate social media posts */
-export async function generateSocialPosts(
-  topic: string,
-  platforms: string[] = ["linkedin", "twitter", "facebook"],
-) {
-  return generateJSON<{
-    posts: {
-      platform: string;
-      content: string;
-      hashtags: string[];
-      characterCount: number;
-    }[];
-  }>(`
-You are a social media manager for CreedaVA, a virtual assistant services company.
-Create social media posts about: "${topic}"
-
-Platforms: ${platforms.join(", ")}
-
-For each platform:
-- Follow platform character limits (Twitter/X: 280, LinkedIn: 3000, Facebook: 63206)
-- Use appropriate tone for each platform
-- Include relevant hashtags
-- Include a call to action
-
-Return JSON with a "posts" array, each with: platform, content, hashtags, characterCount.
-  `);
-}
-
 /** Generate an email draft */
 export async function generateEmail(
   purpose: string,

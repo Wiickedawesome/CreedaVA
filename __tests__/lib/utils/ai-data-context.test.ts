@@ -16,7 +16,6 @@ import {
   buildCustomerLTVContext,
   buildLeadResponseContext,
   buildEmailEngagementContext,
-  buildSocialEngagementContext,
   buildRevenueAttributionContext,
   type AllCollections,
 } from "@/lib/utils/ai-data-context";
@@ -213,13 +212,6 @@ describe("AI Data Context Builders", () => {
     });
   });
 
-  describe("buildSocialEngagementContext", () => {
-    it("includes social header", () => {
-      const result = buildSocialEngagementContext(SAMPLE_DATA);
-      expect(result).toContain("SOCIAL MEDIA ENGAGEMENT");
-    });
-  });
-
   describe("buildRevenueAttributionContext", () => {
     it("includes revenue header", () => {
       const result = buildRevenueAttributionContext(SAMPLE_DATA);
@@ -246,7 +238,6 @@ describe("AI Data Context Builders", () => {
         buildCustomerLTVContext,
         buildLeadResponseContext,
         buildEmailEngagementContext,
-        buildSocialEngagementContext,
         buildRevenueAttributionContext,
       ];
       for (const builder of builders) {

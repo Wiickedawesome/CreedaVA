@@ -543,23 +543,6 @@ registerHandler("fetch_realtime_analytics", async () => {
   return result as unknown as Record<string, unknown>;
 });
 
-// ─── Social Media Handlers ───────────────────────────
-
-registerHandler("create_social_draft", async (args) => {
-  const { create } = await import("./firestore");
-
-  const postData = {
-    platform: args.platform as string,
-    topic: args.topic as string,
-    content: args.content as string,
-    hashtags: (args.hashtags as string[]) ?? [],
-    status: "draft",
-  };
-
-  const id = await create("social-posts", postData);
-  return { success: true, postId: id, platform: args.platform, status: "draft" };
-});
-
 // ─── Main Executor ───────────────────────────────────
 
 /** Firestore collection for persisting pending actions (survives restarts) */
