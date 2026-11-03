@@ -93,11 +93,6 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Social posts — admin only
-    match /social-posts/{docId} {
-      allow read, write: if isAdmin();
-    }
-
     // Email drafts — admin only
     match /emails/{docId} {
       allow read, write: if isAdmin();

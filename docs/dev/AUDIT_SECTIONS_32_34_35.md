@@ -3,6 +3,10 @@
 > Generated: 2025-07-15  
 > Scope: SEO & Metadata (32), Known Dead Ends & Missing Wires (34), Translation Keys / i18n (35)
 
+> **Superseded in part (2026-11-02):** `/admin/marketing/social` was removed along with its
+> AI wiring. Any reference to that route in this report describes a page that no longer
+> exists. See `INTEGRATIONS.md` for the current state.
+
 ---
 
 ## Section 32 — SEO & Metadata

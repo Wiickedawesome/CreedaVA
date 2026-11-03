@@ -3,7 +3,12 @@
 **Version:** 1.1 (post-remediation)  
 **Date:** 2025-07-17 (audit) · 2025-07-18 (fixes applied)  
 **Auditor:** GitHub Copilot (Claude Opus 4.6)  
-**Scope:** Full AI layer code review across all source files  
+**Scope:** Full AI layer code review across all source files
+
+> **Superseded in part (2026-11-02):** the `/admin/marketing/social` page and its AI
+> wiring (`buildSocialEngagementContext`, `create_social_draft`) were removed. Rows in this
+> report referring to them describe a page that no longer exists. See
+> `INTEGRATIONS.md` for the current state. Everything else here still applies.  
 **Remediation Status:** All 12 identified issues resolved ✅  
 
 ---

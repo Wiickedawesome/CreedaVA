@@ -71,18 +71,6 @@ export interface SEOAudit extends FirestoreDoc {
   missingElements: string[];
 }
 
-// ─── Social Post ─────────────────────────────────────
-export interface SocialPost extends FirestoreDoc {
-  topic: string;
-  platform: string;
-  content: string;
-  hashtags: string[];
-  status: "draft" | "scheduled" | "published";
-  scheduledAt?: string;
-}
-
-export type SocialPostFormData = Omit<SocialPost, keyof FirestoreDoc>;
-
 // ─── Email Draft ─────────────────────────────────────
 export interface EmailDraft extends FirestoreDoc {
   purpose: string;
@@ -295,7 +283,6 @@ export type AITaskType =
   | "seo-audit"
   | "keyword-research"
   | "landing-page"
-  | "social-posts"
   | "weekly-report"
   | "daily-report"
   | "monthly-report"

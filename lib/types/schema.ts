@@ -12,7 +12,6 @@
  *   notes           → (see below)
  *   seo             → SEOAudit        (lib/types/content.ts)
  *   keywords        → SEOKeyword      (lib/types/content.ts)
- *   social-posts    → SocialPost      (lib/types/content.ts)
  *   emails          → EmailDraft      (lib/types/content.ts)
  *   email-campaigns → EmailCampaign   (lib/types/content.ts)
  *   campaigns       → Campaign        (lib/types/content.ts — same as EmailCampaign? audit needed)
@@ -147,7 +146,6 @@ export const COLLECTION_MAP = {
   "page-seo":          "PageSEO",
   "keywords":          "SEOKeyword",
   "seo":               "SEOAudit",
-  "social-posts":      "SocialPost",
   "emails":            "EmailDraft",
   "email-campaigns":   "EmailCampaign",
   "campaigns":         "Campaign /* TODO: confirm distinct from email-campaigns */",

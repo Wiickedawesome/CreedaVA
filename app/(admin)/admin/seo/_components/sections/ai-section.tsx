@@ -12,7 +12,6 @@ import type {
   SEOKeyword,
   SEOAudit,
   Campaign,
-  SocialPost,
   EmailDraft,
   LandingPage,
   ForumThread,
@@ -368,7 +367,6 @@ export default function AiSection() {
   const { data: contacts } = useCollection<Contact>("contacts");
   const { data: bookings } = useCollection<Booking>("bookings");
   const { data: campaigns } = useCollection<Campaign>("campaigns");
-  const { data: socialPosts } = useCollection<SocialPost>("social-posts");
   const { data: emails } = useCollection<EmailDraft>("emails");
   const { data: blog } = useCollection<BlogPost>("blog");
   const { data: keywords } = useCollection<SEOKeyword>("keywords");
@@ -385,7 +383,6 @@ export default function AiSection() {
       contacts,
       bookings,
       campaigns,
-      socialPosts,
       emails,
       blog,
       keywords,
@@ -393,7 +390,7 @@ export default function AiSection() {
       landingPages,
       forumThreads,
     }),
-    [leads, customers, tasks, projects, contacts, bookings, campaigns, socialPosts, emails, blog, keywords, seoAudits, landingPages, forumThreads],
+    [leads, customers, tasks, projects, contacts, bookings, campaigns, emails, blog, keywords, seoAudits, landingPages, forumThreads],
   );
 
   // ─── Keep the weekly digest fresh ──────────────────

@@ -224,6 +224,8 @@ removed. Recorded here so nobody rebuilds them without knowing why.
 | Sidebar "Social Media" entry | 2026-11-02 | Page is gone |
 | `create_social_draft` AI tool | 2026-11-02 | Wrote to a collection with no UI left to manage it |
 | `generateSocialPosts` / `buildSocialEngagementContext` | 2026-11-02 | Dead once the page was gone |
+| `SocialPost` type, `social-posts` fetcher and AI context | 2026-11-02 | Nothing could write to the collection |
+| `social-posts` Firestore rule | 2026-11-02 | Removed with the type |
 
 ### Why LinkedIn cannot be integrated the way it would need to be
 
@@ -259,9 +261,11 @@ the only valuable part, and that is available directly from the assistant.
 
 ### Left in place on purpose
 
-The `social-posts` collection, its `SocialPost` type, and its Firestore rules still exist,
-because the collection may contain historical data. Nothing writes to it any more, so it
-is read-only legacy. Delete the rules and type once the collection is confirmed empty.
+**`social-posts` documents.** The Firestore collection may contain historical records. No
+code reads or writes it any more and its rules are gone, so it is unreachable from the app.
+The data still exists and is visible in the Firebase console — delete the collection there
+once you have confirmed nothing in it is worth keeping. Deleting a collection is not a code
+change, so it is not something a commit can do.
 
 ---
 

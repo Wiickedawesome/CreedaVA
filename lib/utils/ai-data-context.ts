@@ -12,7 +12,6 @@ import type {
   SEOKeyword,
   SEOAudit,
   Campaign,
-  SocialPost,
   EmailDraft,
   LandingPage,
   ForumThread,
@@ -28,7 +27,6 @@ export interface AllCollections {
   contacts?: Contact[];
   bookings?: Booking[];
   campaigns?: Campaign[];
-  socialPosts?: SocialPost[];
   emails?: EmailDraft[];
   blog?: BlogPost[];
   keywords?: SEOKeyword[];
@@ -111,7 +109,6 @@ export function buildFullContext(data: AllCollections): string {
   if (sampledData.contacts?.length) sections.push(summarizeContacts(sampledData.contacts));
   if (sampledData.bookings?.length) sections.push(summarizeBookings(sampledData.bookings));
   if (sampledData.campaigns?.length) sections.push(summarizeCampaigns(sampledData.campaigns));
-  if (sampledData.socialPosts?.length) sections.push(summarizeSocial(sampledData.socialPosts));
   if (sampledData.emails?.length) sections.push(summarizeEmails(sampledData.emails));
   if (sampledData.blog?.length) sections.push(summarizeBlog(sampledData.blog));
   if (sampledData.keywords?.length) sections.push(summarizeKeywords(sampledData.keywords));
@@ -167,7 +164,6 @@ export function buildPeriodContext(
     contacts: data.contacts ? filterByDate(data.contacts) : undefined,
     bookings: data.bookings ? filterByDate(data.bookings) : undefined,
     campaigns: data.campaigns,
-    socialPosts: data.socialPosts ? filterByDate(data.socialPosts) : undefined,
     emails: data.emails ? filterByDate(data.emails) : undefined,
     blog: data.blog ? filterByDate(data.blog) : undefined,
     keywords: data.keywords,
@@ -207,7 +203,6 @@ export function buildSEOContext(data: AllCollections): string {
 export function buildMarketingContext(data: AllCollections): string {
   const sections = ["MARKETING CONTEXT"];
   if (data.campaigns?.length) sections.push(summarizeCampaigns(data.campaigns));
-  if (data.socialPosts?.length) sections.push(summarizeSocial(data.socialPosts));
   if (data.emails?.length) sections.push(summarizeEmails(data.emails));
   if (data.landingPages?.length) sections.push(summarizeLandingPages(data.landingPages));
   return sections.join("\n");
@@ -263,7 +258,6 @@ export function buildForumContext(data: AllCollections): string {
 export function buildContentVelocityContext(data: AllCollections): string {
   const sections = ["CONTENT VELOCITY CONTEXT"];
   if (data.blog?.length) sections.push(summarizeBlog(data.blog));
-  if (data.socialPosts?.length) sections.push(summarizeSocial(data.socialPosts));
   if (data.emails?.length) sections.push(summarizeEmails(data.emails));
   if (data.landingPages?.length) sections.push(summarizeLandingPages(data.landingPages));
   if (data.forumThreads?.length) sections.push(summarizeForum(data.forumThreads));
@@ -400,12 +394,6 @@ function summarizeCampaigns(campaigns: Campaign[]): string {
 By status: ${countBy(campaigns, (c) => c.status)}
 Budget: $${totalBudget.toLocaleString()} total, $${totalSpent.toLocaleString()} spent
 Performance: ${totalImpressions} impressions, ${totalClicks} clicks (${ctr}% CTR), ${totalConversions} conversions`;
-}
-
-function summarizeSocial(posts: SocialPost[]): string {
-  return `\n--- SOCIAL POSTS (${posts.length}) ---
-By status: ${countBy(posts, (p) => p.status)}
-Platforms: ${countBy(posts, (p) => p.platform)}`;
 }
 
 function summarizeEmails(emails: EmailDraft[]): string {

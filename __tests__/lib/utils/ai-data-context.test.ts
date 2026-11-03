@@ -45,9 +45,6 @@ const SAMPLE_DATA: AllCollections = {
   campaigns: [
     { id: "ca1", name: "Google Ads Q1", platform: "google", spend: 500, clicks: 100, impressions: 5000, conversions: 10 } as never,
   ],
-  socialPosts: [
-    { id: "sp1", platform: "linkedin", content: "Check out our new services!", likes: 15, shares: 3, createdAt: new Date().toISOString() } as never,
-  ],
   emails: [
     { id: "e1", subject: "Welcome", to: "new@customer.com", status: "sent", createdAt: new Date().toISOString() } as never,
   ],
@@ -254,7 +251,6 @@ describe("AI Data Context Builders", () => {
         contacts: [],
         bookings: [],
         campaigns: [],
-        socialPosts: [],
         emails: [],
         blog: [],
         keywords: [],
