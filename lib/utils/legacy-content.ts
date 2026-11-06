@@ -44,31 +44,65 @@ const STYLE_ATTRIBUTE = /\s*style=(["'])([\s\S]*?)\1/gi;
 const LAYOUT_PROPERTY =
   /^(?:display|position|top|right|bottom|left|inset|z-index|float|clear|overflow|overflow-x|overflow-y|overflow-wrap|width|min-width|max-width|height|min-height|max-height|aspect-ratio|object-fit|object-position|margin|margin-top|margin-right|margin-bottom|margin-left|padding|padding-top|padding-right|padding-bottom|padding-left|gap|row-gap|column-gap|grid|grid-template-columns|grid-template-rows|grid-column|grid-row|flex|flex-direction|flex-wrap|flex-grow|flex-shrink|flex-basis|align-items|align-self|align-content|justify-content|justify-items|justify-self|place-items|place-content|order|text-align|vertical-align|white-space|list-style|list-style-type)$/;
 
-function isLayoutDeclaration(declaration: string): boolean {
-  const colon = declaration.indexOf(":");
-  if (colon === -1) return false;
-  return LAYOUT_PROPERTY.test(declaration.slice(0, colon).trim().toLowerCase());
+/**
+ * Geometry an article body may still declare.
+ *
+ * An editorial template owns measure and rhythm: centred paragraphs, card
+ * grids and per-block padding are exactly what makes a generated body look
+ * like a pasted-in dashboard. Sizing and margins survive because they are how
+ * a body says "this image is wide" — everything that decides where text sits
+ * does not.
+ */
+const EDITORIAL_PROPERTY =
+  /^(?:width|min-width|max-width|height|min-height|max-height|aspect-ratio|object-fit|object-position|margin|margin-top|margin-right|margin-bottom|margin-left|overflow|overflow-x|overflow-y|overflow-wrap|list-style|list-style-type)$/;
+
+/**
+ * How much inline layout to keep.
+ *
+ * `document` is the original behaviour, for landing pages that are built as
+ * one designed surface. `editorial` is for article bodies, where the template
+ * decides the layout and the stored markup must not.
+ */
+export type NormalizeMode = "document" | "editorial";
+
+export interface NormalizeOptions {
+  mode?: NormalizeMode;
 }
 
-function rebuildStyleAttribute(_match: string, quote: string, body: string): string {
-  const kept = body
-    .split(";")
-    .map((declaration) => declaration.trim())
-    .filter((declaration) => declaration && isLayoutDeclaration(declaration));
+const ALLOWED_PROPERTY: Record<NormalizeMode, RegExp> = {
+  document: LAYOUT_PROPERTY,
+  editorial: EDITORIAL_PROPERTY,
+};
 
-  // An empty style="" is noise; drop the attribute (and its leading space).
-  return kept.length > 0 ? ` style=${quote}${kept.join("; ")}${quote}` : "";
+function isAllowedDeclaration(declaration: string, mode: NormalizeMode): boolean {
+  const colon = declaration.indexOf(":");
+  if (colon === -1) return false;
+  return ALLOWED_PROPERTY[mode].test(declaration.slice(0, colon).trim().toLowerCase());
+}
+
+function rebuildStyleAttribute(mode: NormalizeMode) {
+  return (_match: string, quote: string, body: string): string => {
+    const kept = body
+      .split(";")
+      .map((declaration) => declaration.trim())
+      .filter((declaration) => declaration && isAllowedDeclaration(declaration, mode));
+
+    // An empty style="" is noise; drop the attribute (and its leading space).
+    return kept.length > 0 ? ` style=${quote}${kept.join("; ")}${quote}` : "";
+  };
 }
 
 /**
  * Strip legacy styling from a stored HTML fragment so `.mk-article` can style it.
- * Leaves text, structure and layout untouched.
+ * Leaves text and structure untouched.
  */
-export function normalizeLegacyHtml(html: string): string {
+export function normalizeLegacyHtml(html: string, options: NormalizeOptions = {}): string {
   if (!html) return html;
+
+  const mode = options.mode ?? "document";
 
   return html
     .replace(EMBEDDED_BLOCK, "")
     .replace(LINK_TAG, "")
-    .replace(STYLE_ATTRIBUTE, rebuildStyleAttribute);
+    .replace(STYLE_ATTRIBUTE, rebuildStyleAttribute(mode));
 }

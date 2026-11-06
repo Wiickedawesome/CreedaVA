@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { demoteBodyH1 } from "@/lib/utils/blog-content";
+import { demoteBodyH1, withHeadingAnchors } from "@/lib/utils/blog-content";
 import {
   pickFeaturedImage,
   thumbnailPromptList,
@@ -33,6 +33,64 @@ describe("demoteBodyH1", () => {
 
   it("handles empty input", () => {
     expect(demoteBodyH1("")).toBe("");
+  });
+});
+
+describe("withHeadingAnchors", () => {
+  it("gives each h2 an id and reports it", () => {
+    const { html, headings } = withHeadingAnchors("<h2>Why it matters</h2>");
+    expect(html).toBe('<h2 id="why-it-matters">Why it matters</h2>');
+    expect(headings).toEqual([{ id: "why-it-matters", text: "Why it matters", level: 2 }]);
+  });
+
+  it("keeps heading attributes it already had", () => {
+    const { html } = withHeadingAnchors('<h3 class="k">Step one</h3>');
+    expect(html).toBe('<h3 class="k" id="step-one">Step one</h3>');
+  });
+
+  it("respects an id already on the heading", () => {
+    const { html, headings } = withHeadingAnchors('<h2 id="custom">Title</h2>');
+    expect(html).toBe('<h2 id="custom">Title</h2>');
+    expect(headings[0].id).toBe("custom");
+  });
+
+  it("suffixes repeated headings instead of colliding", () => {
+    const { headings } = withHeadingAnchors("<h2>Tools</h2><h2>Tools</h2><h2>Tools</h2>");
+    expect(headings.map((h) => h.id)).toEqual(["tools", "tools-2", "tools-3"]);
+  });
+
+  it("uses the text content, not the inline markup, as the label", () => {
+    const { headings } = withHeadingAnchors("<h2>Save <strong>hours</strong> a week</h2>");
+    expect(headings[0].text).toBe("Save hours a week");
+  });
+
+  it("decodes common entities in the label", () => {
+    const { headings } = withHeadingAnchors("<h2>Time &amp; money</h2>");
+    expect(headings[0].text).toBe("Time & money");
+    expect(headings[0].id).toBe("time-money");
+  });
+
+  it("folds accents into the id", () => {
+    const { headings } = withHeadingAnchors("<h2>Información útil</h2>");
+    expect(headings[0].id).toBe("informacion-util");
+  });
+
+  it("ignores empty headings", () => {
+    const { html, headings } = withHeadingAnchors("<h2>  </h2><h2>Real</h2>");
+    expect(headings).toHaveLength(1);
+    expect(html).toContain("<h2>  </h2>");
+  });
+
+  it("records h3 as level 3 and leaves h4 alone", () => {
+    const { html, headings } = withHeadingAnchors("<h3>Sub</h3><h4>Deep</h4>");
+    expect(headings).toEqual([{ id: "sub", text: "Sub", level: 3 }]);
+    expect(html).toContain("<h4>Deep</h4>");
+  });
+
+  it("returns an empty list when there are no headings", () => {
+    const { html, headings } = withHeadingAnchors("<p>body</p>");
+    expect(headings).toEqual([]);
+    expect(html).toBe("<p>body</p>");
   });
 });
 

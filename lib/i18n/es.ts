@@ -1010,6 +1010,11 @@ const es: Dictionary = {
     ctaButton: "Cont\u00e1ctanos",
     stayConnected: "Mantente Conectado",
     stayConnectedDesc: "S\u00edguenos en LinkedIn para perspectivas de la industria, consejos y actualizaciones de la empresa.",
+    inThisArticle: "En este art\u00edculo",
+    share: "Compartir",
+    copyLink: "Copiar enlace",
+    linkCopied: "Enlace copiado",
+    relatedPosts: "Lecturas relacionadas",
   },
 
   // ─── Forum ─────────────────────────────────────

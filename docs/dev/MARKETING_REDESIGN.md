@@ -2615,57 +2615,95 @@ is flagged.
   credentials, so `.rich-html` is proven by compiled CSS + rule presence, not by
   rendering a signed-in inbox.
 
-### 2026-11-06 — blog article pages: boxed card → full-width editorial
+### 2026-11-06 — blog article page rebuilt as a real editorial template
 
-The owner looked at a published post and asked for the opposite of what the
-2026-11-03 template did: *"the blogs are incorrect, they should use the whole page
-and be editorial like. Right now its like its in a frame, i hate it."*
+Two rounds of owner feedback, both about the same impression: the first version
+fixed the frame, the second said the page still only used the middle.
 
-The "frame" was one element — the body sheet
-`rounded-(--mk-radius-lg) bg-mk-white px-6 py-10 shadow-(--mk-shadow-card)` sitting
-on a `paper` band inside a `max-w-3xl` column, i.e. a white card with a shadow and
-~460 px of empty cream either side at 1440. Everything was inside `max-w-3xl`
-(768 px), so the page read as a module rather than a page.
+> "the blogs are incorrect, they should use the whole page and be editorial like.
+> Right now its like its in a frame, i hate it."
+>
+> "why are we only using the middle of the page wtf. it looks like shit.
+> Just fucking remake the whole thing to look better."
 
-`app/(marketing)/news/[slug]/blog-post-content.tsx` is now three bands:
+**What was actually wrong.** Two causes, only one of them visible from the JSX:
 
-1. **Masthead** — `containerSize="lg"` (1152 px). Back link, an uppercase kicker row
-   (`Category · date · N min read`) replacing the old `Pill`, the headline at
-   `clamp(2.2rem,5.4vw,4.2rem)` with `text-balance`, a `max-w-[52ch]` dek, and the
-   byline under a hairline rule.
-2. **Featured image** — same `lg` container, `aspect-video`, **no shadow** (a shadow
-   was half of the card read). `sizes` raised to `72rem` to match.
-3. **Body** — `tone="white"`, `containerSize="md"`, `pt-12 pb-20`. The text is an
-   unboxed `max-w-[68ch]` column; the foot rule spans the full 960 px container, so
-   the page furniture is wide while the measure stays readable.
+1. The body sat in `rounded-(--mk-radius-lg) bg-mk-white px-6 py-10
+   shadow-(--mk-shadow-card)` inside a `max-w-3xl` column — a white card with a
+   shadow and ~460 px of empty cream either side at 1440.
+2. **The stored HTML carried its own layout.** A real published body is a
+   `<div style="max-width:1280px">` holding `display:grid` card rows,
+   `text-align:center` headings and `padding:32px` blocks. `normalizeLegacyHtml`
+   kept every layout property, so no amount of column width mattered: the body
+   kept drawing a mini page of its own in the middle of ours.
 
-- New `.mk-article--wide` in `globals.css` (news posts only — landing pages keep the
-  plain column): body `1.125rem`, and at ≥1024 px direct `img`/`figure` children run
-  `width: 52rem; margin-inline: auto`. The auto margins resolve negative for an
-  over-constrained box, so a figure breaks out evenly **on both sides of the column**
-  and stays inside the container — it cannot create horizontal overflow.
-- Removed the `Pill` import; the meta row is plain type. No new i18n keys.
+**The template now** (`app/(marketing)/news/[slug]/blog-post-content.tsx`):
 
-Measured in a harness that serves the real production body HTML against the built
-stylesheet (`public/_article-preview.html`, deleted after use — the local server has
+- **Masthead** — `containerSize="xl"`, a two-column spread: copy left, `4:3` cover
+  right, `lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]`. Headline
+  `clamp(2.3rem,4.9vw,4.4rem)` with `text-balance`; kicker row is
+  `Category · date · N min read`; byline sits under a hairline with initials.
+- **Body** — same `xl` container, `lg:grid-cols-[minmax(0,1fr)_15rem]`, so the text
+  runs wide while a **sticky rail on the right** carries the contents list and the
+  share buttons. `sticky top-28`.
+- **Contents rail** — built from the body's own `h2`/`h3` (see below). Right-aligned
+  (`border-r pr-5 text-right`) so the rule sits on the page's right edge; hidden
+  below `lg`.
+- **Share** — LinkedIn, X, Facebook, WhatsApp, Email, plus a **Copy link** button
+  (`navigator.clipboard`, label flips to "Link copied"; a denied clipboard leaves
+  the label alone rather than claiming a copy that did not happen).
+- **After the body** — tag pills, an author card, back/contact row, and a
+  **Related reading** band of up to three cards.
+
+**New code:**
+
+- `lib/utils/blog-content.ts` → `withHeadingAnchors(html)`. Injects `id`s into body
+  `h2`/`h3` and returns `{ html, headings }` for the rail. Done on the string, not
+  the DOM, because the body is injected with `dangerouslySetInnerHTML` and never
+  mounted as React nodes. Respects an existing `id`, suffixes duplicates
+  (`tools`, `tools-2`), folds accents, decodes the common entities, ignores empty
+  headings. 11 unit tests.
+- `lib/utils/legacy-content.ts` → `normalizeLegacyHtml(html, { mode })`.
+  `"document"` is the old behaviour (landing pages). `"editorial"` is a much
+  smaller allowlist — sizing, margins, overflow, list style — and drops
+  `display`, `grid-*`, `flex-*`, `padding*`, `text-align`, `gap`, `align-*`,
+  `justify-*`. That is what stops a stored body from laying out its own page. 6
+  unit tests.
+- `app/(marketing)/news/[slug]/page.tsx` → `getRelatedPosts()`, ranked by shared
+  tags then newest (there is no view or click data). Fails soft to `[]`, which
+  hides the band. `toPost()` + `toIsoTimestamp()` replace the inline Firestore
+  timestamp cast, which the build rejected as `Property 'toDate' does not exist
+  on type '{}'`.
+- i18n: `inThisArticle`, `share`, `copyLink`, `linkCopied`, `relatedPosts` in
+  **both** locales. `post.tags` is now read as `post.tags?.[0]` — the type says
+  array, published documents disagree.
+
+**Measured** in a harness that renders a real production body through the real
+normaliser against the built stylesheet (deleted after use — the local server has
 no admin credentials, so `/news/<slug>` renders the not-found state locally):
 
-| | 1440 | 1024 | 375 |
-|---|---|---|---|
-| horizontal overflow | 0 | 0 | 0 |
-| reading column | 611 px | 611 px | 328 px |
-| headline width | 1088 px | 945 px | 328 px |
-| foot rule width | 960 px | 945 px | 328 px |
-| body font | 18 px | 18 px | 18 px |
-| shadow / radius on body | none | none | none |
+| | 1440 | 375 |
+|---|---|---|
+| horizontal overflow | 0 | 0 |
+| body column | 880 px | 328 px |
+| paragraph measure | 800 px | 328 px |
+| contents rail | 272 px, flush to container right edge | hidden |
+| contents items | 6 (16 headings → top-level only) | — |
+| body font | 19 px | 19 px |
+| `text-align:center` blocks left in body | 0 | 0 |
+| `display:grid` blocks left in body | 0 | 0 |
+| padded blocks left in body | 0 | 0 |
+| contrast failures | 0 of 148 text nodes | 0 of 148 |
 
-Also: 0 contrast failures across every text node in the article subtree at 1440
-(threshold 4.5:1, or 3:1 for large text), using the same canvas colour resolution
-the audit script uses. `lint` 0 errors · **407/407** tests · build OK ·
+A 16-heading article would render a 16-row rail, so past 10 headings the list
+drops to top-level sections only.
+
+`lint` 0 errors · **423/423** tests (37 files) · `audit:design` 0/0 · build OK ·
 `/news/[slug]` still prerendered via `generateStaticParams`.
 
-The harness is evidence about CSS and geometry, **not** proof that the Next route
-renders — that was confirmed on `https://creedava.com` after the App Hosting rollout.
+The harness is evidence about CSS, normalisation and geometry, **not** proof that
+the Next route renders — that was confirmed on `https://creedava.com` after the
+App Hosting rollout.
 
 ## Verification (measured, 2026-11-02)
 

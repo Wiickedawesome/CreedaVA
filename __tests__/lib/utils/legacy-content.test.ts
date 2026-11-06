@@ -68,3 +68,42 @@ describe("normalizeLegacyHtml", () => {
     expect(normalizeLegacyHtml(html)).toBe(html);
   });
 });
+
+describe("normalizeLegacyHtml — editorial mode", () => {
+  const editorial = (html: string) => normalizeLegacyHtml(html, { mode: "editorial" });
+
+  it("drops the centring that makes a generated body read as a slide", () => {
+    expect(editorial('<p style="text-align:center;margin-bottom:24px">x</p>')).toBe(
+      '<p style="margin-bottom:24px">x</p>',
+    );
+  });
+
+  it("collapses card grids into plain blocks", () => {
+    const html =
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px">x</div>';
+    expect(editorial(html)).toBe('<div>x</div>');
+  });
+
+  it("drops per-block padding and background so the template owns the rhythm", () => {
+    const html =
+      '<div style="padding:32px;background:#fff;border-radius:16px;text-align:center">x</div>';
+    expect(editorial(html)).toBe("<div>x</div>");
+  });
+
+  it("keeps sizing and margins, which is how a body asks for a wide image", () => {
+    const html = '<img src="/a.png" style="width:100%;max-width:900px;margin:24px 0">';
+    expect(editorial(html)).toBe(
+      '<img src="/a.png" style="width:100%; max-width:900px; margin:24px 0">',
+    );
+  });
+
+  it("still strips embedded style blocks", () => {
+    expect(editorial("<style>p{color:red}</style><p>x</p>")).toBe("<p>x</p>");
+  });
+
+  it("leaves the document mode unchanged for landing pages", () => {
+    const html = '<p style="text-align:center">x</p>';
+    expect(normalizeLegacyHtml(html)).toBe(html);
+    expect(normalizeLegacyHtml(html, { mode: "document" })).toBe(html);
+  });
+});

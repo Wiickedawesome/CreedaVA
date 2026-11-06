@@ -615,23 +615,54 @@ body {
     color: var(--mk-ink);
   }
 
-  /* Editorial article body (news post template only — landing pages keep the
-     plain column). A hair larger than the shared body size, and media runs
-     wider than the text so the article uses the page instead of sitting in a
-     narrow ribbon. The figure is centred on the column with `auto` side margins,
-     which resolve negative for an over-constrained box: it breaks out evenly and
-     stays inside the container, so it can never cause horizontal overflow. */
+  /* Editorial article body (`/news/<slug>` only — landing pages keep the plain
+     column). Larger type, a wider measure, and media that fills the column
+     instead of sitting in the middle of it.
+
+     Text is capped with `ch` so the line length survives a font change, but
+     only text elements are capped: a wrapper `<div>` is free to be as wide as
+     the column so the image or grid inside it can use the full width. */
   .mk-article--wide {
-    font-size: 1.125rem;
+    font-size: 1.1875rem;
+    line-height: 1.8;
   }
 
-  @media (min-width: 1024px) {
-    .mk-article--wide > img,
-    .mk-article--wide > figure {
-      width: 52rem;
-      max-width: none;
-      margin-inline: auto;
-    }
+  .mk-article--wide :is(p, h2, h3, h4, li) {
+    max-width: 72ch;
+  }
+
+  .mk-article--wide h2 {
+    margin-top: 2.4em;
+    font-size: clamp(1.5rem, 2.6vw, 1.95rem);
+  }
+
+  .mk-article--wide h3 {
+    font-size: 1.28rem;
+  }
+
+  .mk-article--wide img {
+    width: 100%;
+    height: auto;
+  }
+
+  /* A pull quote, not a footnote. Generated bodies use blockquotes for the one
+     sentence worth stopping on, so it gets display type and its own ground. */
+  .mk-article--wide blockquote {
+    max-width: none;
+    margin-block: 2.4em;
+    padding: 1.35em 1.6em 1.35em 1.8em;
+    border-left-width: 3px;
+    background: var(--mk-paper);
+    font-family: var(--font-jakarta);
+    font-size: clamp(1.15rem, 1.7vw, 1.4rem);
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -0.015em;
+    color: var(--mk-ink);
+  }
+
+  .mk-article--wide table {
+    max-width: none;
   }
 }
 

@@ -1018,6 +1018,11 @@ const en = {
     ctaButton: "Contact Us",
     stayConnected: "Stay Connected",
     stayConnectedDesc: "Follow us on LinkedIn for industry insights, tips, and company updates.",
+    inThisArticle: "In this article",
+    share: "Share",
+    copyLink: "Copy link",
+    linkCopied: "Link copied",
+    relatedPosts: "Related reading",
   },
 
   // ─── Forum ─────────────────────────────────────
