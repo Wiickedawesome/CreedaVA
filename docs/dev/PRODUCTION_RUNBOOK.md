@@ -33,7 +33,8 @@ SITE_URL=https://creedava.com npm run smoke:prod
 
 ## Deploy
 
-There are two independent targets. A git push does not deploy either one on its own.
+There are two independent targets. A push to `main` does not deploy Cloud
+Functions, Firestore rules or Storage rules on its own.
 
 ### 1. Next.js app (`creedava.com`)
 
@@ -44,9 +45,11 @@ Served by the Firebase App Hosting backend `creeda-va-host` (us-east4).
    (or `firebase apphosting:rollouts:create creeda-va-host --git-commit <sha>`)
 3. Confirm the rollout reaches `SUCCEEDED` before verifying the site
 
-If no new rollout appears after a push, create one manually — production keeps
-serving the previous build until a rollout succeeds. Pushes do create a *build*
-automatically; only the rollout step is manual.
+A push to `main` creates a build and, as measured on 2026-11-06, also rolls it
+out on its own — a route that existed only in the new commit (`/pricing`) went
+from 404 to 200 roughly three minutes after the push, with no CLI call. Use the
+manual rollout in step 2 only as a fallback for when no new rollout appears:
+production keeps serving the previous build until a rollout succeeds.
 
 Creating a rollout through the API needs the **numeric** project number inside
 the build path, otherwise the call fails with "must conform to
@@ -112,3 +115,42 @@ Record in PR/incident doc:
 - Rollback commit
 - Recovery confirmation time
 - Follow-up action items
+
+## Deploy Log
+
+### 2026-11-06 — 2026 design system (`fe91306`)
+
+| | |
+|---|---|
+| Commits | `df30f61` email palette, `fe91306` marketing + admin design system |
+| Merge | fast-forward of `main`; **GitHub PRs are unavailable on this repo** (private repo on a free plan disables Issues/PRs — `POST /pulls` returns 404) |
+| CI on `main` | run `42246540852` — `App (lint + test + build)` and `Functions (build / tsc)` both success |
+| App Hosting | rolled out automatically; `/pricing` 404 → 200 three minutes after the push |
+| Functions | **NOT DEPLOYED** — see below |
+
+Verified against production after the rollout:
+
+- Routes `/`, `/about`, `/services`, `/pricing`, `/contact`, `/faq`, `/forum`,
+  `/news`, `/join`, `/privacy`, `/terms`, `/login`, `/robots.txt`,
+  `/sitemap.xml`, `/manifest.webmanifest`, `/icon.svg`, `/apple-icon`,
+  `/opengraph-image` → 200 (`/admin` 307 to `/login`, `/satisfaction` 404 by design).
+- `SITE_URL=https://creedava.com npm run smoke:prod` → passed.
+- `AUDIT_BASE_URL=https://creedava.com npm run audit:design:live` → 0 errors, 0 warnings.
+- `AUDIT_BASE_URL=https://creedava.com npm run audit:design:visual` → 0 errors,
+  0 warnings across 14 routes × 1440/375.
+- New-build markers present in live HTML: `aria-label="Back to top"`,
+  `bg-mk-brand-deep`; `/pricing` metadata carries
+  `og:image = https://creedava.com/opengraph-image`.
+
+**Outstanding:** `firebase deploy --only functions` has not run, so production
+functions still contain the pre-redesign email colours (`#002D72` / `#F9FBFF`).
+No behavior change beyond email styling. Blocked because the local Firebase CLI
+is signed in as `info@guianegocios.net`, which only has access to
+`guianegocios-prod` (`firebase functions:list --project creeda-va` → *"Failed to
+list functions for creeda-va"*), and no other account is cached. gcloud's
+`john@creedava.com` session is also expired. To finish:
+
+```bash
+firebase login:reauth --no-localhost   # sign in as john@creedava.com
+firebase deploy --only functions
+```
