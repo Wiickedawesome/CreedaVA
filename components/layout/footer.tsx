@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Container } from "@/components/ui";
+import { Bloom } from "@/components/marketing/primitives";
 import { useTranslation } from "@/lib/i18n";
 import { SERVICE_ANCHORS } from "@/lib/constants/services";
 
@@ -18,61 +19,85 @@ const supportHrefs = [
   { href: "/privacy", key: "privacy" as const },
   { href: "/terms", key: "terms" as const },
 ];
-
 export function Footer() {
   const { t } = useTranslation();
 
   return (
-    <footer className="bg-footer-bg text-white" aria-label="Site footer">
-      <Container>
+    <footer
+      className="relative overflow-hidden bg-mk-brand-deep text-mk-paper"
+      aria-label="Site footer"
+    >
+      {/* Green, not navy. Blue appeared on only 2 of 11 pages, so a navy footer was
+          the first and often only blue surface on the other nine — it read as a
+          stray cap rather than a conclusion. `--mk-brand-deep` is the same surface
+          as the closing CTA panels on /, /pricing, /services and /faq, so every
+          page now ends in one green family. Blue stays where the design actually
+          introduces it: the /about band and the contact card.
+
+          Blooms are the accent tint, matching every other green band. */}
+      <Bloom className="-right-32 -top-32 h-[420px] w-[420px] rounded-full bg-mk-accent/10 blur-[110px]" />
+      <Bloom className="-bottom-40 -left-28 h-[380px] w-[380px] rounded-full bg-mk-accent/6 blur-[110px]" />
+
+      <Container className="relative">
         <div className="py-16 lg:py-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
             {/* Brand */}
             <div className="lg:col-span-1">
               <Link href="/" className="flex items-center gap-2 mb-4">
                 <Image
-                  src="/logo.webp"
+                  src="/creedava-logo.svg"
                   alt="CreedaVA"
-                  width={280}
+                  width={96}
                   height={80}
                   className="h-20 w-auto brightness-0 invert"
+                  unoptimized
                 />
               </Link>
-              <p className="text-gray-50 text-sm leading-relaxed max-w-xs">
+              <p className="text-mk-paper-mute text-sm leading-relaxed max-w-xs">
                 {t.footer.tagline}
               </p>
             </div>
 
             {/* Services */}
             <div>
-              <h4 className="text-sm font-bold uppercase tracking-wider mb-4 text-gray-40">
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-4 text-mk-paper">
                 {t.footer.servicesCol}
-              </h4>
+              </h2>
               <ul className="space-y-3">
                 {SERVICE_ANCHORS.map((anchor, i) => (
                   <li key={anchor}>
                     <Link
                       href={`/services#${anchor}`}
-                      className="text-sm text-gray-50 hover:text-white transition-colors"
+                      className="text-sm text-mk-paper hover:text-mk-accent transition-colors"
                     >
                       {t.footer.serviceLinks[i]}
                     </Link>
                   </li>
                 ))}
+                {/* Packages are their own page now, so the column ends with a
+                    route rather than a thirteenth anchor. */}
+                <li>
+                  <Link
+                    href="/pricing"
+                    className="text-sm text-mk-paper hover:text-mk-accent transition-colors"
+                  >
+                    {t.nav.pricing}
+                  </Link>
+                </li>
               </ul>
             </div>
 
             {/* Company */}
             <div>
-              <h4 className="text-sm font-bold uppercase tracking-wider mb-4 text-gray-40">
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-4 text-mk-paper">
                 {t.footer.companyCol}
-              </h4>
+              </h2>
               <ul className="space-y-3">
                 {companyHrefs.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-gray-50 hover:text-white transition-colors"
+                      className="text-sm text-mk-paper hover:text-mk-accent transition-colors"
                     >
                       {t.footer.companyLinks[link.key]}
                     </Link>
@@ -83,15 +108,15 @@ export function Footer() {
 
             {/* Support */}
             <div>
-              <h4 className="text-sm font-bold uppercase tracking-wider mb-4 text-gray-40">
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-4 text-mk-paper">
                 {t.footer.supportCol}
-              </h4>
+              </h2>
               <ul className="space-y-3">
                 {supportHrefs.map((link) => (
                     <li key={link.href}>
                         <Link
                           href={link.href}
-                          className="text-sm text-gray-50 hover:text-white transition-colors"
+                          className="text-sm text-mk-paper hover:text-mk-accent transition-colors"
                         >
                           {t.footer.supportLinks[link.key]}
                         </Link>
@@ -103,8 +128,8 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-80 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-50">
+        <div className="border-t border-mk-paper/15 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-mk-paper-mute">
             &copy; {new Date().getFullYear()} {t.footer.copyright}
           </p>
           <div className="flex items-center gap-4">
@@ -112,7 +137,7 @@ export function Footer() {
               href="https://linkedin.com/company/creedava"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-50 hover:text-white transition-colors"
+              className="text-mk-paper hover:text-mk-accent transition-colors"
               aria-label="LinkedIn"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

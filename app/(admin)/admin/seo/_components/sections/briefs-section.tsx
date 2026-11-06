@@ -113,9 +113,9 @@ export default function BriefsSection() {
       />
       <DashboardSection title="All briefs">
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-gray-60">Loading…</p>
         ) : briefs.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-60">
             No briefs yet. The synthesizer generates these every Sunday from striking-distance keywords surfaced in the Opportunities tab.
           </p>
         ) : (

@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
           <div style="background:#005148;color:white;padding:16px;border-radius:8px 8px 0 0;">
             <h2 style="margin:0;font-size:16px;">New Booking Request</h2>
           </div>
-          <div style="padding:16px;background:#f9fbff;border:1px solid #e0e8f5;border-radius:0 0 8px 8px;">
+          <div style="padding:16px;background:#F7F7F2;border:1px solid #e0e8f5;border-radius:0 0 8px 8px;">
             <table style="width:100%;">
               <tr><td style="padding:6px;color:#666;">Name</td><td style="padding:6px;font-weight:bold;">${safeName}</td></tr>
               <tr><td style="padding:6px;color:#666;">Email</td><td style="padding:6px;">${safeEmail}</td></tr>

@@ -63,38 +63,38 @@ export function AICitationReadiness({
 
       {showSection ? (
         /* Full visible section — only on pages that explicitly opt in */
-        <section className="py-16 lg:py-20 border-t border-gray-20 bg-white">
+        <section className="py-16 lg:py-20 border-t border-mk-line bg-mk-white">
           <Container size="md">
             <div className="max-w-4xl mx-auto space-y-6">
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-100">
+              <h2 className="text-2xl lg:text-3xl font-bold text-mk-ink">
                 Frequently asked questions and guidance
               </h2>
 
               {paragraphs.map((paragraph, index) => (
-                <p key={index} className="text-gray-60 leading-relaxed">
+                <p key={index} className="text-mk-ink-mute leading-relaxed">
                   {paragraph}
                 </p>
               ))}
 
               <div className="space-y-4">
                 {questions.map((item, index) => (
-                  <article key={index} className="rounded-xl border border-gray-20 p-5 bg-gray-10/40">
-                    <h3 className="text-lg font-semibold text-gray-100 mb-2">{item.question}</h3>
-                    <p className="text-gray-60 leading-relaxed">{item.answer}</p>
+                  <article key={index} className="rounded-xl border border-mk-line p-5 bg-mk-paper">
+                    <h3 className="text-lg font-semibold text-mk-ink mb-2">{item.question}</h3>
+                    <p className="text-mk-ink-mute leading-relaxed">{item.answer}</p>
                   </article>
                 ))}
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-gray-100 mb-3">Authoritative references</h3>
-                <ul className="list-disc pl-5 space-y-2 text-gray-60">
+                <h3 className="text-lg font-semibold text-mk-ink mb-3">Authoritative references</h3>
+                <ul className="list-disc pl-5 space-y-2 text-mk-ink-mute">
                   {sources.map((source) => (
                     <li key={source.url}>
                       <a
                         href={source.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                        className="text-mk-brand hover:underline"
                       >
                         {source.label}
                       </a>
@@ -107,12 +107,12 @@ export function AICitationReadiness({
         </section>
       ) : (
         /* Minimal link — guides users to the dedicated FAQ page */
-        <div className="border-t border-gray-20 bg-white py-8">
+        <div className="border-t border-mk-line bg-mk-white py-8">
           <Container size="md">
             <div className="max-w-4xl mx-auto text-center">
-              <p className="text-gray-60 text-sm">
+              <p className="text-mk-ink-mute text-sm">
                 Have questions?{" "}
-                <a href="/faq" className="text-primary font-medium hover:underline">
+                <a href="/faq" className="text-mk-brand font-medium hover:underline">
                   See all frequently asked questions →
                 </a>
               </p>

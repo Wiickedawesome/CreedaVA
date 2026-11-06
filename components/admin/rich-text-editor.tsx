@@ -208,7 +208,7 @@ export function RichTextEditor({
           />
         ) : (
           <div
-            className="px-4 py-3 prose prose-sm max-w-none text-sm text-gray-80 overflow-auto bg-card rte-area"
+            className="px-4 py-3 rich-html text-sm overflow-auto bg-card rte-area"
             style={{ '--rte-min-h': minHeight } as React.CSSProperties}
             dangerouslySetInnerHTML={{ __html: value || `<p class="text-gray-50">${placeholder}</p>` }}
           />

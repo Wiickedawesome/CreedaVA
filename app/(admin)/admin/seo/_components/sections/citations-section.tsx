@@ -21,9 +21,9 @@ interface CitationAudit {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 85) return "text-green-700 bg-green-50 border-green-200";
-  if (score >= 70) return "text-yellow-700 bg-yellow-50 border-yellow-200";
-  return "text-red-700 bg-red-50 border-red-200";
+  if (score >= 85) return "text-success-text bg-success-soft border-success-soft-line";
+  if (score >= 70) return "text-warning-text bg-warning-soft border-warning-soft-line";
+  return "text-error-text bg-error-soft border-error-soft-line";
 }
 
 export default function CitationsSection() {
@@ -42,9 +42,9 @@ export default function CitationsSection() {
 
       <DashboardSection title={`Audits (${audits.length})`}>
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-gray-60">Loading…</p>
         ) : audits.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-60">
             No citation audits yet. The agent runs weekly and writes findings to <code>citation-audits</code>.
             Trigger a manual run from the Agent tab.
           </p>
@@ -91,7 +91,7 @@ function SchemaBadge({ label, present }: { label: string; present: boolean }) {
   return (
     <span
       className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 ${
-        present ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+        present ? "bg-success-soft text-success-text" : "bg-error-soft text-error-text"
       }`}
     >
       <span>{present ? "✓" : "✗"}</span>

@@ -372,7 +372,7 @@ function ConversionFunnel({
                   {c.value}
                 </span>
                 {i > 0 && dropoff > 0 && (
-                  <span className="text-[10px] text-red-600">
+                  <span className="text-[10px] text-error-text">
                     ▼ {dropoff}%
                   </span>
                 )}
@@ -383,7 +383,7 @@ function ConversionFunnel({
                 className="h-full rounded-full transition-all duration-700"
                 style={{
                   width: `${Math.max(pct, 2)}%`,
-                  background: `linear-gradient(90deg, #005148, #007A6D)`,
+                  background: `linear-gradient(90deg, var(--chart-1), var(--chart-7))`,
                   opacity: 1 - i * 0.15,
                 }}
               />
@@ -597,8 +597,8 @@ export default function AnalyticsPage() {
   // Event type breakdown — falls back to GA4 eventBreakdown when Firestore is empty
   const eventTypeBreakdown = useMemo(() => {
     const colors = [
-      "#005148", "#007A6D", "#0043CE", "#4589FF", "#6929C4",
-      "#9F1853", "#198038", "#F1C21B",
+      "var(--chart-1)", "var(--chart-7)", "var(--chart-2)", "var(--chart-8)", "var(--chart-3)",
+      "var(--chart-4)", "var(--chart-5)", "var(--chart-6)",
     ];
     const acc: Record<string, number> = {};
     filtered.forEach((e) => {
@@ -639,7 +639,7 @@ export default function AnalyticsPage() {
           label: page,
           value: count,
           pct: Math.round((count / total) * 100),
-          color: "#005148",
+          color: "var(--chart-1)",
         }));
     }
     // Fallback: GA4 topPages
@@ -648,7 +648,7 @@ export default function AnalyticsPage() {
       label: p.path,
       value: p.pageViews,
       pct: Math.round((p.pageViews / ga4Total) * 100),
-      color: "#005148",
+      color: "var(--chart-1)",
     }));
   }, [filtered, ga4TopPages]);
 
@@ -787,7 +787,7 @@ export default function AnalyticsPage() {
       />
 
       {error && (
-        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200">
+        <div className="rounded-lg border border-warning-soft-line bg-warning-soft p-4 text-sm text-warning-text">
           {error}
         </div>
       )}
@@ -814,7 +814,7 @@ export default function AnalyticsPage() {
             <span className="text-xs text-gray-50">· last {daysFilter}d</span>
             {realtimeUsers !== null && (
               <span className="ml-auto flex items-center gap-1.5 text-xs text-primary">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                 {realtimeUsers} active now
               </span>
             )}
@@ -988,7 +988,7 @@ export default function AnalyticsPage() {
                                   className="h-full rounded-full"
                                   style={{
                                     width: `${Math.max(pct, 3)}%`,
-                                    backgroundColor: "#005148",
+                                    backgroundColor: "var(--chart-1)",
                                   }}
                                 />
                               </div>

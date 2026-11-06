@@ -517,7 +517,7 @@ export default function AdminDashboardPage() {
                       ${mrr.toLocaleString()}
                     </span>
                   </div>
-                  <SparklineChart data={revenueSparkline} color="#198038" />
+                  <SparklineChart data={revenueSparkline} color="var(--chart-5)" />
                 </div>
               </div>
             </DashboardSection>
@@ -637,7 +637,7 @@ export default function AdminDashboardPage() {
                       {(syncLog.results || []).map((r) => (
                         <div key={r.service} className="flex items-center justify-between text-sm">
                           <span className="text-gray-70">{r.service}</span>
-                          <span className={r.status === "ok" ? "text-green-600 text-xs font-medium" : "text-red-500 text-xs"}>
+                          <span className={r.status === "ok" ? "text-success-text text-xs font-medium" : "text-error-text text-xs"}>
                             {r.status === "ok" ? `✓ ${r.detail || "synced"}` : `✗ ${r.detail || "failed"}`}
                           </span>
                         </div>
@@ -731,7 +731,7 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-3 gap-3 text-sm">
               <div className="rounded-lg border border-border p-3">
                 <p className="text-xs text-gray-50">Monthly Growth Rate</p>
-                <p className="font-semibold text-green-600">+{forecastReport.growthRatePercent}%/mo</p>
+                <p className="font-semibold text-success-text">+{forecastReport.growthRatePercent}%/mo</p>
               </div>
               <div className="rounded-lg border border-border p-3">
                 <p className="text-xs text-gray-50">Expansion Revenue</p>
@@ -750,7 +750,7 @@ export default function AdminDashboardPage() {
                     <div key={i} className="flex justify-between items-center rounded-lg border border-border p-3 text-sm">
                       <span className="text-gray-70">{l.lever}</span>
                       <div className="text-right">
-                        <span className="text-green-600 font-semibold">+${l.estimatedImpactDollars.toLocaleString()}/mo</span>
+                        <span className="text-success-text font-semibold">+${l.estimatedImpactDollars.toLocaleString()}/mo</span>
                         <p className="text-xs text-gray-50">{l.timeToImpact}</p>
                       </div>
                     </div>

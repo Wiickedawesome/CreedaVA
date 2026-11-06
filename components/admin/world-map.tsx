@@ -54,6 +54,18 @@ interface WorldTopology extends Topology {
   objects: { countries: GeometryCollection };
 }
 
+// Heat ramp and "no data" fill are derived from the live tokens rather than
+// hardcoded hexes. The old five fixed greens kept their light-mode contrast
+// when the admin switched to dark, leaving the busiest countries as dark
+// patches on a dark card.
+const HEAT_RAMP = [
+  "color-mix(in srgb, var(--primary) 22%, transparent)",
+  "color-mix(in srgb, var(--primary) 45%, transparent)",
+  "color-mix(in srgb, var(--primary) 68%, transparent)",
+  "var(--primary)",
+] as const;
+const NO_DATA_FILL = "color-mix(in srgb, var(--gray-40) 60%, transparent)";
+
 export function WorldMap({ countryData }: WorldMapProps) {
   const [topology, setTopology] = useState<WorldTopology | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -102,13 +114,13 @@ export function WorldMap({ countryData }: WorldMapProps) {
 
   function fillFor(id: string): string {
     const entry = dataById.get(id);
-    if (!entry) return "rgba(148, 163, 184, 0.2)";
+    if (!entry) return NO_DATA_FILL;
     const ratio = entry.count / maxCount;
-    if (ratio >= 0.75) return "#005148";
-    if (ratio >= 0.5) return "#0a7a6e";
-    if (ratio >= 0.25) return "#39a394";
-    if (ratio > 0) return "#7cccc0";
-    return "rgba(148, 163, 184, 0.2)";
+    if (ratio >= 0.75) return HEAT_RAMP[3];
+    if (ratio >= 0.5) return HEAT_RAMP[2];
+    if (ratio >= 0.25) return HEAT_RAMP[1];
+    if (ratio > 0) return HEAT_RAMP[0];
+    return NO_DATA_FILL;
   }
 
   const features = useMemo<Feature<Geometry>[]>(() => {
@@ -162,7 +174,7 @@ export function WorldMap({ countryData }: WorldMapProps) {
         </div>
         <div className="flex items-center gap-1.5 text-xs text-gray-50">
           <span>Less</span>
-          {["rgba(148,163,184,0.25)", "#7cccc0", "#39a394", "#0a7a6e", "#005148"].map((c) => (
+          {[NO_DATA_FILL, ...HEAT_RAMP].map((c) => (
             <span key={c} className="inline-block w-4 h-3 rounded-sm" style={{ backgroundColor: c }} />
           ))}
           <span>More</span>
@@ -248,8 +260,8 @@ export function WorldMap({ countryData }: WorldMapProps) {
             const [hx, hy] = p;
             return (
               <g>
-                <circle cx={hx} cy={hy} r={6} fill="#005148" opacity={0.25} />
-                <circle cx={hx} cy={hy} r={3.5} fill="#005148" stroke="#fff" strokeWidth={1.2} />
+                <circle cx={hx} cy={hy} r={6} fill="var(--chart-1)" opacity={0.25} />
+                <circle cx={hx} cy={hy} r={3.5} fill="var(--chart-1)" stroke="var(--card)" strokeWidth={1.2} />
               </g>
             );
           })()}

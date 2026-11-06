@@ -61,27 +61,34 @@ export default function SatisfactionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-gray-10 to-white flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="min-h-screen bg-linear-to-b from-mk-paper to-mk-white flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-mk-brand border-t-transparent" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-gray-10 to-white py-20">
+      <div className="min-h-screen bg-linear-to-b from-mk-paper to-mk-white py-20">
         <Container size="sm">
           <div className="text-center space-y-6">
-            <Image src="/logo.webp" alt="CreedaVA" width={140} height={40} className="mx-auto" />
-            <div className="w-16 h-16 mx-auto rounded-full bg-gray-10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <Image
+              src="/creedava-logo.svg"
+              alt="CreedaVA"
+              width={77}
+              height={64}
+              className="mx-auto h-16 w-auto"
+              unoptimized
+            />
+            <div className="w-16 h-16 mx-auto rounded-full bg-mk-paper-deep flex items-center justify-center">
+              <svg className="w-8 h-8 text-mk-ink-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Survey Unavailable</h1>
-            <p className="text-gray-60 max-w-md mx-auto">{error}</p>
+            <h1 className="text-2xl font-bold text-mk-ink">Survey Unavailable</h1>
+            <p className="text-mk-ink-mute max-w-md mx-auto">{error}</p>
           </div>
         </Container>
       </div>

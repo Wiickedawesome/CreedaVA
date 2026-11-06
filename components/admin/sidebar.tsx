@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/firebase/auth-context";
+import { AdminThemeToggle } from "./theme-toggle";
 
 interface NavItem {
   label: string;
@@ -261,7 +262,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
     >
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-border px-4 shrink-0">
-        <Image src="/logo.webp" alt="CreedaVA" width={32} height={32} className="h-8 w-8 rounded-lg" />
+        <Image src="/creedava-mark.svg" alt="" width={28} height={32} className="h-8 w-auto" unoptimized />
         {!collapsed && (
           <span className="text-lg font-bold text-foreground">CreedaVA</span>
         )}
@@ -333,6 +334,13 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
         )}
       </div>
 
+      {/* Collapsed rail has no footer, so the switcher lives here instead. */}
+      {collapsed && (
+        <div className="border-t border-border px-2 py-2 shrink-0 flex justify-center">
+          <AdminThemeToggle />
+        </div>
+      )}
+
       {/* User + Settings footer */}
       {!collapsed && (
         <div className="border-t border-border p-3 shrink-0">
@@ -361,6 +369,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
                 {user?.email || ""}
               </p>
             </div>
+            <AdminThemeToggle />
             <button
               onClick={logOut}
               className="rounded-lg p-1.5 text-gray-50 hover:bg-gray-20 hover:text-error"

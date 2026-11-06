@@ -504,7 +504,7 @@ export default function BlogPage() {
                       )}
                       <button
                         onClick={() => removeImage(i)}
-                        className="bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500"
+                        className="bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-error-text"
                         title="Remove"
                       >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -540,7 +540,7 @@ export default function BlogPage() {
                     </div>
                     <button
                       onClick={() => removeAttachment(i)}
-                      className="text-gray-50 hover:text-red-500 shrink-0 ml-2"
+                      className="text-gray-50 hover:text-error-text shrink-0 ml-2"
                       aria-label="Remove attachment"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>

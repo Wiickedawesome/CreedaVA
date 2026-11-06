@@ -1,11 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Roboto } from "next/font/google";
+import { Plus_Jakarta_Sans, Roboto } from "next/font/google";
 import "./globals.css";
 
 const roboto = Roboto({
   variable: "--font-roboto",
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
+  display: "swap",
+});
+
+// Marketing display face. Admin keeps Roboto-only styling, so this is exposed
+// as a separate token (`--font-display`) rather than replacing `--font-sans`.
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -40,13 +49,12 @@ export const metadata: Metadata = {
     title: "CreedaVA — Virtual Assistant Services",
     description:
       "Professional virtual assistant services for businesses. Save time, reduce costs, and scale your operations.",
-    site: "@creedava",
     images: ["https://creedava.com/opengraph-image"],
   },
-  icons: {
-    icon: "/logo.webp",
-    apple: "/logo.webp",
-  },
+  // Favicon and Apple icon are file-based conventions (app/icon.svg,
+  // app/apple-icon.tsx), so they are generated from the current brand mark
+  // instead of being hand-listed here. The previous `icons.apple` pointed at
+  // `/logo.webp` — the pre-redesign logo, in a format iOS ignores.
 };
 
 export default function RootLayout({
@@ -67,7 +75,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${roboto.variable} antialiased`}>
+      <body className={`${roboto.variable} ${jakarta.variable} antialiased`}>
         {children}
       </body>
     </html>

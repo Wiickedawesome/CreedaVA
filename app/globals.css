@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Tailwind's built-in `dark:` variant keys off `prefers-color-scheme` and an
+   optional `.dark` class. This app drives theming from `data-theme` on <html>
+   instead (see the anti-flash script in app/layout.tsx and useAdminTheme), so
+   `dark:` has to be redefined or every `dark:` utility silently ignores the
+   user's toggle and follows the OS. Marketing pages never set the attribute
+   (components/layout/force-theme.tsx removes it), which is why `dark:`
+   utilities are inert there — that is intended. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* ========================================
    CreedaVA Design Tokens (from Figma Kit)
    ======================================== */
@@ -12,9 +21,15 @@
   --gray-70: #697077;
   /* gray-60 was #878D96 = 3.34:1 on white, below the WCAG AA floor of 4.5:1
      despite carrying body copy at 14–18px. #6D747D clears it (4.72:1 white,
-     4.56:1 on --gray-10). gray-50 is deliberately left light: it is the muted
-     text colour on the dark #1B2A4A footer, so darkening it here would drop
-     the footer to ~3:1. Light-surface gray-50 text uses gray-60 instead. */
+     4.56:1 on --gray-10).
+     --gray-50 is the admin's DOMINANT muted caption token (338 `text-gray-50`
+     occurrences, and zero consumers outside /admin — the old "muted text on the
+     dark #1B2A4A footer" rationale is obsolete, that footer is on --mk-* now).
+     Measured 2026-11-05: #A2A9B0 is 2.38:1 on white and 2.16:1 on --gray-20,
+     while its dark value #8b949e is 4.85:1 on --card. So dark mode passes and
+     LIGHT mode does not. Left as-is deliberately — darkening it is a one-line
+     fix (set it to #6D747D, 4.72:1) but it visibly restyles 338 captions across
+     the whole dashboard, so it needs the owner's call, not a drive-by change. */
   --gray-60: #6D747D;
   --gray-50: #A2A9B0;
   --gray-40: #C1C7CD;
@@ -39,6 +54,47 @@
   --error-foreground: #FFFFFF;
   --success-foreground: #FFFFFF;
   --info: #0043CE; /* IBM Blue 70 — distinct from --primary */
+
+  /* Status text + soft surfaces.
+     Separate from --success / --error / --warning on purpose: those are FILL
+     colours. --warning is a #F1C21B yellow that measures 1.9:1 as text on
+     white, which is why status badges in the admin used raw `text-amber-700`
+     and similar — and those raw tones never flipped for dark mode. These four
+     do flip, so a badge can be written once and read correctly in both themes. */
+  --success-text: #0E6027;      /* 7.3:1 on white */
+  --success-soft: #DEFBE6;
+  --success-soft-line: #A7F0BA;
+  --warning-text: #8A5A00;      /* 6.3:1 on white */
+  --warning-soft: #FCF4D6;
+  --warning-soft-line: #F1E5A8;
+  --error-text: #A2191F;        /* 7.5:1 on white */
+  --error-soft: #FFF1F1;
+  --error-soft-line: #FFD7D9;
+  --info-text: #0038A8;         /* 9.5:1 on white */
+  --info-soft: #EDF5FF;
+  --info-soft-line: #C7DBFF;
+
+  /* Categorical chart ramp.
+     Charts pass these as `fill`/`stroke`/`--bar-c` values, so they are plain
+     CSS values and resolve through var() — verified in the browser that an SVG
+     `fill="var(--primary)"` follows the data-theme attribute. Eight distinct
+     hues so a pie/bar set stays separable; the dark block below swaps in the
+     same hue families lightened, because #0043CE and #6929C4 are unreadable
+     marks on a #202124 card. */
+  --chart-1: #005148;
+  --chart-2: #0043CE;
+  --chart-3: #6929C4;
+  --chart-4: #9F1853;
+  --chart-5: #198038;
+  --chart-6: #F1C21B;
+  --chart-7: #007A6D;
+  --chart-8: #4589FF;
+
+  /* Code blocks stay dark in BOTH themes. Inverting them (white block on the
+     dark admin page) is glare, so these deliberately have no dark override. */
+  --code-bg: #1B2A4A;
+  --code-fg: #F2F4F8;
+  --code-line: #35476B;
 
   /* Section Backgrounds */
   --footer-bg: #1B2A4A;
@@ -102,6 +158,54 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
+/* ========================================
+   Marketing surface tokens
+   Kept separate from --primary / --gray-* on purpose: /admin reads those and
+   must not shift when the public site is restyled. Only components that opt
+   into the mk-* utilities below use these values.
+   ======================================== */
+:root {
+  --mk-paper: #F7F7F2;
+  --mk-paper-deep: #EDEDE4;
+  /* Secondary text on dark bands — neutral grey, not a tint of the band colour.
+     11.5:1 on --mk-navy-deep, 11.5:1 on --mk-brand-deep. */
+  --mk-paper-mute: #CFD6DD;
+  --mk-white: #FFFFFF;
+
+  /* Ink is navy-black, not green-black: every heading and body line carries a
+     cool blue undertone. Contrast is within 0.7 of the old green-black values,
+     so nothing became harder to read. */
+  --mk-ink: #0B2135;        /* 15.2:1 on --mk-paper (was 15.9:1) */
+  --mk-ink-soft: #2C4460;   /* 9.3:1 on --mk-paper (was 9.0:1) */
+  --mk-ink-mute: #566B85;   /* 5.1:1 on --mk-paper (was 5.2:1) */
+
+  /* Green = the human and the action: avatars, CTAs, checkmarks, brand surfaces. */
+  --mk-brand: #005148;
+  --mk-brand-bright: #007A6D;
+  --mk-brand-deep: #06211D;
+  --mk-accent: #3FD9C0;     /* 9.6:1 on --mk-brand-deep */
+  --mk-accent-soft: #D8F5EF;
+
+  /* Navy = the software layer: status pills, inbox, calendar, metrics.
+     Never a large fill beside a green fill — that is what would clash. */
+  --mk-navy: #002D72;       /* brand blue, 12.1:1 on --mk-paper */
+  --mk-navy-deep: #001B47;  /* 14.5:1 on --mk-navy-soft */
+  --mk-navy-bright: #2E6FD4; /* bloom tint for navy bands — --mk-navy is too
+                                close to --mk-navy-deep to read as light */
+  --mk-navy-soft: #E8EFF9;  /* tint surface for navy UI chrome */
+  --mk-navy-line: #C6D7EE;
+
+  --mk-line: #E2E2DE;       /* neutral warm grey — the green cast was removed */
+  --mk-line-strong: #CFD0CA;
+
+  --mk-radius: 0.875rem;
+  --mk-radius-lg: 1.5rem;
+
+  --mk-shadow-card: 0 1px 2px rgba(11, 33, 53, 0.04), 0 8px 24px -12px rgba(11, 33, 53, 0.16);
+  --mk-shadow-float: 0 2px 6px rgba(11, 33, 53, 0.06), 0 24px 48px -20px rgba(11, 33, 53, 0.28);
+  --mk-shadow-brand: 0 18px 40px -20px rgba(0, 81, 72, 0.45);
+}
+
 /* Global Dark Theme (applies when data-theme="dark" on <html>) */
 :root[data-theme="dark"] {
   /* Backgrounds (slightly lighter, still VS Code-inspired) */
@@ -149,6 +253,36 @@
     --error-foreground: #0b1220;
     --success-foreground: #0b1220;
 
+    /* Status text is the light-mode tone brightened for a #202124 page; the
+       soft surfaces become deep tinted wells so a badge still reads as a
+       distinct chip instead of a white block. All measured on --card. */
+    --success-text: #6fdc8c;    /* 8.73:1 */
+    --success-soft: #0f2e1c;
+    --success-soft-line: #2a6b45;
+    --warning-text: #f1c21b;    /* 10.9:1 */
+    --warning-soft: #332b12;
+    --warning-soft-line: #6e5a1e;
+    --error-text: #ff8389;      /* 6.29:1 */
+    --error-soft: #3a1a1d;
+    --error-soft-line: #7a343c;
+    --info-text: #7ab7ff;       /* 7.9:1 */
+    --info-soft: #152337;
+    --info-soft-line: #2e4e7a;
+    /* --info was never remapped, leaving #0043CE at 1.9:1 on the dark page. */
+    --info: #7ab7ff;
+    /* Focus ring: #007A6D only reaches 3.0:1 on #202124. */
+    --ring: #5eead4;
+
+    /* Chart ramp — same hue families, lifted so the marks read on a dark card. */
+    --chart-1: #2dd4bf;
+    --chart-2: #7ab7ff;
+    --chart-3: #c9a5ff;
+    --chart-4: #ff9ec4;
+    --chart-5: #6fdc8c;
+    --chart-6: #f1c21b;
+    --chart-7: #5eead4;
+    --chart-8: #9ec5ff;
+
     /* Footer */
     --footer-bg: #181818; 
     
@@ -176,7 +310,27 @@
   --color-error-active: var(--error-active);
   --color-error-foreground: var(--error-foreground);
   --color-success-foreground: var(--success-foreground);
+  --color-success-text: var(--success-text);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-line: var(--success-soft-line);
+  --color-warning-text: var(--warning-text);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-line: var(--warning-soft-line);
+  --color-error-text: var(--error-text);
+  --color-error-soft: var(--error-soft);
+  --color-error-soft-line: var(--error-soft-line);
+  --color-info-text: var(--info-text);
+  --color-info-soft: var(--info-soft);
+  --color-info-soft-line: var(--info-soft-line);
   --color-info: var(--info);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
   --color-footer-bg: var(--footer-bg);
   --color-linkedin: var(--linkedin);
   --color-linkedin-hover: var(--linkedin-hover);
@@ -191,6 +345,28 @@
   --color-gray-90: var(--gray-90);
   --color-gray-100: var(--gray-100);
   --font-sans: var(--font-roboto);
+  --font-display: var(--font-jakarta);
+
+  /* Marketing surface */
+  --color-mk-paper: var(--mk-paper);
+  --color-mk-paper-deep: var(--mk-paper-deep);
+  --color-mk-paper-mute: var(--mk-paper-mute);
+  --color-mk-white: var(--mk-white);
+  --color-mk-ink: var(--mk-ink);
+  --color-mk-ink-soft: var(--mk-ink-soft);
+  --color-mk-ink-mute: var(--mk-ink-mute);
+  --color-mk-brand: var(--mk-brand);
+  --color-mk-brand-bright: var(--mk-brand-bright);
+  --color-mk-brand-deep: var(--mk-brand-deep);
+  --color-mk-accent: var(--mk-accent);
+  --color-mk-accent-soft: var(--mk-accent-soft);
+  --color-mk-navy: var(--mk-navy);
+  --color-mk-navy-deep: var(--mk-navy-deep);
+  --color-mk-navy-bright: var(--mk-navy-bright);
+  --color-mk-navy-soft: var(--mk-navy-soft);
+  --color-mk-navy-line: var(--mk-navy-line);
+  --color-mk-line: var(--mk-line);
+  --color-mk-line-strong: var(--mk-line-strong);
 }
 
 /* Base styles */
@@ -238,4 +414,211 @@ body {
 ::selection {
   background: var(--accent);
   color: white;
+}
+
+/* ========================================
+   Marketing motion
+   Motion is decorative only — every animation is disabled outright when the
+   visitor asks for reduced motion, and nothing here carries meaning.
+   ======================================== */
+@layer utilities {
+  .mk-float {
+    animation: mk-float 7s ease-in-out infinite;
+  }
+
+  .mk-drift {
+    animation: mk-drift 11s ease-in-out infinite;
+  }
+
+  .mk-shadow-card {
+    box-shadow: var(--mk-shadow-card);
+  }
+
+  .mk-shadow-float {
+    box-shadow: var(--mk-shadow-float);
+  }
+}
+
+@keyframes mk-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes mk-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -18px, 0) scale(1.03); }
+}
+
+/* ========================================
+   Article body
+   The blog body arrives as injected HTML from Firestore, so it cannot carry
+   utility classes. `@tailwindcss/typography` is NOT installed in this project —
+   the old `prose prose-lg` classes on the post page generated no CSS at all, so
+   published posts rendered as unstyled browser defaults. These rules replace
+   them and are the only styling the body needs.
+
+   Kept in @layer base so any utility class on a child still wins.
+   ======================================== */
+@layer base {
+  .mk-article {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--mk-ink-soft);
+  }
+
+  /* Vertical rhythm from one rule instead of a margin on every element, so a
+     body that opens with a heading cannot leave a gap above the first line. */
+  .mk-article > * + * {
+    margin-top: 1.35em;
+  }
+
+  .mk-article h2 {
+    margin-top: 2.1em;
+    font-family: var(--font-jakarta);
+    font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: var(--mk-ink);
+  }
+
+  .mk-article h3 {
+    margin-top: 1.9em;
+    font-family: var(--font-jakarta);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--mk-ink);
+  }
+
+  .mk-article h4 {
+    margin-top: 1.7em;
+    font-family: var(--font-jakarta);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--mk-ink);
+  }
+
+  .mk-article strong {
+    font-weight: 700;
+    color: var(--mk-ink);
+  }
+
+  .mk-article em {
+    font-style: italic;
+  }
+
+  .mk-article a {
+    color: var(--mk-brand);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  .mk-article a:hover {
+    color: var(--mk-brand-bright);
+  }
+
+  .mk-article ul,
+  .mk-article ol {
+    padding-left: 1.35em;
+  }
+
+  .mk-article ul {
+    list-style: disc;
+  }
+
+  .mk-article ol {
+    list-style: decimal;
+  }
+
+  .mk-article li + li {
+    margin-top: 0.5em;
+  }
+
+  .mk-article li::marker {
+    color: var(--mk-brand);
+  }
+
+  .mk-article blockquote {
+    border-left: 3px solid var(--mk-accent);
+    padding-left: 1.25em;
+    font-size: 1.08em;
+    color: var(--mk-ink);
+  }
+
+  .mk-article blockquote p {
+    margin: 0;
+  }
+
+  .mk-article img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--mk-radius-lg);
+  }
+
+  .mk-article figure {
+    margin-block: 2em;
+  }
+
+  .mk-article figcaption {
+    margin-top: 0.75em;
+    font-size: 0.85rem;
+    text-align: center;
+    color: var(--mk-ink-mute);
+  }
+
+  .mk-article hr {
+    border: 0;
+    border-top: 1px solid var(--mk-line);
+    margin-block: 2.5em;
+  }
+
+  .mk-article code {
+    padding: 0.15em 0.4em;
+    border-radius: 0.35rem;
+    background: var(--mk-paper-deep);
+    font-size: 0.9em;
+  }
+
+  .mk-article pre {
+    overflow-x: auto;
+    padding: 1.1em 1.25em;
+    border-radius: var(--mk-radius);
+    background: var(--mk-brand-deep);
+    color: var(--mk-paper);
+  }
+
+  .mk-article pre code {
+    padding: 0;
+    background: none;
+    color: inherit;
+  }
+
+  .mk-article table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+  }
+
+  .mk-article th,
+  .mk-article td {
+    padding: 0.6em 0.75em;
+    border-bottom: 1px solid var(--mk-line);
+    text-align: left;
+  }
+
+  .mk-article th {
+    font-weight: 700;
+    color: var(--mk-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-float,
+  .mk-drift {
+    animation: none !important;
+  }
 }

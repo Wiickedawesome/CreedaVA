@@ -5,6 +5,7 @@ const es: Dictionary = {
   nav: {
     home: "Inicio",
     services: "Servicios",
+    pricing: "Precios",
     about: "Nosotros",
     news: "Noticias",
     contact: "Contacto",
@@ -14,26 +15,53 @@ const es: Dictionary = {
 
   // ─── Home ──────────────────────────────────────
   home: {
-    heroBadge: "Asistentes Virtuales Profesionales",
-    heroTitle: "Enf\u00f3cate en Lo Que",
-    heroTitleHighlight: "M\u00e1s Importa",
+    heroTitle: "Personas reales. Apoyo real.",
+    heroTitleHighlight: "Más tiempo para crecer.",
     heroDesc:
-      "Delega tus tareas administrativas a asistentes virtuales calificados \u2014 profesionalmente biling\u00fces en ingl\u00e9s y espa\u00f1ol. Ahorra tiempo, reduce costos y escala tu negocio con los servicios de soporte confiables de CreedaVA.",
+      "Creeda Virtual Assistants te da a tu negocio un asistente humano dedicado que se encarga del trabajo diario —correo, agenda, clientes y administración— para que tus horas se dediquen a lo que solo tú puedes hacer.",
     heroCtaPrimary: "Empezar",
-    heroCtaSecondary: "Ver Servicios",
-    stats: {
-      serviceCategories: "Categor\u00edas de Servicio",
-      supportPlans: "Planes de Soporte",
-      availability: "Soporte Biling\u00fce",
-      onboardingDays: "D\u00edas de Incorporaci\u00f3n",
+    heroCtaSecondary: "Ver servicios",
+    heroProof: ["100% humano", "Inglés y español", "Hecho a la medida de tu negocio"],
+    heroSectorsLabel: "Hecho para equipos de",
+    heroSectors:
+      "Bienes raíces · Legal · Seguros · Comercio electrónico · Servicios profesionales",
+    heroVisual: {
+      windowLabel: "hoy.creedava.com",
+      assistantName: "María",
+      assistantRole: "Asistente Ejecutiva",
+      status: "En línea",
+      queueTitle: "Cola de hoy",
+      tasks: [
+        "Correo clasificado — 47 mensajes",
+        "Agenda confirmada para el jueves",
+        "Registros del CRM actualizados",
+        "Resumen semanal listo para enviar",
+      ],
+      queueFooter: "12 tareas completadas esta semana",
+      inboxTitle: "Correo",
+      inboxValue: "0 sin leer",
+      calendarMonth: "Marzo",
+      calendarDate: "Jue · 2:30 PM",
+      calendarDetail: "Consulta reservada",
     },
-    howItWorks: "C\u00f3mo Funciona",
+    stats: {
+      flatFee: "Tarifa Mensual Fija",
+      supportPlans: "Planes de Soporte",
+      availability: "Soporte Bilingüe",
+      onboardingDays: "Días de Incorporación",
+    },
+    statsEyebrow: "En cifras",
+    statsTitle: "Un equipo pequeño que sí puedes costear.",
+    statsLede:
+      "Sin salarios, sin beneficios, sin equipo. Elige las horas que necesitas y ajústalas según crezca el trabajo.",
+    howItWorks: "Cómo Funciona",
     howItWorksDesc:
-      "Comienza con tu asistente virtual dedicado en pocos pasos. La mayor\u00eda de los clientes est\u00e1n completamente operativos en 5 a 7 d\u00edas h\u00e1biles.",
+      "Comienza con tu asistente virtual dedicado en pocos pasos. La mayoría de los clientes están completamente operativos en 5 a 7 días hábiles.",
+    processEyebrow: "Cómo funciona",
     steps: [
       {
         title: "Consulta Gratuita",
-        desc: "Agenda una llamada de descubrimiento para discutir tus necesidades, objetivos y el tipo de apoyo que m\u00e1s beneficiar\u00eda a tu negocio.",
+        desc: "Agenda una llamada de descubrimiento para discutir tus necesidades, objetivos y el tipo de apoyo que más beneficiaría a tu negocio.",
       },
       {
         title: "Emparejamiento Perfecto",
@@ -41,48 +69,393 @@ const es: Dictionary = {
       },
       {
         title: "Comienza a Crecer",
-        desc: "Tu AV comienza a trabajar de inmediato. Proporcionamos soporte de incorporaci\u00f3n y gesti\u00f3n continua para asegurar el \u00e9xito.",
+        desc: "Tu AV comienza a trabajar de inmediato. Proporcionamos soporte de incorporación y gestión continua para asegurar el éxito.",
       },
     ],
-    getStartedToday: "Comienza Hoy",
-    whyChoose: "\u00bfPor Qu\u00e9 Elegir CreedaVA?",
-    whyChooseDesc:
-      "Combinamos experiencia, confiabilidad y servicio personalizado para ayudar a tu negocio a prosperar.",
-    whyItems: [
+    compareEyebrow: "La comparación honesta",
+    compareTitle: "Tres formas de sacar el trabajo adelante.",
+    compareLede:
+      "Aquí no hay magia. La diferencia está en quién hace el trabajo, cuánto cuesta y qué tan rápido empieza.",
+    compareBadge: "Empieza aquí",
+    compareResultLabel: "Resultado:",
+    compareColumns: [
       {
-        title: "Profesionales Biling\u00fces",
-        desc: "Nuestros AV son fluidos en ingl\u00e9s y espa\u00f1ol a nivel profesional, y seleccionados rigurosamente por su experiencia en m\u00faltiples industrias.",
+        label: "Hacerlo tú mismo",
+        points: [
+          "Tus propias horas marcan el límite de lo que el negocio puede asumir",
+          "Nada queda documentado, así que nada se puede delegar después",
+          "Cada tarea nueva compite con el trabajo que genera ingresos",
+        ],
+        result: "tu agenda decide cuánto puedes crecer.",
       },
       {
-        title: "Flexible y Escalable",
-        desc: "Escala seg\u00fan las necesidades de tu negocio. Todos los servicios est\u00e1n cubiertos por un acuerdo de servicio formal y claro que define las expectativas desde el primer d\u00eda.",
+        label: "Contratar internamente",
+        points: [
+          "Salario, beneficios, equipo y espacio de oficina",
+          "Impuestos patronales, declaraciones W-2 y 1099, seguro laboral",
+          "Reclutar y capacitar toma semanas antes de ver resultados",
+          "Una persona cubre un conjunto de habilidades, en horario fijo",
+        ],
+        result: "una carga laboral completa, no solo un salario.",
       },
       {
-        title: "Rentable",
-        desc: "Ahorro significativo en comparaci\u00f3n con la contrataci\u00f3n interna \u2014 paga solo por el soporte que necesitas, sin gastos generales ni costos de beneficios.",
-      },
-      {
-        title: "Datos Seguros",
-        desc: "Seguridad de nivel empresarial y acuerdos de confidencialidad estrictos para proteger tu informaci\u00f3n.",
+        label: "Trabajar con Creeda",
+        points: [
+          "Un asistente bilingüe dedicado, asignado a tus necesidades",
+          "Una tarifa mensual fija — sin nómina, impuestos ni trámites de beneficios",
+          "Incorporado y trabajando en 5–7 días hábiles",
+          "NDA y flujos documentados desde el primer día",
+        ],
+        result: "apoyo y un equipo que puedes costear.",
       },
     ],
-    whySteps: [
-      { title: "Cu\u00e9ntanos tus necesidades", desc: "Describe las tareas con las que necesitas ayuda" },
-      { title: "Encuentra tu match", desc: "Te emparejamos con el AV biling\u00fce ideal para tus necesidades" },
-      { title: "Comienza a delegar", desc: "Enf\u00f3cate en crecer mientras nosotros nos encargamos del resto" },
+    dayEyebrow: "Un día con tu asistente",
+    dayTitle: "De 8:00 a 5:00. Tú no estás en nada de eso.",
+    dayLede:
+      "Así se ve un día normal cuando la entrega ya está hecha. Tu asistente trabaja tu cola, tus herramientas y tus estándares —y te envía un resumen al final.",
+    dayPoints: [
+      "El trabajo llega a tu correo ya clasificado y priorizado",
+      "Las tareas recurrentes corren según un calendario que apruebas",
+      "Revisas resultados, no procesos",
     ],
-    ctaTitle: "\u00bfListo para Comenzar?",
-    ctaDesc:
-      "\u00danete a las empresas que conf\u00edan en CreedaVA para manejar sus operaciones. Agenda una consulta gratuita hoy.",
-    ctaBookConsultation: "Agendar Consulta",
-    ctaViewPackages: "Ver Paquetes",
+    dayTimelineLabel: "Martes",
+    dayTimelineBadge: "Día de ejemplo",
+    dayTimeline: [
+      { time: "08:05", task: "Correo clasificado, cuatro respuestas redactadas", tag: "Admin" },
+      { time: "09:20", task: "Tres reuniones confirmadas, una reprogramada", tag: "Agenda" },
+      { time: "11:40", task: "CRM actualizado con nuevos prospectos", tag: "Datos" },
+      { time: "14:00", task: "Informe semanal enviado al equipo", tag: "Reportes" },
+      { time: "16:30", task: "Seguimientos programados para mañana", tag: "Clientes" },
+    ],
+    humanEyebrow: "Personas reales, no software",
+    humanTitle: "La tecnología ayuda a avanzar. Las personas marcan la diferencia.",
+    humanLede:
+      "Creeda no es un chatbot ni una plantilla. Tienes un asistente humano con nombre que aprende tu negocio, trabaja en tus herramientas y responde por el resultado.",
+    humanPoints: [
+      "Asistentes verificados y profesionalmente bilingües, no trabajadores anónimos",
+      "Capacitados en tus flujos, tu tono y tus herramientas antes de la primera tarea",
+      "Respaldados por un equipo, para que la cobertura no desaparezca cuando alguien descansa",
+    ],
+    humanChatLabel: "creedava · mensajes",
+    humanChatStatus: "En línea ahora",
+    humanChatFooter: "Tarea completada y registrada",
+    humanChat: [
+      { from: "client", text: "¿Puedes mover mi cita de las 2:30 y enviar la invitación actualizada?" },
+      {
+        from: "assistant",
+        text: "Listo: la moví al jueves a las 10:00. Invitación enviada a los dos invitados.",
+      },
+      { from: "client", text: "Perfecto, gracias." },
+    ],
+    handoffEyebrow: "Empieza por algo",
+    handoffTitle: "¿Qué delegarías primero?",
+    handoffLede:
+      "Elige las tareas que te consumen la semana. No se envía nada a ninguna parte hasta que decidas hablar con nosotros.",
+    handoffTasks: [
+      "Cobro de pagos atrasados",
+      "Seguimiento de prospectos",
+      "Atención telefónica",
+      "Gestión del correo",
+      "Agenda y citas",
+      "Recordatorios de citas",
+      "Respuestas a clientes",
+      "Datos y CRM",
+      "Notas y seguimiento de reuniones",
+      "Facturas y gastos",
+    ],
+    handoffEmpty: "Selecciona las tareas que delegarías primero.",
+    handoffSelectedSuffix: "tareas recurrentes listas para delegar",
+    handoffSelectedSuffixOne: "tarea recurrente lista para delegar",
+    handoffClear: "Limpiar",
+    handoffCta: "Conversemos",
+    faqEyebrow: "Preguntas",
+    faqTitle: "Lo que la gente pregunta antes de empezar.",
+    faqLede:
+      "Si falta algo, pregúntanos directamente: respondemos todas las consultas en 24 horas.",
+    finalEyebrow: "Siguiente paso",
+    finalTitle: "¿Listo para avanzar más sin hacerlo todo tú mismo?",
+    finalLede:
+      "Agenda una consulta gratuita. Cuéntanos qué te está frenando y te diremos con honestidad si un asistente virtual es la solución correcta.",
+    finalPrimary: "Agendar consulta",
+    finalSecondary: "Ver paquetes",
+    finalTrust: [
+      "Consulta gratuita de 30 minutos",
+      "Respuesta en 24 horas",
+      "Soporte en inglés y español",
+    ],
   },
 
   // ─── Services ──────────────────────────────────
   services: {
-    heroTitle: "Nuestros Servicios",
-    heroDesc:
-      "Desde tareas administrativas hasta soporte especializado, nuestros asistentes virtuales est\u00e1n capacitados para manejar las necesidades \u00fanicas de tu negocio con profesionalismo y experiencia. Ya sea que necesites ayuda para escalar operaciones o liberar tu tiempo, tenemos la soluci\u00f3n adecuada \u2014 con soporte biling\u00fce profesional en ingl\u00e9s y espa\u00f1ol.",
+    directoryTitle: "Una mirada de cerca a lo que hacemos.",
+    directoryDesc:
+      "Cada servicio por separado: qu\u00e9 cubre, por qu\u00e9 ayuda y c\u00f3mo se ve el trabajo. L\u00e9elo completo o ve directo al que necesitas.",
+    detailIncludes: "Lo que cubre",
+    detailWhy: "Por qu\u00e9 importa",
+    detailStart: "Empezar por este",
+    detailMockupNote: "Una ilustraci\u00f3n del trabajo, no una captura real.",
+    mockup: {
+      inbox: {
+        label: "Bandeja de entrada",
+        search: "Buscar correo",
+        from: ["Marisol R.", "A. Grant", "D. Osei", "Priya N."],
+        subject: [
+          "Re: factura de marzo del proveedor",
+          "Renovaci\u00f3n de contrato \u2014 firma",
+          "Fechas de viaje confirmadas",
+          "Informe Q2, primer borrador",
+        ],
+        replied: "Respondido",
+        caption: "Nada pendiente en la bandeja",
+      },
+      calendar: {
+        label: "Esta semana",
+        days: ["L", "M", "X", "J", "V"],
+        events: [
+          { time: "09:00", title: "Comit\u00e9 directivo" },
+          { time: "11:30", title: "1:1 con operaciones" },
+          { time: "14:00", title: "Llamada con inversores" },
+          { time: "Todo el d\u00eda", title: "Vuelo a Atlanta" },
+        ],
+        caption: "Plazos y reuniones en un solo calendario",
+      },
+      hiring: {
+        label: "Vacante abierta",
+        live: "Activa",
+        role: "Coordinador de Operaciones",
+        meta: "Remoto \u00b7 Tiempo completo",
+        stages: ["Postulados", "Filtro", "Entrevista"],
+        counts: ["24", "8", "3"],
+        caption: "Preselecci\u00f3n lista para entrevista",
+      },
+      documents: {
+        label: "Documentos",
+        matter: "Expediente 2026-014",
+        files: [
+          "Moci\u00f3n de requerimiento",
+          "Anexo A \u2014 Bates 001-148",
+          "Carta de contrataci\u00f3n",
+          "Ficha de admisi\u00f3n del cliente",
+        ],
+        stamp: "Archivado",
+        caption: "Archivado antes del plazo",
+      },
+      conversation: {
+        label: "Conversaci\u00f3n",
+        customer: "Cliente",
+        agent: "Asistente",
+        message: [
+          "Mi pedido deb\u00eda llegar el lunes y nadie me ha respondido.",
+          "Disculpa la espera: el mensajero lo entrega hoy. Ya te devolv\u00ed el costo de env\u00edo.",
+        ],
+        typing: "escribiendo",
+        resolved: "Resuelto",
+      },
+      published: {
+        label: "Publicado",
+        posts: [
+          "Nueva temporada, nuevo men\u00fa.",
+          "As\u00ed se ve el estudio por dentro.",
+          "Puertas abiertas el s\u00e1bado \u2014 ven.",
+        ],
+        caption: "Programado y publicado en horas",
+      },
+      report: {
+        label: "Informe",
+        title: "Rendimiento por canal \u2014 Q2",
+        findings: [
+          "La b\u00fasqueda org\u00e1nica trae la mayor\u00eda de los registros",
+          "La baja se concentra en el segundo mes",
+          "Dos segmentos explican casi todos los ingresos",
+        ],
+        caption: "Hallazgos, no datos crudos",
+      },
+      invoices: {
+        label: "Facturas",
+        outstanding: "Pendiente",
+        paidThisMonth: "Pagado este mes",
+        rows: [
+          { id: "INV-1042", client: "Acme Ltd", amount: "$2,400", paid: true },
+          { id: "INV-1039", client: "Northwind", amount: "$1,150", paid: true },
+          { id: "INV-1045", client: "Bell & Co", amount: "$3,600", paid: false },
+        ],
+        paid: "Pagada",
+        overdue: "Vencida",
+        caption: "Facturas cobradas",
+      },
+      draft: {
+        label: "Borrador",
+        title: "Cinco formas de recortar el trabajo administrativo",
+        body: "La mayor\u00eda de los due\u00f1os pierde la semana en las mismas tres tareas. Aqu\u00ed est\u00e1 por d\u00f3nde empezar.",
+        publish: "Publicar",
+        caption: "Escrito, formateado y listo",
+      },
+      listing: {
+        label: "Propiedad",
+        address: "18 Harbour View, Unidad 4",
+        price: "$325,000",
+        meta: "3 hab \u00b7 2 ba\u00f1os",
+        badge: "En contrato",
+        caption: "Open house agendado",
+      },
+      claim: {
+        label: "Reclamo",
+        id: "Reclamo #4471",
+        policy: "P\u00f3liza HO-88213",
+        badge: "Reclamo presentado",
+        files: [
+          "Fotos de da\u00f1os",
+          "Presupuesto de reparaci\u00f3n",
+          "Declaraci\u00f3n de p\u00f3liza",
+          "Declaraci\u00f3n firmada",
+        ],
+        caption: "Documentos adjuntos, nada pendiente",
+      },
+      process: {
+        label: "Proceso",
+        steps: [
+          "Ingreso de cliente nuevo",
+          "Llamada inicial y notas",
+          "Entrega al equipo",
+        ],
+        caption: "Escrito y repetible",
+      },
+    },
+    detailPricingLink: "Ver cu\u00e1nto cuesta",
+    detail: {
+      administrative: {
+        headline: "Tu correo, tu calendario y el papeleo, resueltos antes de que lleguen a ti.",
+        why: [
+          "Un asistente que aprende tus prioridades, no una cola compartida",
+          "Trabaja en las herramientas que ya usas, sin sistemas nuevos",
+          "Hace las mismas tareas en ingl\u00e9s y en espa\u00f1ol",
+        ],
+      },
+      executive: {
+        headline: "Apoyo s\u00e9nior que protege tu calendario y prepara tus reuniones.",
+        why: [
+          "Filtra lo que llega a ti, para que el d\u00eda no lo marque el \u00faltimo correo",
+          "Tiene el resumen listo antes de que empiece la reuni\u00f3n, no despu\u00e9s",
+          "Trata el material de junta e inversores con discreci\u00f3n",
+        ],
+      },
+      "hr-recruiting": {
+        headline: "Vacantes publicadas, candidatos filtrados y papeleo de ingreso resuelto.",
+        why: [
+          "Una contrataci\u00f3n avanza sin llevarse tu atenci\u00f3n con ella",
+          "Cada candidato recibe respuesta en lugar de silencio",
+          "Los expedientes quedan al d\u00eda para cumplimiento, sin d\u00edas de recuperaci\u00f3n",
+        ],
+      },
+      legal: {
+        headline: "Archivos organizados, plazos controlados y documentos listos para revisi\u00f3n.",
+        why: [
+          "El trabajo administrativo sigue siendo administrativo; el tiempo del abogado va a la ley",
+          "Cada plazo vive en un calendario, no en tres",
+          "Indexaci\u00f3n y numeraci\u00f3n Bates con un est\u00e1ndar, no sobre la marcha",
+        ],
+      },
+      customer: {
+        headline: "Cada llamada, chat y ticket respondido antes de que el cliente pregunte dos veces.",
+        why: [
+          "Cobertura de una persona en tu horario, no un bucle de bot",
+          "Las escalaciones llegan con el contexto ya adjunto",
+          "Los clientes en ingl\u00e9s y espa\u00f1ol reciben el mismo nivel de servicio",
+        ],
+      },
+      social: {
+        headline: "Publicaciones programadas, comentarios respondidos y resultados reportados.",
+        why: [
+          "El contenido se produce dentro de tus horas mensuales, no se cobra por publicaci\u00f3n",
+          "Una persona es due\u00f1a del calendario de principio a fin, sin cabos sueltos",
+          "Ves qu\u00e9 se public\u00f3 y qu\u00e9 resultado dio",
+        ],
+      },
+      data: {
+        headline: "Registros limpios y respuestas claras, listos para decidir.",
+        why: [
+          "Las listas se construyen y se depuran, no se raspan y se vuelcan",
+          "El CRM se mantiene al d\u00eda como h\u00e1bito, no como limpieza trimestral",
+          "La investigaci\u00f3n llega resumida y con las fuentes guardadas",
+        ],
+      },
+      bookkeeping: {
+        headline: "Cuentas al d\u00eda y papeleo listo, cada mes.",
+        why: [
+          "Las facturas salen y se reclaman con calendario, no cuando hay tiempo",
+          "La conciliaci\u00f3n termina antes de que tu contador la pida",
+          "Los documentos se entregan en el formato que de verdad necesitan",
+        ],
+      },
+      web: {
+        headline: "Sitio web y email marketing al d\u00eda.",
+        why: [
+          "Publicar deja de esperar a quien tenga una hora libre",
+          "El SEO se vigila y se reporta, no se da por hecho",
+          "Las landing pages y los formularios se montan y se prueban, no quedan a medias",
+        ],
+      },
+      "real-estate": {
+        headline: "Propiedades publicadas, leads atendidos y transacciones en marcha.",
+        why: [
+          "Las consultas nuevas se responden el mismo d\u00eda, mientras el inter\u00e9s est\u00e1 caliente",
+          "Las entradas MLS se mantienen exactas, sin listados mal puestos",
+          "El papeleo de la transacci\u00f3n se sigue hasta el cierre",
+        ],
+      },
+      insurance: {
+        headline: "P\u00f3lizas registradas, certificados emitidos y renovaciones controladas.",
+        why: [
+          "Los certificados salen el mismo d\u00eda en que se piden",
+          "Las renovaciones aparecen antes de vencer, no despu\u00e9s",
+          "Los archivos de cumplimiento quedan completos para auditor\u00eda",
+        ],
+      },
+      "workflow-optimization": {
+        headline: "Tus procesos por escrito, para poder delegar.",
+        why: [
+          "Una p\u00e1gina que una persona nueva puede seguir sin preguntarte",
+          "Las herramientas se configuran y se prueban, no solo se recomiendan",
+          "Los manuales de delegaci\u00f3n se quedan contigo, pase lo que pase",
+        ],
+      },
+    },
+    industriesEyebrow: "Nuestros servicios",
+    industriesTitle: "Dise\u00f1ado para tu sector,",
+    industriesTitleHighlight: "no una lista gen\u00e9rica.",
+    industriesDesc:
+      "Casi todo lo que necesita un negocio es igual en todas partes. El vocabulario, los tr\u00e1mites y los plazos no lo son. Elige tu sector y ve directo al trabajo que encaja contigo.",
+    industries: [
+      {
+        title: "Agencias y marketing",
+        desc: "Estudios y equipos de marketing que manejan varios canales a la vez.",
+      },
+      {
+        title: "Peque\u00f1os negocios",
+        desc: "Negocios dirigidos por su due\u00f1o, donde la misma persona contesta el tel\u00e9fono, env\u00eda la factura y hace el trabajo.",
+      },
+      {
+        title: "Recursos Humanos",
+        desc: "Equipos que contratan por tandas y necesitan publicaciones, filtrado y papeleo de ingreso en movimiento.",
+      },
+      {
+        title: "Seguros",
+        desc: "Corredores y agencias donde la entrada de p\u00f3lizas, los certificados y las renovaciones no pueden fallar.",
+      },
+      {
+        title: "Bienes ra\u00edces",
+        desc: "Agentes y equipos peque\u00f1os con listings, prospectos y transacciones que mantener en marcha.",
+      },
+      {
+        title: "Despachos legales",
+        desc: "Bufetes peque\u00f1os que necesitan el archivo, el calendario de plazos y los documentos al d\u00eda.",
+      },
+    ],
+    groupIndustryTitle: "Servicios por industria",
+    groupIndustryDesc:
+      "Apoyo espec\u00edfico del sector, con el vocabulario y las costumbres de archivo ya incorporados.",
+    groupFunctionTitle: "Servicios por funci\u00f3n",
+    groupFunctionDesc: "El trabajo del d\u00eda a d\u00eda, sea cual sea tu negocio.",
     categories: [
       {
         title: "Soporte Administrativo",
@@ -289,25 +662,155 @@ const es: Dictionary = {
     ctaDesc:
       "Podemos adaptar nuestros servicios para cumplir con los requisitos espec\u00edficos de tu negocio. Hablemos de lo que necesitas.",
     ctaButton: "Cont\u00e1ctanos Hoy",
+    ctaSecondary: "Ver cu\u00e1nto cuesta",
+  },
+
+  // ─── Pricing ───────────────────────────────
+  pricing: {
+    eyebrow: "Precios",
+    heroTitle: "La ayuda que necesitas,",
+    heroTitleHighlight: "sin contratar.",
+    heroDesc:
+      "Cada plan cuenta con un asistente biling\u00fce dedicado y se cotiza para tu negocio \u2014 as\u00ed sabes el costo antes de comprometerte, no despu\u00e9s.",
+    heroCtaPrimary: "Agenda una consulta gratuita",
+    heroCtaSecondary: "Comparar los planes",
+    closingTitle: "\u00bfNo sabes qu\u00e9 plan te conviene?",
+    closingDesc:
+      "Cu\u00e9ntanos c\u00f3mo transcurre tu semana y te recomendamos las horas. Sin presi\u00f3n ni compromiso.",
+    closingCta: "Agenda una consulta gratuita",
+    plansEyebrow: "Planes",
+    plansNote: "Las horas las define el plan que elijas.",
+    extrasTitle: "Todos los planes se integran con el flujo de trabajo que ya usas.",
+    extras: [
+      "Gmail",
+      "Outlook",
+      "Google Calendar",
+      "Shopify",
+      "WooCommerce",
+      "Salesforce",
+      "HubSpot",
+      "Slack",
+      "Notion",
+      "Asana",
+    ],
+    includedEyebrow: "Lo que recibes",
+    includedTitle: "Todos los planes incluyen",
+    includedDesc:
+      "La misma base tanto si tomas ochenta horas al mes como un equipo completo.",
+    includedItems: [
+      "Un asistente dedicado asignado a tu negocio",
+      "Ingl\u00e9s y espa\u00f1ol, sin capa de traducci\u00f3n",
+      "Procesos documentados, para que el trabajo sobreviva a un cambio de manos",
+      "Horas seg\u00fan tu plan: 80, 160 o personalizadas",
+      "La instalaci\u00f3n se cotiza antes de empezar",
+    ],
+    includedMockupLabel: "tu-mes.creedava.com",
+    hoursTitle: "Un mes de horas",
+    hoursPlanLabel: "Professional \u00b7 160 horas",
+    hoursTotalLabel: "Asignadas",
+    hoursUnit: "h",
+    hoursBreakdown: [
+      { label: "Correo y calendario", hours: 48 },
+      { label: "Atenci\u00f3n al cliente", hours: 40 },
+      { label: "Datos y administraci\u00f3n", hours: 40 },
+      { label: "Proyectos e informes", hours: 32 },
+    ],
+    hoursFootnote:
+      "Distribuci\u00f3n ilustrativa. Tu mezcla se acuerda con tu asistente en la primera semana y puede cambiar mes a mes.",
+    termsEyebrow: "Por qu\u00e9 es diferente",
+    termsTitle: "Lo que no est\u00e1s pagando.",
+    termsDesc:
+      "Contratar a alguien, un servicio de contestaci\u00f3n y un freelancer cobran por cosas que esto no. Esto es lo que no aparece en tu factura.",
+    termsItems: [
+      {
+        title: "Una persona responde, no un bot",
+        desc: "Sin respuestas autom\u00e1ticas de IA ni men\u00fas telef\u00f3nicos. Tus clientes llegan a un asistente con nombre que ya conoce tu negocio.",
+      },
+      {
+        title: "Sin medidores por minuto",
+        desc: "Compras horas dentro de un plan, no un reloj corriendo. Nadie cuenta los segundos de una llamada.",
+      },
+      {
+        title: "Un plan, una factura",
+        desc: "Horas, herramientas y supervisi\u00f3n en un solo precio. Sin cargos por tarea a fin de mes.",
+      },
+      {
+        title: "Sin costos de empleador",
+        desc: "Sin impuestos de n\u00f3mina, beneficios, equipo ni reclutamiento. Pagas por el trabajo, no por la plantilla.",
+      },
+      {
+        title: "Sin proceso de contrataci\u00f3n",
+        desc: "La capacidad se ajusta cambiando de plan, no escribiendo una vacante y esperando meses.",
+      },
+      {
+        title: "La instalaci\u00f3n se cotiza, no se impone",
+        desc: "Cuando un flujo de trabajo requiere instalaci\u00f3n, ves la cifra por escrito y la apruebas antes de empezar.",
+      },
+    ],
   },
 
   // ─── About ─────────────────────────────────────
   about: {
-    heroTitle: "Sobre",
-    heroTitleHighlight: "CreedaVA",
-    heroP1:
-      "Fundada en 2023, CreedaVA es una agencia de asistentes virtuales con sede en Belice, creada para conectar talento excepcional con oportunidades globales. La fuerza laboral altamente educada y profesionalmente biling\u00fce de Belice representa un nuevo est\u00e1ndar en el soporte profesional remoto \u2014 y estamos orgullosos de llevar ese talento a empresas de todo el mundo.",
-    heroP2:
-      "Belice, el \u00fanico pa\u00eds de habla inglesa en Centroam\u00e9rica, est\u00e1 posicionado de manera \u00fanica en la encrucijada de culturas. Nuestro equipo es fluido en ingl\u00e9s y espa\u00f1ol, y rico en adaptabilidad, comunicaci\u00f3n y profesionalismo \u2014 ofreciendo soporte virtual de clase mundial en todas las industrias.",
+    eyebrow: "Sobre Creeda",
+    heroTitle: "Un pa\u00eds. Dos idiomas.",
+    heroTitleHighlight: "Toda tu operaci\u00f3n.",
+    heroDesc:
+      "Fundada en 2023, Creeda Virtual Assistants (CreedaVA) es una agencia de asistentes virtuales con sede en Belice, creada para conectar talento excepcional con oportunidades globales.",
+    heroFacts: ["Fundada en 2023", "Ingl\u00e9s y espa\u00f1ol", "Belice, Centroam\u00e9rica"],
+    heroCtaPrimary: "Trabajar con Creeda",
+    heroCtaSecondary: "Ver servicios",
+    mapCaptionLabel: "Belice \u00b7 Centroam\u00e9rica",
+    mapCaptionMeta: "UTC\u22126 \u00b7 Ingl\u00e9s y espa\u00f1ol",
+    whyEyebrow: "Por qu\u00e9 Belice",
+    whyTitle: "El \u00fanico pa\u00eds de habla inglesa en Centroam\u00e9rica.",
+    whyP1:
+      "La fuerza laboral altamente educada y profesionalmente biling\u00fce de Belice representa un nuevo est\u00e1ndar en el soporte profesional remoto \u2014 y estamos orgullosos de llevar ese talento a empresas de todo el mundo.",
+    whyP2:
+      "Belice est\u00e1 en la encrucijada de culturas. Nuestro equipo es fluido en ingl\u00e9s y espa\u00f1ol, y rico en adaptabilidad, comunicaci\u00f3n y profesionalismo \u2014 ofreciendo soporte virtual de clase mundial en todas las industrias.",
+    whyFacts: [
+      {
+        title: "Ingl\u00e9s por defecto",
+        desc: "Belice es el \u00fanico pa\u00eds de habla inglesa en Centroam\u00e9rica, as\u00ed que tu equipo escribe y llama en tu idioma sin costos de traducci\u00f3n.",
+      },
+      {
+        title: "Espa\u00f1ol sin traspasos",
+        desc: "El biling\u00fcismo es la norma aqu\u00ed, no un extra. El mismo asistente puede atender a ambas audiencias.",
+      },
+      {
+        title: "Tu jornada laboral",
+        desc: "Belice opera en horario central todo el a\u00f1o, as\u00ed que tu asistente est\u00e1 en l\u00ednea mientras tus clientes lo est\u00e1n.",
+      },
+    ],
+    approachEyebrow: "C\u00f3mo trabajamos",
+    approachTitle: "Una sociedad, no una cola de tareas.",
+    approachDesc:
+      "Adoptamos un enfoque de asociaci\u00f3n con cada cliente. Desde nuestra llamada inicial de descubrimiento hasta el soporte continuo, invertimos tiempo en comprender tu negocio, tus desaf\u00edos y tus objetivos. Esto nos permite emparejarte con el asistente virtual perfecto y crear flujos de trabajo que realmente mejoren tu productividad. No solo completamos tareas \u2014 te ayudamos a construir sistemas que escalen.",
+    standards: [
+      {
+        title: "SOP documentados",
+        desc: "Cada tarea recurrente se documenta antes de delegarse, para que nada dependa de la memoria.",
+      },
+      {
+        title: "Un responsable claro",
+        desc: "Cada flujo de trabajo tiene una persona responsable \u2014 sin bandejas compartidas ni \u201calguien lo har\u00e1\u201d.",
+      },
+      {
+        title: "Revisiones peri\u00f3dicas",
+        desc: "El desempe\u00f1o se revisa seg\u00fan un calendario, no solo cuando algo sale mal.",
+      },
+      {
+        title: "Servicio medido",
+        desc: "Los tiempos de respuesta, las tasas de finalizaci\u00f3n y los comentarios de los clientes se miden y se reportan.",
+      },
+    ],
+    purposeEyebrow: "Misi\u00f3n y visi\u00f3n",
     missionTitle: "Nuestra Misi\u00f3n",
     missionDesc:
       "Conectar oportunidad y talento vinculando la fuerza laboral altamente calificada de Belice con empresas globales, creando caminos profesionales remotos sostenibles mientras ofrecemos servicios excepcionales de asistentes virtuales que empoderan a las empresas para lograr m\u00e1s.",
     visionTitle: "Nuestra Visi\u00f3n",
     visionDesc:
-      "CreedaVA es m\u00e1s que un servicio \u2014 es un movimiento para empoderar la fuerza laboral de Belice, fomentar el crecimiento profesional remoto y crear caminos sostenibles para la colaboraci\u00f3n global. Al contratar a trav\u00e9s de CreedaVA, las empresas no solo obtienen talento excepcional \u2014 invierten en una visi\u00f3n de progreso, prop\u00f3sito y asociaci\u00f3n.",
-    approachTitle: "Nuestro Enfoque",
-    approachDesc:
-      "Adoptamos un enfoque de asociaci\u00f3n con cada cliente. Desde nuestra llamada inicial de descubrimiento hasta el soporte continuo, invertimos tiempo en comprender tu negocio, tus desaf\u00edos y tus objetivos. Esto nos permite emparejarte con el asistente virtual perfecto y crear flujos de trabajo que realmente mejoren tu productividad. No solo completamos tareas \u2014 te ayudamos a construir sistemas que escalen.",
+      "Creeda es m\u00e1s que un servicio \u2014 es un movimiento para empoderar la fuerza laboral de Belice, fomentar el crecimiento profesional remoto y crear caminos sostenibles para la colaboraci\u00f3n global. Al contratar a trav\u00e9s de Creeda, las empresas no solo obtienen talento excepcional \u2014 invierten en una visi\u00f3n de progreso, prop\u00f3sito y asociaci\u00f3n.",
+    valuesEyebrow: "Lo que nos sostiene",
     valuesTitle: "Nuestros Valores",
     valuesDesc: "Los principios que gu\u00edan todo lo que hacemos.",
     values: [
@@ -355,22 +858,6 @@ const es: Dictionary = {
     bookTitle: "\u00bfQuieres agendar una llamada?",
     bookDesc: "Agenda una consulta gratuita de 30 minutos para discutir tus necesidades.",
     bookLink: "Agendar una Consulta",
-    howWeWorkTitle: "C\u00f3mo Trabajamos Juntos",
-    howWeWorkDesc: "Un proceso simple y transparente dise\u00f1ado para prepararte para el \u00e9xito.",
-    howWeWorkSteps: [
-      {
-        title: "Consulta Inicial",
-        desc: "Comenzamos con una llamada de descubrimiento gratuita para entender tu negocio, desaf\u00edos y el tipo de soporte que necesitas.",
-      },
-      {
-        title: "Propuesta Personalizada",
-        desc: "Basado en tus necesidades, creamos un plan a medida con el emparejamiento de AV correcto, alcance de trabajo y precios \u2014 sin soluciones gen\u00e9ricas.",
-      },
-      {
-        title: "Seguimientos Programados",
-        desc: "Programamos seguimientos regulares para revisar el progreso, recopilar comentarios y ajustar flujos de trabajo \u2014 manteniendo todo en orden.",
-      },
-    ],
   },
 
   // ─── FAQ ───────────────────────────────────────
@@ -387,8 +874,8 @@ const es: Dictionary = {
             a: "Un asistente virtual (AV) es un profesional remoto capacitado que brinda soporte administrativo, t\u00e9cnico o especializado a empresas. Trabajan desde una ubicaci\u00f3n remota y manejan tareas que van desde la gesti\u00f3n de correo electr\u00f3nico hasta servicio al cliente, contabilidad y m\u00e1s.",
           },
           {
-            q: "\u00bfC\u00f3mo es CreedaVA diferente de otras empresas de AV?",
-            a: "CreedaVA proporciona asistentes virtuales biling\u00fces (ingl\u00e9s/espa\u00f1ol) que se emparejan cuidadosamente con las necesidades de tu negocio. Ofrecemos soporte dedicado, gesti\u00f3n de calidad continua y planes flexibles \u2014 ya sea que necesites unas pocas horas a la semana o un equipo de tiempo completo.",
+            q: "\u00bfC\u00f3mo es Creeda diferente de otras empresas de AV?",
+            a: "Creeda proporciona asistentes virtuales biling\u00fces (ingl\u00e9s/espa\u00f1ol) que se emparejan cuidadosamente con las necesidades de tu negocio. Ofrecemos soporte dedicado, gesti\u00f3n de calidad continua y planes flexibles \u2014 ya sea que necesites unas pocas horas a la semana o un equipo de tiempo completo.",
           },
           {
             q: "\u00bfQu\u00e9 industrias atienden?",
@@ -422,7 +909,7 @@ const es: Dictionary = {
           },
           {
             q: "\u00bfHay un compromiso m\u00ednimo?",
-            a: "Se requiere un compromiso inicial de un a\u00f1o para garantizar un soporte consistente y de alta calidad. Despu\u00e9s del primer a\u00f1o, los servicios contin\u00faan bajo el mismo acuerdo con 30 d\u00edas de aviso por escrito para finalizarlo. Puedes ajustar las horas en cualquier momento dentro de tu plan.",
+            a: "Se requiere un compromiso inicial de un a\u00f1o para garantizar un soporte consistente y de alta calidad. Despu\u00e9s del primer a\u00f1o, los servicios contin\u00faan bajo el mismo acuerdo con 30 d\u00edas de aviso por escrito para finalizarlo. Si tus necesidades cambian, puedes pasar de un plan a otro \u2014 las horas las define el plan que tienes, no se ajustan dentro de \u00e9l.",
           },
           {
             q: "\u00bfCu\u00e1nto tiempo toma la incorporaci\u00f3n?",
@@ -439,7 +926,7 @@ const es: Dictionary = {
           },
           {
             q: "\u00bfHay cargos de configuraci\u00f3n?",
-            a: "No. No hay cargos ocultos ni cargos de configuraci\u00f3n. Solo pagas por el plan que elijas.",
+            a: "A veces, pero nunca por sorpresa. La mayor\u00eda de los clientes no necesita ning\u00fan trabajo de instalaci\u00f3n. Cuando un flujo de trabajo s\u00ed lo requiere \u2014 migraciones, integraciones, herramientas a medida \u2014 lo cotizamos por escrito y lo apruebas antes de empezar.",
           },
           {
             q: "\u00bfQu\u00e9 m\u00e9todos de pago aceptan?",
@@ -501,7 +988,7 @@ const es: Dictionary = {
       privacy: "Pol\u00edtica de Privacidad",
       terms: "T\u00e9rminos de Servicio",
     },
-    copyright: "CreedaVA. Todos los derechos reservados.",
+    copyright: "Creeda Virtual Assistants. Todos los derechos reservados.",
     followLinkedIn: "S\u00edguenos en LinkedIn",
   },
 
@@ -509,13 +996,17 @@ const es: Dictionary = {
   news: {
     heroTitle: "Noticias y Perspectivas",
     heroDesc: "Consejos, tendencias y perspectivas para ayudarte a aprovechar al m\u00e1ximo los servicios de asistentes virtuales.",
+    postCountLabel: "publicaciones",
+    readArticle: "Leer art\u00edculo",
+    morePosts: "M\u00e1s publicaciones",
+    byAuthor: "Por",
     noPostsYet: "A\u00fan no hay publicaciones. Vuelve pronto.",
     minRead: "min de lectura",
     backToNews: "Volver a Noticias",
     postNotFound: "Publicaci\u00f3n No Encontrada",
     postNotFoundDesc: "Esta publicaci\u00f3n puede haber sido eliminada o ya no est\u00e1 disponible.",
     ctaTitle: "\u00bfListo para Comenzar?",
-    ctaDesc: "Deja que CreedaVA se encargue de las tareas que te frenan para que puedas enfocarte en hacer crecer tu negocio.",
+    ctaDesc: "Deja que Creeda se encargue de las tareas que te frenan para que puedas enfocarte en hacer crecer tu negocio.",
     ctaButton: "Cont\u00e1ctanos",
     stayConnected: "Mantente Conectado",
     stayConnectedDesc: "S\u00edguenos en LinkedIn para perspectivas de la industria, consejos y actualizaciones de la empresa.",
@@ -635,15 +1126,7 @@ const es: Dictionary = {
     successInvite: "Recibir\u00e1s una invitaci\u00f3n de calendario en",
     successShortly: "en breve.",
     backToHome: "Volver al Inicio",
-    services: [
-      "Consulta General",
-      "Asistente Ejecutivo",
-      "Gesti\u00f3n de Redes Sociales",
-      "Gesti\u00f3n de Correo y Calendario",
-      "Atenci\u00f3n al Cliente",
-      "Entrada de Datos e Investigaci\u00f3n",
-      "Gesti\u00f3n de Proyectos",
-    ] as const,
+    generalConsultation: "Consulta General",
     days: ["Dom", "Lun", "Mar", "Mi\u00e9", "Jue", "Vie", "S\u00e1b"] as const,
     months: [
       "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -802,6 +1285,7 @@ const es: Dictionary = {
   common: {
     contactUs: "Cont\u00e1ctanos",
     learnMore: "M\u00e1s Informaci\u00f3n",
+    backToTop: "Volver arriba",
   },
 } as const;
 

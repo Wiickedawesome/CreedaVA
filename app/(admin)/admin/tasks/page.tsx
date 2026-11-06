@@ -23,10 +23,13 @@ import {
   PRIORITIES,
 } from "@/lib/types/crm";
 
+// Priority ramp, low → urgent. `high` needs its own step: reusing --error
+// would make it indistinguishable from `urgent`, and --warning is already
+// `medium`. `.priority-high` derives from both tokens so it lightens with them.
 const priorityDot: Record<string, string> = {
   low: "bg-gray-40",
   medium: "bg-warning",
-  high: "bg-orange-500",
+  high: "priority-high",
   urgent: "bg-error",
 };
 

@@ -16,6 +16,13 @@
  *   - Web search integration for real-time market data
  */
 
+import {
+  BLOG_BODY_RULES_2026,
+  DESIGN_SYSTEM_2026,
+  HTML_CONTENT_RULES_2026,
+  LANDING_PAGE_RULES_2026,
+} from "./ai-design-2026";
+
 // ─── Core Identity ───────────────────────────────────
 
 export const CREEDA_IDENTITY = `
@@ -102,7 +109,7 @@ BRAND VOICE:
 PUBLIC PAGES (marketing site — creedava.com):
 - / (Homepage) — Hero, services overview, stats, testimonials, CTA
 - /services — Full service catalog with details
-- /services#packages — Service packages (Starter, Professional, Enterprise; hours + features, no published pricing)
+- /pricing — Service packages (Starter, Professional, Enterprise; hours + features, no published pricing)
 - /about — Company story, team, mission, values
 - /news — Blog hub (SEO content, guides, industry insights)
 - /news/[slug] — Individual blog posts (rendered as rich HTML)
@@ -376,618 +383,6 @@ CreedaVA serves both English and Spanish-speaking clients.
  END OF MASTER SYSTEM PROMPT
 ════════════════════════════════════════════════════════════════`;
 
-// ─── Design System ───────────────────────────────────
-
-export const DESIGN_SYSTEM = `CREEDAVA DESIGN SYSTEM — Complete brand identity and CSS reference for all generated content:
-
-═══════════════════════════════════
-1. COLOR SYSTEM (CSS Variables)
-═══════════════════════════════════
-
-COOLGRAY PALETTE (Navy-tinted neutrals — use var() names or hex in inline styles):
-| Token       | Light Mode  | Dark Mode   | Usage                              |
-|-------------|-------------|-------------|------------------------------------|
-| --gray-100  | #002D72     | #ffffff     | Headings, strong emphasis          |
-| --gray-90   | #1B3A5C     | #d4d4d4     | Primary text                       |
-| --gray-80   | #4D5358     | #cccccc     | Secondary text                     |
-| --gray-70   | #697077     | #a5b3ce     | Muted captions                     |
-| --gray-60   | #878D96     | #a5b3ce     | Disabled labels                    |
-| --gray-50   | #A2A9B0     | #8b949e     | Placeholder text                   |
-| --gray-40   | #C1C7CD     | #555b66     | Disabled backgrounds               |
-| --gray-30   | #DDE1E6     | #303136     | Borders, dividers, separators      |
-| --gray-20   | #F2F4F8     | #26272b     | Card/sidebar background, code bg   |
-| --gray-10   | #F9FBFF     | #202124     | Alt section bg, base background    |
-
-BRAND COLORS:
-| Token            | Light Mode  | Dark Mode   | Usage                          |
-|------------------|-------------|-------------|--------------------------------|
-| --primary        | #005148     | #2dd4bf     | CTAs, accents, section bgs     |
-| --primary-light  | #007A6D     | #5eead4     | Hover states, gradient ends    |
-| --primary-hover  | #003D36     | #14b8a6     | Button hover                   |
-| --primary-active | #00332C     | —           | Button active/pressed          |
-| --accent         | #00685C     | #00685C     | Selection highlight, rings     |
-
-SEMANTIC COLORS:
-| Token              | Value       | Usage                              |
-|--------------------|-------------|------------------------------------|
-| --success          | #24A148     | Positive indicators, check marks   |
-| --warning          | #F1C21B     | Caution banners, pending states    |
-| --error            | #DA1E28     | Errors, destructive actions        |
-| --error-hover      | #B81922     | Error button hover                 |
-| --info             | #0043CE     | Info badges, links                 |
-| --background       | #FFFFFF / #202124 | Page background              |
-| --foreground       | #002D72 / #e5e7eb | Default text color            |
-| --card / --card-bg | #FFFFFF / #26272b | Card surfaces                 |
-| --muted            | #F2F4F8 / #26272b | Muted backgrounds             |
-| --muted-foreground | #697077 / #a5b3ce | Secondary text                |
-| --border           | #DDE1E6 / #3c3e44 | Borders                       |
-| --ring             | #007A6D     | Focus ring outline                 |
-| --footer-bg        | #1B2A4A / #181818 | Footer background             |
-
-APPROVED GRADIENTS (inline style values):
-- Teal to Navy:    linear-gradient(135deg, #005148, #002D72)
-- Light to White:  linear-gradient(180deg, #F9FBFF, #FFFFFF)
-- Teal Fade:       linear-gradient(135deg, #005148, #007A6D)
-- Navy Depth:      linear-gradient(180deg, #002D72, #001845)
-- Subtle Warmth:   linear-gradient(135deg, #F9FBFF, #E8F5F3)
-- Warm Accent:     #FF6B35 — use sparingly for attention highlights
-
-═══════════════════════════════════
-2. TYPOGRAPHY SCALE
-═══════════════════════════════════
-
-Font family: Roboto (inherited from page — NEVER set font-family in generated content)
-
-CSS Variable Scale:
-| Token               | Size    | Weight | Line-Height | Usage                |
-|---------------------|---------|--------|-------------|----------------------|
-| --font-size-h1      | 54px    | 700    | 1.2         | Page hero headings   |
-| --font-size-h2      | 42px    | 700    | 1.2         | Section headings     |
-| --font-size-h3      | 32px    | 700    | 1.2         | Sub-section heads    |
-| --font-size-h4      | 24px    | 500    | 1.5         | Card titles          |
-| --font-size-h5      | 20px    | 500    | 1.5         | Lead text, subtitles |
-| --font-size-h6      | 18px    | 500    | 1.5         | Small headings       |
-| --font-size-body-lg | 18px    | 400    | 1.5         | Enhanced body text   |
-| --font-size-body    | 16px    | 400    | 1.5         | Default body         |
-| --font-size-body-sm | 14px    | 400    | 1.5         | Small text, labels   |
-| --font-size-caption | 12px    | 500    | 1.5         | Captions, uppercase  |
-
-For inline styles, use px directly: style="font-size: 48px; font-weight: 700; line-height: 1.1"
-Use VARIED sizes within content (display numbers, lead paragraphs, body, captions) to create visual hierarchy.
-
-═══════════════════════════════════
-3. SPACING SCALE (4px base grid)
-═══════════════════════════════════
-
-| Token      | Value   | Pixels | Common Use                          |
-|------------|---------|--------|-------------------------------------|
-| --space-1  | 0.25rem | 4px    | Tight gaps, icon margin             |
-| --space-2  | 0.5rem  | 8px    | Inline spacing, pill padding        |
-| --space-3  | 0.75rem | 12px   | Compact padding, list gaps          |
-| --space-4  | 1rem    | 16px   | Default padding, paragraph gaps     |
-| --space-5  | 1.25rem | 20px   | Card inner padding                  |
-| --space-6  | 1.5rem  | 24px   | Section inner padding               |
-| --space-8  | 2rem    | 32px   | Major section gaps                  |
-| --space-10 | 2.5rem  | 40px   | Section vertical padding            |
-| --space-12 | 3rem    | 48px   | Top-level section spacing           |
-| --space-16 | 4rem    | 64px   | Hero/banner vertical space          |
-| --space-20 | 5rem    | 80px   | Major page section padding          |
-| --space-24 | 6rem    | 96px   | Hero section full padding           |
-
-═══════════════════════════════════
-4. BORDER RADIUS & SHADOWS
-═══════════════════════════════════
-
-BORDER RADIUS:
-| Token          | Value   | Usage                              |
-|----------------|---------|-------------------------------------|
-| --radius-sm    | 4px     | Small badges, chips, inputs        |
-| --radius-md    | 8px     | Cards, buttons, modals             |
-| --radius-lg    | 12px    | Large cards, containers            |
-| --radius-xl    | 16px    | Hero sections, featured cards      |
-| --radius-full  | 9999px  | Avatars, pills, circular buttons   |
-
-SHADOWS:
-| Token       | Value                                                       | Usage                |
-|-------------|-------------------------------------------------------------|----------------------|
-| --shadow-sm | 0 1px 2px rgba(0,0,0,0.05)                                 | Subtle elevation     |
-| --shadow-md | 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1) | Cards, dropdowns |
-| --shadow-lg | 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1) | Modals, popups |
-| --shadow-xl | 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1) | Featured hero  |
-
-═══════════════════════════════════
-5. COMPONENT PATTERNS
-═══════════════════════════════════
-
-BUTTON (5 variants × 3 sizes):
-| Variant   | Background       | Text        | Hover              | Active               |
-|-----------|------------------|-------------|--------------------|-----------------------|
-| primary   | --primary        | white       | --primary-hover    | --primary-active      |
-| secondary | --gray-20        | --gray-100  | --gray-30          | --gray-40             |
-| outline   | transparent      | --primary   | --primary + white  | --primary-hover       |
-| ghost     | transparent      | --primary   | --gray-20          | --gray-30             |
-| danger    | --error          | white       | --error-hover      | --error-active        |
-
-Sizes: sm (h-8, px-4, text-sm), md (h-10, px-6, text-base), lg (h-12, px-8, text-lg)
-All buttons: rounded-md, font-medium, transition-colors, focus-visible ring
-
-CARD PATTERN:
-- Background: var(--card) or #FFFFFF
-- Border: 1px solid var(--border)
-- Radius: var(--radius-md) = 8px
-- Padding: 20-24px (var(--space-5) to var(--space-6))
-- Shadow: var(--shadow-sm) default, var(--shadow-md) on hover
-- Hover: translateY(-2px) + shadow-md for interactive cards
-
-STAT CARD (Admin):
-- Background: var(--card)
-- Border: 1px solid var(--border)
-- Rounded: var(--radius-lg)
-- Icon: 40×40 circle with bg-primary/10 teal tint
-- Value: 36px font-weight-700 var(--gray-100)
-- Label: 14px var(--muted-foreground)
-- Trend: colored badge (green ↑ or red ↓)
-
-ICON CONVENTION:
-- Inline SVGs only — no icon libraries
-- Size: 20×20 (w-5 h-5) default, 24×24 for accent
-- Stroke: stroke="currentColor" stroke-width="2"
-- Fill: fill="none" (outline icons) or fill="currentColor" (solid)
-- Color: inherits from parent text color
-
-═══════════════════════════════════
-6. VISUAL LANGUAGE DIFFERENCES
-═══════════════════════════════════
-
-MARKETING PAGES (public):
-- Light backgrounds: #FFFFFF and #F9FBFF alternating sections
-- Hero sections: gradient backgrounds (teal-to-navy), large typography (48-54px)
-- Wave SVG dividers between sections
-- Warm accent (#FF6B35) used sparingly for CTAs
-- Images: Unsplash photos with gradient overlays
-- Aspect ratios: hero 16:9, thumbnails 4:3, avatars 1:1
-- Maximum content width: 1280px (Container component)
-
-ADMIN PAGES (dark theme):
-- Dark backgrounds: #202124 (base), #26272b (cards/sidebar), #303136 (headers)
-- Text: #e5e7eb (primary), #a5b3ce (muted), #d4d4d4 (secondary)
-- Primary accent remaps to bright teal (#2dd4bf) for visibility
-- Compact spacing, data-dense layouts
-- No decorative elements (no waves, no gradients, no animations)
-- Charts: use brand teal palette, high-contrast on dark bg
-
-PHOTO GUIDELINES:
-- Approved Unsplash sources only (images.unsplash.com)
-- Use ?w=800&q=80 query params for performance
-- Wrap in <div> with border-radius and overflow:hidden
-- Add subtle gradient overlay on hero images
-- Alt text is REQUIRED on every <img> tag`;
-
-// ─── Creative HTML Design Framework ──────────────────
-
-export const CREATIVE_HTML_FRAMEWORK = `CREATIVE HTML DESIGN FRAMEWORK — Patterns for building beautiful, engaging content:
-
-All generated HTML renders via dangerouslySetInnerHTML inside a "prose" container.
-Inline styles OVERRIDE prose defaults. Use them freely.
-
-════════════════════════════
-CSS ANIMATIONS (include in a <style> tag at the TOP of your HTML output):
-════════════════════════════
-
-<style>
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-40px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(40px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.cv-fade-up { animation: fadeInUp 0.8s ease-out forwards; }
-.cv-fade-up-d1 { animation: fadeInUp 0.8s ease-out 0.2s forwards; opacity: 0; }
-.cv-fade-up-d2 { animation: fadeInUp 0.8s ease-out 0.4s forwards; opacity: 0; }
-.cv-fade-up-d3 { animation: fadeInUp 0.8s ease-out 0.6s forwards; opacity: 0; }
-.cv-slide-left { animation: slideInLeft 0.8s ease-out forwards; }
-.cv-slide-right { animation: slideInRight 0.8s ease-out forwards; }
-.cv-pulse { animation: pulse 3s ease-in-out infinite; }
-.cv-float { animation: float 6s ease-in-out infinite; }
-</style>
-
-Apply animation classes to sections, cards, and elements. Use staggered delays
-(cv-fade-up-d1, d2, d3) for sequential reveal. Prefix "cv-" avoids CSS conflicts.
-
-════════════════════════════
-SVG DESIGN ELEMENTS (embed directly in HTML):
-════════════════════════════
-
-WAVE SECTION DIVIDER:
-<svg viewBox="0 0 1440 120" style="width:100%;height:auto;display:block;margin:-1px 0" preserveAspectRatio="none">
-  <path d="M0,64 C360,120 720,0 1080,64 C1260,96 1380,80 1440,64 L1440,120 L0,120 Z" fill="#F9FBFF"/>
-</svg>
-
-TEAL WAVE (for transitioning out of dark sections):
-<svg viewBox="0 0 1440 120" style="width:100%;height:auto;display:block;margin:-1px 0" preserveAspectRatio="none">
-  <path d="M0,40 C480,100 960,0 1440,60 L1440,120 L0,120 Z" fill="#FFFFFF"/>
-</svg>
-
-CHECKMARK ICON (for benefit lists):
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
-  <circle cx="12" cy="12" r="12" fill="#005148"/>
-  <path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-
-ARROW ICON (for CTAs):
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-  <path d="M5 12h14M12 5l7 7-7 7"/>
-</svg>
-
-STAR ICON (for highlights):
-<svg width="20" height="20" viewBox="0 0 24 24" fill="#FF6B35">
-  <path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4 5.6 21.2l2.4-7.2-6-4.8h7.6z"/>
-</svg>
-
-QUOTE MARKS (for testimonials):
-<svg width="40" height="40" viewBox="0 0 24 24" fill="#005148" style="opacity:0.15">
-  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H0z"/>
-</svg>
-
-NUMBER STEP CIRCLE:
-<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#005148,#007A6D);color:white;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0">1</div>
-
-DECORATIVE DOTS (subtle accent):
-<svg width="100" height="100" style="position:absolute;opacity:0.06">
-  <circle cx="10" cy="10" r="3" fill="#005148"/><circle cx="30" cy="10" r="3" fill="#005148"/>
-  <circle cx="50" cy="10" r="3" fill="#005148"/><circle cx="10" cy="30" r="3" fill="#005148"/>
-  <circle cx="30" cy="30" r="3" fill="#005148"/><circle cx="50" cy="30" r="3" fill="#005148"/>
-</svg>
-
-Create additional custom SVG shapes as needed. Keep SVGs simple, use brand colors.
-
-════════════════════════════
-LAYOUT PATTERNS (use inline styles):
-════════════════════════════
-
-FEATURE GRID (responsive 2-3 columns):
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px">
-  <div style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px">
-    <!-- SVG icon + heading + description -->
-  </div>
-</div>
-
-ALTERNATING SECTIONS:
-Alternate backgrounds between #FFFFFF and #F9FBFF with generous padding (64px-80px vertical).
-Use wave SVG dividers between them for visual flow.
-
-STAT BANNER (animated numbers):
-<div class="cv-fade-up" style="display:flex;flex-wrap:wrap;justify-content:center;gap:48px;padding:48px 24px;background:linear-gradient(135deg,#005148,#002D72);border-radius:24px">
-  <div style="text-align:center;color:white">
-    <div style="font-size:48px;font-weight:700">500+</div>
-    <div style="font-size:13px;opacity:0.8;text-transform:uppercase;letter-spacing:1px">Happy Clients</div>
-  </div>
-</div>
-
-TESTIMONIAL CARD:
-<div style="background:#F9FBFF;border-radius:20px;padding:40px;position:relative">
-  <!-- Quote SVG at top-left -->
-  <p style="font-size:18px;line-height:1.7;color:#002D72;font-style:italic">"Quote here"</p>
-  <p style="margin-top:16px;font-weight:600;color:#005148">— Name, Title</p>
-</div>
-
-ICON + TEXT ROW (for benefits):
-<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:24px">
-  <!-- Checkmark SVG -->
-  <div>
-    <strong style="color:#002D72;font-size:18px">Benefit Title</strong>
-    <p style="color:#697077;margin-top:4px">Supporting description.</p>
-  </div>
-</div>
-
-CTA BUTTON (mid-content, links to /join):
-<a href="/join" style="display:inline-flex;align-items:center;gap:8px;padding:16px 32px;background:#005148;color:white;font-weight:600;font-size:18px;border-radius:8px;text-decoration:none">
-  Get Started Today
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-</a>
-
-CTA SECTION (gradient conversion block):
-<div style="text-align:center;padding:64px 32px;background:linear-gradient(135deg,#005148,#007A6D);border-radius:24px;margin:48px 0">
-  <h3 style="font-size:28px;font-weight:700;color:white;margin-bottom:12px">Ready to Get Started?</h3>
-  <p style="font-size:18px;color:rgba(255,255,255,0.85);margin-bottom:24px">Join hundreds of businesses saving time with CreedaVA</p>
-  <a href="/join" style="display:inline-flex;align-items:center;gap:8px;padding:16px 40px;background:white;color:#005148;font-weight:700;font-size:18px;border-radius:8px;text-decoration:none">
-    Join Today
-  </a>
-</div>
-
-HIGHLIGHTED CALLOUT BOX:
-<div style="border-left:4px solid #005148;background:#F9FBFF;padding:24px 28px;border-radius:0 12px 12px 0;margin:32px 0">
-  <p style="font-size:18px;color:#002D72;font-weight:500;margin:0">Key insight or takeaway here.</p>
-</div>
-
-BADGE/TAG:
-<span style="display:inline-block;padding:6px 16px;background:#005148;color:white;border-radius:100px;font-size:13px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase">Featured</span>
-
-════════════════════════════
-INTERACTIVE CSS COMPONENTS (pure CSS — no JS needed):
-════════════════════════════
-
-ACCORDION / FAQ (using <details>/<summary>):
-<details style="border:1px solid #DDE1E6;border-radius:12px;margin-bottom:12px;overflow:hidden">
-  <summary style="padding:20px 24px;font-weight:600;font-size:18px;color:#002D72;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;background:#F9FBFF">
-    Question text here
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005148" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-  </summary>
-  <div style="padding:0 24px 20px;color:#697077;line-height:1.7">Answer text here.</div>
-</details>
-
-HOVER-FLIP CARD (CSS perspective transform):
-Add to <style> tag:
-.cv-flip-card { perspective: 1000px; height: 280px; }
-.cv-flip-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
-.cv-flip-card:hover .cv-flip-inner { transform: rotateY(180deg); }
-.cv-flip-front, .cv-flip-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; }
-.cv-flip-front { background: #FFFFFF; border: 1px solid #DDE1E6; }
-.cv-flip-back { background: linear-gradient(135deg, #005148, #007A6D); color: white; transform: rotateY(180deg); }
-
-Usage:
-<div class="cv-flip-card">
-  <div class="cv-flip-inner">
-    <div class="cv-flip-front"><!-- icon + title --></div>
-    <div class="cv-flip-back"><!-- details --></div>
-  </div>
-</div>
-
-ANIMATED PROGRESS BAR:
-Add to <style>:
-@keyframes cvGrow { from { width: 0; } }
-.cv-progress-bar { height: 8px; border-radius: 4px; background: linear-gradient(90deg, #005148, #007A6D); animation: cvGrow 1.5s ease-out forwards; }
-
-Usage:
-<div style="background:#DDE1E6;border-radius:4px;overflow:hidden;margin:8px 0">
-  <div class="cv-progress-bar" style="width:85%"></div>
-</div>
-<span style="font-size:14px;color:#697077">85% Client Satisfaction</span>
-
-ANIMATED COUNTER (CSS @property):
-Add to <style>:
-@property --cv-num { syntax: '<integer>'; initial-value: 0; inherits: false; }
-@keyframes cvCount { to { --cv-num: var(--cv-target); } }
-.cv-counter { animation: cvCount 2s ease-out forwards; counter-reset: num var(--cv-num); font-variant-numeric: tabular-nums; }
-.cv-counter::after { content: counter(num); }
-
-Usage:
-<span class="cv-counter" style="--cv-target:500;font-size:48px;font-weight:700;color:#005148"></span>
-<span style="font-size:48px;font-weight:700;color:#005148">+</span>
-
-HOVER-LIFT CARDS:
-Add to <style>:
-.cv-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-.cv-lift:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,45,114,0.12); }
-
-════════════════════════════
-ADVANCED SVG ILLUSTRATIONS (brand-colored):
-════════════════════════════
-
-GRADIENT BLOB (abstract background shape):
-<svg viewBox="0 0 600 400" style="position:absolute;top:-100px;right:-80px;width:500px;opacity:0.08;pointer-events:none">
-  <defs><linearGradient id="blob-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#005148"/><stop offset="100%" stop-color="#002D72"/></linearGradient></defs>
-  <path d="M300,50 C420,30 550,120 520,220 C490,320 400,380 280,350 C160,320 60,280 80,180 C100,80 180,70 300,50Z" fill="url(#blob-g)"/>
-</svg>
-
-HEXAGON PATTERN (geometric accent):
-<svg width="200" height="200" viewBox="0 0 200 200" style="position:absolute;opacity:0.05;pointer-events:none">
-  <polygon points="100,10 170,50 170,130 100,170 30,130 30,50" fill="none" stroke="#005148" stroke-width="2"/>
-  <polygon points="100,30 150,60 150,120 100,150 50,120 50,60" fill="none" stroke="#005148" stroke-width="1.5"/>
-  <polygon points="100,50 130,70 130,110 100,130 70,110 70,70" fill="none" stroke="#005148" stroke-width="1"/>
-</svg>
-
-CIRCUIT/CONNECTING LINES (tech feel):
-<svg viewBox="0 0 400 200" style="width:100%;height:60px;opacity:0.06">
-  <line x1="0" y1="100" x2="120" y2="100" stroke="#005148" stroke-width="2"/>
-  <circle cx="120" cy="100" r="6" fill="#005148"/>
-  <line x1="126" y1="100" x2="200" y2="50" stroke="#005148" stroke-width="2"/>
-  <circle cx="200" cy="50" r="6" fill="#005148"/>
-  <line x1="206" y1="50" x2="280" y2="100" stroke="#005148" stroke-width="2"/>
-  <circle cx="280" cy="100" r="6" fill="#007A6D"/>
-  <line x1="286" y1="100" x2="400" y2="100" stroke="#007A6D" stroke-width="2"/>
-</svg>
-
-ANIMATED SVG DRAW-ON (stroke-dasharray):
-Add to <style>:
-@keyframes cvDraw { to { stroke-dashoffset: 0; } }
-.cv-draw { stroke-dasharray: 300; stroke-dashoffset: 300; animation: cvDraw 2s ease-out forwards; }
-
-<svg viewBox="0 0 200 100" style="width:120px">
-  <path class="cv-draw" d="M10,80 Q50,10 100,50 T190,20" fill="none" stroke="#005148" stroke-width="3" stroke-linecap="round"/>
-</svg>
-
-PERSON SILHOUETTE (for testimonials):
-<svg width="48" height="48" viewBox="0 0 48 48" style="flex-shrink:0">
-  <circle cx="24" cy="24" r="24" fill="#F9FBFF"/>
-  <circle cx="24" cy="18" r="8" fill="#005148" opacity="0.2"/>
-  <path d="M8,44 C8,34 16,28 24,28 C32,28 40,34 40,44" fill="#005148" opacity="0.2"/>
-</svg>
-
-SHIELD / TRUST BADGE:
-<svg width="48" height="56" viewBox="0 0 48 56" fill="none">
-  <path d="M24,2 L44,12 L44,28 C44,40 36,50 24,54 C12,50 4,40 4,28 L4,12 Z" fill="#005148" opacity="0.1" stroke="#005148" stroke-width="2"/>
-  <path d="M16,28 L22,34 L34,22" stroke="#005148" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-
-LIGHTBULB ICON (for tips/ideas):
-<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FF6B35" stroke-width="1.5">
-  <path d="M9,21 L15,21 M12,2 C8,2 5,5.5 5,9 C5,12 7,13.5 8,15 L8,17 L16,17 L16,15 C17,13.5 19,12 19,9 C19,5.5 16,2 12,2Z"/>
-  <line x1="10" y1="17" x2="10" y2="19"/><line x1="14" y1="17" x2="14" y2="19"/>
-</svg>
-
-ROCKET ICON (for growth/launch):
-<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#005148" stroke-width="1.5" stroke-linecap="round">
-  <path d="M12,2 C12,2 4,6 4,14 L8,18 L12,14 L16,18 L20,14 C20,6 12,2 12,2Z"/>
-  <circle cx="12" cy="10" r="2"/>
-  <path d="M4,14 L2,16 M20,14 L22,16"/>
-</svg>
-
-════════════════════════════
-RESPONSIVE MEDIA QUERIES (add inside the <style> tag):
-════════════════════════════
-
-Include these in every <style> tag for proper mobile rendering:
-
-@media (max-width: 768px) {
-  .cv-grid-2 { grid-template-columns: 1fr !important; }
-  .cv-grid-3 { grid-template-columns: 1fr !important; }
-  .cv-stat-banner { flex-direction: column !important; gap: 24px !important; }
-  .cv-flip-card { height: 220px !important; }
-  .cv-hero-text { font-size: 32px !important; }
-  .cv-section-pad { padding: 40px 20px !important; }
-  .cv-hide-mobile { display: none !important; }
-}
-@media (max-width: 480px) {
-  .cv-display-num { font-size: 36px !important; }
-  .cv-section-pad { padding: 32px 16px !important; }
-}
-
-Use helper classes on your elements:
-- Grids: add class="cv-grid-2" or "cv-grid-3" alongside inline grid styles
-- Stat banners: add class="cv-stat-banner"
-- Large hero text: add class="cv-hero-text"
-- Sections: add class="cv-section-pad"
-- Desktop-only decorative elements: add class="cv-hide-mobile"
-
-════════════════════════════
-CONVERSION PATTERNS (proven layouts that drive action):
-════════════════════════════
-
-PACKAGE COMPARISON TABLE (3-column):
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin:40px 0" class="cv-grid-3">
-  <!-- Standard -->
-  <div class="cv-lift" style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:20px;padding:32px;text-align:center">
-    <p style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:#697077;margin-bottom:8px">Starter</p>
-    <p style="font-size:20px;font-weight:700;color:#002D72">80 hours/month</p>
-    <div style="border-top:1px solid #DDE1E6;margin:20px 0;padding-top:20px">
-      <!-- benefits list -->
-    </div>
-    <a href="/contact" style="display:block;padding:14px;background:#F9FBFF;color:#005148;font-weight:600;border-radius:8px;text-decoration:none">Get a Quote</a>
-  </div>
-  <!-- Popular (highlighted) -->
-  <div class="cv-lift cv-pulse" style="background:linear-gradient(135deg,#005148,#007A6D);border-radius:20px;padding:32px;text-align:center;color:white;position:relative;transform:scale(1.05)">
-    <span style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 20px;background:#FF6B35;color:white;border-radius:100px;font-size:12px;font-weight:700;text-transform:uppercase">Most Popular</span>
-    <p style="font-size:14px;text-transform:uppercase;letter-spacing:1px;opacity:0.8;margin-bottom:8px">Professional</p>
-    <p style="font-size:20px;font-weight:700">160 hours/month</p>
-    <a href="/contact" style="display:block;padding:14px;background:white;color:#005148;font-weight:700;border-radius:8px;text-decoration:none">Get a Quote</a>
-  </div>
-</div>
-
-NOTE: Never publish prices, rates, or "starting at $X" claims. Packages are quoted per client.
-
-ROI CALCULATOR LAYOUT:
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;margin:48px 0" class="cv-grid-2">
-  <div>
-    <h3 style="color:#002D72;font-size:24px;font-weight:700;margin-bottom:16px">Without CreedaVA</h3>
-    <div style="background:#FFF5F5;border-radius:16px;padding:24px">
-      <p style="font-size:32px;font-weight:700;color:#C62828">40+ hrs/week</p>
-      <p style="color:#697077">spent on admin tasks</p>
-    </div>
-  </div>
-  <div>
-    <h3 style="color:#005148;font-size:24px;font-weight:700;margin-bottom:16px">With CreedaVA</h3>
-    <div style="background:#E8F5F3;border-radius:16px;padding:24px">
-      <p style="font-size:32px;font-weight:700;color:#005148">5 hrs/week</p>
-      <p style="color:#697077">you handle strategy only</p>
-    </div>
-  </div>
-</div>
-
-RISK REVERSAL / GUARANTEE SECTION:
-<div style="text-align:center;padding:48px 32px;border:2px solid #005148;border-radius:24px;margin:48px 0;background:#F9FBFF">
-  <!-- Shield SVG -->
-  <h3 style="font-size:24px;font-weight:700;color:#002D72;margin:16px 0 8px">100% Satisfaction Guarantee</h3>
-  <p style="color:#697077;max-width:500px;margin:0 auto">If you're not completely satisfied within the first 30 days, we'll refund your investment — no questions asked.</p>
-</div>
-
-VIDEO PLACEHOLDER (gradient thumbnail + play button):
-<div style="position:relative;border-radius:20px;overflow:hidden;aspect-ratio:16/9;background:linear-gradient(135deg,#002D72,#005148);cursor:pointer;margin:40px 0">
-  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-    <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M8,5v14l11-7z"/></svg>
-    </div>
-  </div>
-  <p style="position:absolute;bottom:20px;left:0;right:0;text-align:center;color:white;font-size:14px;opacity:0.8">Watch how CreedaVA transforms your business</p>
-</div>
-
-URGENCY / SOCIAL PROOF BANNER:
-<div style="text-align:center;padding:16px;background:linear-gradient(90deg,#005148,#007A6D);border-radius:12px;margin:32px 0">
-  <p style="color:white;font-size:15px;font-weight:500;margin:0">
-    🔥 <strong>47 businesses</strong> signed up this month — <strong>3 spots remaining</strong> for February
-  </p>
-</div>
-
-════════════════════════════
-UNSPLASH STOCK PHOTOS:
-════════════════════════════
-
-You CAN use <img> tags with Unsplash photos for rich visual content.
-Use this URL pattern for photos:
-  https://images.unsplash.com/photo-{ID}?w={width}&h={height}&fit=crop&auto=format&q=80
-
-APPROVED PHOTO SUBJECTS (use relevant ones):
-- Business/office: photo-1521737711867-e3b97375f902 (team meeting)
-- Laptop work: photo-1498050108023-c5249f4df085 (person at laptop)
-- Handshake: photo-1560472354-b33ff0c44a43 (business handshake)
-- Remote work: photo-1593642632559-0c6d3fc62b89 (home office)
-- Planning: photo-1552664730-d307ca884978 (whiteboard planning)
-- Customer service: photo-1556745753-b2904692b3cd (headset person)
-- Growth chart: photo-1551288049-bebda4e38f71 (analytics dashboard)
-- Team diversity: photo-1522071820081-009f0129c71c (diverse team)
-- Entrepreneur: photo-1507003211169-0a1dd7228f2d (business owner portrait)
-- Coffee meeting: photo-1515378960530-7c0da6231fb1 (casual meeting)
-
-PHOTO USAGE RULES:
-- Always add loading="lazy" and alt text describing the image
-- Style with: border-radius:16px; width:100%; height:auto; object-fit:cover;
-- Wrap in a container with aspect-ratio or fixed height for layout stability
-- Use photos sparingly — max 2-3 per landing page, 1-2 per blog post
-- Place photos at strategic points: near hero, between major sections, with testimonials
-- Pair photos with gradient overlays for text readability when used as backgrounds:
-  <div style="position:relative;border-radius:20px;overflow:hidden;">
-    <img src="..." alt="..." style="width:100%;height:320px;object-fit:cover" loading="lazy"/>
-    <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,45,114,0.85),rgba(0,81,72,0.6));display:flex;align-items:center;padding:40px">
-      <div style="color:white"><!-- Text content over image --></div>
-    </div>
-  </div>
-
-════════════════════════════
-IMPORTANT RULES:
-════════════════════════════
-- ALL visual styles must be inline (style="...") — this renders via dangerouslySetInnerHTML
-- Put CSS @keyframes, @property, animation classes, hover classes, flip-card classes, and @media queries in ONE <style> tag at the TOP of the HTML output
-- Use ONLY brand colors from the palette — no arbitrary colors
-- Keep SVGs simple and performant, using brand colors
-- <img> tags allowed ONLY from Unsplash (images.unsplash.com) — use approved subject IDs
-- Do NOT specify font-family — it inherits Roboto from the page
-- Ensure mobile-friendly: use cv- responsive classes, flex-wrap, auto-fit grids
-- Include responsive @media queries in every <style> tag
-- Link to /join for sign-up CTAs — do not embed raw HTML forms
-- Be creative! Mix and match ALL pattern types: interactive, animated, conversion, SVG, photos.`;
-
 // ─── Competitive Intelligence ────────────────────────
 
 export const COMPETITOR_CONTEXT = `COMPETITIVE LANDSCAPE — VA Industry 2025-2026:
@@ -1149,7 +544,7 @@ HOW AI SEARCH ENGINES SELECT SOURCES:
    - "How to..." queries → Create step-by-step process content
    - "Best..." queries → Create comparison/ranking content with clear criteria
    - "What is..." queries → Create definitive definitional content
-   - Cost/pricing queries → Create value/ROI breakdowns and link to /services#packages (never quote prices)
+   - Cost/pricing queries → Create value/ROI breakdowns and link to /pricing (never quote prices)
    - "vs" queries → Create head-to-head comparison content
 
 5. ENTITY OPTIMIZATION:
@@ -1176,9 +571,11 @@ GEO gets you CITED in AI-generated answers. Both matter — execute them in para
 GEO RANKING FACTORS (based on research):
 1. CITATION SIGNALS (highest weight):
    - Include statistics with sources: "According to [study], 73% of small businesses..."
-   - Use authoritative language: "Based on our analysis of 500+ client engagements..."
+   - Use authoritative language ONLY when the claim is true: "CreedaVA charges one
+     flat monthly fee across three packages" — never "based on 500+ client
+     engagements", which the business cannot evidence.
    - Reference industry reports, government data, academic research
-   - Original data trumps everything — create proprietary statistics
+   - Original data trumps everything — but never fabricate proprietary statistics
 
 2. QUOTABILITY SCORE:
    - Write "quotable" sentences: self-contained, factual, specific
@@ -1356,7 +753,7 @@ CreedaVA should run SEM strategically with clear ROI tracking.
    - "Save 20+ Hours/Week | Hire a VA Today"
    - "Bilingual Virtual Assistants | English & Spanish Support"
    - "Book a Free Consultation | Dedicated VA for Your Business"
-   - "500+ Happy Clients | Start Your Free Consultation"
+   - "One Flat Monthly Fee | Dedicated VA, No Payroll Tax"
    
    PIN REQUIREMENTS:
    - Pin 1 headline: Primary keyword match
@@ -1566,7 +963,7 @@ export const TECHNICAL_SEO_EXPERTISE = `TECHNICAL SEO DEEP DIVE — Infrastructu
 3. SCHEMA MARKUP LIBRARY:
    ORGANIZATION (homepage):
    { "@type": "Organization", "name": "CreedaVA", "url": "https://creedava.com",
-     "logo": "https://creedava.com/logo.webp", "contactPoint": { "@type": "ContactPoint",
+     "logo": "https://creedava.com/creedava-logo.svg", "contactPoint": { "@type": "ContactPoint",
      "telephone": "+1-844-702-2202", "contactType": "customer service", "availableLanguage": ["English", "Spanish"] } }
 
    SERVICE (service pages):
@@ -1588,7 +985,7 @@ export const TECHNICAL_SEO_EXPERTISE = `TECHNICAL SEO DEEP DIVE — Infrastructu
 4. URL ARCHITECTURE:
    - creedava.com/ → Homepage
    - creedava.com/services → Services hub
-   - creedava.com/services#packages → Service packages
+   - creedava.com/pricing → Service packages
    - creedava.com/news → Blog hub
    - creedava.com/news/[post-slug] → Blog posts
    - creedava.com/lp/[campaign-slug] → Landing pages
@@ -1717,7 +1114,9 @@ export const CRO_EXPERTISE = `CONVERSION RATE OPTIMIZATION (CRO) — Turning vis
    ABOVE THE FOLD (first 600px):
    - Headline: Speaks to primary pain point (10 words max)
    - Subheadline: Quantified benefit + differentiator
-   - Social proof: "Trusted by 500+ businesses" or client logos
+   - Social proof: ONLY verifiable facts — 3 packages, one flat monthly fee,
+     English/Spanish, 5–7 day onboarding. There are no client counts, logos or
+     review scores to cite; the CRM holds 0 active clients.
    - CTA: High-contrast button with action verb + benefit
    - Hero image/visual: Shows outcome (happy client, clean dashboard)
 
@@ -1725,10 +1124,17 @@ export const CRO_EXPERTISE = `CONVERSION RATE OPTIMIZATION (CRO) — Turning vis
    1. Problem agitation → "Sound familiar? 60-hour weeks, drowning in admin..."
    2. Solution introduction → "Meet your dedicated virtual assistant"
    3. Benefits (not features) → "Reclaim 20+ hours every week"
-   4. Social proof → Testimonials, case studies, stats
-   5. How it works → Simple 3-step process
-   6. Risk reversal → "30-day money-back guarantee"
-   7. Final CTA → Urgency + benefit restatement
+   4. Social proof → NO testimonials or stats unless real data is supplied in
+     the data context. Quote it verbatim with attribution or omit the section.
+   5. How it works → 3 steps (the visual lives on /contact; describe, don't rebuild)
+   6. Risk reversal → only what the contract actually offers. There is NO
+     money-back guarantee, no trial and no refund window — never invent one.
+   7. Final CTA → benefit restatement. No fake urgency.
+
+   ⛔ BANNED CLAIMS: "500+ clients", "hundreds of businesses", "Trusted by X",
+   "4.9/5 rating", "Only N spots left", "Featured in Forbes", review stars,
+   security/guarantee badges. Each one is an advertising-claims exposure and
+   none can be substantiated from the CRM.
 
 2. FORM OPTIMIZATION:
    - Max 3-4 fields for initial lead capture (name, email, phone, company)
@@ -1754,21 +1160,20 @@ export const CRO_EXPERTISE = `CONVERSION RATE OPTIMIZATION (CRO) — Turning vis
    - Inline within blog posts (contextual)
 
 4. TRUST ELEMENTS:
-   - "As seen in" logo bar (media mentions)
-   - "Trusted by 500+ businesses" badge
-   - Star ratings with review count
-   - Security badges (SSL, data protection)
-   - Money-back guarantee badge
-   - Client headshots with company names in testimonials
-   - Video testimonials (highest trust impact)
+   - Only verifiable trust signals: named human assistant, bilingual team,
+     documented workflows, NDA on request, flat monthly fee.
+   - Every other badge below is BANNED because it cannot be substantiated:
+     "As seen in" logo bar, "Trusted by 500+ businesses", star ratings with
+     review counts, SSL/security badges, money-back guarantee badge, client
+     headshots, video testimonials.
 
 5. PSYCHOLOGICAL TRIGGERS:
-   - Scarcity: "Only 5 spots left this month"
-   - Social proof: "Join 500+ businesses already growing with CreedaVA"
-   - Authority: "Featured in Forbes, Inc., Entrepreneur"
-   - Reciprocity: Free resource before asking for sale
-   - Commitment: Small "yes" first (quiz, assessment) before big ask
-   - Loss aversion: "Stop losing $X/month on tasks your VA should handle"
+   - Loss aversion: "Stop losing $X/month on tasks your VA should handle" — the
+     only trigger that survives scrutiny, because the cost is the reader's own.
+   - ⛔ BANNED: scarcity ("Only 5 spots left"), invented social proof ("Join 500+
+     businesses"), false authority ("Featured in Forbes, Inc., Entrepreneur").
+     CreedaVA cannot evidence any of these and publishing them is a legal risk.
+   - Reciprocity and commitment tactics are fine when the resource is real.
 
 6. PAGE SPEED IMPACT ON CONVERSION:
    - Every 1-second delay reduces conversions by 7%
@@ -1904,14 +1309,13 @@ OPENING POST STRUCTURE:
 4. DISCUSSION PROMPT — Close with an open-ended question that invites replies
 5. TAGS — 2-4 relevant tags (e.g., "outsourcing", "belize", "cost-savings", "remote-work")
 
-FORMATTING (RICH HTML):
+FORMATTING (SEMANTIC HTML ONLY):
 - Use HTML tags: <h3>, <p>, <strong>, <em>, <ul>, <li>, <ol>, <blockquote>, <a>
-- Make blockquotes visually distinct with inline styles: style="border-left:4px solid #005148;padding:12px 16px;background:#F9FBFF;border-radius:0 8px 8px 0;margin:16px 0;font-style:italic;color:#002D72"
-- Highlight key phrases: <strong style="color:#005148">key phrase</strong>
-- Space paragraphs well: style="margin-bottom:16px" on <p> tags
-- Use unordered lists with spacing for key takeaways
-- Link to relevant CreedaVA pages: /services, /services#packages, /join, /about
-- Include a styled discussion prompt at the end: <p style="background:linear-gradient(135deg,#005148,#007A6D);color:white;padding:16px 20px;border-radius:12px;font-weight:600;margin-top:24px">What are your thoughts? Share your experience below!</p>
+- Use <blockquote> for pull-quotes and <strong> for emphasis — the site styles both
+- Close with a plain <p> discussion prompt: "What are your thoughts? Share your experience below."
+- Link to relevant CreedaVA pages: /services, /pricing, /join, /about
+- Do NOT emit inline style attributes or hex colours — the forum body is styled by the
+  site's own article stylesheet, and inline overrides fight it
 - Do NOT include <style> tags, CSS animations, or complex SVGs — keep it clean and readable
 - Do NOT include images — forums are text-focused
 
@@ -1919,7 +1323,7 @@ ENGAGEMENT PATTERNS:
 - End every thread with a question: "What has been your experience with…?"
 - Reference specific data when available (CRM stats, industry reports)
 - Mention related threads for internal linking: "As we discussed in [topic]…"
-- Include at least one CreedaVA service link where naturally relevant (/services, /services#packages, /join)
+- Include at least one CreedaVA service link where naturally relevant (/services, /pricing, /join)
 
 ═══════════════════════════════════
 REPLY GENERATION
@@ -1989,267 +1393,6 @@ Forum content enables DiscussionForumPosting JSON-LD:
 
 This is generated automatically by the structured-data helper — but the AI should ensure
 thread content is structured to maximize schema richness (clear title, attribution, replies).`;
-
-// ─── Landing Page Generation ─────────────────────────
-
-export const LANDING_PAGE_RULES = `LANDING PAGE GENERATION RULES — Create BEAUTIFUL, conversion-optimized pages:
-
-CONTEXT: The page already renders a HERO section (headline + subheadline + CTA form) ABOVE
-your bodyHtml and a CTA section with form BELOW it. Your bodyHtml is the engaging content between.
-
-═══════════════════════════════════
-REQUIRED STRUCTURE
-═══════════════════════════════════
-
-(bodyHtml — be creative with visual design!)
-1. IMPACT OPENING — Bold animated stat banner, eye-catching visual, or compelling value statement
-2. BENEFITS — 3-4 benefits with SVG checkmark icons, use grid or alternating icon+text rows
-3. HOW IT WORKS — 3-step process with number circles, visual flow, staggered animations
-4. SOCIAL PROOF — Stat counter banner (gradient bg), testimonial cards with SVG quote marks
-5. FEATURES GRID — Cards with hover styling, SVG icon headers, gradient accents
-6. MID-PAGE CTA — Gradient banner with CTA button linking to /join
-7. FAQ — 2-3 common questions, cleanly formatted
-
-═══════════════════════════════════
-DESIGN SYSTEM INTEGRATION
-═══════════════════════════════════
-
-Use these CSS variables in inline styles for brand consistency:
-- Backgrounds: var(--background) #FFFFFF, var(--gray-20) #F5F5F7 for alternating sections
-- Text: var(--foreground) #1A1A2E, var(--muted-foreground) #6B7280 for secondary
-- Brand: var(--primary) #005148 (teal), var(--accent) #E8A838 (gold)
-- Cards: var(--card) #FFFFFF with var(--shadow-md) for elevation
-- Borders: var(--border) #E5E7EB, var(--radius-lg) 0.75rem for card corners
-
-APPROVED GRADIENTS (use for stat banners, CTA sections, hero accents):
-- Primary: linear-gradient(135deg, #005148, #007A6E) — teal depth
-- Accent: linear-gradient(135deg, #E8A838, #F5C563) — gold warmth
-- Hero: linear-gradient(135deg, #005148 0%, #007A6E 50%, #E8A838 100%) — full brand
-- Subtle: linear-gradient(180deg, #FFFFFF, #F5F5F7) — section separator
-
-TYPOGRAPHY SCALE (inline style font sizes):
-- Display: 48px / font-weight 700 — stat counters, hero numbers
-- H2: 32px / font-weight 700 — section headings
-- H3: 24px / font-weight 600 — card titles, subheadings
-- Lead: 20px / font-weight 400 — section intros
-- Body: 16px / line-height 1.75 — paragraph text
-- Small: 14px — captions, labels
-
-SPACING (use these for consistent padding/margins):
-- Section padding: 80px 0 (desktop), 48px 16px (mobile)
-- Card padding: 32px
-- Content max-width: 1200px with margin: 0 auto
-- Grid gap: 24px (cards), 32px (sections)
-
-═══════════════════════════════════
-CREATIVE REQUIREMENTS
-═══════════════════════════════════
-
-- Start with a <style> tag containing: @keyframes animations, @property counters, flip-card classes, hover-lift classes, progress bars, responsive @media queries (use cv- prefix)
-- Use SVG elements: wave dividers, gradient blobs, hexagon accents, decorative shapes, draw-on animations
-- Create visual rhythm: alternate section backgrounds (#FFFFFF and #F5F5F7)
-- Apply staggered animation delays for sequential reveal effects (cv-fade-up-d1, d2, d3)
-- Include at minimum ONE gradient stat banner and ONE testimonial section
-- Use INTERACTIVE elements: <details>/<summary> for FAQ, hover-flip cards, animated counters, progress bars
-- Add hover effects using cv-lift class for cards (box-shadow: 0 10px 25px rgba(0,0,0,0.1), transform: translateY(-4px))
-- Use wave SVG dividers between major sections for visual flow
-- Include 1-2 Unsplash photos at strategic points (hero area, testimonials)
-- Use CONVERSION PATTERNS: package comparison tables, ROI comparisons, guarantee sections, urgency banners
-- Mix layouts: grids, icon+text rows, centered blocks, stat banners, flip cards
-- Include responsive @media queries for mobile rendering
-
-═══════════════════════════════════
-RESPONSIVE DESIGN
-═══════════════════════════════════
-
-ALL landing pages MUST be mobile-first responsive. Include these breakpoints in the <style> tag:
-- @media (max-width: 768px): Stack 2-3 column grids to single column, reduce section padding, scale fonts down 15-20%
-- @media (max-width: 480px): Reduce display text to 32px, full-width buttons, hide decorative SVGs
-
-CV- HELPER CLASSES (define in <style>):
-- .cv-grid-2, .cv-grid-3: Grid layouts that stack on mobile
-- .cv-stat-banner: Full-width gradient stat section
-- .cv-hero-text: Large display text that scales down
-- .cv-section-pad: Consistent section padding with mobile override
-- .cv-hide-mobile: display:none on max-width:768px for decorative elements
-- .cv-card: Consistent card (bg white, rounded corners, shadow, hover lift)
-- .cv-cta-btn: CTA button style (brand gradient bg, white text, rounded, hover darken)
-
-═══════════════════════════════════
-CONVERSION OPTIMIZATION
-═══════════════════════════════════
-
-- Place the first CTA (mid-page) after the SOCIAL PROOF section — users decide after seeing proof
-- Use a SINGLE, clear call-to-action action per page (e.g., "Get Started" or "Book a Call")
-- Repeat the CTA phrase in at least 2 locations in bodyHtml (plus the page's own CTA section)
-- Apply urgency where genuine: "Limited onboarding slots this month", "Free trial ends [date]"
-- Use guarantee/trust badges: SSL badge SVG, "30-Day Money-Back Guarantee", "No Long-Term Contracts"
-- Social proof numbers: "500+ businesses served", "4.9/5 client rating", "20+ hours saved weekly"
-- Reduce friction: FAQ section addressing objections (cost, quality, timezone, security)
-
-A/B VARIANT GENERATION:
-When asked to generate LP variants, create variations that differ in:
-- Headline angle (pain point vs. aspiration vs. social proof)
-- CTA text (action verb vs. benefit vs. urgency)
-- Section ordering (social proof first vs. benefits first)
-- Visual treatment (minimal/clean vs. rich/animated)
-- Keep the core value proposition identical — only vary the presentation
-- Name variants clearly: "Variant A: Pain-Point Lead", "Variant B: Social-Proof Lead"
-
-═══════════════════════════════════
-CONTENT RULES
-═══════════════════════════════════
-
-- headline: Under 10 words, action-oriented, speaks to a pain point
-- subheadline: 1-2 sentences, expands on value proposition
-- ctaText: Action verb + benefit ("Start Saving Time Today")
-- Use concrete numbers ("Save 20+ hours/week", "Join 500+ businesses")
-- Address reader directly with "you" and "your"
-- Focus on outcomes, not features
-- Include mid-content CTA links to /join
-- Keep paragraphs to 2-3 sentences max
-
-═══════════════════════════════════
-SEO & STRUCTURED DATA
-═══════════════════════════════════
-
-Landing pages support WebPage JSON-LD (generated automatically). Ensure:
-- metaTitle: <60 chars, primary keyword + brand name
-- metaDescription: 150-160 chars, value prop + CTA
-- slug: 2-4 keyword-rich words, hyphenated (e.g., "virtual-assistant-belize")
-- Include primary keyword in H2 headings and first paragraph
-- Use alt text on all images with target keywords
-- Internal links: /services, /services#packages, /about, /join as relevant
-
-═══════════════════════════════════
-TECHNICAL RULES
-═══════════════════════════════════
-
-- ALL styles must be inline (style="...") — content renders via dangerouslySetInnerHTML
-- CSS @keyframes, @property, animation classes, hover/flip classes, and @media queries go in ONE <style> tag at TOP
-- Use semantic HTML: <section>, <h2>, <h3>, <p>, <ul>, <li>, <details>/<summary>
-- SVGs must be inline (embedded in HTML)
-- <img> tags allowed ONLY from Unsplash (images.unsplash.com) — use approved photo IDs
-- CTA links go to /join — do NOT include <form> HTML (page already has CTA forms)
-- Do NOT include nav, header, or footer (layout provides those)
-- English only — translation service handles other languages
-- Output pure HTML — no markdown fences`;
-
-// ─── Blog & Article Content Rules ────────────────────
-
-export const BLOG_CONTENT_RULES = `BLOG & ARTICLE CONTENT GENERATION RULES — Create visually rich, SEO-optimized articles:
-
-Blog content renders via dangerouslySetInnerHTML inside a "prose" container.
-There is NO built-in CTA section — include CTA sections directly in your HTML.
-
-═══════════════════════════════════
-VISUAL DESIGN
-═══════════════════════════════════
-
-- Start with a <style> tag for CSS animations, @property counters, hover classes, and @media responsive queries (cv- prefix)
-- Break up long text with visual elements: stat highlights, callout boxes, icon lists, SVG accents
-- Use varied font sizes via inline styles to create visual hierarchy
-- Add wave SVG dividers between major article sections
-- Include highlighted callout boxes (left-border accent in teal #005148) for key insights
-- Use testimonial/quote cards with SVG quote marks for expert opinions
-- Use interactive <details>/<summary> for FAQ or expandable sections
-- Include 1-2 Unsplash stock photos at key points (use approved photo IDs from CREATIVE FRAMEWORK)
-- Add advanced SVG illustrations: gradient blobs, shield badges, draw-on animated paths
-- Use conversion patterns as appropriate: ROI comparisons, guarantee badges, urgency banners
-
-═══════════════════════════════════
-CONTENT STRUCTURE
-═══════════════════════════════════
-
-1. OPENING HOOK — Compelling first paragraph with bold statement or surprising stat
-2. KEY SECTIONS — Each H2 section with rich formatting: icon lists, callout boxes, stat highlights
-3. DATA/EVIDENCE — Use gradient stat banners for key numbers, highlighted data points
-4. EXPERT INSIGHTS — Styled blockquotes with SVG quote marks and attribution
-5. ACTIONABLE TAKEAWAYS — SVG checkmark icon list of key points
-6. CTA SECTION — Gradient background card linking to /join at the end
-
-═══════════════════════════════════
-FEATURED SNIPPET OPTIMIZATION
-═══════════════════════════════════
-
-Every blog post MUST include a concise answer paragraph near the top (within first 300 words):
-- Direct answer to the target query in 40-60 words
-- Place immediately after the H1 or opening hook
-- Use a clear, factual tone: "A virtual assistant is a remote professional who..."
-- This paragraph targets Google's Featured Snippet (Position 0)
-- Format as a definition, list, or step-by-step depending on search intent
-
-For listicle posts, use an ordered/unordered list with concise items — these win list snippets.
-For how-to posts, use numbered steps — these win step-by-step snippets.
-
-═══════════════════════════════════
-INTERNAL LINKING
-═══════════════════════════════════
-
-Every blog post MUST include internal links to relevant CreedaVA pages:
-- Service pages: /services (general) plus section anchors: #administrative, #customer, #social, #data, #bookkeeping, #web, #real-estate, #insurance, #workflow-optimization
-- Packages: /services#packages — link when discussing cost, value, ROI (never quote a price)
-- Join/CTA: /join — link in CTA sections and when discussing getting started
-- About: /about — link when discussing CreedaVA's credentials, team, Belize operations
-- Contact: /contact — link when inviting questions or consultations
-- FAQ: /faq — link when referencing common questions
-- Other blog posts: link to related articles by slug (/news/[slug])
-- Forum threads: link to relevant discussions (/forum/[id])
-- Landing pages: link to targeted LPs (/lp/[slug])
-
-CONTENT CLUSTER RULES:
-- Each blog post belongs to a content cluster (pillar topic)
-- Pillar topics: "Virtual Assistant Services", "Outsourcing to Belize", "Business Productivity", "Remote Team Management"
-- Link UP to the pillar page and ACROSS to sibling articles in the same cluster
-- Link DOWN to more specific forum threads that discuss subtopics
-- Aim for 3-5 internal links per 1000 words of content
-
-═══════════════════════════════════
-READABILITY
-═══════════════════════════════════
-
-Target: Flesch-Kincaid Grade Level 8-10 (accessible to business professionals, not academic)
-- Sentences: 15-20 words average, vary between short (8 words) and medium (25 words)
-- Paragraphs: 2-3 sentences max — single-sentence paragraphs OK for emphasis
-- Use active voice: "We handle your admin tasks" not "Your admin tasks are handled by us"
-- Avoid jargon unless defining it for the reader
-- Use transition words: "However", "In addition", "For example", "As a result"
-- Break complex ideas into bullet point lists
-
-═══════════════════════════════════
-JSON-LD STRUCTURED DATA
-═══════════════════════════════════
-
-Blog posts support BlogPosting JSON-LD (generated automatically by structured-data helper):
-- @type: "BlogPosting"
-- headline: post title (max 110 chars)
-- description: metaDescription
-- author: { @type: "Organization", name: "CreedaVA" }
-- publisher: { @type: "Organization", name: "CreedaVA" }
-- datePublished: publishedAt ISO date
-- dateModified: updatedAt ISO date
-- image: featuredImage URL
-- mainEntityOfPage: canonical URL
-
-The AI should ensure content structure maximizes schema richness:
-- Use clear H2/H3 hierarchy for article sections
-- Include a meta description (150-160 chars) that summarizes the post
-- Write title tags under 60 chars with primary keyword
-- Include the target keyword in the first 100 words
-
-═══════════════════════════════════
-FORMATTING & TECHNICAL
-═══════════════════════════════════
-
-- Use inline styles for visual enhancements beyond prose defaults
-- Keep paragraphs concise (2-3 sentences)
-- H2 for main sections, H3 for subsections
-- Include FAQ section using <details>/<summary> for PAA (People Also Ask) targeting
-- <img> tags allowed ONLY from Unsplash (images.unsplash.com) — max 1-2 per blog post, with descriptive alt text
-- Output pure HTML only (no markdown, no code fences)
-- English only — translation is handled automatically via translations field
-- Include responsive @media queries for mobile-friendly rendering
-- ALL images need alt="" with keyword-rich descriptive text`;
 
 // ─── Citation & Reference Rules ──────────────────────
 
@@ -2441,14 +1584,18 @@ export function buildTrainedPrompt(
   // Specialist persona block — overrides the generic "CreedaVA AI" intro
   if (options.specialistIntro) systemParts.push(options.specialistIntro);
 
-  if (options.includeDesignSystem) systemParts.push(DESIGN_SYSTEM);
-  if (options.includeCreativeFramework) systemParts.push(CREATIVE_HTML_FRAMEWORK);
+  // Design + markup rules come from the 2026 module. The four legacy constants
+  // below (DESIGN_SYSTEM, CREATIVE_HTML_FRAMEWORK, LANDING_PAGE_RULES,
+  // BLOG_CONTENT_RULES) describe the pre-`--mk-*` palette — teal→navy gradients,
+  // a gold accent, `<style>` blocks — so they are deliberately NOT pushed.
+  if (options.includeDesignSystem) systemParts.push(DESIGN_SYSTEM_2026);
+  if (options.includeCreativeFramework) systemParts.push(HTML_CONTENT_RULES_2026);
   if (options.includeCompetitors) systemParts.push(COMPETITOR_CONTEXT);
   if (options.includeKPIs) systemParts.push(STRATEGIC_KPIS);
   if (options.includeSEOAlgorithms !== false) systemParts.push(SEO_ALGORITHMS);
   if (options.includeMarketIntel) systemParts.push(MARKET_INTELLIGENCE);
-  if (options.includeLandingPageRules) systemParts.push(LANDING_PAGE_RULES);
-  if (options.includeBlogRules) systemParts.push(BLOG_CONTENT_RULES);
+  if (options.includeLandingPageRules) systemParts.push(LANDING_PAGE_RULES_2026);
+  if (options.includeBlogRules) systemParts.push(BLOG_BODY_RULES_2026);
   if (options.includeForumRules) systemParts.push(FORUM_CONTENT_RULES);
   if (options.includeCitationRules) systemParts.push(CITATION_RULES);
   if (options.includeReportFormat) systemParts.push(REPORT_FORMATS);

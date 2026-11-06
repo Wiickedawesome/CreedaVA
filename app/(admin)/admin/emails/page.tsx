@@ -46,11 +46,11 @@ const emptyForm = {
   attachments: [] as { name: string; url: string; type: string }[],
 };
 
-const SURVEY_TEMPLATE_BODY = `<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#002D72;">
+const SURVEY_TEMPLATE_BODY = `<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#0B2135;">
   <div style="text-align:center;padding:24px 0;">
     <img src="/logo.webp" alt="CreedaVA" width="120" style="margin-bottom:12px;height: auto;" />
   </div>
-  <div style="background:#f9fbff;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
+  <div style="background:#F7F7F2;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
     <h2 style="margin:0 0 8px;color:#005148;font-size:22px;">How are we doing?</h2>
     <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.6;">
       Hi {{CUSTOMER_NAME}},<br/><br/>
@@ -626,7 +626,7 @@ export default function EmailsPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300">Active</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-success-soft text-success-text">Active</span>
               <button
                 onClick={() => setSurveyPreviewOpen(true)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary hover:text-primary-light hover:bg-primary/5 rounded-lg transition-colors"
@@ -749,8 +749,11 @@ export default function EmailsPage() {
               </div>
             )}
             <hr className="border-border" />
+            {/* `.rich-html` comes from admin-styles.css. `prose` emitted no CSS
+                (@tailwindcss/typography is not a dependency), so this body used
+                to render as unstyled run-on text. */}
             <div
-              className="prose prose-sm max-w-none text-gray-80"
+              className="rich-html"
               dangerouslySetInnerHTML={{ __html: selectedInbox.bodyHtml || selectedInbox.bodyText || selectedInbox.preview }}
             />
           </div>
@@ -853,7 +856,7 @@ export default function EmailsPage() {
                     <Image src={url} alt={`Email image ${i + 1}`} fill className="rounded-lg object-cover" />
                     <button
                       onClick={() => removeEmailImage(i)}
-                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-error-text opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
                       aria-label="Remove image"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -888,7 +891,7 @@ export default function EmailsPage() {
                     </a>
                     <button
                       onClick={() => removeEmailAttachment(i)}
-                      className="text-gray-50 hover:text-red-500 shrink-0 ml-2"
+                      className="text-gray-50 hover:text-error-text shrink-0 ml-2"
                       aria-label="Remove attachment"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>

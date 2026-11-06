@@ -66,12 +66,14 @@ function getMonthDays(year: number, month: number): Date[] {
 }
 
 const EVENT_COLORS: Record<CalendarEvent["color"], { bg: string; text: string; dot: string }> = {
-  teal: { bg: "bg-teal-500/10", text: "text-teal-500", dot: "bg-teal-500" },
-  blue: { bg: "bg-blue-500/10", text: "text-blue-500", dot: "bg-blue-500" },
-  green: { bg: "bg-green-500/10", text: "text-green-500", dot: "bg-green-500" },
-  yellow: { bg: "bg-amber-500/10", text: "text-amber-500", dot: "bg-amber-500" },
-  red: { bg: "bg-red-500/10", text: "text-red-500", dot: "bg-red-500" },
-  gray: { bg: "bg-gray-500/10", text: "text-gray-500", dot: "bg-gray-400" },
+  // `teal` is the brand hue, so it maps to --primary rather than a raw palette
+  // tone — raw -500 text measures 2.3:1 on the light card.
+  teal: { bg: "bg-primary/10", text: "text-primary", dot: "bg-primary" },
+  blue: { bg: "bg-info-soft", text: "text-info-text", dot: "bg-info" },
+  green: { bg: "bg-success-soft", text: "text-success-text", dot: "bg-success" },
+  yellow: { bg: "bg-warning-soft", text: "text-warning-text", dot: "bg-warning" },
+  red: { bg: "bg-error-soft", text: "text-error-text", dot: "bg-error" },
+  gray: { bg: "bg-gray-60/10", text: "text-gray-60", dot: "bg-gray-50" },
 };
 
 // ─── Component ───────────────────────────────────────
@@ -306,23 +308,23 @@ export default function CalendarView({ events, onDateClick, loading }: CalendarV
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-4 text-xs text-gray-50">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-teal-500" />
+          <span className="w-2.5 h-2.5 rounded-full bg-primary" />
           Confirmed booking
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+          <span className="w-2.5 h-2.5 rounded-full bg-warning" />
           Pending booking
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+          <span className="w-2.5 h-2.5 rounded-full bg-success" />
           Completed
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+          <span className="w-2.5 h-2.5 rounded-full bg-error" />
           Cancelled
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+          <span className="w-2.5 h-2.5 rounded-full bg-info" />
           Google Calendar event
         </div>
       </div>

@@ -780,7 +780,7 @@ const { toast } = useToast();
 
                         if (isTesting) {
                           return (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-300">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-info-soft px-2 py-0.5 text-[10px] font-semibold text-info-text">
                               <svg className="w-2.5 h-2.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10" strokeDasharray="31.4 31.4" /></svg>
                               Testing…
                             </span>
@@ -796,7 +796,7 @@ const { toast } = useToast();
                         }
                         if (lastTestSuccess === false) {
                           return (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-300">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-error-soft px-2 py-0.5 text-[10px] font-semibold text-error-text">
                               <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                               Failed
                             </span>
@@ -804,7 +804,7 @@ const { toast } = useToast();
                         }
                         if (enabled) {
                           return (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-warning-soft px-2 py-0.5 text-[10px] font-semibold text-warning-text">
                               <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6" /></svg>
                               Untested
                             </span>
@@ -830,7 +830,7 @@ const { toast } = useToast();
                       {provider.fields.map((field) => (
                         <div key={field.key} className={field.key === "serviceAccountKey" ? "sm:col-span-2" : ""}>
                           <label className="text-xs font-medium text-gray-70 mb-1 block">
-                            {field.label} {field.required && <span className="text-red-500">*</span>}
+                            {field.label} {field.required && <span className="text-error-text">*</span>}
                           </label>
                           {field.key === "serviceAccountKey" ? (
                             <textarea
@@ -864,7 +864,7 @@ const { toast } = useToast();
                       if (!result) return null;
                       return (
                         <div className={`rounded-lg px-3 py-2 text-xs ${
-                          result.success ? "bg-primary/10 text-primary" : "bg-red-500/10 text-red-300"
+                          result.success ? "bg-primary/10 text-primary" : "bg-error-soft text-error-text"
                         }`}>
                           <p className="font-medium">{result.success ? "✓ Connected" : "✗ Connection failed"}</p>
                           {result.details && <p className="mt-0.5 opacity-80 break-all">{result.details}</p>}

@@ -116,9 +116,9 @@ export default function OpportunitiesSection() {
 
       <DashboardSection title="Findings">
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-gray-60">Loading…</p>
         ) : filtered.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-60">
             No opportunities yet. The agent runs daily — check the Agent tab to trigger a manual run.
           </p>
         ) : (
@@ -169,7 +169,7 @@ export default function OpportunitiesSection() {
                             href={p.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                            className="text-info-text hover:underline"
                           >
                             view
                           </a>

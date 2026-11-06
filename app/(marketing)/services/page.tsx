@@ -49,7 +49,7 @@ const servicesCitationSources = [
 export async function generateMetadata() {
   return getPageSEO("/services", {
     title: "Virtual Assistant Services",
-    description: "Explore CreedaVA's bilingual virtual assistant services — admin support, customer service, bookkeeping, social media — and compare our Starter, Professional, and Enterprise packages.",
+    description: "Explore CreedaVA's bilingual virtual assistant services — admin support, customer service, bookkeeping, social media, real estate, insurance, and more.",
   });
 }
 

@@ -568,16 +568,18 @@ export default function SeoContentSection() {
             <span className="text-sm text-gray-70">No-index this page (hide from search engines)</span>
           </label>
 
-          {/* Search preview */}
+          {/* Search preview — deliberately stays Google-white in both themes.
+              #1a0dab / #006621 are Google's own SERP colours; on a dark card
+              they drop to ~1.2:1, so the panel keeps its own light surface. */}
           <DashboardSection title="Google Search Preview">
-            <div className="rounded-lg bg-card border border-border p-4">
+            <div className="rounded-lg bg-mk-white border border-border p-4">
               <p className="text-lg text-[#1a0dab] font-medium truncate">
                 {editForm.title || "Page Title"} | CreedaVA
               </p>
               <p className="text-sm text-[#006621] truncate">
                 creedava.com{editForm.path}
               </p>
-              <p className="text-sm text-gray-60 line-clamp-2 mt-0.5">
+              <p className="text-sm text-[#4d5156] line-clamp-2 mt-0.5">
                 {editForm.description || "Page description will appear here..."}
               </p>
             </div>

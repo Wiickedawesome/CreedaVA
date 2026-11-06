@@ -43,9 +43,9 @@ export function RankingsTable() {
   return (
     <DashboardSection title="Position snapshots (auto, every Monday)">
       {loading ? (
-        <p className="text-sm text-gray-500">Loading…</p>
+        <p className="text-sm text-gray-60">Loading…</p>
       ) : summary.length === 0 ? (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-60">
           No snapshots yet. The agent captures rank history every Monday at 03:30. Lower position is better.
         </p>
       ) : (
@@ -70,7 +70,7 @@ export function RankingsTable() {
                   <td className="px-3 py-2">{s.latest.position.toFixed(1)}</td>
                   <td
                     className={`px-3 py-2 ${
-                      s.trend > 0 ? "text-green-700" : s.trend < 0 ? "text-red-700" : "text-gray-500"
+                      s.trend > 0 ? "text-success-text" : s.trend < 0 ? "text-error-text" : "text-gray-60"
                     }`}
                   >
                     {s.trend === 0 ? "—" : s.trend > 0 ? `+${s.trend.toFixed(1)}` : s.trend.toFixed(1)}
@@ -79,7 +79,7 @@ export function RankingsTable() {
                   <td className="px-3 py-2">{s.latest.impressions}</td>
                   <td className="px-3 py-2">{s.latest.clicks}</td>
                   <td className="px-3 py-2">{(s.latest.ctr * 100).toFixed(1)}%</td>
-                  <td className="px-3 py-2 text-gray-500">{s.samples}</td>
+                  <td className="px-3 py-2 text-gray-60">{s.samples}</td>
                 </tr>
               ))}
             </tbody>

@@ -1,4 +1,5 @@
 import { getPageSEO } from "@/lib/firebase/seo";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { AboutContent } from "./about-content";
 import { AICitationReadiness } from "@/components/seo/ai-citation-readiness";
 
@@ -51,10 +52,12 @@ export async function generateMetadata() {
   });
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const { t } = await getDictionary();
+
   return (
     <>
-      <AboutContent />
+      <AboutContent t={t} />
       <AICitationReadiness
         path="/about"
         title="About CreedaVA"

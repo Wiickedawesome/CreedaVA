@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { BackToTop } from "@/components/layout/back-to-top";
 import { ForceTheme } from "@/components/layout/force-theme";
 import Script from "next/script";
 import { Suspense } from "react";
@@ -23,9 +24,12 @@ const GA_MEASUREMENT_ID =
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "CreedaVA",
+  // Full business name in `name`; the brand mark and the short name in
+  // `alternateName`, so search engines learn that all three refer to one company.
+  name: "Creeda Virtual Assistants",
+  alternateName: ["CreedaVA", "Creeda"],
   url: "https://creedava.com",
-  logo: "https://creedava.com/logo.webp",
+  logo: "https://creedava.com/creedava-logo.svg",
   description:
     "Professional virtual assistant services for businesses. Save time, reduce costs, and scale your operations.",
   address: {
@@ -77,6 +81,7 @@ gtag('config', '${GA_MEASUREMENT_ID}');`}
         <Navbar />
         <main id="main-content" className="min-h-screen">{children}</main>
         <Footer />
+        <BackToTop />
       </div>
     </LanguageProvider>
   );

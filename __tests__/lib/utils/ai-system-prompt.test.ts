@@ -7,15 +7,18 @@ import {
   buildContentPrompt,
   getPageContext,
   CREEDA_IDENTITY,
-  DESIGN_SYSTEM,
   SEO_ALGORITHMS,
   FORUM_CONTENT_RULES,
-  BLOG_CONTENT_RULES,
-  LANDING_PAGE_RULES,
   CITATION_RULES,
   TOOL_USE_GUIDELINES,
   PAGE_CONTEXT_MAP,
 } from "@/lib/utils/ai-system-prompt";
+import {
+  BLOG_BODY_RULES_2026,
+  DESIGN_SYSTEM_2026,
+  HTML_CONTENT_RULES_2026,
+  LANDING_PAGE_RULES_2026,
+} from "@/lib/utils/ai-design-2026";
 import { ALL_SPECIALISTS } from "@/lib/utils/ai-specialists";
 import {
   MAX_SYSTEM_INSTRUCTION_LENGTH,
@@ -31,9 +34,21 @@ describe("AI System Prompt", () => {
       expect(CREEDA_IDENTITY).toContain("CreedaVA");
     });
 
-    it("DESIGN_SYSTEM contains CSS variable references", () => {
-      expect(DESIGN_SYSTEM).toContain("--");
-      expect(DESIGN_SYSTEM.length).toBeGreaterThan(50);
+    it("DESIGN_SYSTEM_2026 uses the --mk-* tokens and drops the old headings", () => {
+      expect(DESIGN_SYSTEM_2026).toContain("--mk-ink");
+      expect(DESIGN_SYSTEM_2026).toContain("--mk-paper");
+      // The legacy palette is named once, in the BANNED list, so a model can
+      // recognise what not to use. What must be gone is the old positive
+      // instruction: the approved-gradient table and the CoolGray scale.
+      expect(DESIGN_SYSTEM_2026).toContain("BANNED");
+      expect(DESIGN_SYSTEM_2026).not.toContain("APPROVED GRADIENTS");
+      expect(DESIGN_SYSTEM_2026).not.toContain("COOLGRAY");
+      expect(DESIGN_SYSTEM_2026).not.toContain("use sparingly");
+    });
+
+    it("HTML_CONTENT_RULES_2026 forbids <style> tags and inline colour", () => {
+      expect(HTML_CONTENT_RULES_2026).toContain("NEVER emit a <style> tag");
+      expect(HTML_CONTENT_RULES_2026).toContain("Inline styles are acceptable for LAYOUT only");
     });
 
     it("SEO_ALGORITHMS contains ranking strategy content", () => {
@@ -45,12 +60,14 @@ describe("AI System Prompt", () => {
       expect(FORUM_CONTENT_RULES).toContain("FORUM");
     });
 
-    it("BLOG_CONTENT_RULES contains blog directives", () => {
-      expect(BLOG_CONTENT_RULES).toContain("BLOG");
+    it("BLOG_BODY_RULES_2026 forbids a body h1", () => {
+      expect(BLOG_BODY_RULES_2026).toContain("BLOG BODY RULES");
+      expect(BLOG_BODY_RULES_2026).toContain("<h1> in the body");
     });
 
-    it("LANDING_PAGE_RULES contains LP generation directives", () => {
-      expect(LANDING_PAGE_RULES).toContain("LANDING PAGE");
+    it("LANDING_PAGE_RULES_2026 forbids rebuilding the process cards", () => {
+      expect(LANDING_PAGE_RULES_2026).toContain("LANDING PAGE BODY RULES");
+      expect(LANDING_PAGE_RULES_2026).toContain("number circles");
     });
 
     it("CITATION_RULES contains citation directives", () => {
@@ -246,11 +263,15 @@ describe("AI System Prompt", () => {
   // ─── buildLandingPagePrompt ─────────────────────────
 
   describe("buildLandingPagePrompt", () => {
-    it("includes design system and creative framework", () => {
+    it("includes the 2026 design + HTML rules and no legacy design blob", () => {
       const result = buildLandingPagePrompt("Bilingual VA services");
-      expect(result.systemInstruction).toContain("DESIGN SYSTEM");
-      expect(result.systemInstruction).toContain("CREATIVE HTML");
-      expect(result.systemInstruction).toContain("LANDING PAGE");
+      expect(result.systemInstruction).toContain("DESIGN SYSTEM (2026)");
+      expect(result.systemInstruction).toContain("HTML CONTENT RULES");
+      expect(result.systemInstruction).toContain("LANDING PAGE BODY RULES");
+      // The pre-`--mk-*` blobs must never reach a prompt again: they ask for
+      // gradients, gold accents and <style> blocks the site no longer has.
+      expect(result.systemInstruction).not.toContain("CREATIVE HTML DESIGN FRAMEWORK");
+      expect(result.systemInstruction).not.toContain("CREEDAVA DESIGN SYSTEM — Complete");
       expect(result.userContent).toContain("Bilingual VA services");
     });
   });
@@ -262,8 +283,9 @@ describe("AI System Prompt", () => {
       const result = buildContentPrompt("Blog AI", "Write a post", "", {
         isBlog: true,
       });
-      expect(result.systemInstruction).toContain("BLOG");
-      expect(result.systemInstruction).toContain("DESIGN SYSTEM");
+      expect(result.systemInstruction).toContain("BLOG BODY RULES");
+      expect(result.systemInstruction).toContain("DESIGN SYSTEM (2026)");
+      expect(result.systemInstruction).not.toContain("BLOG & ARTICLE CONTENT");
     });
 
     it("includes forum rules when isForum is true", () => {
@@ -276,6 +298,7 @@ describe("AI System Prompt", () => {
     it("does not include blog rules when isBlog is false", () => {
       const result = buildContentPrompt("Email AI", "Write email", "");
       expect(result.systemInstruction).not.toContain("BLOG & ARTICLE CONTENT");
+      expect(result.systemInstruction).not.toContain("BLOG BODY RULES");
     });
   });
 

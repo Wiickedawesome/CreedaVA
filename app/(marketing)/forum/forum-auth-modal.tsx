@@ -93,27 +93,33 @@ export function ForumAuthModal({
   }
 
   const inputClass =
-    "w-full px-3 py-2.5 border border-gray-20 rounded text-sm focus:outline-none focus:border-primary placeholder:text-gray-40";
+    "w-full rounded-(--mk-radius) px-3.5 py-2.5 border border-mk-line bg-mk-white text-sm text-mk-ink placeholder:text-mk-ink-mute focus:outline-none focus:border-mk-brand focus:ring-1 focus:ring-mk-brand";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-mk-ink/50" onClick={onClose} aria-hidden="true" />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="forum-auth-title"
+        className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-(--mk-radius-lg) border border-mk-line bg-mk-white p-6 shadow-(--mk-shadow-float)"
+      >
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-60 hover:text-gray-80 text-xl leading-none"
+          aria-label="Close"
+          className="absolute right-3 top-3 text-xl leading-none text-mk-ink-mute transition-colors hover:text-mk-ink"
         >
           &times;
         </button>
 
-        <h2 className="text-xl font-bold text-gray-100 mb-1">
+        <h2 id="forum-auth-title" className="mb-1 font-display text-xl font-extrabold text-mk-ink">
           {mode === "signIn" ? t.forum.signIn : t.forum.signUp}
         </h2>
         {mode === "signUp" && (
-          <p className="text-xs text-gray-60 mb-4">
+          <p className="text-xs text-mk-ink-mute mb-4">
             {t.forum.signUpSubtitle}
           </p>
         )}
@@ -157,7 +163,7 @@ export function ForumAuthModal({
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   aria-label={t.forum.country}
-                  className={`${inputClass} ${!country ? "text-gray-60" : ""}`}
+                  className={`${inputClass} ${!country ? "text-mk-ink-mute" : ""}`}
                 >
                   <option value="" disabled>
                     {t.forum.country}
@@ -213,7 +219,7 @@ export function ForumAuthModal({
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-primary text-white text-sm font-medium rounded hover:bg-primary-light transition-colors disabled:opacity-50"
+            className="w-full py-2.5 bg-mk-brand text-white text-sm font-medium rounded hover:bg-mk-brand-bright transition-colors disabled:opacity-50"
           >
             {loading
               ? "..."
@@ -223,7 +229,7 @@ export function ForumAuthModal({
           </button>
         </form>
 
-        <div className="mt-4 text-center text-xs text-gray-60">
+        <div className="mt-4 text-center text-xs text-mk-ink-mute">
           {mode === "signIn" ? (
             <>
               {t.forum.noAccount}{" "}
@@ -232,7 +238,7 @@ export function ForumAuthModal({
                   setMode("signUp");
                   setError("");
                 }}
-                className="text-primary font-medium hover:underline"
+                className="text-mk-brand font-medium hover:underline"
               >
                 {t.forum.createAccount}
               </button>
@@ -245,7 +251,7 @@ export function ForumAuthModal({
                   setMode("signIn");
                   setError("");
                 }}
-                className="text-primary font-medium hover:underline"
+                className="text-mk-brand font-medium hover:underline"
               >
                 {t.forum.signInHere}
               </button>

@@ -60,14 +60,16 @@
 .ai-code-block {
   font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
   font-size: 0.8125em;
-  background: var(--gray-100);
-  color: var(--gray-20);
+  /* Deliberately theme-independent: --gray-100/--gray-20 invert, which turned
+     this into a full-white block on the dark admin page. */
+  background: var(--code-bg);
+  color: var(--code-fg);
   border-radius: 10px;
   padding: 1rem 1.25rem;
   margin: 0.875rem 0;
   overflow-x: auto;
   white-space: pre;
-  border: 1px solid var(--gray-80);
+  border: 1px solid var(--code-line);
 }
 
 /* ── Lists — spaced & polished ── */
@@ -247,5 +249,100 @@
   background: linear-gradient(135deg, color-mix(in srgb, var(--sc) 10%, transparent), color-mix(in srgb, var(--sc) 5%, transparent));
   color: var(--sc);
 }
+/* Escalation step between --warning and --error. Used by the task priority dot
+   and the customer "At Risk" bucket: reusing either endpoint collapses two
+   adjacent severity levels into one colour. */
+.priority-high { background-color: color-mix(in srgb, var(--warning) 55%, var(--error)); }
+
 /* RTE dynamic min-height */
 .rte-area { min-height: var(--rte-min-h, 200px); }
+
+/* ===========================
+   .rich-html — typography for INJECTED HTML in the admin
+   ===========================
+   Three surfaces render third-party HTML with dangerouslySetInnerHTML: the
+   e-mail inbox body, the landing-page body preview, and the RTE preview. They
+   all used Tailwind's `prose`, which emits ZERO css here because
+   @tailwindcss/typography is not installed — the bodies rendered as unstyled
+   run-on text.
+
+   This is deliberately NOT .mk-article: that one paints the marketing ink
+   colours, which do not flip for dark mode. Everything below reads --gray-* and
+   --primary, so it follows the theme like the rest of the dashboard. */
+.rich-html {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--gray-80);
+  overflow-wrap: anywhere;
+}
+.rich-html > * + * { margin-top: 0.85em; }
+
+.rich-html h1,
+.rich-html h2,
+.rich-html h3,
+.rich-html h4 {
+  color: var(--gray-100);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.rich-html h1 { font-size: 1.35rem; margin-top: 1.35em; }
+.rich-html h2 { font-size: 1.15rem; margin-top: 1.3em; }
+.rich-html h3 { font-size: 1rem; margin-top: 1.2em; }
+.rich-html h4 { font-size: 0.875rem; margin-top: 1.1em; }
+.rich-html > :first-child { margin-top: 0; }
+
+.rich-html p { margin: 0; }
+.rich-html strong, .rich-html b { color: var(--gray-100); font-weight: 600; }
+.rich-html em, .rich-html i { color: var(--gray-70); }
+
+.rich-html a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+.rich-html a:hover { color: var(--primary-light); }
+
+.rich-html ul, .rich-html ol { margin: 0; padding-left: 1.4em; }
+.rich-html ul { list-style: disc; }
+.rich-html ol { list-style: decimal; }
+.rich-html li { margin: 0.2em 0; }
+.rich-html li::marker { color: var(--gray-50); }
+
+.rich-html blockquote {
+  margin: 0;
+  padding: 0.6em 0 0.6em 1em;
+  border-left: 3px solid var(--primary);
+  color: var(--gray-70);
+  font-style: italic;
+}
+
+.rich-html code {
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.85em;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: var(--gray-20);
+  border: 1px solid var(--gray-30);
+  color: var(--gray-100);
+}
+.rich-html pre {
+  margin: 0;
+  padding: 0.85em 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border: 1px solid var(--code-line);
+}
+.rich-html pre code { background: none; border: none; padding: 0; color: inherit; }
+
+.rich-html table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.rich-html th, .rich-html td {
+  padding: 0.4em 0.6em;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.rich-html th { background: var(--gray-20); color: var(--gray-90); font-weight: 600; }
+
+.rich-html hr { border: 0; border-top: 1px solid var(--border); margin: 1.2em 0; }
+
+/* Inline styles in stored/generated HTML beat this stylesheet, so anything the
+   AI or an e-mail client baked in still wins. That is expected — this only
+   provides the defaults the markup left unspecified. */
+

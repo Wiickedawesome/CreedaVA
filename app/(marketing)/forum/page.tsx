@@ -57,6 +57,9 @@ export async function generateMetadata() {
 export default function ForumPage() {
   return (
     <>
+      {/* The visible header bar renders "Forum" as an h2, so this sr-only h1 is
+          the page's only level-1 heading. It carries the descriptive title that
+          the compact bar text cannot. */}
       <h1 className="sr-only">CreedaVA Community Forum</h1>
       <ForumContent />
       <AICitationReadiness

@@ -19,13 +19,16 @@ import { Button, Input, Textarea } from "@/components/ui";
 import { cloudSyncCampaignData, cloudSendBulkEmail } from "@/lib/firebase/cloud-functions";
 import type { Campaign, EmailCampaign } from "@/lib/types/content";
 
+// Platform chips keep their real brand hue so the columns stay distinguishable
+// at a glance; each needs an explicit dark variant because the -100/-700 pair
+// stops reading the moment the card turns dark.
 const platformColors: Record<string, string> = {
-  google: "bg-blue-100 text-blue-700",
-  facebook: "bg-indigo-100 text-indigo-700",
-  linkedin: "bg-sky-100 text-sky-700",
-  instagram: "bg-pink-100 text-pink-700",
-  twitter: "bg-gray-100 text-gray-700",
-  email: "bg-emerald-100 text-emerald-700",
+  google: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300",
+  facebook: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300",
+  linkedin: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
+  instagram: "bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300",
+  twitter: "bg-gray-20 text-gray-80",
+  email: "bg-success-soft text-success-text",
 };
 
 const BUSINESS_EMAILS = [
@@ -345,7 +348,7 @@ export default function CampaignsPage() {
       key: "fromAddress",
       header: "From",
       render: (ec) => (
-        <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-success-soft text-success-text">
           {ec.fromAddress?.split("@")[0] || "—"}
         </span>
       ),
@@ -390,7 +393,7 @@ export default function CampaignsPage() {
       render: (c) => (
         <div>
           <p className="text-sm font-medium text-gray-90">{c.name}</p>
-          <span className={`text-xs px-1.5 py-0.5 rounded capitalize ${platformColors[c.platform] || "bg-gray-100 text-gray-600"}`}>
+          <span className={`text-xs px-1.5 py-0.5 rounded capitalize ${platformColors[c.platform] || "bg-gray-20 text-gray-70"}`}>
             {c.platform}
           </span>
         </div>

@@ -19,9 +19,9 @@ interface OnPageAudit {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 85) return "text-green-700 bg-green-50 border-green-200";
-  if (score >= 70) return "text-yellow-700 bg-yellow-50 border-yellow-200";
-  return "text-red-700 bg-red-50 border-red-200";
+  if (score >= 85) return "text-success-text bg-success-soft border-success-soft-line";
+  if (score >= 70) return "text-warning-text bg-warning-soft border-warning-soft-line";
+  return "text-error-text bg-error-soft border-error-soft-line";
 }
 
 export function OnPageAuditsList() {
@@ -33,9 +33,9 @@ export function OnPageAuditsList() {
   return (
     <DashboardSection title="On-page audits (auto, every Monday)">
       {loading ? (
-        <p className="text-sm text-gray-500">Loading…</p>
+        <p className="text-sm text-gray-60">Loading…</p>
       ) : audits.length === 0 ? (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-60">
           No audits yet. The agent runs every Monday at 03:00 (America/Belize), or click <strong>Run now</strong> on the SEO Agent tab.
         </p>
       ) : (
@@ -61,18 +61,18 @@ export function OnPageAuditsList() {
                       <span
                         className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium uppercase ${
                           i.severity === "high"
-                            ? "bg-red-100 text-red-700"
+                            ? "bg-error-soft text-error-text"
                             : i.severity === "medium"
-                              ? "bg-yellow-100 text-yellow-700"
+                              ? "bg-warning-soft text-warning-text"
                               : i.severity === "low"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-gray-100 text-gray-700"
+                                ? "bg-info-soft text-info-text"
+                                : "bg-gray-20 text-gray-80"
                         }`}
                       >
                         {i.severity}
                       </span>
-                      <span className="font-mono text-gray-500">{i.code}</span>
-                      <span className="text-gray-700">{i.message}</span>
+                      <span className="font-mono text-gray-60">{i.code}</span>
+                      <span className="text-gray-80">{i.message}</span>
                     </li>
                   ))}
                 </ul>

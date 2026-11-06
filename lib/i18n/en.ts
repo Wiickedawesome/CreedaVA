@@ -3,6 +3,7 @@ const en = {
   nav: {
     home: "Home",
     services: "Services",
+    pricing: "Pricing",
     about: "About",
     news: "News",
     contact: "Contact",
@@ -12,22 +13,49 @@ const en = {
 
   // ─── Home ──────────────────────────────────────
   home: {
-    heroBadge: "Professional Virtual Assistants",
-    heroTitle: "Focus on What",
-    heroTitleHighlight: "Matters Most",
+    heroTitle: "Real people. Real support.",
+    heroTitleHighlight: "More time to grow.",
     heroDesc:
-      "Delegate your administrative tasks to skilled virtual assistants \u2014 professionally bilingual in English and Spanish. Save time, reduce costs, and scale your business with CreedaVA\u2019s trusted support services.",
-    heroCtaPrimary: "Get Started",
-    heroCtaSecondary: "View Services",
+      "Creeda Virtual Assistants gives your business a dedicated human assistant who handles the daily work \u2014 inbox, calendar, customers, admin \u2014 so your hours go to the parts only you can do.",
+    heroCtaPrimary: "Get started",
+    heroCtaSecondary: "Explore services",
+    heroProof: ["100% human", "English & Spanish", "Built around your business"],
+    heroSectorsLabel: "Built for teams in",
+    heroSectors:
+      "Real estate \u00b7 Legal \u00b7 Insurance \u00b7 E-commerce \u00b7 Professional services",
+    heroVisual: {
+      windowLabel: "today.creedava.com",
+      assistantName: "Maria",
+      assistantRole: "Executive Assistant",
+      status: "Online",
+      queueTitle: "Today\u2019s queue",
+      tasks: [
+        "Inbox triaged \u2014 47 emails",
+        "Calendar confirmed for Thursday",
+        "CRM records updated",
+        "Weekly summary ready to send",
+      ],
+      queueFooter: "12 tasks completed this week",
+      inboxTitle: "Inbox",
+      inboxValue: "0 unread",
+      calendarMonth: "March",
+      calendarDate: "Thu \u00b7 2:30 PM",
+      calendarDetail: "Consultation booked",
+    },
     stats: {
-      serviceCategories: "Service Categories",
+      flatFee: "Flat Monthly Fee",
       supportPlans: "Support Plans",
       availability: "Bilingual Support",
       onboardingDays: "Days to Onboard",
     },
+    statsEyebrow: "By the numbers",
+    statsTitle: "A small team you can actually afford.",
+    statsLede:
+      "No salaries, no benefits, no equipment. Choose the hours you need and adjust them as the work grows.",
     howItWorks: "How It Works",
     howItWorksDesc:
       "Get started with your dedicated virtual assistant in just a few steps. Most clients are fully onboarded within 5\u20137 business days.",
+    processEyebrow: "How it works",
     steps: [
       {
         title: "Free Consultation",
@@ -42,45 +70,395 @@ const en = {
         desc: "Your VA hits the ground running. We provide onboarding support and ongoing management to ensure success.",
       },
     ],
-    getStartedToday: "Get Started Today",
-    whyChoose: "Why Choose CreedaVA?",
-    whyChooseDesc:
-      "We combine expertise, reliability, and personalized service to help your business thrive.",
-    whyItems: [
+    compareEyebrow: "The honest comparison",
+    compareTitle: "Three ways to get the work done.",
+    compareLede:
+      "There is no magic here. The difference is who does the work, what it costs, and how fast it starts.",
+    compareBadge: "Start here",
+    compareResultLabel: "Result:",
+    compareColumns: [
       {
-        title: "Bilingual Professionals",
-        desc: "Our VAs are fluent in both English and Spanish at a professional level, and are carefully vetted for expertise across multiple industries.",
+        label: "Do it yourself",
+        points: [
+          "Your own hours are the ceiling on what the business can take on",
+          "Nothing gets documented, so nothing can be handed over later",
+          "Every new task competes with the work that actually earns",
+        ],
+        result: "your calendar decides how much you can grow.",
       },
       {
-        title: "Flexible & Scalable",
-        desc: "Scale up or down as your business evolves. All services are covered by a clear, formal service agreement so expectations are defined from day one.",
+        label: "Hire in-house",
+        points: [
+          "Salary, benefits, equipment and office space",
+          "Employer payroll tax, W-2 and 1099 filings, workers\u2019 comp",
+          "Recruiting and training take weeks before any work lands",
+          "One person covers one skill set, on fixed hours",
+        ],
+        result: "a full employment overhead, not just a salary.",
       },
       {
-        title: "Cost Effective",
-        desc: "Significant savings compared to in-house hiring \u2014 pay only for the support you need, with no overhead or benefits costs.",
-      },
-      {
-        title: "Data Secure",
-        desc: "Enterprise-grade security and strict NDAs to protect your business information.",
+        label: "Work with Creeda",
+        points: [
+          "A dedicated bilingual assistant matched to your needs",
+          "One flat monthly fee \u2014 no payroll tax, W-2, 1099 or benefits admin",
+          "Onboarded and working within 5\u20137 business days",
+          "NDA and documented workflows from day one",
+        ],
+        result: "support and a team you can afford.",
       },
     ],
-    whySteps: [
-      { title: "Tell us your needs", desc: "Describe the tasks you need help with" },
-      { title: "Get matched", desc: "We pair you with the ideal bilingual VA for your needs" },
-      { title: "Start delegating", desc: "Focus on growth while we handle the rest" },
+    dayEyebrow: "A day with your assistant",
+    dayTitle: "8:00 to 5:00. You are not in any of it.",
+    dayLede:
+      "This is the shape of a normal working day once the handoff is done. Your assistant works your queue, your tools and your standards \u2014 then sends you a summary.",
+    dayPoints: [
+      "Work reaches your inbox already triaged and prioritised",
+      "Recurring tasks run on a schedule you approve",
+      "You review outcomes, not process",
     ],
-    ctaTitle: "Ready to Get Started?",
-    ctaDesc:
-      "Join businesses that trust CreedaVA to handle their operations. Book a free consultation today.",
-    ctaBookConsultation: "Book a Consultation",
-    ctaViewPackages: "View Packages",
+    dayTimelineLabel: "Tuesday",
+    dayTimelineBadge: "Sample day",
+    dayTimeline: [
+      { time: "08:05", task: "Inbox triaged, four replies drafted", tag: "Admin" },
+      { time: "09:20", task: "Three meetings confirmed, one moved", tag: "Calendar" },
+      { time: "11:40", task: "CRM updated with new leads", tag: "Data" },
+      { time: "14:00", task: "Weekly report sent to the team", tag: "Reporting" },
+      { time: "16:30", task: "Follow-ups queued for tomorrow", tag: "Customer" },
+    ],
+    humanEyebrow: "Real people, not software",
+    humanTitle:
+      "Technology helps businesses move faster. People are what make the difference.",
+    humanLede:
+      "Creeda is not a chatbot and not a template. You get a named human assistant who learns your business, works inside your tools, and is accountable for the outcome.",
+    humanPoints: [
+      "Vetted, professionally bilingual assistants \u2014 not anonymous task workers",
+      "Trained on your workflows, tone and tools before the first task",
+      "Backed by a team, so cover does not vanish when someone takes a day off",
+    ],
+    humanChatLabel: "creedava \u00b7 messages",
+    humanChatStatus: "Online now",
+    humanChatFooter: "Task completed and logged",
+    humanChat: [
+      { from: "client", text: "Can you move my 2:30 and send the updated invite?" },
+      {
+        from: "assistant",
+        text: "Done \u2014 moved to Thursday at 10:00. Invite sent to both attendees.",
+      },
+      { from: "client", text: "Perfect, thank you." },
+    ],
+    handoffEyebrow: "Start somewhere",
+    handoffTitle: "What would you hand off first?",
+    handoffLede:
+      "Pick the tasks that eat your week. Nothing is sent anywhere until you choose to talk to us.",
+    // Capped at 10 — measured at 1440 the list was 5 rows / 217px at 14 pills and
+    // 9 rows / 397px on a phone, which is half a screen for a picker. Ten keeps
+    // 4 rows desktop / 6 mobile. Order matters: the six chore-shaped pain points
+    // lead, the generic categories fill the remainder.
+    handoffTasks: [
+      "Chasing late payments",
+      "Following up on leads",
+      "Answering the phone",
+      "Inbox management",
+      "Calendar & scheduling",
+      "Appointment reminders",
+      "Customer replies",
+      "Data entry & CRM",
+      "Meeting notes & follow-ups",
+      "Invoicing & expenses",
+    ],
+    handoffEmpty: "Select the tasks you would hand off first.",
+    handoffSelectedSuffix: "recurring tasks ready to delegate",
+    handoffSelectedSuffixOne: "recurring task ready to delegate",
+    handoffClear: "Clear",
+    handoffCta: "Talk it through",
+    faqEyebrow: "Questions",
+    faqTitle: "The things people ask before starting.",
+    faqLede:
+      "If something is missing, ask us directly \u2014 we answer every inquiry within 24 hours.",
+    finalEyebrow: "Next step",
+    finalTitle: "Ready to get more done without doing it all yourself?",
+    finalLede:
+      "Book a free consultation. Tell us what is slowing you down, and we will tell you honestly whether a virtual assistant is the right fix.",
+    finalPrimary: "Book a consultation",
+    finalSecondary: "See packages",
+    finalTrust: [
+      "Free 30-minute consultation",
+      "Reply within 24 hours",
+      "English & Spanish support",
+    ],
   },
 
   // ─── Services ──────────────────────────────────
   services: {
-    heroTitle: "Our Services",
-    heroDesc:
-      "From administrative tasks to specialized support, our virtual assistants are trained to handle your unique business needs with professionalism and expertise. Whether you need help scaling operations or freeing up your time to focus on growth, we have the right solution \u2014 with professional, bilingual support in English and Spanish.",
+    directoryTitle: "A closer look at what we do.",
+    directoryDesc:
+      "Each service in turn \u2014 what it covers, why it helps, and what the work looks like. Read straight through or jump to the one you need.",
+    detailIncludes: "What it covers",
+    detailWhy: "Why it matters",
+    detailStart: "Start with this one",
+    detailMockupNote: "An illustration of the work, not a live screenshot.",
+    mockup: {
+      inbox: {
+        label: "Inbox",
+        search: "Search mail",
+        from: ["Marisol R.", "A. Grant", "D. Osei", "Priya N."],
+        subject: [
+          "Re: March supplier invoice",
+          "Contract renewal \u2014 signature",
+          "Travel dates confirmed",
+          "Q2 report, first draft",
+        ],
+        replied: "Replied",
+        caption: "Nothing left unread",
+      },
+      calendar: {
+        label: "This week",
+        days: ["M", "T", "W", "T", "F"],
+        events: [
+          { time: "09:00", title: "Board sync" },
+          { time: "11:30", title: "1:1 with ops" },
+          { time: "14:00", title: "Investor call" },
+          { time: "All day", title: "Flight to Atlanta" },
+        ],
+        caption: "Deadlines and meetings in one calendar",
+      },
+      hiring: {
+        label: "Now hiring",
+        live: "Live",
+        role: "Operations Coordinator",
+        meta: "Remote \u00b7 Full time",
+        stages: ["Applied", "Screening", "Interview"],
+        counts: ["24", "8", "3"],
+        caption: "Shortlist ready to interview",
+      },
+      documents: {
+        label: "Documents",
+        matter: "Matter 2026-014",
+        files: [
+          "Motion to compel",
+          "Exhibit A \u2014 Bates 001-148",
+          "Engagement letter",
+          "Client intake form",
+        ],
+        stamp: "Filed",
+        caption: "Filed before the deadline",
+      },
+      conversation: {
+        label: "Conversation",
+        customer: "Customer",
+        agent: "Assistant",
+        message: [
+          "My order was meant to arrive Monday and nobody has replied.",
+          "Sorry about the wait \u2014 the courier has it out for delivery today. I have refunded the shipping.",
+        ],
+        typing: "typing",
+        resolved: "Resolved",
+      },
+      published: {
+        label: "Published",
+        posts: [
+          "New season, new menu.",
+          "Behind the scenes at the studio.",
+          "Doors open Saturday \u2014 come by.",
+        ],
+        caption: "Scheduled and published in hours",
+      },
+      report: {
+        label: "Report",
+        title: "Channel performance \u2014 Q2",
+        findings: [
+          "Organic search brings in most sign-ups",
+          "Churn concentrates in month two",
+          "Two segments explain nearly all revenue",
+        ],
+        caption: "Findings, not raw data",
+      },
+      invoices: {
+        label: "Invoices",
+        outstanding: "Outstanding",
+        paidThisMonth: "Paid this month",
+        rows: [
+          { id: "INV-1042", client: "Acme Ltd", amount: "$2,400", paid: true },
+          { id: "INV-1039", client: "Northwind", amount: "$1,150", paid: true },
+          { id: "INV-1045", client: "Bell & Co", amount: "$3,600", paid: false },
+        ],
+        paid: "Paid",
+        overdue: "Overdue",
+        caption: "Invoices chased to paid",
+      },
+      draft: {
+        label: "Draft",
+        title: "Five ways to cut admin time",
+        body: "Most owners lose their week to the same three tasks. Here is where to start.",
+        publish: "Publish",
+        caption: "Written, formatted, ready",
+      },
+      listing: {
+        label: "Listing",
+        address: "18 Harbour View, Unit 4",
+        price: "$325,000",
+        meta: "3 bed \u00b7 2 bath",
+        badge: "Under contract",
+        caption: "Open house booked",
+      },
+      claim: {
+        label: "Claim",
+        id: "Claim #4471",
+        policy: "Policy HO-88213",
+        badge: "Claim filed",
+        files: [
+          "Damage photos",
+          "Repair estimate",
+          "Policy declaration",
+          "Signed statement",
+        ],
+        caption: "Documents attached, nothing chased",
+      },
+      process: {
+        label: "Process",
+        steps: [
+          "New client intake",
+          "Kickoff call and notes",
+          "Handover to delivery",
+        ],
+        caption: "Written down and repeatable",
+      },
+    },
+    detailPricingLink: "See what it costs",
+    detail: {
+      administrative: {
+        headline: "Your inbox, calendar, and paperwork, cleared before they reach you.",
+        why: [
+          "One assistant who learns your priorities instead of a shared queue",
+          "Works inside the tools you already use, with no new system to learn",
+          "Handles the same tasks in English and Spanish",
+        ],
+      },
+      executive: {
+        headline: "Senior support that protects your calendar and prepares your meetings.",
+        why: [
+          "Filters what reaches you, so the day is not run by whoever emailed last",
+          "Has the brief ready before the meeting starts, not after",
+          "Treats board and investor material with discretion",
+        ],
+      },
+      "hr-recruiting": {
+        headline: "Roles posted, candidates screened, onboarding paperwork done.",
+        why: [
+          "A hiring push keeps moving without taking your attention with it",
+          "Every candidate gets an answer instead of silence",
+          "Records stay current for compliance, without a catch-up day",
+        ],
+      },
+      legal: {
+        headline: "Files organised, deadlines tracked, documents ready for review.",
+        why: [
+          "Clerical work stays clerical, so attorney time goes to lawyering",
+          "Every deadline lives in one calendar instead of three",
+          "Discovery indexing and Bates numbering done to a standard, not ad hoc",
+        ],
+      },
+      customer: {
+        headline: "Every call, chat, and ticket answered before the customer asks twice.",
+        why: [
+          "Coverage from a person during your working hours, not a bot loop",
+          "Escalations reach you with the context already attached",
+          "English and Spanish customers get the same standard of service",
+        ],
+      },
+      social: {
+        headline: "Posts scheduled, comments answered, results reported.",
+        why: [
+          "Content is produced inside your monthly hours, not billed per post",
+          "One person owns the calendar end to end, so nothing is orphaned",
+          "You see what was published and what it did",
+        ],
+      },
+      data: {
+        headline: "Clean records and straight answers, ready for a decision.",
+        why: [
+          "Lists are built and de-duplicated, not scraped and dumped",
+          "CRM records stay current as a habit rather than a quarterly clean-up",
+          "Research arrives summarised, with the sources kept",
+        ],
+      },
+      bookkeeping: {
+        headline: "Books current and paperwork ready, every month.",
+        why: [
+          "Invoices go out and get chased on a schedule, not when there is time",
+          "Reconciliation is finished before your accountant asks for it",
+          "Documents are handed over in the format they actually need",
+        ],
+      },
+      web: {
+        headline: "Website and email marketing kept current.",
+        why: [
+          "Publishing stops waiting for whoever has a spare hour",
+          "SEO is watched and reported, not assumed to be fine",
+          "Landing pages and forms are set up and tested, not left half-built",
+        ],
+      },
+      "real-estate": {
+        headline: "Listings live, leads followed up, transactions moving.",
+        why: [
+          "New enquiries are answered the same day, while the interest is warm",
+          "MLS entries stay accurate, so listings are not quietly wrong",
+          "Transaction paperwork is tracked through to closing",
+        ],
+      },
+      insurance: {
+        headline: "Policies entered, certificates issued, renewals tracked.",
+        why: [
+          "Certificates go out the day they are requested",
+          "Renewals surface before they lapse, not after",
+          "Compliance files stay complete for audit",
+        ],
+      },
+      "workflow-optimization": {
+        headline: "Your processes written down, so work can be handed off.",
+        why: [
+          "One page a new person can follow without asking you",
+          "Tools are configured and tested, not just recommended",
+          "The delegation playbooks stay yours, whatever happens next",
+        ],
+      },
+    },
+    industriesEyebrow: "Our services",
+    industriesTitle: "Built around your sector,",
+    industriesTitleHighlight: "not a generic list.",
+    industriesDesc:
+      "Most of what a business needs is the same everywhere. The vocabulary, the filings, and the deadlines are not. Pick your sector and jump straight to the work that fits it.",
+    industries: [
+      {
+        title: "Agencies & marketing",
+        desc: "Studios and in-house marketing teams running several channels at once.",
+      },
+      {
+        title: "Small business",
+        desc: "Owner-led businesses where the same person answers the phone, sends the invoice, and does the work.",
+      },
+      {
+        title: "HR & recruiting",
+        desc: "Teams hiring in bursts that need postings, screening, and onboarding paperwork kept moving.",
+      },
+      {
+        title: "Insurance",
+        desc: "Brokers and agencies where policy entry, certificates, and renewals cannot slip.",
+      },
+      {
+        title: "Real estate",
+        desc: "Agents and small teams with listings, leads, and transactions to keep moving.",
+      },
+      {
+        title: "Legal",
+        desc: "Solo and small law firms that need filing, docketing, and document work kept current.",
+      },
+    ],
+    groupIndustryTitle: "Services by industry",
+    groupIndustryDesc:
+      "Sector-specific support, with the vocabulary and the filing habits already in place.",
+    groupFunctionTitle: "Services by function",
+    groupFunctionDesc: "The day-to-day work, whichever business you happen to run.",
     categories: [
       {
         title: "Administrative Support",
@@ -287,25 +665,160 @@ const en = {
     ctaDesc:
       "We can tailor our services to meet your specific business requirements. Let\u2019s discuss what you need.",
     ctaButton: "Contact Us Today",
+    ctaSecondary: "See what it costs",
+  },
+
+  // ─── Pricing ───────────────────────────────
+  //
+  // Every claim below is traceable to copy that already existed: the package
+  // feature lists, or the FAQ (setup quoted, one-year commitment, plan changes,
+  // payment methods, 5\u20137 day onboarding). No prices are published \u2014 packages
+  // are quoted per client, which is also what the admin AI guardrails require.
+  pricing: {
+    eyebrow: "Pricing",
+    heroTitle: "The help you need,",
+    heroTitleHighlight: "without the hiring.",
+    heroDesc:
+      "Every plan is staffed by a dedicated bilingual assistant and quoted for your business \u2014 so you know the cost before you commit, not after.",
+    heroCtaPrimary: "Book a free consultation",
+    heroCtaSecondary: "Compare the plans",
+    closingTitle: "Not sure which plan fits?",
+    closingDesc:
+      "Tell us how your week runs and we\u2019ll recommend the hours. No pressure, no obligation.",
+    closingCta: "Book a free consultation",
+    plansEyebrow: "Plans",
+    plansNote: "Hours are set by the plan you choose.",
+    extrasTitle: "All plans integrate with the workflow you already use.",
+    extras: [
+      "Gmail",
+      "Outlook",
+      "Google Calendar",
+      "Shopify",
+      "WooCommerce",
+      "Salesforce",
+      "HubSpot",
+      "Slack",
+      "Notion",
+      "Asana",
+    ],
+    includedEyebrow: "What you get",
+    includedTitle: "Every plan includes",
+    includedDesc:
+      "The same foundation whether you take eighty hours a month or a full team.",
+    includedItems: [
+      "A dedicated assistant assigned to your business",
+      "English and Spanish, with no translation layer",
+      "Documented processes, so work survives a handoff",
+      "Hours set by your plan: 80, 160, or custom",
+      "Setup work quoted before it begins",
+    ],
+    includedMockupLabel: "your-month.creedava.com",
+    hoursTitle: "A month of hours",
+    hoursPlanLabel: "Professional \u00b7 160 hours",
+    hoursTotalLabel: "Allocated",
+    hoursUnit: "h",
+    hoursBreakdown: [
+      { label: "Inbox & calendar", hours: 48 },
+      { label: "Customer support", hours: 40 },
+      { label: "Data & admin", hours: 40 },
+      { label: "Projects & reporting", hours: 32 },
+    ],
+    hoursFootnote:
+      "Illustrative split. Your mix is agreed with your assistant in the first week, and can change month to month.",
+    termsEyebrow: "Why it\u2019s different",
+    termsTitle: "What you\u2019re not paying for.",
+    termsDesc:
+      "A hire, an answering service, and a freelancer all charge for things this does not. Here is what stays off your invoice.",
+    termsItems: [
+      {
+        title: "A person answers, not a bot",
+        desc: "No AI auto-replies and no phone tree. Your clients reach a named assistant who already knows your business.",
+      },
+      {
+        title: "No per-minute meters",
+        desc: "You buy hours inside a plan, not a ticking clock. Nobody is counting the seconds on a call.",
+      },
+      {
+        title: "One plan, one invoice",
+        desc: "Hours, tools, and oversight sit in a single price. No per-task line items arriving at month end.",
+      },
+      {
+        title: "No employer overhead",
+        desc: "No payroll tax, benefits, equipment, or recruitment cost. You pay for the work, not the headcount.",
+      },
+      {
+        title: "No hiring cycle",
+        desc: "Capacity moves by changing plan, not by writing a job post and waiting a quarter for someone to start.",
+      },
+      {
+        title: "Setup is quoted, not sprung",
+        desc: "Where a workflow needs setup work, you see the figure in writing and approve it before anything starts.",
+      },
+    ],
   },
 
   // ─── About ─────────────────────────────────────
   about: {
-    heroTitle: "About",
-    heroTitleHighlight: "CreedaVA",
-    heroP1:
-      "Founded in 2023, CreedaVA is a Belize-based virtual assistant agency built to connect outstanding talent with global opportunity. Belize\u2019s highly educated, professionally bilingual workforce represents a new standard in remote professional support \u2014 and we\u2019re proud to bring that talent to businesses around the world.",
-    heroP2:
-      "Belize, the only English-speaking country in Central America, is uniquely positioned at the crossroads of cultures. Our team is fluent in English and Spanish, and rich in adaptability, communication, and professionalism \u2014 delivering world-class virtual support across industries.",
+    eyebrow: "About Creeda",
+    heroTitle: "One country. Two languages.",
+    heroTitleHighlight: "Your whole back office.",
+    heroDesc:
+      "Founded in 2023, Creeda Virtual Assistants (CreedaVA) is a Belize-based virtual assistant agency built to connect outstanding talent with global opportunity.",
+    heroFacts: ["Founded in 2023", "English & Spanish", "Belize, Central America"],
+    heroCtaPrimary: "Work with Creeda",
+    heroCtaSecondary: "Explore services",
+    mapCaptionLabel: "Belize \u00b7 Central America",
+    mapCaptionMeta: "UTC\u22126 \u00b7 English and Spanish",
+    whyEyebrow: "Why Belize",
+    whyTitle: "The only English-speaking country in Central America.",
+    whyP1:
+      "Belize\u2019s highly educated, professionally bilingual workforce represents a new standard in remote professional support \u2014 and we\u2019re proud to bring that talent to businesses around the world.",
+    whyP2:
+      "Belize sits at the crossroads of cultures. Our team is fluent in English and Spanish, and rich in adaptability, communication, and professionalism \u2014 delivering world-class virtual support across industries.",
+    whyFacts: [
+      {
+        title: "English by default",
+        desc: "Belize is the only English-speaking country in Central America, so your team writes and calls in your language without translation overhead.",
+      },
+      {
+        title: "Spanish without a handoff",
+        desc: "Bilingual is the norm here, not a premium add-on. The same assistant can serve both audiences.",
+      },
+      {
+        title: "Your working day",
+        desc: "Belize runs on Central time year-round, so your assistant is online while your customers are.",
+      },
+    ],
+    approachEyebrow: "How we work",
+    approachTitle: "A partnership, not a task queue.",
+    approachDesc:
+      "We take a partnership approach with every client. From our initial discovery call through ongoing support, we invest time in understanding your business, your challenges, and your goals. This allows us to match you with the perfect virtual assistant and create workflows that truly enhance your productivity. We\u2019re not just completing tasks \u2014 we\u2019re helping you build systems that scale.",
+    standards: [
+      {
+        title: "Documented SOPs",
+        desc: "Every recurring task is written down before it is handed over, so nothing depends on memory.",
+      },
+      {
+        title: "A named owner",
+        desc: "Each workstream has one accountable person \u2014 no shared inboxes and no \u201csomeone will get to it.\u201d",
+      },
+      {
+        title: "Recurring reviews",
+        desc: "Performance is reviewed on a schedule, not only when something goes wrong.",
+      },
+      {
+        title: "Measured service",
+        desc: "Response times, completion rates and client feedback are tracked and reported.",
+      },
+    ],
+    purposeEyebrow: "Mission & vision",
     missionTitle: "Our Mission",
     missionDesc:
       "To bridge opportunity and talent by connecting Belize\u2019s highly skilled workforce with global businesses, creating sustainable remote career pathways while delivering exceptional virtual assistant services that empower companies to achieve more.",
     visionTitle: "Our Vision",
     visionDesc:
-      "CreedaVA is more than a service \u2014 it\u2019s a movement to empower Belize\u2019s workforce, foster remote career growth, and create sustainable pathways for global collaboration. By hiring through CreedaVA, companies don\u2019t just get exceptional talent \u2014 they invest in a vision of progress, purpose, and partnership.",
-    approachTitle: "Our Approach",
-    approachDesc:
-      "We take a partnership approach with every client. From our initial discovery call through ongoing support, we invest time in understanding your business, your challenges, and your goals. This allows us to match you with the perfect virtual assistant and create workflows that truly enhance your productivity. We\u2019re not just completing tasks \u2014 we\u2019re helping you build systems that scale.",
+      "Creeda is more than a service \u2014 it\u2019s a movement to empower Belize\u2019s workforce, foster remote career growth, and create sustainable pathways for global collaboration. By hiring through Creeda, companies don\u2019t just get exceptional talent \u2014 they invest in a vision of progress, purpose, and partnership.",
+    valuesEyebrow: "What we stand on",
     valuesTitle: "Our Values",
     valuesDesc: "The principles that guide everything we do.",
     values: [
@@ -353,22 +866,6 @@ const en = {
     bookTitle: "Want to schedule a call?",
     bookDesc: "Book a free 30-minute consultation to discuss your needs.",
     bookLink: "Book a Consultation",
-    howWeWorkTitle: "How We Work Together",
-    howWeWorkDesc: "A simple, transparent process designed to set you up for success.",
-    howWeWorkSteps: [
-      {
-        title: "Initial Consultation",
-        desc: "We start with a free discovery call to understand your business, challenges, and the type of support you need.",
-      },
-      {
-        title: "Custom Proposal",
-        desc: "Based on your needs, we create a tailored plan with the right VA match, scope of work, and pricing \u2014 no cookie-cutter solutions.",
-      },
-      {
-        title: "Scheduled Check-Ins",
-        desc: "We schedule regular check-ins to review progress, gather feedback, and adjust workflows \u2014 keeping everything on track.",
-      },
-    ],
   },
 
   // ─── FAQ ───────────────────────────────────────
@@ -385,8 +882,8 @@ const en = {
             a: "A virtual assistant (VA) is a trained remote professional who provides administrative, technical, or specialized support to businesses. They work from a remote location and handle tasks ranging from email management to customer service, bookkeeping, and more.",
           },
           {
-            q: "How is CreedaVA different from other VA companies?",
-            a: "CreedaVA provides bilingual (English/Spanish) virtual assistants who are carefully matched to your business needs. We offer dedicated support, ongoing quality management, and flexible plans \u2014 whether you need a few hours a week or a full-time team.",
+            q: "How is Creeda different from other VA companies?",
+            a: "Creeda provides bilingual (English/Spanish) virtual assistants who are carefully matched to your business needs. We offer dedicated support, ongoing quality management, and flexible plans \u2014 whether you need a few hours a week or a full-time team.",
           },
           {
             q: "What industries do you serve?",
@@ -420,7 +917,7 @@ const en = {
           },
           {
             q: "Is there a minimum commitment?",
-            a: "An initial commitment of one year is required to ensure we can deliver consistent, high-quality support. After the first year, services continue under the same agreement with 30 days\u2019 written notice to end. You can scale hours up or down at any time within your plan.",
+            a: "An initial commitment of one year is required to ensure we can deliver consistent, high-quality support. After the first year, services continue under the same agreement with 30 days\u2019 written notice to end. If your needs change, you can move up or down between plans \u2014 hours are set by the plan you are on, not adjusted within it.",
           },
           {
             q: "How long does onboarding take?",
@@ -433,11 +930,11 @@ const en = {
         questions: [
           {
             q: "How much do your services cost?",
-            a: "Our pricing depends on the package and hours you need. See the service packages on our Services page, or contact us for a custom quote tailored to your requirements.",
+            a: "Our pricing depends on the package and hours you need. See the plans on our Pricing page, or contact us for a custom quote tailored to your requirements.",
           },
           {
             q: "Are there any setup fees?",
-            a: "No. There are no hidden fees or setup charges. You only pay for the plan you choose.",
+            a: "Sometimes, but never by surprise. Most clients need no setup work at all. Where a workflow does need it \u2014 migrations, integrations, custom tooling \u2014 we quote it in writing and you approve it before anything starts.",
           },
           {
             q: "What payment methods do you accept?",
@@ -499,7 +996,7 @@ const en = {
       privacy: "Privacy Policy",
       terms: "Terms of Service",
     },
-    copyright: "CreedaVA. All rights reserved.",
+    copyright: "Creeda Virtual Assistants. All rights reserved.",
     followLinkedIn: "Follow us on LinkedIn",
   },
 
@@ -507,13 +1004,17 @@ const en = {
   news: {
     heroTitle: "News & Insights",
     heroDesc: "Tips, trends, and insights to help you get the most out of virtual assistant services.",
+    postCountLabel: "published posts",
+    readArticle: "Read article",
+    morePosts: "More posts",
+    byAuthor: "By",
     noPostsYet: "No published posts yet. Check back soon.",
     minRead: "min read",
     backToNews: "Back to News",
     postNotFound: "Post Not Found",
     postNotFoundDesc: "This post may have been removed or is no longer available.",
     ctaTitle: "Ready to Get Started?",
-    ctaDesc: "Let CreedaVA handle the tasks that slow you down so you can focus on growing your business.",
+    ctaDesc: "Let Creeda handle the tasks that slow you down so you can focus on growing your business.",
     ctaButton: "Contact Us",
     stayConnected: "Stay Connected",
     stayConnectedDesc: "Follow us on LinkedIn for industry insights, tips, and company updates.",
@@ -636,15 +1137,7 @@ const en = {
     successInvite: "You\u2019ll receive a calendar invite at",
     successShortly: "shortly.",
     backToHome: "Back to Home",
-    services: [
-      "General Consultation",
-      "Executive Assistant",
-      "Social Media Management",
-      "Email & Calendar Management",
-      "Customer Support",
-      "Data Entry & Research",
-      "Project Management",
-    ] as const,
+    generalConsultation: "General Consultation",
     days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const,
     months: [
       "January", "February", "March", "April", "May", "June",
@@ -803,6 +1296,7 @@ const en = {
   common: {
     contactUs: "Contact Us",
     learnMore: "Learn More",
+    backToTop: "Back to top",
   },
 } as const;
 

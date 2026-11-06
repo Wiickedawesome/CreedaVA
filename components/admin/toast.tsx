@@ -65,7 +65,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <p className="text-sm font-medium flex-1">{t.message}</p>
             <button
               onClick={() => dismiss(t.id)}
-              className="shrink-0 rounded p-0.5 hover:bg-black/5 transition-colors cursor-pointer"
+              className="shrink-0 rounded p-0.5 hover:bg-gray-30 transition-colors cursor-pointer"
               aria-label="Dismiss"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

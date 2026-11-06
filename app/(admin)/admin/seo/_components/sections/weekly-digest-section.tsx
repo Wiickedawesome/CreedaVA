@@ -35,9 +35,9 @@ export default function WeeklyDigestSection() {
 
       <DashboardSection title={`Latest ${weekly.length} reports`}>
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-gray-60">Loading…</p>
         ) : weekly.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-60">
             No weekly reports yet. The synthesizer runs Sundays and the scheduled-report autogenerate fires from the analytics dashboard.
           </p>
         ) : (

@@ -50,7 +50,7 @@ export function SeoTasksBoard() {
   return (
     <DashboardSection title="Pipeline">
       {loading ? (
-        <p className="text-sm text-gray-500">Loading…</p>
+        <p className="text-sm text-gray-60">Loading…</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {COLUMNS.map((col) => (
@@ -62,12 +62,12 @@ export function SeoTasksBoard() {
               </div>
               <div className="space-y-2">
                 {grouped[col].length === 0 ? (
-                  <p className="text-xs text-gray-500 italic">No tasks</p>
+                  <p className="text-xs text-gray-60 italic">No tasks</p>
                 ) : (
                   grouped[col].map((t) => (
                     <div key={t.id} className="bg-card rounded border border-border p-3">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <span className="text-xs font-mono text-gray-500">{t.kind}</span>
+                        <span className="text-xs font-mono text-gray-60">{t.kind}</span>
                         {typeof t.priority === "number" && (
                           <StatusBadge
                             status={`P${t.priority}`}
@@ -77,10 +77,10 @@ export function SeoTasksBoard() {
                       </div>
                       <div className="text-sm font-medium text-foreground mb-1">{t.title}</div>
                       {t.description && (
-                        <div className="text-xs text-gray-600 whitespace-pre-line mb-2">{t.description}</div>
+                        <div className="text-xs text-gray-70 whitespace-pre-line mb-2">{t.description}</div>
                       )}
                       {t.affectedPath && (
-                        <div className="text-xs text-gray-500 mb-2">
+                        <div className="text-xs text-gray-60 mb-2">
                           Path: <code>{t.affectedPath}</code>
                         </div>
                       )}

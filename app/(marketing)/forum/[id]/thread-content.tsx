@@ -269,10 +269,10 @@ function ThreadContent({ id }: { id: string }) {
     return (
       <div className="px-6 lg:px-10 py-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-10 rounded w-20" />
-          <div className="h-7 bg-gray-10 rounded w-3/4" />
-          <div className="h-4 bg-gray-10 rounded w-1/3" />
-          <div className="h-32 bg-gray-10 rounded mt-4" />
+          <div className="h-4 bg-mk-paper-deep rounded w-20" />
+          <div className="h-7 bg-mk-paper-deep rounded w-3/4" />
+          <div className="h-4 bg-mk-paper-deep rounded w-1/3" />
+          <div className="h-32 bg-mk-paper-deep rounded mt-4" />
         </div>
       </div>
     );
@@ -281,15 +281,15 @@ function ThreadContent({ id }: { id: string }) {
   if (!thread) {
     return (
       <div className="px-6 lg:px-10 py-16 text-center">
-        <h1 className="text-xl font-bold text-gray-100 mb-2">
+        <h1 className="text-xl font-bold text-mk-ink mb-2">
           {t.forum.threadNotFound}
         </h1>
-        <p className="text-sm text-gray-60 mb-4">
+        <p className="text-sm text-mk-ink-mute mb-4">
           {t.forum.threadNotFoundDesc}
         </p>
         <Link
           href="/forum"
-          className="text-sm text-primary hover:underline"
+          className="text-sm text-mk-brand hover:underline"
         >
           {t.forum.backToForum}
         </Link>
@@ -304,7 +304,7 @@ function ThreadContent({ id }: { id: string }) {
     : false;
 
   return (
-    <div className="min-h-[60vh] bg-gray-10/30">
+    <div className="min-h-[60vh] bg-mk-paper">
       <div className="px-6 lg:px-10 py-6">
         {/* Auth modal */}
         <ForumAuthModal open={authModal} onClose={() => setAuthModal(false)} />
@@ -312,13 +312,13 @@ function ThreadContent({ id }: { id: string }) {
         {/* Back nav */}
         <Link
           href="/forum"
-          className="inline-flex items-center gap-1 text-sm text-gray-60 hover:text-primary mb-4 transition-colors"
+          className="inline-flex items-center gap-1 text-sm text-mk-ink-mute hover:text-mk-brand mb-4 transition-colors"
         >
           {t.forum.backToForum}
         </Link>
 
         {/* Thread */}
-        <div className="border border-gray-20 rounded bg-white">
+        <div className="border border-mk-line rounded bg-mk-white">
           <div className="flex gap-4 p-5">
             {/* Vote */}
             <div className="flex flex-col items-center gap-1 shrink-0 w-12">
@@ -326,7 +326,7 @@ function ThreadContent({ id }: { id: string }) {
                 onClick={handleLikeThread}
                 aria-label="Like thread"
                 className={`p-1 rounded transition-colors ${
-                  threadLiked ? "text-primary" : "text-gray-60 hover:text-primary"
+                  threadLiked ? "text-mk-brand" : "text-mk-ink-mute hover:text-mk-brand"
                 }`}
               >
                 <svg
@@ -340,7 +340,7 @@ function ThreadContent({ id }: { id: string }) {
                   <path d="M12 4l3 6h6l-5 4 2 7-6-4-6 4 2-7-5-4h6z" />
                 </svg>
               </button>
-              <span className={`text-sm font-bold ${threadLiked ? "text-primary" : "text-gray-60"}`}>
+              <span className={`text-sm font-bold ${threadLiked ? "text-mk-brand" : "text-mk-ink-mute"}`}>
                 {thread.likes || 0}
               </span>
             </div>
@@ -350,7 +350,7 @@ function ThreadContent({ id }: { id: string }) {
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <span
                   className={`text-xs font-bold uppercase tracking-wider ${
-                    thread.status === "open" ? "text-green-700" : "text-gray-60"
+                    thread.status === "open" ? "text-green-700" : "text-mk-ink-mute"
                   }`}
                 >
                   {thread.status === "open" ? t.forum.open : t.forum.closed}
@@ -358,39 +358,42 @@ function ThreadContent({ id }: { id: string }) {
                 {thread.tags?.map((tag) => (
                   <span
                     key={tag}
-                    className="text-xs px-2 py-0.5 bg-gray-10 text-gray-60 rounded"
+                    className="text-xs px-2 py-0.5 bg-mk-paper-deep text-mk-ink-mute rounded"
                   >
                     {tag}
                   </span>
                 ))}
               </div>
 
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-100 mb-2">
+              <h1 className="text-xl lg:text-2xl font-bold text-mk-ink mb-2">
                 {getTranslatedTitle(thread, locale)}
               </h1>
 
-              <div className="text-xs text-gray-60 mb-4">
+              <div className="text-xs text-mk-ink-mute mb-4">
                 {t.forum.postedBy}{" "}
-                <span className="text-gray-60 font-medium">{thread.author}</span>
+                <span className="text-mk-ink-mute font-medium">{thread.author}</span>
                 {" \u00b7 "}
                 {threadAgo}
               </div>
 
               {/* Content */}
               {/<[a-z][\s\S]*>/i.test(getTranslatedContent(thread, locale)) ? (
+                // `.mk-article` is the marketing typographic system and emits
+                // real CSS. The former `prose` classes emitted nothing because
+                // @tailwindcss/typography is not a dependency.
                 <div
-                  className="text-sm leading-relaxed prose prose-sm max-w-none prose-headings:text-gray-100 prose-headings:font-bold prose-p:text-gray-80 prose-p:leading-relaxed prose-a:text-primary prose-strong:text-gray-90 prose-li:text-gray-80"
+                  className="mk-article text-sm max-w-none"
                   dangerouslySetInnerHTML={{
                     __html: sanitizeHtml(getTranslatedContent(thread, locale)),
                   }}
                 />
               ) : (
-                <div className="text-sm text-gray-80 leading-relaxed whitespace-pre-wrap">
+                <div className="text-sm text-mk-ink leading-relaxed whitespace-pre-wrap">
                   {getTranslatedContent(thread, locale)}
                 </div>
               )}
               {thread.translations && thread.lang && thread.lang !== locale && thread.translations[locale] && (
-                <span className="inline-block mt-2 text-[10px] text-gray-60 italic">
+                <span className="inline-block mt-2 text-[10px] text-mk-ink-mute italic">
                   {t.forum.autoTranslated}
                 </span>
               )}
@@ -404,7 +407,7 @@ function ThreadContent({ id }: { id: string }) {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-xs text-primary hover:underline"
+                      className="flex items-center gap-2 text-xs text-mk-brand hover:underline"
                     >
                       <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
                       {url}
@@ -414,11 +417,11 @@ function ThreadContent({ id }: { id: string }) {
               )}
 
               {/* Thread action bar */}
-              <div className="mt-4 flex items-center gap-5 text-xs text-gray-60">
+              <div className="mt-4 flex items-center gap-5 text-xs text-mk-ink-mute">
                 <button
                   onClick={handleLikeThread}
-                  className={`flex items-center gap-1.5 hover:text-primary transition-colors ${
-                    threadLiked ? "text-primary" : ""
+                  className={`flex items-center gap-1.5 hover:text-mk-brand transition-colors ${
+                    threadLiked ? "text-mk-brand" : ""
                   }`}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill={threadLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
@@ -469,7 +472,7 @@ function ThreadContent({ id }: { id: string }) {
                       } catch { /* ignore */ }
                     }
                   }}
-                  className={`flex items-center gap-1.5 hover:text-primary transition-colors ${copied ? "text-primary" : ""}`}
+                  className={`flex items-center gap-1.5 hover:text-mk-brand transition-colors ${copied ? "text-mk-brand" : ""}`}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="18" cy="5" r="3" />
@@ -486,12 +489,12 @@ function ThreadContent({ id }: { id: string }) {
         </div>
 
         {/* Reply input */}
-        <div className="mt-4 border border-gray-20 rounded bg-white p-4">
+        <div className="mt-4 border border-mk-line rounded bg-mk-white p-4">
           {user && profile ? (
             <form onSubmit={handleReply}>
-              <div className="text-xs text-gray-60 mb-2">
+              <div className="text-xs text-mk-ink-mute mb-2">
                 {t.forum.addComment}{" "}
-                <span className="text-gray-60 font-medium">
+                <span className="text-mk-ink-mute font-medium">
                   {profile.displayName}
                 </span>
               </div>
@@ -500,13 +503,13 @@ function ThreadContent({ id }: { id: string }) {
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder={t.forum.writeReply}
                 rows={4}
-                className="w-full px-3 py-2.5 border border-gray-20 rounded text-sm resize-y focus:outline-none focus:border-primary"
+                className="w-full px-3 py-2.5 border border-mk-line rounded text-sm resize-y focus:outline-none focus:border-mk-brand"
               />
               <div className="flex justify-end mt-2">
                 <button
                   type="submit"
                   disabled={submitting || !replyText.trim()}
-                  className="px-5 py-2 bg-primary text-white text-sm font-medium rounded hover:bg-primary-light transition-colors disabled:opacity-50"
+                  className="px-5 py-2 bg-mk-brand text-white text-sm font-medium rounded hover:bg-mk-brand-bright transition-colors disabled:opacity-50"
                 >
                   {submitting ? "..." : t.forum.postReply}
                 </button>
@@ -515,7 +518,7 @@ function ThreadContent({ id }: { id: string }) {
           ) : (
             <button
               onClick={() => setAuthModal(true)}
-              className="w-full text-center py-4 text-sm text-gray-60 hover:text-primary transition-colors"
+              className="w-full text-center py-4 text-sm text-mk-ink-mute hover:text-mk-brand transition-colors"
             >
               {t.forum.signInToReply}
             </button>
@@ -526,7 +529,7 @@ function ThreadContent({ id }: { id: string }) {
         {replies.length > 0 && (
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-medium text-gray-60">
+              <span className="text-sm font-medium text-mk-ink-mute">
                 {replies.length}{" "}
                 {replies.length === 1 ? t.forum.comment : t.forum.comments}
               </span>
@@ -537,8 +540,8 @@ function ThreadContent({ id }: { id: string }) {
                     onClick={() => setSort(s)}
                     className={`px-2 py-0.5 rounded transition-colors ${
                       sort === s
-                        ? "bg-primary text-white"
-                        : "text-gray-60 hover:bg-gray-10"
+                        ? "bg-mk-brand text-white"
+                        : "text-mk-ink-mute hover:bg-mk-paper-deep"
                     }`}
                   >
                     {s === "new"
@@ -551,7 +554,7 @@ function ThreadContent({ id }: { id: string }) {
               </div>
             </div>
 
-            <div className="border border-gray-20 rounded bg-white divide-y divide-gray-20">
+            <div className="border border-mk-line rounded bg-mk-white divide-y divide-mk-line">
               {sortedReplies.map((reply) => {
                 const liked = user
                   ? (reply.likedBy || []).includes(user.uid)
@@ -568,8 +571,8 @@ function ThreadContent({ id }: { id: string }) {
                         aria-label="Like reply"
                         className={`p-1 rounded transition-colors ${
                           liked
-                            ? "text-primary"
-                            : "text-gray-60 hover:text-primary"
+                            ? "text-mk-brand"
+                            : "text-mk-ink-mute hover:text-mk-brand"
                         }`}
                       >
                         <svg
@@ -584,7 +587,7 @@ function ThreadContent({ id }: { id: string }) {
                         </svg>
                       </button>
                       <span
-                        className={`text-xs font-bold ${liked ? "text-primary" : "text-gray-60"}`}
+                        className={`text-xs font-bold ${liked ? "text-mk-brand" : "text-mk-ink-mute"}`}
                       >
                         {reply.likes || 0}
                       </span>
@@ -592,18 +595,18 @@ function ThreadContent({ id }: { id: string }) {
 
                     {/* Reply content */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs text-gray-60 mb-1">
-                        <span className="text-gray-60 font-medium">
+                      <div className="text-xs text-mk-ink-mute mb-1">
+                        <span className="text-mk-ink-mute font-medium">
                           {reply.author}
                         </span>
                         {" \u00b7 "}
                         {replyAgo}
                       </div>
-                      <p className="text-sm text-gray-80 leading-relaxed whitespace-pre-wrap">
+                      <p className="text-sm text-mk-ink leading-relaxed whitespace-pre-wrap">
                         {getTranslatedContent(reply, locale)}
                       </p>
                       {reply.translations && reply.lang && reply.lang !== locale && reply.translations[locale] && (
-                        <span className="inline-block mt-1 text-[10px] text-gray-60 italic">
+                        <span className="inline-block mt-1 text-[10px] text-mk-ink-mute italic">
                           {t.forum.autoTranslated}
                         </span>
                       )}

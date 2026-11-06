@@ -83,8 +83,8 @@ export default function LeadsPage() {
       proposal: "Proposal", won: "Won",
     };
     const colors: Record<string, string> = {
-      new: "#4589FF", contacted: "#0043CE", qualified: "#6929C4",
-      proposal: "#9F1853", won: "#198038",
+      new: "var(--chart-8)", contacted: "var(--chart-2)", qualified: "var(--chart-3)",
+      proposal: "var(--chart-4)", won: "var(--chart-5)",
     };
     // Count leads that reached each stage or beyond
     const stageIndex = (s: string) => stages.indexOf(s as typeof stages[number]);
@@ -110,14 +110,14 @@ export default function LeadsPage() {
     const acc: Record<string, number> = {};
     leads.forEach((l) => { acc[l.source || "other"] = (acc[l.source || "other"] || 0) + 1; });
     const srcColors: Record<string, string> = {
-      website: "#005148", referral: "#007A6D", social: "#0043CE",
-      ad: "#F1C21B", email: "#4589FF", "cold-call": "#878D96", other: "#A2A9B0",
+      website: "var(--chart-1)", referral: "var(--chart-7)", social: "var(--chart-2)",
+      ad: "var(--chart-6)", email: "var(--chart-8)", "cold-call": "var(--gray-60)", other: "var(--gray-50)",
     };
     return Object.entries(acc).sort((a, b) => b[1] - a[1]).map(([src, count]) => ({
       label: src.replace(/[-_]/g, " "),
       value: count,
       pct: totalLeads > 0 ? Math.round((count / totalLeads) * 100) : 0,
-      color: srcColors[src] || "#A2A9B0",
+      color: srcColors[src] || "var(--gray-50)",
     }));
   }, [leads, totalLeads]);
 
@@ -312,7 +312,7 @@ export default function LeadsPage() {
                   {i > 0 && (
                     <div className="flex items-center gap-2 py-1 pl-4">
                       <svg className="w-3.5 h-3.5 text-gray-30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12l7 7 7-7" /></svg>
-                      <span className="text-xs font-medium" style={{ color: d.rate >= 50 ? "#198038" : d.rate >= 25 ? "#F1C21B" : "#DA1E28" }}>
+                      <span className="text-xs font-medium" style={{ color: d.rate >= 50 ? "var(--chart-5)" : d.rate >= 25 ? "var(--chart-6)" : "var(--error)" }}>
                         {d.rate}% conversion
                       </span>
                     </div>

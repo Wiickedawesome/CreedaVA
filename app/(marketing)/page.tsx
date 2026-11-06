@@ -1,9 +1,8 @@
-import { unstable_cache } from "next/cache";
-import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 import { getPageSEO } from "@/lib/firebase/seo";
-import { websiteJsonLd } from "@/lib/utils/structured-data";
+import { faqJsonLd, websiteJsonLd } from "@/lib/utils/structured-data";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
-import { HomeContent } from "./home-content";
+import { HomeContent, DEFAULT_STAT_VALUES } from "./home-content";
+import { getHomeFaqQuestions } from "@/components/marketing/home/closing";
 import { AICitationReadiness } from "@/components/seo/ai-citation-readiness";
 
 // Revalidate homepage every 5 minutes — content rarely changes
@@ -17,9 +16,11 @@ export async function generateMetadata() {
   });
 }
 
-// Must match DEFAULT_STAT_VALUES in home-content.tsx. All four are verifiable
-// from the site; see the note there for why the old social-proof numbers went.
-const DEFAULT_STATS = ["12", "3", "EN/ES", "5–7"];
+// The homepage stats used to be overridable from the `settings/homepage-stats`
+// Firestore document. That override had no admin UI, silently shadowed the code
+// defaults, and desynced the label from the value (the page once rendered
+// "12 Flat Monthly Fee"). The figures now come from DEFAULT_STAT_VALUES only, so
+// they are deterministic and reviewable in a diff.
 
 const homeCitationParagraphs = [
   "Virtual assistant performance improves when workflows are documented, outcomes are measurable, and response standards are defined before onboarding begins.",
@@ -63,36 +64,23 @@ const homeCitationSources = [
   },
 ];
 
-const getHomepageStats = unstable_cache(
-  async (): Promise<string[]> => {
-    if (!canUseAdminDb) return DEFAULT_STATS;
-
-    try {
-      const doc = await adminDb.collection("settings").doc("homepage-stats").get();
-      if (doc.exists) {
-        const data = doc.data();
-        if (Array.isArray(data?.values) && data.values.length === 4) {
-          return data.values as string[];
-        }
-      }
-    } catch {
-      // Fall through to defaults
-    }
-    return DEFAULT_STATS;
-  },
-  ["homepage-stats"],
-  { revalidate: 300 },
-);
-
 export default async function HomePage() {
-  const [statValues, { t }] = await Promise.all([getHomepageStats(), getDictionary()]);
+  const { t } = await getDictionary();
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
       />
-      <HomeContent statValues={statValues} t={t} />
+      {/* The visible FAQ section below is the required backing content for this
+          markup — Google rejects FAQPage schema without it. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqJsonLd(getHomeFaqQuestions(t))),
+        }}
+      />
+      <HomeContent statValues={DEFAULT_STAT_VALUES} t={t} />
       <AICitationReadiness
         path="/"
         title="CreedaVA Virtual Assistant Services Overview"

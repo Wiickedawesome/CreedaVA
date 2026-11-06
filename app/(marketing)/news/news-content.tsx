@@ -1,64 +1,82 @@
 "use client";
 
-import { Container } from "@/components/ui";
-import { NewsList } from "./news-list";
 import { useTranslation } from "@/lib/i18n";
+import { Section } from "@/components/marketing/primitives";
+import { NewsList } from "./news-list";
+import type { ReactNode } from "react";
 import type { BlogPost } from "@/lib/types/content";
 
-interface NewsContentProps {
-  posts: (BlogPost & { id: string })[];
-}
+const LINKEDIN_URL = "https://www.linkedin.com/company/108356527";
 
-export function NewsContent({ posts }: NewsContentProps) {
+type Post = BlogPost & { id: string };
+
+/**
+ * Page shell for /news. The hero is left-aligned on `paper` to match the rest of
+ * the marketing surface, and the list band drops its top padding so the featured
+ * card sits close to the lede instead of floating in a second gutter.
+ */
+function NewsHero({ postCount }: { postCount: number }): ReactNode {
   const { t } = useTranslation();
 
   return (
+    <Section tone="paper" className="pb-0">
+      <div className="max-w-3xl">
+        <h1 className="font-display text-[clamp(2.4rem,6vw,4.5rem)] font-extrabold leading-[0.98] tracking-[-0.045em] text-mk-ink">
+          {t.news.heroTitle}
+        </h1>
+        <p className="mt-6 max-w-[54ch] text-[1.02rem] leading-[1.7] text-mk-ink-soft sm:text-[1.08rem]">
+          {t.news.heroDesc}
+        </p>
+        {postCount > 0 ? (
+          <p className="mt-6 text-[0.8rem] tabular-nums text-mk-ink-mute">
+            {postCount} {t.news.postCountLabel}
+          </p>
+        ) : null}
+      </div>
+    </Section>
+  );
+}
+
+function StayConnected(): ReactNode {
+  const { t } = useTranslation();
+
+  return (
+    <Section tone="white">
+      <div className="flex flex-col items-start justify-between gap-7 rounded-(--mk-radius-lg) border border-mk-line bg-mk-paper px-6 py-8 sm:px-9 sm:py-10 lg:flex-row lg:items-center">
+        <div className="max-w-[46ch]">
+          <h2 className="font-display text-[1.15rem] font-extrabold leading-[1.25] tracking-[-0.02em] text-mk-ink">
+            {t.news.stayConnected}
+          </h2>
+          <p className="mt-2.5 text-[0.9rem] leading-[1.65] text-mk-ink-soft">
+            {t.news.stayConnectedDesc}
+          </p>
+        </div>
+
+        <a
+          href={LINKEDIN_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-analytics-cta="news-linkedin"
+          className="group inline-flex min-h-12 shrink-0 items-center gap-2.5 rounded-full border border-mk-line-strong bg-mk-white px-6 py-3 text-[0.92rem] font-semibold text-mk-ink transition-colors duration-200 hover:border-mk-brand hover:text-mk-brand"
+        >
+          <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.41v1.56h.05a3.74 3.74 0 013.37-1.85c3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 110-4.14 2.07 2.07 0 010 4.14zM7.12 20.45H3.55V9h3.57v11.45z" />
+          </svg>
+          {t.footer.followLinkedIn}
+        </a>
+      </div>
+    </Section>
+  );
+}
+
+export function NewsContent({ posts }: { posts: Post[] }): ReactNode {
+  return (
     <>
-      {/* Hero */}
-      <section className="py-20 lg:py-28 bg-linear-to-b from-gray-10 to-white">
-        <Container>
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-100 mb-6">
-              {t.news.heroTitle}
-            </h1>
-            <p className="text-lg text-gray-60 leading-relaxed">
-              {t.news.heroDesc}
-            </p>
-          </div>
-        </Container>
-      </section>
-
-      {/* Posts Grid */}
-      <section className="py-20 lg:py-28">
-        <Container>
-          <NewsList posts={posts} />
-        </Container>
-      </section>
-
-      {/* Stay Connected */}
-      <section className="py-16 lg:py-20">
-        <Container size="md">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-100 mb-3">
-              {t.news.stayConnected}
-            </h2>
-            <p className="text-gray-60 mb-6">
-              {t.news.stayConnectedDesc}
-            </p>
-            <a
-              href="https://www.linkedin.com/company/108356527"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-linkedin text-white font-medium rounded-md hover:bg-linkedin-hover transition-colors"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-              </svg>
-              {t.footer.followLinkedIn}
-            </a>
-          </div>
-        </Container>
-      </section>
+      <NewsHero postCount={posts.length} />
+      <Section tone="paper" className="pt-10 sm:pt-12 lg:pt-14">
+        <NewsList posts={posts} />
+      </Section>
+      <StayConnected />
     </>
   );
 }

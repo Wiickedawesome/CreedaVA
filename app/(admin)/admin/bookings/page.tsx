@@ -356,7 +356,7 @@ export default function BookingsPage() {
       header: "Calendar",
       render: (b) =>
         b.syncedToCalendar ? (
-          <span title="Synced to Google Calendar" className="inline-flex items-center gap-1 text-xs text-green-600">
+          <span title="Synced to Google Calendar" className="inline-flex items-center gap-1 text-xs text-success-text">
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
             Synced
           </span>
@@ -597,7 +597,7 @@ export default function BookingsPage() {
                 <span className="text-gray-50">Google Calendar</span>
                 {selected.syncedToCalendar ? (
                   <p className="flex items-center gap-1.5 mt-0.5">
-                    <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
+                    <span className="inline-flex items-center gap-1 text-xs text-success-text font-medium">
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                       Synced
                     </span>

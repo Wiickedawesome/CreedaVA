@@ -151,9 +151,9 @@ export function SeoAgentDashboard() {
         }
       >
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-gray-60">Loading…</p>
         ) : runs.length === 0 ? (
-          <p className="text-sm text-gray-500">No runs yet. Click &ldquo;Run now&rdquo; on any skill above to start.</p>
+          <p className="text-sm text-gray-60">No runs yet. Click &ldquo;Run now&rdquo; on any skill above to start.</p>
         ) : (
           <div className="overflow-x-auto bg-card rounded-lg border border-border">
             <table className="min-w-full text-sm">

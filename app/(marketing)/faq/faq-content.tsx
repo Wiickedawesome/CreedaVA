@@ -1,74 +1,123 @@
 import Link from "next/link";
-import { Container } from "@/components/ui";
+import { CtaLink, Section } from "@/components/marketing/primitives";
 import type { Dictionary } from "@/lib/i18n";
+import type { ReactNode } from "react";
 
-export function FaqContent({ t }: { t: Dictionary }) {
+/**
+ * FAQ page.
+ *
+ * Fifteen questions across five groups, so the page is a reading surface rather
+ * than a landing page: one column of text at a comfortable measure, with the
+ * group name in a left rail so the eye can find a section without a filter UI.
+ * That rail mirrors the Mission / Vision band on `/about` — same grid, same
+ * uppercase label weight — so the two pages read as one site.
+ *
+ * No eyebrow above the `h1`: the title already says "Frequently Asked
+ * Questions", and a label repeating it would only push the title down.
+ */
+
+/** One question-and-answer pair. */
+function Question({ question }: { question: { q: string; a: string } }): ReactNode {
+  return (
+    <div className="border-t border-mk-line pt-6 first:border-t-0 first:pt-0">
+      <h3 className="font-display text-[1.02rem] font-extrabold leading-snug tracking-[-0.01em] text-mk-ink">
+        {question.q}
+      </h3>
+      <p className="mt-2.5 text-[0.95rem] leading-[1.75] text-mk-ink-soft">
+        {question.a}
+      </p>
+    </div>
+  );
+}
+
+function FaqHero({ t }: { t: Dictionary }): ReactNode {
+  const { faq } = t;
 
   return (
-    <>
-      {/* Hero */}
-      <section className="py-20 lg:py-28 bg-linear-to-b from-gray-10 to-white">
-        <Container>
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-100 mb-6">
-              {t.faq.heroTitle}
-            </h1>
-            <p className="text-lg text-gray-60 leading-relaxed">
-              {t.faq.heroDesc}{" "}
-              <Link href="/contact" data-analytics-cta="faq_intro_contact" className="text-primary hover:underline">
-                {t.faq.heroLink}
-              </Link>
-              .
-            </p>
-          </div>
-        </Container>
-      </section>
+    <Section tone="paper">
+      <div className="max-w-3xl">
+        <h1 className="font-display text-[clamp(2.4rem,6vw,4.5rem)] font-extrabold leading-[0.98] tracking-[-0.045em] text-mk-ink">
+          {faq.heroTitle}
+        </h1>
 
-      {/* FAQ Content */}
-      <section className="py-20 lg:py-28">
-        <Container size="md">
-          <div className="space-y-16">
-            {t.faq.categories.map((category, ci) => (
-              <div key={ci}>
-                <h2 className="text-2xl font-bold text-gray-100 mb-8 pb-3 border-b border-border">
-                  {category.name}
-                </h2>
-                <div className="space-y-8">
-                  {category.questions.map((item, qi) => (
-                    <div key={qi}>
-                      <h3 className="text-lg font-semibold text-gray-100 mb-2">
-                        {item.q}
-                      </h3>
-                      <p className="text-gray-60 leading-relaxed">{item.a}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
+        <p className="mt-6 max-w-[54ch] text-[1.02rem] leading-[1.7] text-mk-ink-soft sm:text-[1.08rem]">
+          {faq.heroDesc}{" "}
+          <Link
+            href="/contact"
+            data-analytics-cta="faq_intro_contact"
+            className="font-semibold text-mk-brand underline decoration-mk-brand/30 underline-offset-4 transition-colors duration-200 hover:text-mk-brand-bright hover:decoration-mk-brand-bright"
+          >
+            {faq.heroLink}
+          </Link>
+          .
+        </p>
+      </div>
+    </Section>
+  );
+}
 
-      {/* CTA */}
-      <section className="py-20 bg-primary">
-        <Container size="md">
-          <div className="text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-              {t.faq.ctaTitle}
+function FaqBody({ t }: { t: Dictionary }): ReactNode {
+  const { faq } = t;
+
+  return (
+    <Section tone="white">
+      <div className="space-y-14 sm:space-y-16">
+        {faq.categories.map((category) => (
+          <section key={category.name} className="grid gap-6 lg:grid-cols-12 lg:gap-12">
+            <h2 className="font-display text-[0.78rem] font-bold uppercase tracking-[0.16em] text-mk-ink-mute lg:col-span-3 lg:pt-1">
+              {category.name}
             </h2>
-            <p className="text-lg text-white/80 mb-8 max-w-lg mx-auto">
-              {t.faq.ctaDesc}
+
+            <div className="space-y-6 lg:col-span-9">
+              {category.questions.map((question) => (
+                <Question key={question.q} question={question} />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/**
+ * Closing panel, inset on paper rather than full-bleed. The footer directly
+ * below is green (`--mk-brand-deep`), so a full-bleed green band would sit two
+ * saturated dark blocks edge to edge — the paper padding keeps them apart, and
+ * the white rule strip keeps them visibly separate. Same pattern as `/about`.
+ */
+function FaqCta({ t }: { t: Dictionary }): ReactNode {
+  const { faq } = t;
+
+  return (
+    <Section tone="paper" padding="none" className="pb-20 pt-4 sm:pt-6 lg:pb-28">
+      <div className="rounded-(--mk-radius-lg) bg-mk-brand-deep px-6 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-16">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-xl">
+            <h2 className="font-display text-[clamp(1.75rem,3.2vw,2.65rem)] font-extrabold leading-[1.06] tracking-[-0.03em] text-mk-paper">
+              {faq.ctaTitle}
+            </h2>
+            <p className="mt-4 text-[1rem] leading-[1.7] text-mk-paper/70">
+              {faq.ctaDesc}
             </p>
-            <Link
-              href="/contact"
-              data-analytics-cta="faq_bottom_contact"
-              className="inline-flex items-center justify-center px-8 py-3 bg-white text-primary font-medium rounded-md hover:bg-gray-10 transition-colors"
-            >
-              {t.faq.ctaButton}
-            </Link>
           </div>
-        </Container>
-      </section>
+
+          <CtaLink href="/contact" variant="light" analytics="faq_bottom_contact">
+            {faq.ctaButton}
+          </CtaLink>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+export function FaqContent({ t }: { t: Dictionary }): ReactNode {
+  return (
+    <>
+      <FaqHero t={t} />
+      <FaqBody t={t} />
+      <FaqCta t={t} />
     </>
   );
 }
+

@@ -190,25 +190,32 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
   // ── Thank You State ──
   if (submitted) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-gray-10 to-white py-20">
+      <div className="min-h-screen bg-linear-to-b from-mk-paper to-mk-white py-20">
         <Container size="sm">
           <div className="text-center space-y-6">
-            <Image src="/logo.webp" alt="CreedaVA" width={140} height={40} className="mx-auto" />
-            <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <Image
+              src="/creedava-logo.svg"
+              alt="CreedaVA"
+              width={77}
+              height={64}
+              className="mx-auto h-16 w-auto"
+              unoptimized
+            />
+            <div className="w-16 h-16 mx-auto rounded-full bg-mk-brand/10 flex items-center justify-center">
+              <svg className="w-8 h-8 text-mk-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">{t.thankYou}</h1>
-            <p className="text-gray-60 max-w-md mx-auto">{t.thankYouMsg}</p>
+            <h1 className="text-2xl font-bold text-mk-ink">{t.thankYou}</h1>
+            <p className="text-mk-ink-mute max-w-md mx-auto">{t.thankYouMsg}</p>
             <div className="pt-4">
               {isDemo ? (
-                <button onClick={resetDemo} className="text-primary hover:text-primary-light font-medium">
+                <button onClick={resetDemo} className="text-mk-brand hover:text-mk-brand-bright font-medium">
                   {t.tryAgain}
                 </button>
               ) : (
-                <a href="https://creedava.com" className="inline-flex items-center gap-2 text-primary hover:text-primary-light font-medium">
+                <a href="https://creedava.com" className="inline-flex items-center gap-2 text-mk-brand hover:text-mk-brand-bright font-medium">
                   {t.visitSite}
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -225,7 +232,7 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
 
   // ── Survey ──
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-10 to-white py-12 lg:py-20">
+    <div className="min-h-screen bg-linear-to-b from-mk-paper to-mk-white py-12 lg:py-20">
       <Container size="sm">
         <div className="space-y-8">
           {/* Demo badge */}
@@ -240,20 +247,27 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
 
           {/* Header */}
           <div className="text-center space-y-4">
-            <Image src="/logo.webp" alt="CreedaVA" width={140} height={40} className="mx-auto" />
-            <h1 className="text-3xl font-bold text-foreground">{t.title}</h1>
-            <p className="text-gray-60">{t.greeting(customerName)}</p>
+            <Image
+              src="/creedava-logo.svg"
+              alt="CreedaVA"
+              width={77}
+              height={64}
+              className="mx-auto h-16 w-auto"
+              unoptimized
+            />
+            <h1 className="text-3xl font-bold text-mk-ink">{t.title}</h1>
+            <p className="text-mk-ink-mute">{t.greeting(customerName)}</p>
           </div>
 
           {/* Progress bar */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs text-gray-50">
+            <div className="flex items-center justify-between text-xs text-mk-ink-mute">
               <span>{t.progress(Math.min(currentQ + 1, QUESTIONS.length), QUESTIONS.length)}</span>
               <span>{Math.round((Object.keys(answers).length / QUESTIONS.length) * 100)}%</span>
             </div>
-            <div className="h-2 rounded-full bg-gray-10 overflow-hidden">
+            <div className="h-2 rounded-full bg-mk-paper-deep overflow-hidden">
               <div
-                className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                className="h-full rounded-full bg-mk-brand transition-all duration-500 ease-out"
                 style={{ width: `${(Object.keys(answers).length / QUESTIONS.length) * 100}%` }}
               />
             </div>
@@ -262,11 +276,11 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
           {/* Questions — one at a time with fade */}
           {!allAnswered && (
             <div
-              className={`bg-white rounded-2xl border border-border p-8 shadow-sm transition-all duration-300 ${
+              className={`bg-mk-white rounded-(--mk-radius-lg) border border-mk-line-strong p-8 shadow-(--mk-shadow-card) transition-all duration-300 ${
                 fading ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
               }`}
             >
-              <p className="text-base font-medium text-gray-80 mb-8 text-center leading-relaxed">
+              <p className="text-base font-medium text-mk-ink mb-8 text-center leading-relaxed">
                 {QUESTIONS[currentQ][lang]}
               </p>
               <div className="flex justify-center gap-3 sm:gap-5">
@@ -275,10 +289,10 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
                     key={r.value}
                     type="button"
                     onClick={() => handleRate(r.value)}
-                    className="flex flex-col items-center gap-2 p-2 sm:p-3 rounded-xl border-2 border-transparent hover:border-gray-20 hover:bg-gray-10 transition-all cursor-pointer hover:scale-110 active:scale-95"
+                    className="flex flex-col items-center gap-2 p-2 sm:p-3 rounded-(--mk-radius) border-2 border-transparent hover:border-mk-line-strong hover:bg-mk-paper-deep transition-all cursor-pointer hover:scale-110 active:scale-95"
                   >
                     <FaceIcon value={r.value} size={44} />
-                    <span className="text-xs font-medium text-gray-60">{r[lang]}</span>
+                    <span className="text-xs font-medium text-mk-ink-mute">{r[lang]}</span>
                   </button>
                 ))}
               </div>
@@ -290,21 +304,21 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* Average score */}
               <div className="text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-mk-brand/10">
                   <FaceIcon value={Math.round(Number(avgRating))} size={28} />
-                  <span className="text-sm font-semibold text-primary">
+                  <span className="text-sm font-semibold text-mk-brand">
                     {lang === "en" ? `Average: ${avgRating}/5` : `Promedio: ${avgRating}/5`}
                   </span>
                 </div>
               </div>
 
               {/* Comment box */}
-              <div className="bg-white rounded-2xl border border-border p-8 shadow-sm">
-                <label className="block text-sm font-medium text-gray-70 mb-2">
-                  {t.commentLabel} <span className="text-gray-40">{t.commentOptional}</span>
+              <div className="bg-mk-white rounded-(--mk-radius-lg) border border-mk-line-strong p-8 shadow-(--mk-shadow-card)">
+                <label className="block text-sm font-medium text-mk-ink-soft mb-2">
+                  {t.commentLabel} <span className="text-mk-ink-mute">{t.commentOptional}</span>
                 </label>
                 <textarea
-                  className="w-full rounded-lg border border-border bg-white px-4 py-3 text-sm min-h-28 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full rounded-(--mk-radius) border border-mk-line-strong bg-mk-white px-4 py-3 text-sm min-h-28 resize-y focus:outline-none focus:ring-2 focus:ring-mk-brand/20 focus:border-mk-brand"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder={t.commentPlaceholder}
@@ -321,7 +335,7 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="inline-flex items-center justify-center gap-2 bg-primary text-white px-8 py-3 rounded-lg font-semibold text-base hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center gap-2 bg-mk-brand text-white px-8 py-3 rounded-full font-semibold text-base hover:bg-mk-brand-bright transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
                     <>
@@ -336,7 +350,7 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
             </div>
           )}
 
-          <p className="text-center text-xs text-gray-40">{t.confidential}</p>
+          <p className="text-center text-xs text-mk-ink-mute">{t.confidential}</p>
         </div>
       </Container>
     </div>

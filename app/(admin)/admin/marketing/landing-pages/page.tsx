@@ -404,7 +404,7 @@ export default function LandingPagesPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300">Active</span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-success-soft text-success-text">Active</span>
             <button
               onClick={() => setSurveyPreviewOpen(true)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary hover:text-primary-light hover:bg-primary/5 rounded-lg transition-colors"
@@ -570,7 +570,7 @@ export default function LandingPagesPage() {
                     <Image src={url} alt={`Landing page image ${i + 1}`} fill className="rounded-lg object-cover" />
                     <button
                       onClick={() => removeLpImage(i)}
-                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-error-text opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
                       aria-label="Remove image"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -603,7 +603,7 @@ export default function LandingPagesPage() {
                     </a>
                     <button
                       onClick={() => removeLpAttachment(i)}
-                      className="text-gray-50 hover:text-red-500 shrink-0 ml-2"
+                      className="text-gray-50 hover:text-error-text shrink-0 ml-2"
                       aria-label="Remove attachment"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -724,7 +724,7 @@ export default function LandingPagesPage() {
               <div className="rounded-xl border border-border p-6">
                 <p className="text-xs font-medium text-gray-50 uppercase tracking-wider mb-3">Page Body</p>
                 <div
-                  className="prose prose-sm max-w-none prose-headings:text-gray-100 prose-p:text-gray-70 prose-a:text-primary prose-strong:text-gray-90"
+                  className="rich-html"
                   dangerouslySetInnerHTML={{ __html: previewPage.bodyHtml }}
                 />
               </div>
@@ -804,7 +804,7 @@ export default function LandingPagesPage() {
             </div>
             <div className="rounded-lg bg-gray-10 p-3">
               <p className="text-xs text-gray-50">Status</p>
-              <p className="text-sm font-medium text-green-600">Active</p>
+              <p className="text-sm font-medium text-success-text">Active</p>
             </div>
           </div>
           <p className="text-xs text-gray-50">

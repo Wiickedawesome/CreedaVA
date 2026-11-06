@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { AdminSidebar } from "./sidebar";
+import { AdminThemeToggle } from "./theme-toggle";
 
 export function AdminTopbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -68,11 +69,10 @@ export function AdminTopbar() {
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <Image src="/logo.webp" alt="CreedaVA" width={28} height={28} className="h-7 w-7 rounded-lg" />
+          <Image src="/creedava-mark.svg" alt="" width={24} height={28} className="h-7 w-auto" unoptimized />
           <span className="text-base font-bold text-foreground">CreedaVA</span>
         </div>
-
-
+        <AdminThemeToggle />
       </header>
 
       {/* Mobile sidebar overlay */}

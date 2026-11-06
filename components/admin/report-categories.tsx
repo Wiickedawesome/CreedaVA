@@ -104,8 +104,8 @@ export function ScheduledReportCard({
   const freshness = !lastDate
     ? { label: "Never run", color: "text-gray-60 bg-gray-20" }
     : isStale
-      ? { label: "Stale", color: "text-amber-500 bg-amber-500/10" }
-      : { label: "Fresh", color: "text-emerald-500 bg-emerald-500/10" };
+      ? { label: "Stale", color: "text-warning-text bg-warning-soft" }
+      : { label: "Fresh", color: "text-success-text bg-success-soft" };
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -131,10 +131,10 @@ export function ScheduledReportCard({
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 lastReport.score >= 70
-                  ? "bg-emerald-500"
+                  ? "bg-success"
                   : lastReport.score >= 40
-                    ? "bg-amber-500"
-                    : "bg-red-500"
+                    ? "bg-warning"
+                    : "bg-error"
               }`}
               style={{ width: `${lastReport.score}%` }}
             />
@@ -181,10 +181,10 @@ interface InsightCardProps {
 }
 
 const severityStyles: Record<string, { bg: string; icon: string; border: string }> = {
-  positive: { bg: "bg-emerald-500/10", icon: "text-emerald-500", border: "border-emerald-500/20" },
-  info: { bg: "bg-blue-500/10", icon: "text-blue-500", border: "border-blue-500/20" },
-  warning: { bg: "bg-amber-500/10", icon: "text-amber-500", border: "border-amber-500/20" },
-  critical: { bg: "bg-red-500/10", icon: "text-red-500", border: "border-red-500/20" },
+  positive: { bg: "bg-success-soft", icon: "text-success-text", border: "border-success-soft-line" },
+  info: { bg: "bg-info-soft", icon: "text-info-text", border: "border-info-soft-line" },
+  warning: { bg: "bg-warning-soft", icon: "text-warning-text", border: "border-warning-soft-line" },
+  critical: { bg: "bg-error-soft", icon: "text-error-text", border: "border-error-soft-line" },
 };
 
 const severityIcons: Record<string, ReactNode> = {
@@ -296,10 +296,10 @@ export function BusinessPulse({ score, areas }: BusinessPulseProps) {
 
   const color =
     displayScore >= 70
-      ? "text-emerald-600"
+      ? "text-success-text"
       : displayScore >= 40
-        ? "text-amber-600"
-        : "text-red-600";
+        ? "text-warning-text"
+        : "text-error-text";
 
   return (
     <div className="rounded-xl border border-border bg-card p-6">
@@ -320,7 +320,7 @@ export function BusinessPulse({ score, areas }: BusinessPulseProps) {
                   cy="50"
                   r="42"
                   fill="none"
-                  stroke="#f1f5f9"
+                  stroke="var(--gray-30)"
                   strokeWidth="8"
                 />
                 <circle
@@ -328,7 +328,7 @@ export function BusinessPulse({ score, areas }: BusinessPulseProps) {
                   cy="50"
                   r="42"
                   fill="none"
-                  stroke={displayScore >= 70 ? "#10b981" : displayScore >= 40 ? "#f59e0b" : "#ef4444"}
+                  stroke={displayScore >= 70 ? "var(--success)" : displayScore >= 40 ? "var(--warning)" : "var(--error)"}
                   strokeWidth="8"
                   strokeLinecap="round"
                   strokeDasharray={`${(displayScore / 100) * 264} 264`}
@@ -359,7 +359,7 @@ export function BusinessPulse({ score, areas }: BusinessPulseProps) {
                   <div className="h-1.5 rounded-full bg-gray-10 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-700 ${
-                        area.value >= 70 ? "bg-emerald-400" : area.value >= 40 ? "bg-amber-400" : "bg-red-400"
+                        area.value >= 70 ? "bg-success" : area.value >= 40 ? "bg-warning" : "bg-error"
                       }`}
                       style={{ width: `${area.value}%` }}
                     />

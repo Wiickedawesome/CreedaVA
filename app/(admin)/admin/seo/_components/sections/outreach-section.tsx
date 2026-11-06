@@ -85,9 +85,9 @@ export default function OutreachSection() {
       />
       <DashboardSection title="All drafts">
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-gray-60">Loading…</p>
         ) : visibleEmails.length === 0 ? (
-          <p className="text-sm text-gray-500">No drafts yet. The agent generates outreach every Sunday.</p>
+          <p className="text-sm text-gray-60">No drafts yet. The agent generates outreach every Sunday.</p>
         ) : (
           <div className="space-y-3">
             {visibleEmails.map((e) => (
@@ -101,7 +101,7 @@ export default function OutreachSection() {
                         href={e.targetUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:underline truncate block max-w-md"
+                        className="text-xs text-info-text hover:underline truncate block max-w-md"
                       >
                         {e.targetUrl}
                       </a>
@@ -119,7 +119,7 @@ export default function OutreachSection() {
                   <pre className="text-sm text-gray-70 whitespace-pre-wrap font-sans bg-gray-10 p-2 rounded">{e.body}</pre>
                 </div>
                 {e.error && (
-                  <div className="mt-2 text-xs text-red-600 bg-red-50 border border-red-100 rounded p-2">
+                  <div className="mt-2 text-xs text-error-text bg-error-soft border border-error-soft-line rounded p-2">
                     {e.error}
                   </div>
                 )}
@@ -129,7 +129,7 @@ export default function OutreachSection() {
                     placeholder={e.toEmail || "recipient@example.com"}
                     value={toInputs[e.id] ?? e.toEmail ?? ""}
                     onChange={(ev) => setToInputs((s) => ({ ...s, [e.id]: ev.target.value }))}
-                    className="text-sm border border-gray-300 rounded px-2 py-1 w-64"
+                    className="text-sm border border-border rounded px-2 py-1 w-64"
                     disabled={e.status === "sent"}
                   />
                   <Button onClick={() => setStatus(e.id, "approved")} disabled={updating === e.id || e.status === "sent"}>

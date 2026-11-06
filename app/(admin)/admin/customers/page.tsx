@@ -35,12 +35,18 @@ const BUSINESS_EMAILS = [
 
 const DEFAULT_SURVEY_SUBJECT = "We'd love your feedback — CreedaVA Satisfaction Survey";
 const CUSTOMER_STATS_NOW_MS = Date.now();
+
+// Escalation step between "needs attention" (yellow) and "critical" (red).
+// Derived from the live tokens so it lightens with them — a fixed #FF832B read
+// as near-black on the dark card, and reusing --warning collapsed this into the
+// bucket above it, losing the four-step ladder.
+const AT_RISK_COLOR = "color-mix(in srgb, var(--warning) 55%, var(--error))";
 const DEFAULT_SURVEY_HTML = `
-<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#002D72;">
+<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#0B2135;">
   <div style="text-align:center;padding:24px 0;">
     <img src="/logo.webp" alt="CreedaVA" width="120" style="margin-bottom:12px;height: auto;" />
   </div>
-  <div style="background:#f9fbff;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
+  <div style="background:#F7F7F2;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
     <h2 style="margin:0 0 8px;color:#005148;font-size:22px;">How are we doing?</h2>
     <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.6;">
       Hi {{CUSTOMER_NAME}},<br/><br/>
@@ -241,10 +247,10 @@ export default function CustomersPage() {
   // ─── Contact Health (based on days since last contact + satisfaction) ───
   const contactHealthData = useMemo(() => {
     const segments = [
-      { label: "Healthy", sublabel: "≤ 60 days", color: "#198038", count: 0 },
-      { label: "Needs Attention", sublabel: "61–90 days", color: "#F1C21B", count: 0 },
-      { label: "At Risk", sublabel: "91–120 days", color: "#FF832B", count: 0 },
-      { label: "Critical", sublabel: "120+ days", color: "#DA1E28", count: 0 },
+      { label: "Healthy", sublabel: "≤ 60 days", color: "var(--chart-5)", count: 0 },
+      { label: "Needs Attention", sublabel: "61–90 days", color: "var(--chart-6)", count: 0 },
+      { label: "At Risk", sublabel: "91–120 days", color: AT_RISK_COLOR, count: 0 },
+      { label: "Critical", sublabel: "120+ days", color: "var(--error)", count: 0 },
     ];
     active.forEach((c) => {
       if (!c.lastContactDate) { segments[3].count++; return; }
@@ -287,7 +293,14 @@ export default function CustomersPage() {
       .sort((a, b) => b.count - a.count);
   }, [customers]);
   const maxSourceCount = sourceDistribution.length > 0 ? sourceDistribution[0].count : 1;
-  const sourceColors = ["#005148", "#007A6D", "#002D72", "#198038", "#4589FF", "#A56EFF", "#FF832B", "#DA1E28"];
+  // Categorical ramp — every entry is a live token so the bars survive the
+  // theme switch. #0B2135 and #A56EFF were fixed values that vanished on a
+  // dark card.
+  const sourceColors = [
+    "var(--chart-1)", "var(--chart-7)", "var(--chart-3)",
+    "var(--chart-5)", "var(--chart-8)", "var(--chart-4)",
+    "var(--chart-6)", "var(--chart-2)",
+  ];
 
   const tabs = [
     { label: "All", value: "all", badge: customers.length },
@@ -512,12 +525,12 @@ export default function CustomersPage() {
   const columns: Column<Customer>[] = [
     { key: "name", header: "Name", render: (c) => {
       const now = Date.now();
-      let healthColor = "#DA1E28"; // critical / never contacted
+      let healthColor = "var(--error)"; // critical / never contacted
       if (c.lastContactDate) {
         const days = Math.floor((now - new Date(c.lastContactDate).getTime()) / (1000 * 60 * 60 * 24));
-        if (days <= 60) healthColor = "#198038";
-        else if (days <= 90) healthColor = "#F1C21B";
-        else if (days <= 120) healthColor = "#FF832B";
+        if (days <= 60) healthColor = "var(--chart-5)";
+        else if (days <= 90) healthColor = "var(--chart-6)";
+        else if (days <= 120) healthColor = AT_RISK_COLOR;
       }
       return (
         <span className="flex items-center gap-2 font-medium text-gray-90">
@@ -646,9 +659,9 @@ export default function CustomersPage() {
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs font-medium text-gray-50 uppercase tracking-wide">Health Score</span>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                avgHealthScore >= 70 ? "bg-emerald-500/10 text-emerald-300" :
-                avgHealthScore >= 40 ? "bg-amber-500/10 text-amber-300" :
-                "bg-red-500/10 text-red-300"
+                avgHealthScore >= 70 ? "bg-success-soft text-success-text" :
+                avgHealthScore >= 40 ? "bg-warning-soft text-warning-text" :
+                "bg-error-soft text-error-text"
               }`}>{avgHealthScore}%</span>
             </div>
             {contactHealthData.map((seg) => {
@@ -817,8 +830,8 @@ export default function CustomersPage() {
               options={BILLING_CYCLES.map((b) => ({ value: b, label: b.charAt(0).toUpperCase() + b.slice(1) }))}
             />
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Lifetime Value ($)</label>
-              <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-600">
+              <label className="mb-1 block text-sm font-medium text-gray-80">Lifetime Value ($)</label>
+              <div className="flex h-10 items-center rounded-lg border border-border bg-gray-20 px-3 text-sm text-gray-70">
                 {selected ? `$${(customerLtvMap.get(selected.id) || 0).toLocaleString()}` : "$0"}
               </div>
             </div>
@@ -974,7 +987,7 @@ export default function CustomersPage() {
       >
         <div className="space-y-4">
           {surveyTemplate && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-300 text-xs">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-success-soft text-success-text text-xs">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
               Template loaded from Emails → Drafts. Changes here update the template.
             </div>
@@ -1027,8 +1040,8 @@ export default function CustomersPage() {
           <div className="space-y-5">
             <div className="flex items-center gap-4 rounded-xl border border-border p-4 bg-card">
               <div className={`text-4xl font-bold tabular-nums ${
-                healthReport.overallHealth >= 75 ? "text-green-600" :
-                healthReport.overallHealth >= 50 ? "text-yellow-600" : "text-red-600"
+                healthReport.overallHealth >= 75 ? "text-success-text" :
+                healthReport.overallHealth >= 50 ? "text-warning-text" : "text-error-text"
               }`}>{healthReport.overallHealth}<span className="text-lg font-normal text-gray-50">/100</span></div>
               <div>
                 <p className="text-sm font-semibold text-gray-80">Overall Health Score</p>

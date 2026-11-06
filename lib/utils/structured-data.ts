@@ -9,9 +9,14 @@
  */
 
 const SITE = "https://creedava.com";
-const ORG_NAME = "CreedaVA";
-/** Served from public/logo.webp — /images/logo.webp does not exist. */
-const LOGO = `${SITE}/logo.webp`;
+/**
+ * Full business name. Search engines identify the company by this, so the brand
+ * mark and the short name are declared alongside it as `alternateName`.
+ */
+const ORG_NAME = "Creeda Virtual Assistants";
+const ORG_ALTERNATE_NAMES = ["CreedaVA", "Creeda"];
+/** Served from public/creedava-logo.svg — the current mark + wordmark. */
+const LOGO = `${SITE}/creedava-logo.svg`;
 const PHONE = "+1-844-702-2202";
 
 // ─── Shared fragments ────────────────────────────────
@@ -19,6 +24,7 @@ const PHONE = "+1-844-702-2202";
 const ORGANIZATION = {
   "@type": "Organization",
   name: ORG_NAME,
+  alternateName: ORG_ALTERNATE_NAMES,
   url: SITE,
   logo: LOGO,
   contactPoint: {

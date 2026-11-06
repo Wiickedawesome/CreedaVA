@@ -581,8 +581,8 @@ function AIPromptDialog({
   <title>Preview — ${section}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Roboto', system-ui, sans-serif; color: #002D72; line-height: 1.6; padding: 2rem; max-width: 900px; margin: 0 auto; }
-    h1, h2, h3 { color: #005148; margin: 1.5rem 0 0.75rem; }
+    body { font-family: 'Roboto', system-ui, sans-serif; background: #F7F7F2; color: #0B2135; line-height: 1.6; padding: 2rem; max-width: 900px; margin: 0 auto; }
+    h1, h2, h3 { color: #0B2135; margin: 1.5rem 0 0.75rem; }
     h1 { font-size: 2rem; }
     h2 { font-size: 1.5rem; }
     h3 { font-size: 1.25rem; }
@@ -971,16 +971,16 @@ function AIPromptDialog({
                 {pendingActions.map((action) => (
                   <div
                     key={action.id}
-                    className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-50/10 p-3"
+                    className="flex items-start gap-3 rounded-xl border border-warning-soft-line bg-warning-soft/40 p-3"
                   >
-                    <div className="shrink-0 w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <div className="shrink-0 w-8 h-8 rounded-lg bg-warning-soft flex items-center justify-center">
+                      <svg className="w-4 h-4 text-warning-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                         <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-amber-600">Action requires confirmation</p>
+                      <p className="text-xs font-medium text-warning-text">Action requires confirmation</p>
                       <p className="text-xs text-gray-60 mt-0.5">{action.impactSummary}</p>
                       <p className="text-[10px] text-gray-50 mt-1 font-mono">{action.toolName.replace(/_/g, " ")}</p>
                       <div className="flex items-center gap-2 mt-2">

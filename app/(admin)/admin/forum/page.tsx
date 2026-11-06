@@ -384,7 +384,7 @@ export default function ForumPage() {
                 }
               }}
               buildPrompt={(input) =>
-                buildTrainedPrompt("Forum", `Generate a forum discussion thread about: "${input}"\n\nReturn ONLY valid JSON with:\n- title: engaging discussion title (a question or provocative statement)\n- content: opening post body as rich HTML. Use <h3>, <p>, <strong>, <em>, <ul>, <li>, <blockquote> tags for structure.\n  Include: a compelling hook paragraph, 3-5 sections with bold subheadings, bullet lists for key points,\n  a blockquote with an insight or stat, and a closing paragraph with a discussion question.\n  Use inline styles for visual flair: colored borders on blockquotes (border-left:4px solid #005148),\n  highlighted key phrases (<strong style="color:#005148">), and well-spaced sections (margin-bottom:16px on paragraphs).\n- tags: array of 3-5 relevant tags (lowercase, no spaces — use hyphens)\n\nReturn ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, includeForumRules: true })
+                buildTrainedPrompt("Forum", `Generate a forum discussion thread about: "${input}"\n\nReturn ONLY valid JSON with:\n- title: engaging discussion title (a question or provocative statement)\n- content: opening post body as SEMANTIC HTML only. Use <h3>, <p>, <strong>, <em>, <ul>, <li>, <blockquote> tags.\n  Include: a compelling hook paragraph, 3-5 sections with bold subheadings, bullet lists for key points,\n  a blockquote with an insight or claim, and a closing paragraph with a discussion question.\n  Do NOT emit inline style attributes or <style> tags — the post body is styled by the site's own\n  article stylesheet, and inline colour overrides it.\n- tags: array of 3-5 relevant tags (lowercase, no spaces — use hyphens)\n\nReturn ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, includeForumRules: true })
               }
             />
             <Button size="sm" onClick={() => setCreateOpen(true)}>
@@ -513,7 +513,7 @@ export default function ForumPage() {
                       <Image src={url} alt={`Thread image ${i + 1}`} fill className="rounded-lg object-cover" />
                       <button
                         onClick={() => removeDetailImage(i)}
-                        className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
+                        className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-error-text opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
                         aria-label="Remove image"
                       >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -554,7 +554,7 @@ export default function ForumPage() {
                       </a>
                       <button
                         onClick={() => removeDetailLink(i)}
-                        className="text-gray-50 hover:text-red-500 shrink-0 ml-2"
+                        className="text-gray-50 hover:text-error-text shrink-0 ml-2"
                         aria-label="Remove link"
                       >
                         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -653,7 +653,7 @@ export default function ForumPage() {
                     <Image src={url} alt={`Forum image ${i + 1}`} fill className="rounded-lg object-cover" />
                     <button
                       onClick={() => removeForumImage(i)}
-                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-red-500 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-gray-10/90 text-gray-60 rounded p-0.5 hover:text-error-text opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
                       aria-label="Remove image"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -692,7 +692,7 @@ export default function ForumPage() {
                       <svg className="w-4 h-4 text-gray-50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" /></svg>
                       <span className="truncate">{url}</span>
                     </a>
-                    <button onClick={() => removeForumLink(i)} className="text-gray-50 hover:text-red-500 shrink-0 ml-2" aria-label="Remove link">
+                    <button onClick={() => removeForumLink(i)} className="text-gray-50 hover:text-error-text shrink-0 ml-2" aria-label="Remove link">
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     </button>
                   </div>

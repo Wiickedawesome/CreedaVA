@@ -382,7 +382,7 @@ export default function KeywordsSection() {
         <DashboardSection title="By Intent">
           {(() => {
             const intents = ["informational", "commercial", "transactional", "navigational"];
-            const colors = { informational: "#4589FF", commercial: "#F1C21B", transactional: "#198038", navigational: "#878D96" };
+            const colors = { informational: "var(--chart-8)", commercial: "var(--chart-6)", transactional: "var(--chart-5)", navigational: "var(--gray-60)" };
             return (
               <div className="space-y-3">
                 {intents.map((intent) => {
@@ -395,7 +395,7 @@ export default function KeywordsSection() {
                         <span className="text-xs font-medium text-gray-60">{count} ({pct}%)</span>
                       </div>
                       <div className="h-3 bg-gray-10 rounded-full overflow-hidden">
-                        <div className="bar-segment" style={{ '--bar-w': `${Math.max(pct, 2)}%`, '--bar-c': colors[intent as keyof typeof colors] || "#A2A9B0" } as React.CSSProperties} />
+                        <div className="bar-segment" style={{ '--bar-w': `${Math.max(pct, 2)}%`, '--bar-c': colors[intent as keyof typeof colors] || "var(--gray-50)" } as React.CSSProperties} />
                       </div>
                     </div>
                   );
@@ -408,7 +408,7 @@ export default function KeywordsSection() {
         <DashboardSection title="By Difficulty">
           {(() => {
             const diffs = ["low", "medium", "high"];
-            const colors = { low: "#198038", medium: "#F1C21B", high: "#DA1E28" };
+            const colors = { low: "var(--chart-5)", medium: "var(--chart-6)", high: "var(--error)" };
             return (
               <div className="space-y-3">
                 {diffs.map((diff) => {

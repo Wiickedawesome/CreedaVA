@@ -88,7 +88,7 @@ describe("i18n dictionaries", () => {
   });
 
   it("nav section has all required keys", () => {
-    const requiredNavKeys = ["home", "services", "about", "news", "contact", "signIn", "getStarted"];
+    const requiredNavKeys = ["home", "services", "pricing", "about", "news", "contact", "signIn", "getStarted"];
     for (const key of requiredNavKeys) {
       expect(en.nav).toHaveProperty(key);
       expect(es.nav).toHaveProperty(key);

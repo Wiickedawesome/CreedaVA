@@ -21,7 +21,7 @@ describe("Structured Data (JSON-LD)", () => {
       const ld = websiteJsonLd();
       expect(ld["@context"]).toBe("https://schema.org");
       expect(ld["@type"]).toBe("WebSite");
-      expect(ld.name).toBe("CreedaVA");
+      expect(ld.name).toBe("Creeda Virtual Assistants");
       expect(ld.url).toBe(SITE);
       expect(ld.potentialAction?.["@type"]).toBe("SearchAction");
     });
@@ -29,7 +29,7 @@ describe("Structured Data (JSON-LD)", () => {
     it("has publisher organization", () => {
       const ld = websiteJsonLd();
       expect(ld.publisher?.["@type"]).toBe("Organization");
-      expect(ld.publisher?.name).toBe("CreedaVA");
+      expect(ld.publisher?.name).toBe("Creeda Virtual Assistants");
     });
   });
 
@@ -70,7 +70,7 @@ describe("Structured Data (JSON-LD)", () => {
       });
       expect(ld["@type"]).toBe("Service");
       expect(ld.name).toBe("Executive VA");
-      expect(ld.provider?.name).toBe("CreedaVA");
+      expect(ld.provider?.name).toBe("Creeda Virtual Assistants");
       expect(ld.availableLanguage).toContain("Spanish");
     });
 
