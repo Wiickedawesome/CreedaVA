@@ -1218,11 +1218,11 @@ featured card and one row under a `MORE POSTS` label.
 - LinkedIn CTA rebuilt as a bordered `bg-mk-white` button on a `bg-mk-paper` inset —
   the legacy `bg-linkedin` brand blue is not part of the marketing palette.
 
-**Article template: a white sheet on paper.** Body sits in
+**Article template: full-width editorial.** Superseded 2026-11-06 — see *Editorial
+article page* below. The body originally sat in
 `rounded-(--mk-radius-lg) bg-mk-white px-6 py-10 shadow-(--mk-shadow-card)` over the
-`paper` band. It separates reading text from page furniture and gives the template a
-shape that is not another card grid. Meta row is `Pill` + date + dot + read time; the
-excerpt doubles as the lede; `post.author` renders as a byline when present.
+`paper` band, to separate reading text from page furniture; the owner read that card
+as an article "in a frame" and asked for a whole-page editorial layout instead.
 
 - Preserved unchanged: `demoteBodyH1`, `getTranslatedTitle` / `getTranslatedExcerpt` /
   `getTranslatedContent`, `AICitationReadiness`, `blogPostingJsonLd`, `revalidate = 300`,
@@ -2614,6 +2614,58 @@ is flagged.
   thread. And no `/admin/*` page below the login redirect is reachable without
   credentials, so `.rich-html` is proven by compiled CSS + rule presence, not by
   rendering a signed-in inbox.
+
+### 2026-11-06 — blog article pages: boxed card → full-width editorial
+
+The owner looked at a published post and asked for the opposite of what the
+2026-11-03 template did: *"the blogs are incorrect, they should use the whole page
+and be editorial like. Right now its like its in a frame, i hate it."*
+
+The "frame" was one element — the body sheet
+`rounded-(--mk-radius-lg) bg-mk-white px-6 py-10 shadow-(--mk-shadow-card)` sitting
+on a `paper` band inside a `max-w-3xl` column, i.e. a white card with a shadow and
+~460 px of empty cream either side at 1440. Everything was inside `max-w-3xl`
+(768 px), so the page read as a module rather than a page.
+
+`app/(marketing)/news/[slug]/blog-post-content.tsx` is now three bands:
+
+1. **Masthead** — `containerSize="lg"` (1152 px). Back link, an uppercase kicker row
+   (`Category · date · N min read`) replacing the old `Pill`, the headline at
+   `clamp(2.2rem,5.4vw,4.2rem)` with `text-balance`, a `max-w-[52ch]` dek, and the
+   byline under a hairline rule.
+2. **Featured image** — same `lg` container, `aspect-video`, **no shadow** (a shadow
+   was half of the card read). `sizes` raised to `72rem` to match.
+3. **Body** — `tone="white"`, `containerSize="md"`, `pt-12 pb-20`. The text is an
+   unboxed `max-w-[68ch]` column; the foot rule spans the full 960 px container, so
+   the page furniture is wide while the measure stays readable.
+
+- New `.mk-article--wide` in `globals.css` (news posts only — landing pages keep the
+  plain column): body `1.125rem`, and at ≥1024 px direct `img`/`figure` children run
+  `width: 52rem; margin-inline: auto`. The auto margins resolve negative for an
+  over-constrained box, so a figure breaks out evenly **on both sides of the column**
+  and stays inside the container — it cannot create horizontal overflow.
+- Removed the `Pill` import; the meta row is plain type. No new i18n keys.
+
+Measured in a harness that serves the real production body HTML against the built
+stylesheet (`public/_article-preview.html`, deleted after use — the local server has
+no admin credentials, so `/news/<slug>` renders the not-found state locally):
+
+| | 1440 | 1024 | 375 |
+|---|---|---|---|
+| horizontal overflow | 0 | 0 | 0 |
+| reading column | 611 px | 611 px | 328 px |
+| headline width | 1088 px | 945 px | 328 px |
+| foot rule width | 960 px | 945 px | 328 px |
+| body font | 18 px | 18 px | 18 px |
+| shadow / radius on body | none | none | none |
+
+Also: 0 contrast failures across every text node in the article subtree at 1440
+(threshold 4.5:1, or 3:1 for large text), using the same canvas colour resolution
+the audit script uses. `lint` 0 errors · **407/407** tests · build OK ·
+`/news/[slug]` still prerendered via `generateStaticParams`.
+
+The harness is evidence about CSS and geometry, **not** proof that the Next route
+renders — that was confirmed on `https://creedava.com` after the App Hosting rollout.
 
 ## Verification (measured, 2026-11-02)
 

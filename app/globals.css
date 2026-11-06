@@ -614,6 +614,25 @@ body {
     font-weight: 700;
     color: var(--mk-ink);
   }
+
+  /* Editorial article body (news post template only — landing pages keep the
+     plain column). A hair larger than the shared body size, and media runs
+     wider than the text so the article uses the page instead of sitting in a
+     narrow ribbon. The figure is centred on the column with `auto` side margins,
+     which resolve negative for an over-constrained box: it breaks out evenly and
+     stays inside the container, so it can never cause horizontal overflow. */
+  .mk-article--wide {
+    font-size: 1.125rem;
+  }
+
+  @media (min-width: 1024px) {
+    .mk-article--wide > img,
+    .mk-article--wide > figure {
+      width: 52rem;
+      max-width: none;
+      margin-inline: auto;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

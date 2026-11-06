@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslation } from "@/lib/i18n";
-import { CtaLink, Pill, Section } from "@/components/marketing/primitives";
+import { CtaLink, Section } from "@/components/marketing/primitives";
 import { demoteBodyH1 } from "@/lib/utils/blog-content";
 import { normalizeLegacyHtml } from "@/lib/utils/legacy-content";
 import {
@@ -15,20 +15,27 @@ import type { ReactNode } from "react";
 import type { BlogPost } from "@/lib/types/content";
 
 /**
- * Article template.
+ * Editorial article template.
+ *
+ * A masthead that spans the container, figures that break wider than the text,
+ * and an unboxed reading column. The body used to sit in a rounded white sheet
+ * with a card shadow on the cream band, which read as a card floating inside a
+ * frame — an article is a page, not a module, so the sheet is gone.
  *
  * The body arrives as HTML from Firestore, so it is styled by the `.mk-article`
- * block in globals.css rather than by utility classes. `@tailwindcss/typography`
- * is not installed here — the previous `prose prose-lg` classes produced no CSS
- * and every published post rendered as raw browser defaults.
- *
- * The body sits on a white "sheet" over the paper surface: it separates reading
- * text from the page furniture and gives the template a shape that is clearly
- * not another card grid.
+ * block in globals.css rather than by utility classes; `--wide` adds the figure
+ * breakout. `@tailwindcss/typography` is not installed here, and the old
+ * `prose prose-lg` classes produced no CSS at all.
  */
 
 const WORDS_PER_MINUTE = 200;
 const NEWS_PATH = "/news";
+
+/**
+ * Body measure. `ch` tracks the font size, so the line length survives a font
+ * change; a `rem` width does not.
+ */
+const READING_MEASURE = "mx-auto max-w-[68ch]";
 
 type Post = BlogPost & { id: string };
 
@@ -63,6 +70,13 @@ function BackLink({ label }: { label: string }): ReactNode {
       </svg>
       {label}
     </Link>
+  );
+}
+
+/** Separator inside the uppercase kicker row. */
+function MetaDot(): ReactNode {
+  return (
+    <span aria-hidden="true" className="h-1 w-1 rounded-full bg-mk-line-strong" />
   );
 }
 
@@ -108,67 +122,82 @@ export function BlogPostContent({ post }: { post: Post | null }): ReactNode {
 
   return (
     <article>
-      <Section tone="paper" className="pb-10 sm:pb-12">
-        <div className="mx-auto max-w-3xl">
-          <BackLink label={t.news.backToNews} />
+      {/* Masthead — spans the wide container so the page opens like a
+          publication rather than a boxed module. */}
+      <Section tone="paper" containerSize="lg" className="pb-10 sm:pb-12 lg:pb-14">
+        <BackLink label={t.news.backToNews} />
 
-          <div className="mt-8 flex flex-wrap items-center gap-2.5">
-            <Pill>{category}</Pill>
-            {published ? (
-              <span className="text-[0.8rem] text-mk-ink-mute">{published}</span>
-            ) : null}
-            <span aria-hidden="true" className="h-1 w-1 rounded-full bg-mk-line-strong" />
-            <span className="text-[0.8rem] text-mk-ink-mute">
-              {readingMinutes(post)} {t.news.minRead}
-            </span>
-          </div>
-
-          <h1 className="mt-5 font-display text-[clamp(2.1rem,5vw,3.4rem)] font-extrabold leading-[1.04] tracking-[-0.035em] text-mk-ink">
-            {title}
-          </h1>
-
-          {excerpt ? (
-            <p className="mt-6 max-w-[58ch] text-[1.05rem] leading-[1.7] text-mk-ink-soft">
-              {excerpt}
-            </p>
+        <div className="mt-9 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-mk-ink-mute">
+          <span className="text-mk-brand">{category}</span>
+          {published ? (
+            <>
+              <MetaDot />
+              <time dateTime={post.publishedAt}>{published}</time>
+            </>
           ) : null}
-
-          {post.author ? (
-            <p className="mt-6 text-[0.82rem] text-mk-ink-mute">
-              {t.news.byAuthor} <span className="font-semibold text-mk-ink">{post.author}</span>
-            </p>
-          ) : null}
+          <MetaDot />
+          <span>
+            {readingMinutes(post)} {t.news.minRead}
+          </span>
         </div>
 
-        {post.featuredImage ? (
-          <figure className="mx-auto mt-10 max-w-4xl">
-            <div className="relative aspect-16/9 overflow-hidden rounded-(--mk-radius-lg) bg-mk-accent-soft shadow-(--mk-shadow-card)">
+        <h1 className="mt-5 text-balance font-display text-[clamp(2.2rem,5.4vw,4.2rem)] font-extrabold leading-[1.02] tracking-[-0.04em] text-mk-ink">
+          {title}
+        </h1>
+
+        {excerpt ? (
+          <p className="mt-6 max-w-[52ch] text-[1.08rem] leading-[1.65] text-mk-ink-soft sm:text-[1.18rem]">
+            {excerpt}
+          </p>
+        ) : null}
+
+        {post.author ? (
+          <p className="mt-9 border-t border-mk-line pt-5 text-[0.82rem] text-mk-ink-mute">
+            {t.news.byAuthor}{" "}
+            <span className="font-semibold text-mk-ink">{post.author}</span>
+          </p>
+        ) : null}
+      </Section>
+
+      {post.featuredImage ? (
+        <Section tone="paper" containerSize="lg" padding="none" className="pb-12 sm:pb-16">
+          <figure>
+            <div className="relative aspect-video overflow-hidden rounded-(--mk-radius) bg-mk-accent-soft">
               <Image
                 src={post.featuredImage}
                 alt=""
                 fill
                 priority
                 className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 56rem"
+                sizes="(max-width: 1024px) 100vw, 72rem"
               />
             </div>
           </figure>
-        ) : null}
-      </Section>
+        </Section>
+      ) : null}
 
-      <Section tone="paper" className="pt-0">
-        <div className="mx-auto max-w-3xl">
-          <div className="rounded-(--mk-radius-lg) bg-mk-white px-6 py-10 shadow-(--mk-shadow-card) sm:px-12 sm:py-14">
-            <div className="mk-article" dangerouslySetInnerHTML={{ __html: content }} />
-          </div>
-
-          <div className="mt-10 flex flex-col items-start justify-between gap-5 border-t border-mk-line pt-7 sm:flex-row sm:items-center">
-            <BackLink label={t.news.backToNews} />
-            <CtaLink href="/contact" variant="quiet" analytics="news-post-contact">
-              {t.news.ctaButton}
-            </CtaLink>
-          </div>
+      {/* Body — unboxed reading column on its own surface. The foot rule spans
+          the full container while the text does not, which is what stops the
+          column from reading as a card. */}
+      <Section
+        tone="white"
+        containerSize="md"
+        padding="none"
+        className="pb-20 pt-12 sm:pb-24 sm:pt-16"
+      >
+        <div className={READING_MEASURE}>
+          <div
+            className="mk-article mk-article--wide"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
         </div>
+
+        <footer className="mt-16 flex flex-col items-start justify-between gap-6 border-t border-mk-line pt-8 sm:flex-row sm:items-center">
+          <BackLink label={t.news.backToNews} />
+          <CtaLink href="/contact" variant="quiet" analytics="news-post-contact">
+            {t.news.ctaButton}
+          </CtaLink>
+        </footer>
       </Section>
     </article>
   );
