@@ -6,6 +6,7 @@ import { Modal, useToast } from "@/components/admin";
 import { Button } from "@/components/ui";
 import { lazyGenerateText, lazySendMessage, lazyGetCurrentMessages, lazyLogActionToMemory, lazyGetConversationHistory, lazySwitchConversation, lazyNewConversation, lazyConfirmAction, lazyRejectAction } from "@/lib/firebase/ai-lazy";
 import { buildTrainedPrompt, getPageContext } from "@/lib/utils/ai-system-prompt";
+import { buildSectionPreview } from "@/lib/utils/ai-preview";
 import { getSpecialist, ALL_SPECIALISTS } from "@/lib/utils/ai-specialists";
 import { fetchOne } from "@/lib/firebase/firestore";
 import { useAuth } from "@/lib/firebase/auth-context";
@@ -572,33 +573,13 @@ function AIPromptDialog({
   }
 
   function handlePreviewPage() {
-    // Open result as HTML preview in new tab
-    const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Preview — ${section}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Roboto', system-ui, sans-serif; background: #F7F7F2; color: #0B2135; line-height: 1.6; padding: 2rem; max-width: 900px; margin: 0 auto; }
-    h1, h2, h3 { color: #0B2135; margin: 1.5rem 0 0.75rem; }
-    h1 { font-size: 2rem; }
-    h2 { font-size: 1.5rem; }
-    h3 { font-size: 1.25rem; }
-    p { margin-bottom: 1rem; }
-    ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
-    li { margin-bottom: 0.25rem; }
-    a { color: #005148; }
-    .preview-bar { position: fixed; top: 0; left: 0; right: 0; background: #005148; color: white; padding: 0.5rem 1rem; font-size: 0.875rem; text-align: center; z-index: 999; }
-    .content { margin-top: 3rem; }
-  </style>
-</head>
-<body>
-  <div class="preview-bar">Preview — ${section} | CreedaVA AI Generated Content</div>
-  <div class="content">${result}</div>
-</body>
-</html>`;
+    // Link the admin's own stylesheets so the preview uses the real design
+    // system rather than a copy of it. `href` is already absolute.
+    const stylesheets = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]'))
+      .map((link) => link.href)
+      .filter(Boolean);
+
+    const html = buildSectionPreview(result, section, stylesheets);
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");

@@ -418,9 +418,11 @@ Return ONLY valid JSON with these fields:
   1,200-1,600 words, 6-9 <h2> sections, <h3> for sub-points, and a numbered
   [1]-style link (<a href="#source-1">[1]</a>) on every factual claim.
   NEVER use <h1> — the page renders the post title as the only H1.
-  No <style> tag and no inline colour, font, border-radius, shadow or animation:
-  the article stylesheet owns all of that. Use display/margin/padding only if
-  geometry genuinely needs it.
+  Semantic structure only: <p>, <h2>, <h3>, <ul>/<ol>/<li>, <table>, <blockquote>,
+  <details>/<summary>, <strong>, <em>, <a>. The article renderer rebuilds this
+  body from that whitelist and discards everything else — no <div> wrappers, no
+  class names, no inline styles, no SVG, and any styling you add is dropped.
+  Express hierarchy with headings and lists, never with markup or styling.
 - references: array of the sources cited above, in citation order:
   [{ "label": "Title of the page or report", "url": "https://…", "source": "Publisher", "year": "2025" }]
   Only sources you were given or can name as a primary publisher. If a claim
