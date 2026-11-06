@@ -123,10 +123,10 @@ Record in PR/incident doc:
 | | |
 |---|---|
 | Commits | `df30f61` email palette, `fe91306` marketing + admin design system |
-| Merge | fast-forward of `main`; **GitHub PRs are unavailable on this repo** (private repo on a free plan disables Issues/PRs — `POST /pulls` returns 404) |
-| CI on `main` | run `42246540852` — `App (lint + test + build)` and `Functions (build / tsc)` both success |
+| Merge | fast-forward of `main` (at the time the repo was private and GitHub had PRs disabled) |
+| CI on `main` | runs `42246540852` and `42247745653` — `App (lint + test + build)` and `Functions (build / tsc)` both success |
 | App Hosting | rolled out automatically; `/pricing` 404 → 200 three minutes after the push |
-| Functions | **NOT DEPLOYED** — see below |
+| Functions | deployed `--only functions`; 52 functions updated in us-east4, all `Successful update operation` |
 
 Verified against production after the rollout:
 
@@ -142,15 +142,24 @@ Verified against production after the rollout:
   `bg-mk-brand-deep`; `/pricing` metadata carries
   `og:image = https://creedava.com/opengraph-image`.
 
-**Outstanding:** `firebase deploy --only functions` has not run, so production
-functions still contain the pre-redesign email colours (`#002D72` / `#F9FBFF`).
-No behavior change beyond email styling. Blocked because the local Firebase CLI
-is signed in as `info@guianegocios.net`, which only has access to
-`guianegocios-prod` (`firebase functions:list --project creeda-va` → *"Failed to
-list functions for creeda-va"*), and no other account is cached. gcloud's
-`john@creedava.com` session is also expired. To finish:
+Post-deploy function health: `/getAvailableSlots` → 200; `/handleFormWebhook`
+→ 401 `Missing or invalid App Check token`, which is the expected rejection of
+an unsigned request (`functions/src/webhooks.ts:263`), not a failure.
 
-```bash
-firebase login:reauth --no-localhost   # sign in as john@creedava.com
-firebase deploy --only functions
-```
+The functions deploy was initially blocked — the Firebase CLI was signed in as
+`info@guianegocios.net`, which only reaches `guianegocios-prod`. Re-authenticating
+as `john@creedava.com` unblocked it. The deployed email HTML was **not** visually
+verified; there is no way to render a scheduled digest without triggering a send,
+so the palette change is proven by the committed source plus a successful deploy.
+
+### Repo visibility change (2026-11-06)
+
+`Wiickedawesome/CreedaVA` was made public during this release. That removed the
+free-plan restriction that had blanked the pull-request and issue surfaces.
+`has_issues` also had to be re-enabled explicitly (`PATCH /repos/... -F has_issues=true`);
+it was still `false` after the flip to public.
+
+⚠️ `GET /repos/.../pulls` still returned **404** after both changes, while the
+GraphQL `repository.pullRequests` connection resolved normally with
+`totalCount: 0`. Treat the REST 404 as a stale edge response and use GraphQL
+(`gh pr list`, `gh pr create`) to confirm before concluding PRs are disabled.
