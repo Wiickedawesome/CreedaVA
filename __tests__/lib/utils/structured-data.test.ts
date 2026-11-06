@@ -141,6 +141,38 @@ describe("Structured Data (JSON-LD)", () => {
       });
       expect(ld.dateModified).toBe("2025-07-01");
     });
+
+    it("omits citation entirely when a post has no sources", () => {
+      const ld = blogPostingJsonLd({ title: "T", slug: "t", excerpt: "X", citations: [] });
+      expect("citation" in ld).toBe(false);
+      expect("citation" in blogPostingJsonLd({ title: "T", slug: "t", excerpt: "X" })).toBe(false);
+    });
+
+    it("emits the sources as Schema.org citations", () => {
+      const ld = blogPostingJsonLd({
+        title: "T",
+        slug: "t",
+        excerpt: "X",
+        citations: [
+          { label: "OECD Employment Outlook", url: "https://oecd.org/x" },
+          { label: "In-house survey" },
+        ],
+      });
+      expect(ld.citation).toEqual([
+        { label: "OECD Employment Outlook", url: "https://oecd.org/x" },
+        { label: "In-house survey" },
+      ]);
+    });
+
+    it("drops entries with no label rather than publishing an empty citation", () => {
+      const ld = blogPostingJsonLd({
+        title: "T",
+        slug: "t",
+        excerpt: "X",
+        citations: [{ label: "" }, { label: "Valid" }],
+      });
+      expect(ld.citation).toEqual([{ label: "Valid" }]);
+    });
   });
 
   // ─── webPageJsonLd ──────────────────────────────────

@@ -197,7 +197,8 @@ RICH CONTENT FROM ELEMENTS, NOT STYLES
 - Emphasis            → <strong>, never a coloured span
 
 LENGTH AND SHAPE
-- Blog post 700–900 words; landing body 400–600.
+- Blog post 700–900 words; landing body 400–600. (Blog posts: see
+  BLOG BODY RULES — the article body has its own, longer target.)
 - One <h2> every 150–250 words. Never open with <h1> — the page owns the H1.
 - Nothing deeper than <h4>.
 - End with a CTA paragraph containing ONE link to /contact or /join.
@@ -252,29 +253,58 @@ stylesheet can render correctly.`;
 export const BLOG_BODY_RULES_2026 = `BLOG BODY RULES.
 
 The article route renders the title as the only <h1>, the excerpt as the lede,
-and your HTML inside a white sheet on the cream page. You are writing the body.
+and your HTML between the cover image and the sources list. You are writing the
+body of a real article, not a teaser: a post that can be summarised in four
+lines has nothing to index, nothing to cite and nothing to read.
 
 SHAPE
-- 700–900 words. One <h2> every 150–250 words, phrased as a claim or a question
-  a reader would actually search for.
+- 1,200–1,600 words. This is a floor, not a ceiling to pad toward — reach it by
+  saying more, never by repeating the same point in a new wrapper.
+- 6–9 <h2> sections, each phrased as a claim or a question a reader would
+  actually search for. One <h2> every 150–250 words.
+- Use <h3> for the sub-points inside a section: the decision, the trade-off, the
+  sequence.
 - Open with one <p> that states the problem in the reader's words. No "In
   today's fast-paced business environment".
-- Use <h3> for sub-points under an <h2>. Nothing deeper than <h4>.
 - End with a <p> containing one link to /contact or /join.
 
 WHAT MAKES IT WORTH READING
 - Concrete, checkable specifics: a named task, a sequence of steps, a
-  before/after pair, a trade-off. Not adjectives.
+  before/after pair, a trade-off, the thing that usually goes wrong.
 - Tables for anything comparative — pricing tiers, DIY vs in-house vs CreedaVA,
   tool categories. <table> already renders with hairlines.
 - <blockquote> for the one idea worth pulling out.
 - <ul> for parallel items; <ol> when order matters.
 - <details>/<summary> for FAQ blocks.
+- A worked example with real numbers that come from the reader's own inputs or
+  from a cited source, never invented ones.
+
+SOURCES — THIS IS NOT OPTIONAL
+- Every factual claim that is not common knowledge carries a numbered marker in
+  the text, written as a link: <a href="#source-1">[1]</a>.
+- Numbers, percentages, market sizes, adoption rates, salary figures, legal
+  requirements: all of them need a source or they do not go in.
+- Return the matching entries in the \`references\` array, in the order the
+  markers first appear:
+    "references": [
+      { "label": "Title of the page or report", "url": "https://…", "source": "Publisher", "year": "2025" }
+    ]
+- Use sources you were actually given — web search results, the data context —
+  or well-known primary sources (a government statistics office, the OECD, the
+  World Bank, a named company's own published documentation). Prefer the
+  publisher's own page over a blog summarising it, and prefer anything from the
+  last two years.
+- If a claim cannot be sourced, cut the claim. Do not hedge it into vagueness
+  and do not attach a plausible-looking URL. A shorter article with five real
+  sources is better than a longer one with invented credibility.
+- Never cite CreedaVA's own CRM, analytics or clients — that data is private to
+  the admin and must not appear on a public page.
 
 WHAT IS BANNED
 - A <style> tag or any inline colour/typography style (see HTML CONTENT RULES).
 - <h1> in the body — it produces a second page title.
-- Invented statistics, client counts, review scores, awards, or "studies show".
+- Invented statistics, client counts, review scores, awards, "studies show".
+- Invented or unverifiable URLs, and citations that do not match the claim.
 - Invented guarantees, refund windows or trial periods.
 - Prices and "starting at $X". Packages are quoted per client.
 - Emoji as section markers.`;

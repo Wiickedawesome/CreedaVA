@@ -34,6 +34,7 @@ const emptyPost: BlogPostFormData = {
   featuredImage: "",
   images: [],
   attachments: [],
+  references: [],
 };
 
 export default function BlogPage() {
@@ -402,7 +403,34 @@ export default function BlogPage() {
                 }
               }}
               buildPrompt={(input) =>
-                buildTrainedPrompt("Blog", `Write a complete blog post about: "${input}"\n\nReturn ONLY valid JSON with these fields:\n- title: compelling blog title (SEO-optimized, under 60 chars)\n- slug: URL-friendly slug\n- excerpt: 1-2 sentence summary\n- content: full blog post as VISUALLY RICH HTML. Use the CREATIVE HTML DESIGN FRAMEWORK patterns:\n  Start with a <style> tag for CSS animations (cv- prefix classes).\n  Include gradient stat banners for key numbers, teal-bordered callout boxes for insights,\n  SVG checkmark icon lists for benefits, wave dividers between sections,\n  <details>/<summary> FAQ sections, and a gradient CTA section linking to /join.\n  Use varied heading sizes (h2/h3), short paragraphs, and inline styles for visual emphasis.\n  NEVER use <h1> — the page renders the post title as the only H1.\n  ALL styles must be inline (style=\"...\") — this renders via dangerouslySetInnerHTML.\n- tags: array of 3-5 relevant tags\n- metaDescription: SEO meta description (150-160 chars)\n- featuredImage: thumbnail used on the listing card and social preview. Copy EXACTLY ONE full URL from the approved list below, choosing the best topical match:\n${thumbnailPromptList()}\n\nReturn ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, includeDesignSystem: true, includeCreativeFramework: true, includeBlogRules: true, includeCRO: true })
+                // The body rules live in BLOG_BODY_RULES_2026 and are injected by
+                // `includeBlogRules`. This string only describes the JSON envelope
+                // — it used to restate the old `<style>` / gradient / wave-divider
+                // instructions, which the renderer strips and which produced the
+                // dashboard-looking bodies this page is supposed to avoid.
+                buildTrainedPrompt("Blog", `Write a complete blog post about: "${input}"
+
+Return ONLY valid JSON with these fields:
+- title: compelling blog title (SEO-optimized, under 60 chars)
+- slug: URL-friendly slug
+- excerpt: 1-2 sentence summary used as the lede
+- content: the full article body as semantic HTML, following BLOG BODY RULES.
+  1,200-1,600 words, 6-9 <h2> sections, <h3> for sub-points, and a numbered
+  [1]-style link (<a href="#source-1">[1]</a>) on every factual claim.
+  NEVER use <h1> — the page renders the post title as the only H1.
+  No <style> tag and no inline colour, font, border-radius, shadow or animation:
+  the article stylesheet owns all of that. Use display/margin/padding only if
+  geometry genuinely needs it.
+- references: array of the sources cited above, in citation order:
+  [{ "label": "Title of the page or report", "url": "https://…", "source": "Publisher", "year": "2025" }]
+  Only sources you were given or can name as a primary publisher. If a claim
+  cannot be sourced, remove the claim rather than inventing a citation.
+- tags: array of 3-5 relevant tags
+- metaDescription: SEO meta description (150-160 chars)
+- featuredImage: thumbnail used on the listing card and social preview. Copy EXACTLY ONE full URL from the approved list below, choosing the best topical match:
+${thumbnailPromptList()}
+
+Return ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, includeDesignSystem: true, includeBlogRules: true, includeCRO: true })
               }
             />
             <Button size="sm" onClick={() => openModal()}>

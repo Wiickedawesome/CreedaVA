@@ -14,7 +14,7 @@ import {
 } from "@/lib/firebase/translate";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import type { BlogPost } from "@/lib/types/content";
+import type { BlogReference, BlogPost } from "@/lib/types/content";
 
 /**
  * Editorial article page.
@@ -112,16 +112,13 @@ function TableOfContents({ headings }: { headings: ArticleHeading[] }): ReactNod
       : headings;
 
   return (
-    <nav
-      aria-label={t.news.inThisArticle}
-      className="border-r border-mk-line pr-5 text-right"
-    >
+    <nav aria-label={t.news.inThisArticle} className="border-l border-mk-line pl-5">
       <p className="text-[0.66rem] font-semibold uppercase tracking-[0.18em] text-mk-ink-mute">
         {t.news.inThisArticle}
       </p>
       <ol className="mt-3.5 space-y-2.5">
         {displayed.map((heading) => (
-          <li key={heading.id} className={heading.level === 3 ? "pr-3" : ""}>
+          <li key={heading.id} className={heading.level === 3 ? "pl-3" : ""}>
             <a
               href={`#${heading.id}`}
               className="block text-[0.8rem] leading-snug text-mk-ink-soft transition-colors duration-150 hover:text-mk-brand"
@@ -216,6 +213,60 @@ function ShareRail({ url, title }: { url: string; title: string }): ReactNode {
         </li>
       </ul>
     </div>
+  );
+}
+
+/**
+ * The sources list.
+ *
+ * Rendered whenever a post has references, and deliberately visible rather than
+ * footnoted: the whole point of the rule this enforces is that a claim a reader
+ * cannot check is a claim we should not have made. Inline markers in the body
+ * link here as `#source-1`, `#source-2`.
+ */
+function Sources({ references }: { references: BlogReference[] }): ReactNode {
+  const { t } = useTranslation();
+
+  return (
+    <section aria-labelledby="article-sources" className="mt-14 border-t border-mk-line pt-8">
+      <h2
+        id="article-sources"
+        className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-mk-ink-mute"
+      >
+        {t.news.sources}
+      </h2>
+      <ol className="mt-4 space-y-2.5">
+        {references.map((reference, index) => {
+          const detail = [reference.source, reference.year].filter(Boolean).join(", ");
+          return (
+            <li
+              key={`${reference.label}-${index}`}
+              id={`source-${index + 1}`}
+              className="flex gap-3 text-[0.85rem] leading-[1.6] text-mk-ink-soft"
+            >
+              <span aria-hidden="true" className="shrink-0 tabular-nums text-mk-ink-mute">
+                [{index + 1}]
+              </span>
+              <span className="min-w-0">
+                {reference.url ? (
+                  <a
+                    href={reference.url}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="font-semibold text-mk-brand underline decoration-1 underline-offset-2 hover:text-mk-brand-bright"
+                  >
+                    {reference.label}
+                  </a>
+                ) : (
+                  <span className="font-semibold text-mk-ink">{reference.label}</span>
+                )}
+                {detail ? <span className="text-mk-ink-mute"> — {detail}</span> : null}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
   );
 }
 
@@ -415,23 +466,32 @@ export function BlogPostContent({
         </div>
       </Section>
 
-      {/* Body — wider container with a sticky rail. The text keeps a readable
-          measure; the media inside the column does not. The rail starts at
-          900px, not 1024px: a 13-inch laptop window is often ~900 wide, and
-          hiding the contents list there is what makes the page look like a
-          narrow column again. */}
+      {/* Body — wide container with a sticky rail on the left. The text keeps a
+          readable measure; the media inside the column does not. The rail
+          starts at 900px, not 1024px: a 13-inch laptop window is often ~900
+          wide, and hiding the contents list there is what makes the page look
+          like a narrow centred column again. */}
       <Section
         tone="white"
         containerSize="xl"
         padding="none"
         className="pb-16 pt-12 sm:pt-14 lg:pb-24"
       >
-        <div className="min-[900px]:grid min-[900px]:grid-cols-[minmax(0,1fr)_13rem] min-[900px]:gap-10 xl:grid-cols-[minmax(0,1fr)_16rem] xl:gap-16">
+        <div className="min-[900px]:grid min-[900px]:grid-cols-[13rem_minmax(0,1fr)] min-[900px]:gap-10 xl:grid-cols-[16rem_minmax(0,1fr)] xl:gap-16">
+          <aside className="hidden min-[900px]:block">
+            <div className="sticky top-28 space-y-8">
+              <TableOfContents headings={headings} />
+              <ShareRail url={canonicalUrl} title={title} />
+            </div>
+          </aside>
+
           <div className="min-w-0">
             <div
               className="mk-article mk-article--wide"
               dangerouslySetInnerHTML={{ __html: content }}
             />
+
+            {post.references?.length ? <Sources references={post.references} /> : null}
 
             {post.tags?.length ? (
               <ul className="mt-12 flex flex-wrap gap-2">
@@ -454,13 +514,6 @@ export function BlogPostContent({
               </CtaLink>
             </div>
           </div>
-
-          <aside className="hidden min-[900px]:block">
-            <div className="sticky top-28 space-y-8">
-              <TableOfContents headings={headings} />
-              <ShareRail url={canonicalUrl} title={title} />
-            </div>
-          </aside>
         </div>
       </Section>
 

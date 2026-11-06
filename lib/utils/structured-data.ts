@@ -120,7 +120,12 @@ export function blogPostingJsonLd(opts: {
   updatedAt?: string;
   featuredImage?: string;
   tags?: string[];
+  citations?: { label: string; url?: string }[];
 }) {
+  // Schema.org `citation` is how a search engine learns the article is backed by
+  // named sources rather than assertions. Only emit it when sources exist —
+  // an empty array is a claim of its own.
+  const citations = (opts.citations ?? []).filter((reference) => reference.label);
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -137,6 +142,7 @@ export function blogPostingJsonLd(opts: {
       "@id": `${SITE}/news/${opts.slug}`,
     },
     keywords: opts.tags?.join(", "),
+    ...(citations.length > 0 ? { citation: citations } : {}),
   };
 }
 

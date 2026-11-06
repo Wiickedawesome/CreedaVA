@@ -1014,6 +1014,7 @@ const es: Dictionary = {
     share: "Compartir",
     copyLink: "Copiar enlace",
     linkCopied: "Enlace copiado",
+    sources: "Fuentes",
     relatedPosts: "Lecturas relacionadas",
   },
 

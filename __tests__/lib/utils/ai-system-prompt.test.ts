@@ -65,6 +65,14 @@ describe("AI System Prompt", () => {
       expect(BLOG_BODY_RULES_2026).toContain("<h1> in the body");
     });
 
+    it("BLOG_BODY_RULES_2026 asks for a long, sourced article", () => {
+      expect(BLOG_BODY_RULES_2026).toContain("1,200–1,600 words");
+      expect(BLOG_BODY_RULES_2026).toContain("references");
+      expect(BLOG_BODY_RULES_2026).toContain("#source-1");
+      // The ban that matters: no invented citation to prop up an invented number.
+      expect(BLOG_BODY_RULES_2026).toContain("invented credibility");
+    });
+
     it("LANDING_PAGE_RULES_2026 forbids rebuilding the process cards", () => {
       expect(LANDING_PAGE_RULES_2026).toContain("LANDING PAGE BODY RULES");
       expect(LANDING_PAGE_RULES_2026).toContain("number circles");

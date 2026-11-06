@@ -2643,17 +2643,40 @@ fixed the frame, the second said the page still only used the middle.
   right, `lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]`. Headline
   `clamp(2.3rem,4.9vw,4.4rem)` with `text-balance`; kicker row is
   `Category · date · N min read`; byline sits under a hairline with initials.
-- **Body** — same `xl` container, `lg:grid-cols-[minmax(0,1fr)_15rem]`, so the text
-  runs wide while a **sticky rail on the right** carries the contents list and the
-  share buttons. `sticky top-28`.
-- **Contents rail** — built from the body's own `h2`/`h3` (see below). Right-aligned
-  (`border-r pr-5 text-right`) so the rule sits on the page's right edge; hidden
-  below `lg`.
+- **Body** — same `xl` container, a **sticky rail on the left** and the text beside
+  it: `[13rem_minmax(0,1fr)]`, widening to `16rem` at `xl`, `sticky top-28`. The
+  rail is hidden below **900 px**, not `lg` — a 13-inch laptop window is often
+  ~900 wide, and hiding it there put the article back to a single centred column.
+- **Contents rail** — built from the body's own `h2`/`h3` (see below). Left-aligned
+  (`border-l pl-5`, the rule on the page's left edge). Past 10 headings it drops to
+  top-level sections only, because a 16-row rail is a wall rather than a guide.
+- **Sources** — a numbered list under the body, rendered only when the post has
+  `references`. Inline markers in the body link to `#source-1`, `#source-2`. The
+  list is visible rather than footnoted on purpose: a claim a reader cannot check
+  is a claim we should not have published.
 - **Share** — LinkedIn, X, Facebook, WhatsApp, Email, plus a **Copy link** button
   (`navigator.clipboard`, label flips to "Link copied"; a denied clipboard leaves
   the label alone rather than claiming a copy that did not happen).
-- **After the body** — tag pills, an author card, back/contact row, and a
+- **After the body** — sources, tag pills, an author card, back/contact row, and a
   **Related reading** band of up to three cards.
+
+**Content rules changed at the same time.** The owner's complaint that the posts
+were short and unreferenced traced back to two places:
+
+- `BLOG_BODY_RULES_2026` asked for **700–900 words** and said nothing about
+  sources. It now asks for **1,200–1,600 words**, 6–9 `<h2>` sections, and a
+  numbered `<a href="#source-1">[1]</a>` marker on every factual claim, with a
+  matching `references` array. Unsourced claims are to be **removed**, not
+  hedged, and invented or mismatched URLs are explicitly banned.
+- The admin Blog generator prompt still described the **pre-redesign** HTML:
+  "Start with a `<style>` tag", gradient stat banners, SVG checkmarks, wave
+  dividers, "ALL styles must be inline". `normalizeLegacyHtml` strips every one of
+  those, so the model was being paid to write markup the renderer then deleted.
+  It now asks for semantic HTML and the `references` array, and no longer passes
+  `includeCreativeFramework`.
+- `BlogPost.references` (`{ label, url?, source?, year? }`) is emitted into
+  JSON-LD as Schema.org `citation`, and omitted entirely when a post has none —
+  an empty `citation` array is a claim of its own.
 
 **New code:**
 

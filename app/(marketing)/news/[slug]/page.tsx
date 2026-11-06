@@ -159,6 +159,7 @@ export default async function BlogPostPage({ params }: Props) {
       updatedAt: post.updatedAt as string | undefined,
       featuredImage: post.featuredImage,
       tags: post.tags,
+      citations: post.references,
     });
     related = await getRelatedPosts(post);
   }

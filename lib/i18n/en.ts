@@ -1022,6 +1022,7 @@ const en = {
     share: "Share",
     copyLink: "Copy link",
     linkCopied: "Link copied",
+    sources: "Sources",
     relatedPosts: "Related reading",
   },
 

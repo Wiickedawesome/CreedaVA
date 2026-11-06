@@ -13,6 +13,21 @@ export interface PageSEO extends FirestoreDoc {
 }
 
 // ─── Blog ────────────────────────────────────────────
+
+/**
+ * One cited source. `url` is optional because a print or in-house source
+ * (a CRM export, a paid report) may have no public link; `label` carries
+ * everything a reader needs to find it either way.
+ */
+export interface BlogReference {
+  label: string;
+  url?: string;
+  /** Publisher or site name, shown in the list after the label. */
+  source?: string;
+  /** Publication year, shown when the source is dated. */
+  year?: string;
+}
+
 export interface BlogPost extends FirestoreDoc {
   title: string;
   slug: string;
@@ -32,6 +47,11 @@ export interface BlogPost extends FirestoreDoc {
   unpublishAt?: string;        // ISO date — auto-unpublish (sunset) at this time
   /** Auto-injected Article JSON-LD from the SEO synthesizer. */
   jsonLd?: object;
+  /**
+   * Cited sources for the claims in `content`. Numbered inline as [1], [2]…
+   * in the reading order of this array. Empty is better than invented.
+   */
+  references?: BlogReference[];
 }
 
 export type BlogPostFormData = Omit<BlogPost, keyof FirestoreDoc>;
