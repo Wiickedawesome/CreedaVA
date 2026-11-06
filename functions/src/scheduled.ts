@@ -72,7 +72,7 @@ export const dailyDigest = onSchedule(
           <p style="margin: 4px 0 0; opacity: 0.8;">${now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
         </div>
         <div style="padding: 20px; background: #f9fbff; border: 1px solid #e0e8f5;">
-          <h2 style="color: #002D72; font-size: 16px;">Yesterday's Activity</h2>
+          <h2 style="color: #0B2135; font-size: 16px;">Yesterday's Activity</h2>
           <table style="width: 100%; border-collapse: collapse;">
             <tr><td style="padding: 8px;">New Leads</td><td style="padding: 8px; font-weight: bold; text-align: right;">${newLeads}</td></tr>
             <tr><td style="padding: 8px;">New Bookings</td><td style="padding: 8px; font-weight: bold; text-align: right;">${newBookings}</td></tr>
@@ -81,7 +81,7 @@ export const dailyDigest = onSchedule(
           </table>
           ${
             bookingList.length > 0
-              ? `<h2 style="color: #002D72; font-size: 16px; margin-top: 20px;">Today's Bookings</h2>
+              ? `<h2 style="color: #0B2135; font-size: 16px; margin-top: 20px;">Today's Bookings</h2>
                  <div style="background: white; padding: 12px; border-radius: 8px;">${bookingList.join("<br>")}</div>`
               : `<p style="color: #666; margin-top: 20px;">No bookings scheduled for today.</p>`
           }
@@ -171,7 +171,7 @@ export const weeklyReport = onSchedule(
           <p style="margin: 4px 0 0; opacity: 0.8;">Week ending ${now.toLocaleDateString()}</p>
         </div>
         <div style="padding: 20px; background: #f9fbff; border: 1px solid #e0e8f5;">
-          <h2 style="color: #002D72;">📊 Key Metrics</h2>
+          <h2 style="color: #0B2135;">📊 Key Metrics</h2>
           <table style="width: 100%; border-collapse: collapse;">
             <tr><td style="padding: 8px;">New Leads</td><td style="padding: 8px; font-weight: bold; text-align: right;">${leads.size}</td></tr>
             <tr><td style="padding: 8px;">Leads Won</td><td style="padding: 8px; font-weight: bold; text-align: right; color: #005148;">${leadsWon}</td></tr>
@@ -265,7 +265,7 @@ export const monthlyReport = onSchedule(
           <p style="margin: 4px 0 0; opacity: 0.8;">${monthName}</p>
         </div>
         <div style="padding: 20px; background: #f9fbff; border: 1px solid #e0e8f5;">
-          <h2 style="color: #002D72;">📈 Pipeline & Revenue</h2>
+          <h2 style="color: #0B2135;">📈 Pipeline & Revenue</h2>
           <table style="width: 100%; border-collapse: collapse;">
             <tr><td style="padding: 8px;">New Leads</td><td style="padding: 8px; font-weight: bold; text-align: right;">${leads.size}</td></tr>
             <tr><td style="padding: 8px;">Won / Lost</td><td style="padding: 8px; font-weight: bold; text-align: right; color: #005148;">${leadsWon} / ${leadsLost}</td></tr>
@@ -274,7 +274,7 @@ export const monthlyReport = onSchedule(
             <tr><td style="padding: 8px;">MRR</td><td style="padding: 8px; font-weight: bold; text-align: right; color: #005148;">$${mrr.toLocaleString()}</td></tr>
             <tr><td style="padding: 8px;">ARR (projected)</td><td style="padding: 8px; font-weight: bold; text-align: right;">$${(mrr * 12).toLocaleString()}</td></tr>
           </table>
-          <h2 style="color: #002D72; margin-top: 16px;">📊 Activity</h2>
+          <h2 style="color: #0B2135; margin-top: 16px;">📊 Activity</h2>
           <table style="width: 100%; border-collapse: collapse;">
             <tr><td style="padding: 8px;">Bookings</td><td style="padding: 8px; font-weight: bold; text-align: right;">${bookings.size} (${bookingsCancelled} cancelled)</td></tr>
             <tr><td style="padding: 8px;">Tasks Created</td><td style="padding: 8px; font-weight: bold; text-align: right;">${tasks.size}</td></tr>

@@ -114,12 +114,12 @@ function buildSeoWeeklySummaryEmail(
 
   return `
 <div style="font-family:Roboto,sans-serif;max-width:620px;margin:0 auto;">
-  <div style="background:linear-gradient(135deg,#005148,#002D72);color:white;padding:24px;border-radius:12px 12px 0 0;">
+  <div style="background:linear-gradient(135deg,#005148,#0B2135);color:white;padding:24px;border-radius:12px 12px 0 0;">
     <h1 style="margin:0;font-size:20px;">🔍 SEO Agent — Weekly Summary</h1>
     <p style="margin:6px 0 0;opacity:0.8;">Week ending ${weekEnd}</p>
   </div>
   <div style="padding:24px;background:#f9fbff;border:1px solid #e0e8f5;">
-    <h2 style="color:#002D72;font-size:15px;margin:0 0 8px;">Findings this week</h2>
+    <h2 style="color:#0B2135;font-size:15px;margin:0 0 8px;">Findings this week</h2>
     <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
       ${row("On-page audits", summary.audits)}
       ${row("Keyword gap signals", summary.gaps)}
@@ -127,7 +127,7 @@ function buildSeoWeeklySummaryEmail(
       ${row("Backlink prospects found", summary.prospects)}
       ${row("Rank history snapshots", summary.ranks)}
     </table>
-    <h2 style="color:#002D72;font-size:15px;margin:0 0 8px;">Actions taken</h2>
+    <h2 style="color:#0B2135;font-size:15px;margin:0 0 8px;">Actions taken</h2>
     <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
       ${row("SEO tasks written", summary.tasksWritten)}
       ${row("Content briefs created", summary.briefsWritten)}

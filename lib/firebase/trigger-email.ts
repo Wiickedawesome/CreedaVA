@@ -92,7 +92,7 @@ export async function queueTemplateEmail(
           <div style="background: #005148; padding: 32px; text-align: center;">
             <h1 style="color: white; margin: 0;">Welcome to CreedaVA</h1>
           </div>
-          <div style="padding: 32px; background: #F9FBFF;">
+          <div style="padding: 32px; background: #F7F7F2;">
             <p>Hi ${d.name || "there"},</p>
             <p>Thank you for reaching out to CreedaVA! We&apos;re excited to help you save time and scale your operations with our virtual assistant services.</p>
             <p>A member of our team will be in touch shortly to discuss your needs.</p>
@@ -112,7 +112,7 @@ export async function queueTemplateEmail(
           <div style="background: #005148; padding: 32px; text-align: center;">
             <h1 style="color: white; margin: 0;">Booking Confirmed</h1>
           </div>
-          <div style="padding: 32px; background: #F9FBFF;">
+          <div style="padding: 32px; background: #F7F7F2;">
             <p>Hi ${d.name || "there"},</p>
             <p>Your booking has been confirmed for <strong>${d.date || "the scheduled date"}</strong> at <strong>${d.time || "the scheduled time"}</strong>.</p>
             ${d.notes ? `<p><em>Notes: ${d.notes}</em></p>` : ""}
@@ -127,7 +127,7 @@ export async function queueTemplateEmail(
           <div style="background: #005148; padding: 32px; text-align: center;">
             <h1 style="color: white; margin: 0;">Just Checking In</h1>
           </div>
-          <div style="padding: 32px; background: #F9FBFF;">
+          <div style="padding: 32px; background: #F7F7F2;">
             <p>Hi ${d.name || "there"},</p>
             <p>We wanted to follow up on your inquiry about our virtual assistant services. We&apos;d love to help you streamline your operations.</p>
             <p>Would you like to schedule a quick call to discuss your needs?</p>
@@ -144,7 +144,7 @@ export async function queueTemplateEmail(
           <div style="background: #005148; padding: 32px; text-align: center;">
             <h1 style="color: white; margin: 0;">We Value Your Feedback</h1>
           </div>
-          <div style="padding: 32px; background: #F9FBFF;">
+          <div style="padding: 32px; background: #F7F7F2;">
             <p>Hi ${d.name || "there"},</p>
             <p>We&apos;d love to hear about your experience with CreedaVA. Your feedback helps us improve our services.</p>
             <p style="margin-top: 24px;">

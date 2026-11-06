@@ -90,14 +90,14 @@ export const onNewContact = onDocumentCreated(
         subject: `📩 Contact Form: ${data.name || data.email}`,
         html: `
           <div style="font-family: Roboto, sans-serif; max-width: 500px;">
-            <div style="background: #002D72; color: white; padding: 16px; border-radius: 8px 8px 0 0;">
+            <div style="background: #0B2135; color: white; padding: 16px; border-radius: 8px 8px 0 0;">
               <h2 style="margin: 0; font-size: 16px;">New Contact Form Submission</h2>
             </div>
             <div style="padding: 16px; background: #f9fbff; border: 1px solid #e0e8f5; border-radius: 0 0 8px 8px;">
               <p><strong>${data.name}</strong> — ${data.email}</p>
               ${data.phone ? `<p>Phone: ${data.phone}</p>` : ""}
               <p style="white-space: pre-line; background: white; padding: 12px; border-radius: 6px; border: 1px solid #eee;">${data.message || data.notes || "No message"}</p>
-              <a href="https://creedava.com/admin/contacts" style="display: inline-block; margin-top: 8px; background: #002D72; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px;">View in CRM →</a>
+              <a href="https://creedava.com/admin/contacts" style="display: inline-block; margin-top: 8px; background: #0B2135; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px;">View in CRM →</a>
             </div>
           </div>
         `,
