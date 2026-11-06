@@ -636,13 +636,62 @@ body {
     font-size: clamp(1.5rem, 2.6vw, 1.95rem);
   }
 
+  /* Each h2 opens a new section, so it gets a hairline above it. The first one
+     follows the opening paragraph and needs no separator. */
+  .mk-article--wide h2:not(:first-child) {
+    padding-top: 1.5em;
+    border-top: 1px solid var(--mk-line);
+  }
+
   .mk-article--wide h3 {
+    margin-top: 2em;
     font-size: 1.28rem;
+    color: var(--mk-brand);
+  }
+
+  /* Editorial opening: the first paragraph of real prose starts with a drop cap.
+     `:first-of-type` keeps this off later paragraphs even when the body opens
+     with an image or a quote. */
+  .mk-article--wide > p:first-of-type::first-letter {
+    float: left;
+    margin-right: 0.08em;
+    font-family: var(--font-jakarta);
+    font-size: 3.1em;
+    font-weight: 800;
+    line-height: 0.85;
+    color: var(--mk-brand);
+  }
+
+  /* Bullets come from the stylesheet, never from the stored markup — generated
+     bodies shipped `style="list-style:none"` with star SVGs standing in for
+     markers, which collapsed into unmarked text once the SVG was removed. */
+  .mk-article--wide :is(ul, ol) {
+    padding-left: 1.3em;
+  }
+
+  .mk-article--wide ul {
+    list-style: disc;
+  }
+
+  .mk-article--wide ol {
+    list-style: decimal;
+  }
+
+  .mk-article--wide li + li {
+    margin-top: 0.5em;
   }
 
   .mk-article--wide img {
     width: 100%;
     height: auto;
+    margin-block: 2em;
+    border-radius: var(--mk-radius-lg);
+  }
+
+  .mk-article--wide figcaption {
+    margin-top: -1.2em;
+    font-size: 0.85rem;
+    color: var(--mk-ink-muted);
   }
 
   /* A pull quote, not a footnote. Generated bodies use blockquotes for the one
@@ -663,6 +712,35 @@ body {
 
   .mk-article--wide table {
     max-width: none;
+  }
+
+  .mk-article--wide tbody tr:nth-child(even) td {
+    background: var(--mk-paper);
+  }
+
+  .mk-article--wide th {
+    font-family: var(--font-jakarta);
+    font-weight: 700;
+    color: var(--mk-ink);
+  }
+
+  /* Q&A blocks generated bodies use for the closing "common questions". */
+  .mk-article--wide details {
+    margin-block: 1.1em;
+    padding: 1em 1.2em;
+    border: 1px solid var(--mk-line);
+    border-radius: var(--mk-radius);
+    background: var(--mk-paper);
+  }
+
+  .mk-article--wide summary {
+    font-family: var(--font-jakarta);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .mk-article--wide details[open] summary {
+    margin-bottom: 0.7em;
   }
 }
 

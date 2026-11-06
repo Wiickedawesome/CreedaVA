@@ -2686,12 +2686,9 @@ were short and unreferenced traced back to two places:
   mounted as React nodes. Respects an existing `id`, suffixes duplicates
   (`tools`, `tools-2`), folds accents, decodes the common entities, ignores empty
   headings. 11 unit tests.
-- `lib/utils/legacy-content.ts` → `normalizeLegacyHtml(html, { mode })`.
-  `"document"` is the old behaviour (landing pages). `"editorial"` is a much
-  smaller allowlist — sizing, margins, overflow, list style — and drops
-  `display`, `grid-*`, `flex-*`, `padding*`, `text-align`, `gap`, `align-*`,
-  `justify-*`. That is what stops a stored body from laying out its own page. 6
-  unit tests.
+- `lib/utils/legacy-content.ts` → `normalizeLegacyHtml(html)` (landing pages
+  only since 2026-11-07 — see *Article body: rebuilt, not restyled* below).
+
 - `app/(marketing)/news/[slug]/page.tsx` → `getRelatedPosts()`, ranked by shared
   tags then newest (there is no view or click data). Fails soft to `[]`, which
   hides the band. `toPost()` + `toIsoTimestamp()` replace the inline Firestore
@@ -2727,6 +2724,88 @@ drops to top-level sections only.
 The harness is evidence about CSS, normalisation and geometry, **not** proof that
 the Next route renders — that was confirmed on `https://creedava.com` after the
 App Hosting rollout.
+
+### 2026-11-07 — Article body: rebuilt, not restyled
+
+The owner approved the layout and rejected the content:
+
+> "The content and how it's delivered is shit, the layout is good."
+> "you aren't doing nothing to the post and using bullshit elements from the old
+> design that simply does not work here."
+
+They were right, and the previous two attempts had missed it. Every change so far
+— rail, measure, masthead — had been **layout**. The *body markup* was untouched,
+and the body is where the old design system lived.
+
+**What was actually in a published post.** Card grids (`cv-grid-2`), an animated
+counter whose number came from a stripped `<script>` (so an empty box with a
+floating `%` beside it), star SVGs standing in for list bullets together with
+`style="list-style:none"`, and a wave divider `<svg>` filled with the old
+off-white spanning the full column. `normalizeLegacyHtml` had removed the inline
+*styling* of these, which is why they rendered as unstyled debris rather than as
+anything recognisable: the styling was gone, the elements were not.
+
+**The fix — `lib/utils/article-body.ts`.** `rebuildArticleBody(html)` is a
+whitelist rebuild, not a clean-up pass. There is no HTML parser in the
+dependencies and adding one was not an option, so it tokenises (`<tag attrs>` /
+text), builds a tree with a stack, and then:
+
+- **drops** `svg`, `style`, `script`, `iframe`, `form`, `input`, `video`,
+  `canvas`, `object` and friends outright;
+- **keeps** `p`, `h1`–`h6`, `ul`/`ol`/`li`, `table` + cells, `blockquote`, `pre`,
+  `figure`/`figcaption`, `details`/`summary`, `hr`, `img`, and the inline set
+  (`a`, `strong`, `em`, `code`, `sup`, `sub`, `mark`, `cite`, `time`);
+- **unwraps** everything else (`div`, `section`, `span`, `font`, `center`) and
+  recurses into its children, so a heading nested three wrappers deep is still a
+  heading;
+- **strips every attribute** except `href` (http/https/mailto/relative/`#`),
+  `src` + `alt`, and `open`;
+- **drops orphaned labels** — a paragraph with letters but fewer than five words
+  and no terminal punctuation is a card caption whose number no longer exists
+  (`Increase in Lead Conversion`, `~10%`). Short *sentences* ("That is the whole
+  point.") keep their punctuation and survive.
+
+`stripDuplicateTitle(html, title)` removes a leading heading that repeats the
+article title — stored bodies were written as standalone documents, so they open
+with their own `<h1>`, which the template already renders in the masthead.
+
+`normalizeLegacyHtml` loses its `editorial` mode, which existed only for this
+body and is now dead: it is back to a single behaviour for landing pages, which
+are genuinely one designed surface.
+
+**Presentation (`.mk-article--wide`).** The rebuilt body is plain semantic HTML,
+so the stylesheet can finally own it: hairline above every `h2` except the first,
+`h3` in brand green, a drop cap on the opening paragraph, `list-style: disc`
+forced in CSS (never trusted from the markup), full-width images, striped table
+rows, and `details` as a bordered Q&A block.
+
+**Measured** in a harness that runs the *real* rebuilt bodies through the built
+stylesheet (deleted after use):
+
+| | post 1 | post 2 |
+|---|---|---|
+| `svg` inside the body | 0 | 0 |
+| elements carrying a `cv-*` class | 0 | 0 |
+| elements carrying `style=` | 0 | 0 |
+| `list-style-type` on `li` | `disc` | `disc` |
+| headings / paragraphs / list items kept | 14 / 21 / 6 | 16 / 41 / 9 |
+| horizontal overflow @ 1440 / 375 | 0 / 0 | 0 / 0 |
+| contrast failures | 0 of 88 text nodes | 0 of 88 |
+
+`npm test` **443/443** (38 files, +16 for the rebuild) · `lint` 0 errors ·
+`audit:design` 0/0 · build OK.
+
+**Not fixed by this, and not claimed:** the two published posts are still 789
+words with no `references`. The renderer can only show what is stored;
+regenerating the bodies needs a signed-in admin.
+
+**Also found, not touched:** `lib/firebase/ai-engine.ts` →
+`generateSEOBlogPost()` still prompts for `<style>` blocks, wave dividers and
+`cv-fade-up-*` classes. It is reachable only through
+`lib/firebase/ai-lazy.ts`, and no UI imports that path, so it is currently dead
+weight rather than a live source of bad markup. It should be deleted or ported to
+`BLOG_BODY_RULES_2026` — a decision for the owner.
+
 
 ## Verification (measured, 2026-11-02)
 

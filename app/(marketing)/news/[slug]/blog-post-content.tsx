@@ -6,7 +6,7 @@ import { useTranslation } from "@/lib/i18n";
 import { CtaLink, Pill, Section } from "@/components/marketing/primitives";
 import { demoteBodyH1, withHeadingAnchors } from "@/lib/utils/blog-content";
 import type { ArticleHeading } from "@/lib/utils/blog-content";
-import { normalizeLegacyHtml } from "@/lib/utils/legacy-content";
+import { rebuildArticleBody, stripDuplicateTitle } from "@/lib/utils/article-body";
 import {
   getTranslatedContent,
   getTranslatedExcerpt,
@@ -30,10 +30,12 @@ import type { BlogReference, BlogPost } from "@/lib/types/content";
  * 3. The page continues past the last paragraph — author, tags, related posts.
  *    An article that just stops is what makes a template feel thin.
  *
- * The body itself is stored HTML. It is normalised in `editorial` mode, which
- * drops the inline layout (`display:grid`, paddings, `text-align:center`) that
- * generated bodies arrive with — that markup is what made a post look like a
- * pasted-in dashboard no matter how wide the column was.
+ * The body itself is stored HTML written against an older design system. It is
+ * not restyled, it is rebuilt: `rebuildArticleBody` keeps the prose — headings,
+ * paragraphs, lists, tables, quotes, images, captions — and discards the card
+ * wrappers, animated counters, star bullets and wave dividers around it. Those
+ * fragments are what made a post read as a pasted-in dashboard no matter how
+ * wide or calm the column was.
  */
 
 const WORDS_PER_MINUTE = 200;
@@ -387,15 +389,17 @@ export function BlogPostContent({
 
   const title = getTranslatedTitle(post, locale);
   const excerpt = getTranslatedExcerpt(post, locale);
-  // `editorial` mode also drops the inline layout generated bodies arrive with
-  // (centred text, grid card rows, oversized padding) — see lib/utils/legacy-content.
-  const normalized = normalizeLegacyHtml(
-    demoteBodyH1(getTranslatedContent(post, locale)),
-    { mode: "editorial" },
+  // `rebuildArticleBody` keeps the prose and discards the design scaffolding, so
+  // what renders is a real article rather than fragments of a layout that no
+  // longer exists. The stored body repeats the title as its own leading heading;
+  // the masthead already renders that as the page's `<h1>`.
+  const rebuilt = stripDuplicateTitle(
+    rebuildArticleBody(demoteBodyH1(getTranslatedContent(post, locale))),
+    getTranslatedTitle(post, locale),
   );
   // Anchors are injected into the HTML string because the body is never mounted
   // as React nodes; the returned list drives the sticky contents rail.
-  const { html: content, headings } = withHeadingAnchors(normalized);
+  const { html: content, headings } = withHeadingAnchors(rebuilt);
 
   const category = post.tags?.[0] ?? "General";
   const published = formatDate(post.publishedAt, locale);
