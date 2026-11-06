@@ -128,6 +128,14 @@ describe("stripDuplicateTitle", () => {
     expect(stripDuplicateTitle(html, "boost growth")).toBe("<p>Body.</p>");
   });
 
+  it("drops a title the body announces with a different wording", () => {
+    const html =
+      "<h2>Boost Growth: Integrate Business Intelligence into Your Daily VA Dashboard</h2><p>Body.</p>";
+    expect(
+      stripDuplicateTitle(html, "Boost Growth: Integrate BI into Your Daily VA Dashboard"),
+    ).toBe("<p>Body.</p>");
+  });
+
   it("keeps a leading heading that is a real first section", () => {
     const html = "<h2>Why it matters</h2><p>Body.</p>";
     expect(stripDuplicateTitle(html, "Boost Growth")).toBe(html);

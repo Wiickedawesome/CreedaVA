@@ -484,6 +484,21 @@ function plainText(value: string): string {
 }
 
 /**
+ * How much of the title a leading heading has to repeat to count as a copy of it.
+ *
+ * Exact matching is not enough: a stored body announces the article as
+ * "Boost Growth: Integrate Business Intelligence into Your Daily VA Dashboard"
+ * while the post title is stored as "Boost Growth: Integrate BI into Your Daily
+ * VA Dashboard". Same sentence, edited. Two thirds of the words in common is far
+ * above what a genuine first section shares with a title.
+ */
+const TITLE_OVERLAP_THRESHOLD = 0.66;
+
+function wordSet(value: string): Set<string> {
+  return new Set(value.split(" ").filter(Boolean));
+}
+
+/**
  * Drop a leading heading that only repeats the article title.
  *
  * Stored bodies were written as standalone documents, so they open with their
@@ -498,7 +513,14 @@ export function stripDuplicateTitle(html: string, title: string): string {
   const heading = plainText(match[2]);
   const wanted = plainText(title);
   if (!heading || !wanted) return html;
-  if (heading !== wanted) return html;
+
+  const headingWords = wordSet(heading);
+  const titleWords = wordSet(wanted);
+  let shared = 0;
+  for (const word of titleWords) if (headingWords.has(word)) shared += 1;
+
+  const shorter = Math.min(headingWords.size, titleWords.size);
+  if (shorter === 0 || shared / shorter < TITLE_OVERLAP_THRESHOLD) return html;
 
   return html.slice(match[0].length);
 }
