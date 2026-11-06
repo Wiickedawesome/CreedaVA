@@ -123,6 +123,46 @@ Record in PR/incident doc:
 
 ## Deploy Log
 
+### 2026-11-06 (evening) — article body rebuilt (`42b9864`, `e713c49`)
+
+| | |
+|---|---|
+| Commits | `42b9864` rebuild the stored body; `e713c49` de-duplicate the title heading |
+| Rollouts | `rollout-2026-11-06-009` → `42b9864`, `rollout-2026-11-06-010` → `e713c49`, both `SUCCEEDED`, created manually |
+| CI on `main` | run `42269812688` — success |
+| Functions | not deployed: no function changed |
+
+Why manual: the auto-rollout is not reliable on this backend (it skipped `b514c4a`
+in the previous session). Command used, and it works every time:
+
+```bash
+firebase apphosting:rollouts:create creeda-va-host --git-commit <sha> --force --project creeda-va
+```
+
+Verify *which* commit a rollout built, rather than trusting the CLI's "success":
+
+```bash
+firebase apphosting:backends:list --project creeda-va --json   # updateTime
+# then GET .../backends/creeda-va-host/rollouts/<rollout> → .build → .source.codebase.uri
+```
+
+Verified against production after both rollouts:
+
+- `/news/boost-growth-integrate-bi-daily-va-dashboard` body now contains only
+  `p strong img h2 h3 ul li a details summary` — 0 `div`, 0 `svg`, 0 inline
+  `style`, 0 `cv-*` classes, `list-style-type: disc`, drop cap 58.9 px, `h2`
+  rules present, 0 px horizontal overflow.
+- The body no longer opens with a copy of the headline; the contents rail starts
+  at the first real section.
+- `SITE_URL=https://creedava.com npm run smoke:prod` → passed.
+- `AUDIT_BASE_URL=https://creedava.com npm run audit:design:live` → 0 violations.
+
+⚠️ **`/news/<slug>` is served with `s-maxage=300, stale-while-revalidate=31535700`.**
+The front end can keep returning an old prerendered document long after a
+successful rollout, and neither a query string nor `Cache-Control: no-cache`
+busts it. Do not conclude "the deploy did not happen" from the URL alone — check
+the rollout's build commit, or look for a marker inside the rendered body.
+
 ### 2026-11-06 — 2026 design system (`fe91306`)
 
 | | |

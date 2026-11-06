@@ -2767,7 +2767,14 @@ text), builds a tree with a stack, and then:
 
 `stripDuplicateTitle(html, title)` removes a leading heading that repeats the
 article title — stored bodies were written as standalone documents, so they open
-with their own `<h1>`, which the template already renders in the masthead.
+with their own `<h1>`, which the template already renders in the masthead. Exact
+matching was not enough (`42b9864`): the body announces this post as "…Integrate
+**Business Intelligence** into…" while the post is stored as "…Integrate **BI**
+into…". It now compares word sets and drops the heading when at least two thirds
+of the shorter one is shared. Measured against both live posts: the near-identical
+heading is removed, and `/news/creedava-right-choice` keeps "Elevate Your
+Business: Why CreedaVA is the Smart Choice" (5 of 8 words shared, below the
+threshold), which is a real first section.
 
 `normalizeLegacyHtml` loses its `editorial` mode, which existed only for this
 body and is now dead: it is back to a single behaviour for landing pages, which
@@ -2792,8 +2799,31 @@ stylesheet (deleted after use):
 | horizontal overflow @ 1440 / 375 | 0 / 0 | 0 / 0 |
 | contrast failures | 0 of 88 text nodes | 0 of 88 |
 
-`npm test` **443/443** (38 files, +16 for the rebuild) · `lint` 0 errors ·
+`npm test` **444/444** (38 files, +17 for the rebuild) · `lint` 0 errors ·
 `audit:design` 0/0 · build OK.
+
+**Verified on production** (`42b9864` + `e713c49`, rollouts `2026-11-06-009` /
+`-010`), in-browser on `/news/boost-growth-integrate-bi-daily-va-dashboard`:
+
+| | live |
+|---|---|
+| tags inside `.mk-article` | `p strong img h2 h3 ul li a details summary` — nothing else |
+| `div` / `svg` / `span` / `style=` inside the body | 0 / 0 / 0 / 0 |
+| `cv-*` classes inside the body | 0 |
+| first body block | `<p>`, not a copy of the headline |
+| contents rail first entry | "Bookings: Fueling Your Growth Pipeline" (a real section) |
+| `li` computed `list-style-type` | `disc` |
+| drop cap | 58.9 px first letter, brand green |
+| `h2` section rule | present on every `h2` after the first |
+| body font / rail x / overflow | 19 px / 32 px / 0 |
+| `smoke:prod` · `audit:design:live` | passed · 0 violations |
+
+⚠️ **`/news/<slug>` is cached hard.** `cache-control: s-maxage=300,
+stale-while-revalidate=31535700` means the front end can keep serving an old
+prerendered document for a very long time; a `?query` or `Cache-Control:
+no-cache` request does not bust it. Two deploys in a row were read as "not
+deployed" because of this. Poll a marker inside the rendered body (or fetch the
+build's commit through the App Hosting API) instead of trusting the URL.
 
 **Not fixed by this, and not claimed:** the two published posts are still 789
 words with no `references`. The renderer can only show what is stored;
