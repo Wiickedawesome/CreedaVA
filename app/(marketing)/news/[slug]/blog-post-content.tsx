@@ -416,14 +416,17 @@ export function BlogPostContent({
       </Section>
 
       {/* Body — wider container with a sticky rail. The text keeps a readable
-          measure; the media inside the column does not. */}
+          measure; the media inside the column does not. The rail starts at
+          900px, not 1024px: a 13-inch laptop window is often ~900 wide, and
+          hiding the contents list there is what makes the page look like a
+          narrow column again. */}
       <Section
         tone="white"
         containerSize="xl"
         padding="none"
         className="pb-16 pt-12 sm:pt-14 lg:pb-24"
       >
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_15rem] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_17rem] xl:gap-16">
+        <div className="min-[900px]:grid min-[900px]:grid-cols-[minmax(0,1fr)_13rem] min-[900px]:gap-10 xl:grid-cols-[minmax(0,1fr)_16rem] xl:gap-16">
           <div className="min-w-0">
             <div
               className="mk-article mk-article--wide"
@@ -452,7 +455,7 @@ export function BlogPostContent({
             </div>
           </div>
 
-          <aside className="hidden lg:block">
+          <aside className="hidden min-[900px]:block">
             <div className="sticky top-28 space-y-8">
               <TableOfContents headings={headings} />
               <ShareRail url={canonicalUrl} title={title} />
