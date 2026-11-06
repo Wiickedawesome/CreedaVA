@@ -2829,6 +2829,42 @@ build's commit through the App Hosting API) instead of trusting the URL.
 words with no `references`. The renderer can only show what is stored;
 regenerating the bodies needs a signed-in admin.
 
+### 2026-11-06 — every future post gets this, and the admin preview shows it
+
+Owner: *"will all post be like that now? even the one our agent creates in the
+admin? i really like it so we need to use it."*
+
+Yes, structurally — `rebuildArticleBody` runs at **render time** inside
+`/news/[slug]`, so it applies to every stored body regardless of who wrote it:
+AI-generated, imported, hand-written, and any document edited later by an older
+client. Nothing has to be re-saved or migrated for a post to get the treatment.
+
+Two things did not match that promise, both fixed in `7788c0a`:
+
+1. **"Preview Post" showed a JSON blob.** `AIPromptButton` injected the raw AI
+   response into a hand-styled page, so the one moment the article could be
+   checked before publishing showed none of the article. `lib/utils/ai-preview.ts`
+   now renders a result through the same function its real route uses — blog
+   `content` via `rebuildArticleBody` + `stripDuplicateTitle` inside
+   `.mk-article--wide`, landing-page `bodyHtml` via `normalizeLegacyHtml` inside
+   `.mk-article` — lists the references, and links the admin's own stylesheets so
+   the preview uses the real design system rather than a copy of it.
+2. **The generator prompt described the old contract.** It still invited
+   `display/margin/padding` "if geometry genuinely needs it", which
+   `rebuildArticleBody` discards outright. It now names the whitelist the renderer
+   keeps (`p`, `h2`, `h3`, `ul`/`ol`, `table`, `blockquote`, `details`,
+   `strong`, `em`, `a`) and states that wrappers, classes, inline styles and SVG
+   are dropped.
+
+Verified by rendering a preview from a real published body: `.mk-article--wide`,
+19 px text, `disc` bullets, `h2` rules, 58.9 px drop cap, sources listed, 0 `svg`
+and 0 `cv-*` classes — identical to the live article.
+
+**Still true and still not fixed:** an article body that the model writes as a
+bare caption (`<p>Key takeaway</p>`, under five words, no terminal punctuation)
+is dropped as a card label. That rule exists to kill the old stat-card remains; if
+generated posts start losing a line, that threshold is the first thing to check.
+
 **Also found, not touched:** `lib/firebase/ai-engine.ts` →
 `generateSEOBlogPost()` still prompts for `<style>` blocks, wave dividers and
 `cv-fade-up-*` classes. It is reachable only through
