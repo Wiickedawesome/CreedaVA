@@ -123,6 +123,29 @@ Record in PR/incident doc:
 
 ## Deploy Log
 
+### 2026-11-06 (late) — redesign release verified on `a47477f`
+
+| | |
+|---|---|
+| Commits | `fc773f4`, `7788c0a`, `a47477f` (docs + preview fix on top of the 2026 redesign) |
+| Rollouts | `rollout-2026-11-06-011` → `fc773f4`, `rollout-2026-11-06-012` → `7788c0a`, `rollout-2026-11-06-013` → `a47477f`, all `SUCCEEDED`, created automatically |
+| CI on `main` | run `42314760477` — success; CodeQL `42314760725` — success |
+| Functions | not deployed: no function, rule or index changed |
+
+This release needed no manual rollout: the backend picked up all three commits
+within ~3 minutes each. Gates run green before sign-off:
+
+- `npm run lint`, `npm test` (453 tests), `npm run build`, `functions` `tsc`
+- `npm run audit:design` (234 files) and `npm audit` (app + functions): 0 issues
+- emulator security, functions-load and e2e smokes: passed
+
+Verified against production before closing the session:
+
+- `SITE_URL=https://creedava.com npm run smoke:prod` → passed
+- `AUDIT_BASE_URL=https://creedava.com npm run audit:design:live` → 14 routes, 0 violations
+- `/`, `/services`, `/pricing`, `/about`, `/contact`, `/faq`, `/forum`, `/news`,
+  `/privacy`, `/terms`, `/login`, `/join` → all 200
+
 ### 2026-11-06 (evening) — article body rebuilt (`42b9864`, `e713c49`)
 
 | | |
