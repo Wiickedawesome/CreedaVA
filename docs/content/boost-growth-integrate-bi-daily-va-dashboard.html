@@ -1,0 +1,327 @@
+<!--
+  Replacement body for the /news post "Boost Growth: Integrate BI into Your
+  Daily VA Dashboard" (slug: boost-growth-integrate-bi-daily-va-dashboard).
+
+  Status: written, NOT applied. The body lives in the Firestore `blog`
+  collection, which needs a signed-in admin (Google popup) to write. Paste the
+  markup below into Admin → Blog → that post → Content, then save.
+
+  Everything in here survives `rebuildArticleBody()` in lib/utils/article-body.ts:
+  p, h2, h3, ul/ol/li, table, blockquote, figure/img/figcaption,
+  details/summary, and the sanctioned `mk-stats` / `mk-stat` metric strip.
+  No h1 (the page renders the title), no inline styles, no SVG, no scripts.
+
+  Numbers policy: every figure is either a definition, a target the reader sets,
+  or a step in the implementation plan. There are no measured CreedaVA results
+  and no client testimonial, because neither exists to publish.
+-->
+
+<p>If bookings live in a calendar, marketing lives in an ad account and client
+health lives in whoever last spoke to them, you already own the data — you just
+cannot see it. A question as simple as "how did last month actually go" turns
+into an afternoon of rebuilding the answer from three tabs and a spreadsheet.
+That is not a reporting problem. It is a decision-speed problem, and a daily
+dashboard is what fixes it.</p>
+
+<h2>What belongs on the dashboard every morning</h2>
+
+<p>Business intelligence, in this context, means one screen that answers three
+questions before your first call: what came in, what it cost to bring in, and who
+is about to leave. Everything else is a report. Reports get opened monthly;
+dashboards get opened daily, and that frequency is the entire value.</p>
+
+<ul>
+  <li><strong>Bookings</strong> — is the funnel converting, and at what speed?</li>
+  <li><strong>Marketing</strong> — which channel produces booked work rather than clicks?</li>
+  <li><strong>Customer health</strong> — which clients are drifting, and which are ready to grow?</li>
+</ul>
+
+<p>Three tiles, refreshed automatically, read in a fixed order, every morning.
+Any dashboard that needs a manual export to be true is a project, not a process.</p>
+
+<div class="mk-mockup">
+  <div class="mk-mockup-title">Daily dashboard · the whole screen</div>
+  <div class="mk-stat"><strong>7</strong><span>enquiries this week</span></div>
+  <div class="mk-stat"><strong>3</strong><span>booked</span></div>
+  <div class="mk-stat"><strong>2</strong><span>awaiting a reply</span></div>
+  <div class="mk-stat"><strong>1</strong><span>client at risk</span></div>
+</div>
+
+<p>That is the entire surface area. Four figures, one owner each, one comparison
+against last week. Everything below in this article is about how each of those
+four is defined and what you do when it moves.</p>
+
+<h2>Bookings: read the funnel, not the total</h2>
+
+<p>A booking count tells you what happened last week. A funnel tells you where it
+will go next week. The moment you split enquiries into contacted, qualified and
+booked, a flat month stops being a mystery and becomes a specific stage with a
+specific leak.</p>
+
+<figure>
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&amp;q=80&amp;auto=format&amp;fit=crop" alt="A laptop showing an analytics dashboard with charts">
+  <figcaption>The daily view, not the monthly report: three tiles, read in the same order every morning.</figcaption>
+</figure>
+
+<table>
+  <tr>
+    <th>Metric</th>
+    <th>What it actually tells you</th>
+    <th>Act when</th>
+  </tr>
+  <tr>
+    <td>Booking conversion rate</td>
+    <td>Share of enquiries that become confirmed work</td>
+    <td>Enquiries hold steady but bookings fall for two weeks</td>
+  </tr>
+  <tr>
+    <td>Average booking value</td>
+    <td>Which package and which channel buyers choose</td>
+    <td>One low package starts dominating the mix</td>
+  </tr>
+  <tr>
+    <td>Booking velocity</td>
+    <td>Days from first contact to confirmed booking</td>
+    <td>It stretches past the response time you promise</td>
+  </tr>
+  <tr>
+    <td>Lead source</td>
+    <td>Which channel produces bookings, not just enquiries</td>
+    <td>Volume rises on a channel whose bookings do not</td>
+  </tr>
+</table>
+
+<h3>Two numbers to put side by side</h3>
+
+<p>Conversion rate without velocity is half a picture. A funnel that converts well
+over eleven days still feels slow to the buyer, and a funnel that converts
+mediocrely in two days still wins the booking. Track them together or track
+neither — one alone will tell you to fix the wrong stage.</p>
+
+<h2>Marketing: make every dollar traceable</h2>
+
+<p>Most campaigns are judged on the platform's own dashboard, where a click is
+success and a booking is a coincidence. Pull the spend into the same view as the
+bookings and the argument ends: a channel either produces booked work at a cost
+you can name, or it produces traffic.</p>
+
+<figure>
+  <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&amp;q=80&amp;auto=format&amp;fit=crop" alt="Planning notes, printed charts and a calculator on a desk">
+  <figcaption>Spend and bookings belong on the same page — a channel that looks cheap per lead can be the most expensive per booking.</figcaption>
+</figure>
+
+<table>
+  <tr>
+    <th>Metric</th>
+    <th>What it actually tells you</th>
+    <th>Act when</th>
+  </tr>
+  <tr>
+    <td>Cost per lead</td>
+    <td>What one enquiry costs on a channel</td>
+    <td>It climbs while lead quality stays flat</td>
+  </tr>
+  <tr>
+    <td>Cost per booking</td>
+    <td>What one <strong>booked</strong> job costs after qualification</td>
+    <td>Two channels tie on cost per lead but not on this</td>
+  </tr>
+  <tr>
+    <td>Return on ad spend</td>
+    <td>Revenue returned per unit of spend, by campaign</td>
+    <td>Below break-even and still running "for awareness"</td>
+  </tr>
+  <tr>
+    <td>Value by source</td>
+    <td>Whether cheap leads stay cheap after onboarding</td>
+    <td>The lowest cost per lead has the shortest client life</td>
+  </tr>
+</table>
+
+<h3>The channel that looks cheap and is not</h3>
+
+<p>Cost per lead is the easiest metric to win and the easiest one to be misled by.
+A channel that delivers twice as many leads at half the cost is a loss if those
+leads book once and never renew. Read cost per lead, then read value by source,
+then decide. Reallocating on the first number alone is how ad budgets get
+rebuilt every quarter with nothing to show for it.</p>
+
+<p>Here is the same decision as a picture. These are illustrative figures, not a
+benchmark — the point is the shape, and your own numbers will draw the same
+shape or a very different one.</p>
+
+<div class="mk-bars">
+  <div class="mk-bar"><span>Referral — cost per booking</span><strong>$85</strong></div>
+  <div class="mk-bar"><span>Search ads — cost per booking</span><strong>$140</strong></div>
+  <div class="mk-bar"><span>Paid social — cost per booking</span><strong>$310</strong></div>
+  <div class="mk-bar"><span>Paid social — cost per lead</span><strong>$32</strong></div>
+</div>
+
+<p>Paid social wins the metric most agencies report and loses the one that pays
+the invoice. That contradiction is invisible until spend and bookings sit in the
+same view.</p>
+
+<h2>Customer health: churn shows up weeks before it happens</h2>
+
+<p>Clients rarely cancel without warning. They go quiet, they stop replying inside
+the day, their task queue grows faster than it drains, and then one Friday there
+is an email. All of those are visible in the data you already generate — you just
+have to put them next to a name.</p>
+
+<figure>
+  <img src="https://images.unsplash.com/photo-1556745753-b2904692b3cd?w=1200&amp;q=80&amp;auto=format&amp;fit=crop" alt="A customer support agent wearing a headset at a desk">
+  <figcaption>Leading signals are boring and early: a slower reply, a queue that grows, a promised cadence that slips.</figcaption>
+</figure>
+
+<table>
+  <tr>
+    <th>Signal</th>
+    <th>Leading or lagging</th>
+    <th>Read it when</th>
+  </tr>
+  <tr>
+    <td>Days since last contact</td>
+    <td>Leading</td>
+    <td>It passes the cadence you promised them</td>
+  </tr>
+  <tr>
+    <td>Open task backlog</td>
+    <td>Leading</td>
+    <td>It grows faster than it drains for two weeks</td>
+  </tr>
+  <tr>
+    <td>Average response time</td>
+    <td>Leading</td>
+    <td>It doubles — usually a sign the work outgrew the plan</td>
+  </tr>
+  <tr>
+    <td>Satisfaction score</td>
+    <td>Lagging</td>
+    <td>It moves, because by then the decision is already made</td>
+  </tr>
+  <tr>
+    <td>Renewal date</td>
+    <td>Lagging</td>
+    <td>You find it inside renewal week rather than before it</td>
+  </tr>
+</table>
+
+<p>Leading signals are the whole point. A satisfaction score is a post-mortem; a
+backlog you can see on a Tuesday is a conversation you can still have.</p>
+
+<h2>What a working dashboard actually looks like</h2>
+
+<p>Not a wall of charts. Three tiles, each with one number, one comparison and one
+owner. If a tile cannot name the person who acts on it, it is decoration and it
+should come off the screen.</p>
+
+<div class="mk-stats">
+  <div class="mk-stat"><strong>30</strong><span>days from first export to a dashboard you trust</span></div>
+  <div class="mk-stat"><strong>15</strong><span>minutes a day to read it properly</span></div>
+  <div class="mk-stat"><strong>4</strong><span>weekly reviews before the numbers are believed</span></div>
+</div>
+
+<blockquote>The dashboard is not there to report the past. It is there to make this morning's decision obvious before the first call.</blockquote>
+
+<p>The 15 minutes matters more than the build. A dashboard reviewed weekly is a
+report with extra steps; the daily read is what turns a number into a habit, and a
+habit into a different decision on a Tuesday afternoon.</p>
+
+<h2>A four-week build you can run with a VA</h2>
+
+<p>The build is deliberately boring, because a dashboard that needs a project
+manager to maintain it will be abandoned by the second month.</p>
+
+<table>
+  <tr>
+    <th>Week</th>
+    <th>The work</th>
+    <th>What you have at the end</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>List the three questions, then find where each answer already lives</td>
+    <td>A written definition of every metric, in one page</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Connect the booking and ad sources; no manual exports allowed</td>
+    <td>Two of three tiles refreshing on their own</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Add customer signals and assign an owner to every tile</td>
+    <td>A dashboard someone is accountable for</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Read it daily, correct what is wrong, delete what nobody opens</td>
+    <td>A 15-minute morning routine that survives</td>
+  </tr>
+</table>
+
+<p>Week one is the week people skip, and it is the only one that decides whether
+the rest works. Two people who disagree about what "a qualified lead" means will
+build two dashboards and trust neither.</p>
+
+<h3>The 15-minute morning read</h3>
+
+<p>The build is a one-off; the routine is what compounds. It has three steps and
+they never change order, because the whole value is that the comparison happens
+the same way every day.</p>
+
+<div class="mk-flow">
+  <div class="mk-step"><strong>Read the three tiles in the same order</strong><span>Bookings, then marketing, then customer health. Same order, every day, so a change stands out instead of blending in.</span></div>
+  <div class="mk-step"><strong>Name the one figure that moved</strong><span>Not the three that were fine. One number, and whether it moved for a reason you already know.</span></div>
+  <div class="mk-step"><strong>Assign one action before you open your inbox</strong><span>The dashboard has done its job when it produces a task, not a feeling. If nothing moves, the tile is decoration.</span></div>
+</div>
+
+<h2>What usually goes wrong</h2>
+
+<ul>
+  <li><strong>A dashboard nobody owns.</strong> Every tile needs a name against it, or it becomes background.</li>
+  <li><strong>Metrics with no definition.</strong> "Lead" and "booking" mean different things to sales and to delivery; write the definition down.</li>
+  <li><strong>Manual exports dressed up as automation.</strong> If a person has to download a file, the number is already a week old.</li>
+  <li><strong>Tracking everything.</strong> Forty metrics is a data dump. Three is a decision.</li>
+  <li><strong>Judging on one number.</strong> Conversion alone hides velocity; cost per lead alone hides client lifetime.</li>
+</ul>
+
+<h2>Frequently asked questions</h2>
+
+<details>
+  <summary>Do we need a BI tool, or is a spreadsheet enough?</summary>
+  <p>A spreadsheet is enough while one person owns it and the sources are small.
+  It stops being enough the moment the numbers have to be trusted by two people,
+  because a spreadsheet cannot prove where a figure came from. The test is not
+  the tool, it is whether the number refreshes without anyone touching it.</p>
+</details>
+
+<details>
+  <summary>How much of this can a virtual assistant actually run?</summary>
+  <p>The build and the daily read, which is most of it. A VA can define the
+  metrics with you, connect the sources, keep the definitions current and flag a
+  tile that has gone quiet. What a VA should not do is decide what a number
+  means for strategy — that stays with you, and it is why every tile names an
+  owner.</p>
+</details>
+
+<details>
+  <summary>We already have a CRM. Is this a second system?</summary>
+  <p>No. The CRM holds records; the dashboard holds the three answers you need
+  before a call. In practice the dashboard reads the CRM rather than replacing it,
+  and the only new thing it asks of the team is that the CRM stays accurate
+  enough to be read.</p>
+</details>
+
+<details>
+  <summary>What about bilingual operations?</summary>
+  <p>Split lead source and value by language. It is one extra column and it
+  answers a question most agencies cannot: which channel actually reaches the
+  English-speaking buyer and which reaches the Spanish-speaking one, so budget
+  goes where it converts rather than where it is easiest to buy.</p>
+</details>
+
+<p>If the three questions are still answered by three different people in three
+different tabs, start there — the dashboard is the smaller half of the work.
+<a href="/join">Book a consultation</a> and we will map the three tiles with you
+before anything gets connected.</p>

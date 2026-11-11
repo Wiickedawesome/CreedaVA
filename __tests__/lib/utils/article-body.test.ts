@@ -117,6 +117,125 @@ describe("rebuildArticleBody — card labels", () => {
   });
 });
 
+describe("rebuildArticleBody — metric strip", () => {
+  it("keeps the one sanctioned wrapper and normalises it", () => {
+    const html =
+      '<div class="mk-stats" style="padding:32px"><div class="mk-stat">' +
+      "<strong>15</strong><span>minutes a day</span></div></div>";
+    expect(rebuildArticleBody(html)).toBe(
+      '<div class="mk-stats"><div class="mk-stat"><strong>15</strong><span>minutes a day</span></div></div>',
+    );
+  });
+
+  it("keeps every stat in a multi-stat strip", () => {
+    const html =
+      '<div class="mk-stats">' +
+      '<div class="mk-stat"><strong>30</strong><span>days to a first version</span></div>' +
+      '<div class="mk-stat"><strong>4</strong><span>reviews before it is trusted</span></div>' +
+      "</div>";
+    expect(rebuildArticleBody(html)).toBe(html);
+  });
+
+  it("drops a stat that lost its figure or its label", () => {
+    const html =
+      '<div class="mk-stats">' +
+      '<div class="mk-stat"><span>no figure here</span></div>' +
+      '<div class="mk-stat"><strong>15</strong></div>' +
+      '<div class="mk-stat"><strong>7</strong><span>days</span></div>' +
+      "</div>";
+    expect(rebuildArticleBody(html)).toBe(
+      '<div class="mk-stats"><div class="mk-stat"><strong>7</strong><span>days</span></div></div>',
+    );
+  });
+
+  it("still unwraps a div whose class is not the sanctioned one", () => {
+    const html =
+      '<div class="mk-stats-extra"><div class="mk-stat"><strong>15</strong><span>days</span></div></div>' +
+      "<p>A real sentence follows, and it keeps its place in the article.</p>";
+    expect(rebuildArticleBody(html)).toBe(
+      "<p>A real sentence follows, and it keeps its place in the article.</p>",
+    );
+  });
+
+  it("does not treat a lone stat as a strip", () => {
+    const html =
+      '<div class="mk-stat"><strong>15</strong><span>days</span></div>' +
+      "<p>A real sentence follows, and it keeps its place in the article.</p>";
+    expect(rebuildArticleBody(html)).toBe(
+      "<p>A real sentence follows, and it keeps its place in the article.</p>",
+    );
+  });
+});
+
+describe("rebuildArticleBody — infographic blocks", () => {
+  it("draws each bar as a proportion of the largest real figure", () => {
+    const html =
+      '<div class="mk-bars">' +
+      '<div class="mk-bar"><span>Referral</span><strong>78%</strong></div>' +
+      '<div class="mk-bar"><span>Paid social</span><strong>39%</strong></div>' +
+      "</div>";
+    expect(rebuildArticleBody(html)).toBe(
+      '<div class="mk-bars">' +
+        '<div class="mk-bar" style="--mk-width:100%"><span>Referral</span><strong>78%</strong></div>' +
+        '<div class="mk-bar" style="--mk-width:50%"><span>Paid social</span><strong>39%</strong></div>' +
+        "</div>",
+    );
+  });
+
+  it("reads magnitudes out of prices and thousands separators", () => {
+    const html =
+      '<div class="mk-bars">' +
+      '<div class="mk-bar"><span>Full-time hire</span><strong>$4,800</strong></div>' +
+      '<div class="mk-bar"><span>Managed VA</span><strong>$1,200</strong></div>' +
+      "</div>";
+    expect(rebuildArticleBody(html)).toContain('style="--mk-width:25%"');
+  });
+
+  it("drops a bar with no figure, no label, or a non-numeric figure", () => {
+    const html =
+      '<div class="mk-bars">' +
+      '<div class="mk-bar"><span>No figure</span></div>' +
+      '<div class="mk-bar"><strong>42%</strong></div>' +
+      '<div class="mk-bar"><span>Unreadable</span><strong>lots</strong></div>' +
+      '<div class="mk-bar"><span>Kept</span><strong>42%</strong></div>' +
+      "</div>";
+    expect(rebuildArticleBody(html)).toBe(
+      '<div class="mk-bars"><div class="mk-bar" style="--mk-width:100%"><span>Kept</span><strong>42%</strong></div></div>',
+    );
+  });
+
+  it("keeps a process flow and lets the stylesheet draw the numbers", () => {
+    const html =
+      '<div class="mk-flow">' +
+      '<div class="mk-step"><strong>Define the questions</strong><span>Write them down.</span></div>' +
+      '<div class="mk-step"><strong>Connect the sources</strong><span>No exports.</span></div>' +
+      "</div>";
+    expect(rebuildArticleBody(html)).toBe(
+      '<div class="mk-flow">' +
+        '<div class="mk-step"><strong>Define the questions</strong><span>Write them down.</span></div>' +
+        '<div class="mk-step"><strong>Connect the sources</strong><span>No exports.</span></div>' +
+        "</div>",
+    );
+  });
+
+  it("keeps a mockup title and its figures", () => {
+    const html =
+      '<div class="mk-mockup">' +
+      '<div class="mk-mockup-title">Bookings · today</div>' +
+      '<div class="mk-stat"><strong>12</strong><span>confirmed</span></div>' +
+      "</div>";
+    expect(rebuildArticleBody(html)).toBe(
+      '<div class="mk-mockup"><span class="mk-mockup-title">Bookings · today</span>' +
+        '<div class="mk-stat"><strong>12</strong><span>confirmed</span></div></div>',
+    );
+  });
+
+  it("drops a mockup with no figures, and a bare title div is unwrapped", () => {
+    expect(rebuildArticleBody('<div class="mk-mockup"><div class="mk-mockup-title">Empty</div></div>')).toBe("");
+    expect(rebuildArticleBody('<div class="mk-mockup-title">Just a title</div>')).toBe("");
+  });
+});
+
 describe("stripDuplicateTitle", () => {
   it("drops a leading heading that repeats the article title", () => {
     const html = "<h2>Boost Growth</h2><p>Body.</p>";

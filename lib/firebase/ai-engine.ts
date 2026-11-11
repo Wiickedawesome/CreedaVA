@@ -308,35 +308,45 @@ export async function generateSEOBlogPost(
 
   return analyzeAndRespondJSON<GeneratedBlogPost>(
     "/admin/blog",
-    `Write a VISUALLY STUNNING, SEO-optimized blog post about: "${topic}"
+    `Write an SEO-optimized blog post about: "${topic}"
 ${targetKeyword ? `Target keyword: "${targetKeyword}"` : "Suggest the best target keyword based on our keyword gap analysis."}
 
-Requirements:
-- 2000+ words of comprehensive, authoritative content
-- Follow E-E-A-T principles (demonstrate experience with VA services)
-- Include internal links to our existing content (reference our blog titles)
-- Include FAQ section with 3-5 questions for featured snippet capture
-- Use the CREATIVE HTML DESIGN FRAMEWORK for visual design:
-  * Start with a <style> tag containing CSS animations (cv- prefix classes)
-  * Use SVG checkmark icons for benefit/feature lists
-  * Include highlighted callout boxes with left-border teal accent for key insights
-  * Add a gradient stat banner section with key numbers
-  * Use testimonial/quote cards with SVG quote marks
-  * Add wave SVG dividers between major sections
-  * End with a gradient CTA section linking to /join
-  * Use varied font sizes via inline styles for visual hierarchy
-  * Apply staggered animation classes (cv-fade-up-d1, d2, d3)
-- Include specific data points and actionable advice
-- Each section should target a related secondary keyword
-- Write in a professional but approachable tone
-- Include a compelling CTA section at the end with link to /join
+Follow BLOG BODY RULES. The article renderer rebuilds the body from a fixed
+whitelist, so anything outside it is deleted rather than styled:
+- 1,200-1,600 words, 6-9 <h2> sections, <h3> for sub-points.
+- 3-5 <figure> blocks (<img> + <figcaption>) using approved images.unsplash.com
+  URLs, one every two or three sections.
+- A <table> for every comparative or measurable section.
+- Infographic blocks for the sections that turn on figures or a sequence:
+    <div class="mk-stats">
+      <div class="mk-stat"><strong>15</strong><span>minutes a day to read it</span></div>
+    </div>
+    <div class="mk-bars">
+      <div class="mk-bar"><span>Referral</span><strong>78%</strong></div>
+      <div class="mk-bar"><span>Paid social</span><strong>42%</strong></div>
+    </div>
+    <div class="mk-flow">
+      <div class="mk-step"><strong>Define the questions</strong><span>One sentence.</span></div>
+    </div>
+    <div class="mk-mockup">
+      <div class="mk-mockup-title">Bookings · today</div>
+      <div class="mk-stat"><strong>12</strong><span>confirmed</span></div>
+    </div>
+  Those class names are the only ones that survive the renderer; every other
+  wrapper, class, inline style and SVG is deleted.
+- One <blockquote> for the sentence worth remembering.
+- An FAQ section of 3-5 <details>/<summary> pairs.
+- A numbered <a href="#source-1">[1]</a> marker on every factual claim, and the
+  matching \`references\` entries in citation order.
+- No <style> blocks, no <script>, no inline styling, no SVG, no h1 in the body.
 
 Return JSON:
 {
   "title": "SEO-optimized title (under 60 chars, includes primary keyword)",
   "slug": "url-friendly-slug",
   "excerpt": "1-2 sentence summary",
-  "content": "Full RICH HTML blog post with inline styles, <style> animations, SVG elements, gradient sections, callout boxes, and visual design following CREATIVE HTML DESIGN FRAMEWORK",
+  "content": "Full article body as semantic HTML per BLOG BODY RULES, with figures, tables and metric strips",
+  "references": [{ "label": "…", "url": "https://…", "source": "…", "year": "2025" }],
   "tags": ["3-5 relevant tags"],
   "metaDescription": "Meta description under 160 chars with CTA",
   "targetKeyword": "the primary keyword targeted",
@@ -348,7 +358,6 @@ Return JSON:
       includeSEOAlgorithms: true,
       includeCompetitors: true,
       includeDesignSystem: true,
-      includeCreativeFramework: true,
       includeBlogRules: true,
       includeAIO: true,
       includeGEO: true,

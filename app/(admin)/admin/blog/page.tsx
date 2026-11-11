@@ -21,6 +21,7 @@ import Image from "next/image";
 import { translateBlogInBackground } from "@/lib/firebase/translate";
 import { parseAiJson } from "@/lib/utils/ai-json";
 import { slugify } from "@/lib/utils/slug";
+import { measureArticleVisuals, visualGaps } from "@/lib/utils/article-visuals";
 import { pickFeaturedImage, thumbnailPromptList } from "@/lib/constants/blog-images";
 
 const emptyPost: BlogPostFormData = {
@@ -61,6 +62,20 @@ export default function BlogPage() {
   const [driveFiles, setDriveFiles] = useState<{ id: string; name: string; type: string; mimeType: string; webLink: string; modifiedAt: string; thumbnail: string }[]>([]);
 
   // AI generation (state reserved for future inline AI prompt UI)
+
+  /**
+   * Tell the author when a body is all prose.
+   *
+   * The generator asks for figures, tables and metric blocks, but a prompt is a
+   * request — this is the check that actually notices. It never blocks a save:
+   * a short post is sometimes the right answer, and the author decides.
+   */
+  function warnOnThinContent(html: string) {
+    const gaps = visualGaps(measureArticleVisuals(html));
+    if (gaps.length > 0) {
+      toast(`Saved, but the body is thin: ${gaps.join(", ")}.`, "info");
+    }
+  }
 
   const filtered = posts.filter((p) => tab === "all" || p.status === tab);
 
@@ -242,6 +257,7 @@ export default function BlogPage() {
         toast("Post created");
       }
       setModalOpen(false);
+      warnOnThinContent(form.content ?? "");
     } catch {
       toast("Failed to save post", "error");
     } finally {
@@ -263,6 +279,7 @@ export default function BlogPage() {
       );
       toast("Post published!");
       setModalOpen(false);
+      warnOnThinContent(selected.content ?? "");
     } catch {
       toast("Failed to publish", "error");
     }
@@ -418,11 +435,31 @@ Return ONLY valid JSON with these fields:
   1,200-1,600 words, 6-9 <h2> sections, <h3> for sub-points, and a numbered
   [1]-style link (<a href="#source-1">[1]</a>) on every factual claim.
   NEVER use <h1> — the page renders the post title as the only H1.
-  Semantic structure only: <p>, <h2>, <h3>, <ul>/<ol>/<li>, <table>, <blockquote>,
-  <details>/<summary>, <strong>, <em>, <a>. The article renderer rebuilds this
-  body from that whitelist and discards everything else — no <div> wrappers, no
-  class names, no inline styles, no SVG, and any styling you add is dropped.
-  Express hierarchy with headings and lists, never with markup or styling.
+  Semantic structure: <p>, <h2>, <h3>, <ul>/<ol>/<li>, <table>, <blockquote>,
+  <details>/<summary>, <figure>/<figcaption>, <strong>, <em>, <a>. The article
+  renderer rebuilds this body from that whitelist and discards everything else:
+  no inline styles, no SVG, no <style> tag.
+  A body of paragraphs only is not acceptable — include 3-5 <figure> images
+  whose URLs come from the approved list below, one <table> for each
+  comparative or measurable section, and infographic blocks:
+    <div class="mk-stats">
+      <div class="mk-stat"><strong>15</strong><span>minutes a day to read it</span></div>
+    </div>
+    <div class="mk-bars">
+      <div class="mk-bar"><span>Referral</span><strong>78%</strong></div>
+      <div class="mk-bar"><span>Paid social</span><strong>42%</strong></div>
+    </div>
+    <div class="mk-flow">
+      <div class="mk-step"><strong>Define the questions</strong><span>One sentence.</span></div>
+    </div>
+    <div class="mk-mockup">
+      <div class="mk-mockup-title">Bookings · today</div>
+      <div class="mk-stat"><strong>12</strong><span>confirmed</span></div>
+    </div>
+  Those are the ONLY class names allowed; any other wrapper or class is
+  stripped. Each <strong> holds a figure, each <span> the words that say what
+  it measures. Bar lengths are computed from the real figures — never write a
+  number just to make a bar look right.
 - references: array of the sources cited above, in citation order:
   [{ "label": "Title of the page or report", "url": "https://…", "source": "Publisher", "year": "2025" }]
   Only sources you were given or can name as a primary publisher. If a claim

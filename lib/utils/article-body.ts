@@ -28,12 +28,16 @@
  *
  * Rules of thumb:
  * - A `div`/`section`/`span`/`font` is not content. It is unwrapped; its text
- *   becomes a paragraph if it was inline on its own.
+ *   becomes a paragraph if it was inline on its own — except for the four
+ *   sanctioned infographic wrappers below, which are the only ones that carry
+ *   meaning on their own.
  * - A paragraph with no letters, or a bare label (no terminal punctuation, very
  *   few words) is a leftover card caption and is dropped.
- * - `svg`, `style`, `script`, `iframe`, `form` and friends never reach the page.
+ * - `svg`, `style`, `script`, `iframe`, `form`, `video` and friends never reach
+ *   the page.
  * - `class`, `id`, `style`, `align`, `width`, `height` never survive; only
- *   `href`, `src`, `alt`, `title`, `colspan`, `rowspan` are carried over.
+ *   `href`, `src`, `alt`, `open` and the sanctioned class names below are
+ *   carried over.
  *
  * Output is intentionally boring, well-formed HTML. The stylesheet in
  * `globals.css` owns everything after that.
@@ -125,6 +129,32 @@ const BLOCK_TAGS = new Set([
 ]);
 
 const HEADING_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6"]);
+
+/**
+ * The sanctioned block vocabulary — the only wrappers the renderer keeps.
+ *
+ * An article that names three numbers in a row reads as a paragraph; the same
+ * three numbers read as a dashboard. Almost every post the model writes is
+ * about figures, stages or a before/after, and a bare `<p>` cannot say "these
+ * are comparison values, scan them". So four shapes are sanctioned:
+ *
+ *   metric strip   <div class="mk-stats">  of <div class="mk-stat">
+ *   bar chart      <div class="mk-bars">   of <div class="mk-bar">
+ *   process flow   <div class="mk-flow">   of <div class="mk-step">
+ *   screen mockup  <div class="mk-mockup"> of <div class="mk-stat">
+ *
+ * The class names are matched exactly and an unknown class is still unwrapped,
+ * so this is a closed vocabulary, not a utility system that grows by accident.
+ * `.mk-article--wide` owns how each one looks (globals.css).
+ */
+const STATS_CLASS = "mk-stats";
+const STAT_CLASS = "mk-stat";
+const BARS_CLASS = "mk-bars";
+const BAR_CLASS = "mk-bar";
+const FLOW_CLASS = "mk-flow";
+const STEP_CLASS = "mk-step";
+const MOCKUP_CLASS = "mk-mockup";
+const MOCKUP_TITLE_CLASS = "mk-mockup-title";
 
 interface Token {
   kind: "open" | "close" | "text";
@@ -218,6 +248,164 @@ function readAttrs(attrs: string): Map<string, string> {
 
 function escapeText(value: string): string {
   return value.replace(/&(?![a-z#0-9]+;)/gi, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** The exact `class` value on an element, or an empty string. */
+function classNameOf(node: Node): string {
+  return (readAttrs(node.attrs).get("class") ?? "").trim();
+}
+
+/**
+ * One metric: a figure in `<strong>`, its label in everything else.
+ *
+ * Rendering the figure inside `<strong>` keeps the semantics the design system
+ * asks for (`<strong>` is emphasis, never a coloured span) while giving the
+ * stylesheet something stable to size. A stat with no figure, or with no label
+ * to say what the figure counts, is not a stat and is dropped — an unlabelled
+ * number is the old animated-counter bug wearing a new hat.
+ */
+function renderStat(node: Node): string | null {
+  const figure = node.children.find((child) => child.name === "strong");
+  if (!figure) return null;
+
+  const value = renderInline(figure.children).trim();
+  const label = renderInline(node.children.filter((child) => child !== figure)).trim();
+  if (!value || !label) return null;
+
+  return `<div class="${STAT_CLASS}"><strong>${value}</strong><span>${label}</span></div>`;
+}
+
+/** Children of a sanctioned wrapper that carry the given class. */
+function childrenWithClass(node: Node, className: string): Node[] {
+  return node.children.filter((child) => child.name === "div" && classNameOf(child) === className);
+}
+
+function renderStats(node: Node): string | null {
+  const stats = childrenWithClass(node, STAT_CLASS)
+    .map(renderStat)
+    .filter((stat): stat is string => Boolean(stat));
+
+  if (stats.length === 0) return null;
+  return `<div class="${STATS_CLASS}">${stats.join("")}</div>`;
+}
+
+/**
+ * The first number in a string, as a magnitude — `$1,200` → 1200, `42 %` → 42.
+ *
+ * Bars are drawn relative to the largest value in the group, so the model only
+ * has to write the real figure; it never invents a bar length. A bar whose
+ * figure cannot be read is dropped rather than drawn at an arbitrary width.
+ */
+function magnitudeOf(text: string): number | null {
+  const match = /-?\d[\d,]*(?:\.\d+)?/.exec(text);
+  if (!match) return null;
+  const value = Number.parseFloat(match[0].replace(/,/g, ""));
+  return Number.isFinite(value) ? value : null;
+}
+
+/**
+ * A bar chart, drawn from figures the model actually wrote.
+ *
+ * `<strong>` holds the value (and stays visible, so the chart is readable
+ * without the bar), `<span>` holds the label. The bar width is computed here
+ * from the largest figure in the group and emitted as a custom property, so
+ * every `style` attribute in the output is generated by this file from a
+ * validated number — never copied from model markup.
+ */
+function renderBars(node: Node): string | null {
+  const bars = childrenWithClass(node, BAR_CLASS)
+    .map((bar) => {
+      const figure = bar.children.find((child) => child.name === "strong");
+      if (!figure) return null;
+      const value = renderInline(figure.children).trim();
+      const label = renderInline(bar.children.filter((child) => child !== figure)).trim();
+      const magnitude = magnitudeOf(value);
+      if (!value || !label || magnitude === null || magnitude <= 0) return null;
+      return { value, label, magnitude };
+    })
+    .filter((bar): bar is { value: string; label: string; magnitude: number } => Boolean(bar));
+
+  if (bars.length === 0) return null;
+
+  const largest = Math.max(...bars.map((bar) => bar.magnitude));
+  const rows = bars.map((bar) => {
+    const width = Math.round((bar.magnitude / largest) * 1000) / 10;
+    return (
+      `<div class="${BAR_CLASS}" style="--mk-width:${width}%">` +
+      `<span>${bar.label}</span><strong>${bar.value}</strong></div>`
+    );
+  });
+
+  return `<div class="${BARS_CLASS}">${rows.join("")}</div>`;
+}
+
+/**
+ * A numbered sequence. The number is generated by CSS counters, so the model
+ * writes the step's name and description and never a "Step 1:" prefix that
+ * would double up with the marker.
+ */
+function renderStep(node: Node): string | null {
+  const title = node.children.find((child) => child.name === "strong");
+  if (!title) return null;
+
+  const heading = renderInline(title.children).trim();
+  const detail = renderInline(node.children.filter((child) => child !== title)).trim();
+  if (!heading || !detail) return null;
+
+  return `<div class="${STEP_CLASS}"><strong>${heading}</strong><span>${detail}</span></div>`;
+}
+
+function renderFlow(node: Node): string | null {
+  const steps = childrenWithClass(node, STEP_CLASS)
+    .map(renderStep)
+    .filter((step): step is string => Boolean(step));
+
+  if (steps.length === 0) return null;
+  return `<div class="${FLOW_CLASS}">${steps.join("")}</div>`;
+}
+
+/**
+ * A screen mockup — a titled panel of metrics, drawn in CSS.
+ *
+ * This exists because the posts are about dashboards and there is no
+ * screenshot to show. The frame is the design system's card, not a fake
+ * photograph: a title, a hairline, and the same `<strong>`/`<span>` pair the
+ * metric strip uses, so the same content reads either as a band or as a panel.
+ */
+function renderMockup(node: Node): string | null {
+  const stats = childrenWithClass(node, STAT_CLASS)
+    .map(renderStat)
+    .filter((stat): stat is string => Boolean(stat));
+
+  if (stats.length === 0) return null;
+
+  const titleNode = node.children.find(
+    (child) => child.name !== "#text" && classNameOf(child) === MOCKUP_TITLE_CLASS,
+  );
+  const title = titleNode ? renderInline(titleNode.children).trim() : "";
+  const heading = title ? `<span class="${MOCKUP_TITLE_CLASS}">${title}</span>` : "";
+
+  return `<div class="${MOCKUP_CLASS}">${heading}${stats.join("")}</div>`;
+}
+
+const SANCTIONED_RENDERERS: Record<string, (node: Node) => string | null> = {
+  [STATS_CLASS]: renderStats,
+  [BARS_CLASS]: renderBars,
+  [FLOW_CLASS]: renderFlow,
+  [MOCKUP_CLASS]: renderMockup,
+};
+
+/**
+ * Render a `div` that carries a sanctioned class.
+ *
+ * `undefined` means "not a sanctioned wrapper" — the caller keeps unwrapping it
+ * like any other container. `null` means "sanctioned but empty", so it is
+ * dropped rather than left as an empty box.
+ */
+function renderSanctioned(node: Node): string | null | undefined {
+  if (node.name !== "div") return undefined;
+  const renderer = SANCTIONED_RENDERERS[classNameOf(node)];
+  return renderer ? renderer(node) : undefined;
 }
 
 /** `javascript:` and friends never survive; relative and http(s) links do. */
@@ -445,6 +633,15 @@ function walk(nodes: Node[], blocks: Blocks): void {
       flush(blocks);
       const rendered = renderNode(node);
       if (rendered) blocks.blocks.push(rendered);
+      continue;
+    }
+
+    // The sanctioned vocabulary keeps its wrapper; every other container loses
+    // its own. `undefined` means "not sanctioned", so it falls through below.
+    const sanctioned = renderSanctioned(node);
+    if (sanctioned !== undefined) {
+      flush(blocks);
+      if (sanctioned) blocks.blocks.push(sanctioned);
       continue;
     }
 

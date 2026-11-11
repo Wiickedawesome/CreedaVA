@@ -2872,6 +2872,105 @@ generated posts start losing a line, that threshold is the first thing to check.
 weight rather than a live source of bad markup. It should be deleted or ported to
 `BLOG_BODY_RULES_2026` — a decision for the owner.
 
+### 2026-11-11 (later) — infographic vocabulary; both published posts rewritten
+
+Owner: *"We need mock up/infographics. that is a must. lets fix all that isnt
+before we commit push deploy. We need to standardize our design everywhere."*
+
+**The renderer now keeps four sanctioned wrappers.** `article-body.ts` had allowed
+exactly one (`mk-stats`), which meant a post could not draw a chart, a process or
+a panel. All four are CSS-only — no chart library, no SVG, no inline styling the
+model writes.
+
+| Wrapper | Shape | Used for |
+|---|---|---|
+| `mk-stats` → `mk-stat` | `<strong>` figure + `<span>` label | two to four numbers |
+| `mk-bars` → `mk-bar` | `<span>` label + `<strong>` value | comparing three or more figures |
+| `mk-flow` → `mk-step` | `<strong>` title + `<span>` detail | a sequence the reader follows |
+| `mk-mockup` (+ `mk-mockup-title`) | titled panel of `mk-stat` | a dashboard or screen |
+
+The two rules that keep it honest:
+
+- **Bar lengths are computed, never written.** The renderer reads the number out
+  of `<strong>` (`$1,200` → 1200), finds the largest value in the group and emits
+  `style="--mk-width:NN%"`. Every `style` attribute in the output is produced by
+  `article-body.ts` from a validated figure; nothing is copied from model markup.
+  A bar with no label, no figure, or an unreadable figure is dropped.
+- **The class vocabulary is closed.** Matched by exact string, eight values only.
+  An unknown class is still stripped with its wrapper, so this cannot grow into a
+  utility system by accident.
+
+`globals.css` implements them as full-width blocks: bars in a bordered panel with
+a `--mk-paper-deep` track and `--mk-brand` fill; flow steps with a CSS-counter
+marker (`01`, `02`) so the model never writes "Step 1"; the mockup as a real card
+(`--mk-white`, hairline, `--mk-shadow-card`, `--mk-accent` dot in the title).
+
+**Enforcement, not just instruction.** New `lib/utils/article-visuals.ts`:
+`measureArticleVisuals()` and `visualGaps()`. The admin Blog page calls it after
+save and publish and toasts what is missing (`under 800 words`, `fewer than 2
+images`, `no table, bar chart or mockup`, `no metric strip or bar chart`). It
+never blocks a save — a short post is sometimes right — but a prose-only body can
+no longer be published silently.
+
+**Both published posts replaced.** The bodies were read from Firestore, rewritten
+and written back (`content` + `updatedAt` only, field mask; status and title
+untouched). The originals are archived at
+`docs/content/archive/*-pre-2026-11-11.html`.
+
+| | Boost Growth / BI | VA vs BPO |
+|---|---|---|
+| words | 1,749 | 1,196 |
+| `<h2>` | 8 | 8 |
+| images | 3 | 2 |
+| tables | 4 | 3 |
+| metric strips | 1 | 1 |
+| bar charts | 1 | 1 |
+| process flows | 1 | 1 |
+| mockups | 1 | 1 |
+| gaps reported | none | none |
+| `style` attrs | 4 (bar widths only) | 3 (bar widths only) |
+| `style` tags / SVG | 0 / 0 | 0 / 0 |
+
+The second post had a "Hear From Our Happy Clients" section with invented
+testimonials; that is gone. Neither body contains a number presented as a
+measured CreedaVA result — the two charts are explicitly labelled illustrative,
+and "packages are quoted per client" is stated rather than a rate invented.
+
+Verified: `tsc` clean (app + `functions`) · eslint 0 errors · **470/470** tests
+(40 files) · `audit:design` 0/0.
+
+### 2026-11-11 (first) — article bodies must carry visuals, not only paragraphs
+
+Owner: *"the content itself is poor. We have tons of opportunity to use visuals…
+we talk about metrics so let's show some metrics representations."*
+
+**Root cause.** Every rule the model was given described *structure* — word
+count, heading count, sources — and none described *composition*. A body that
+satisfies every rule can still be 1,500 words of `<p>` and `<h2>`, which is
+exactly what the two published posts were. Worse, the previous pass told the
+model "no `<div>` wrappers, no class names", so the one thing that would have made
+a metric section scannable was explicitly banned.
+
+**Fix, part one — the metric strip** (the first sanctioned wrapper, extended by
+the entry above to the full vocabulary).
+
+**Fix, part two — the rules.** `BLOG_BODY_RULES_2026` gained a VISUALS section:
+figures with real captions, a table for every comparative section, infographic
+blocks, one pull quote. Plus the honesty clause — a number in a strip, bar,
+mockup or table is a claim like any other: sourced, framed as the reader's own
+target, or removed.
+
+**Also fixed:** `.mk-article--wide figcaption` referenced `--mk-ink-muted`, a
+token that does not exist (the real one is `--mk-ink-mute`), so captions rendered
+in the inherited body colour instead of muted.
+
+**Prompts corrected at every remaining entry point** — `lib/firebase/ai.ts`
+`generateBlogPost()` (still asked for the `CREATIVE HTML DESIGN FRAMEWORK` and
+`<style>` animations), `lib/firebase/ai-engine.ts` `generateSEOBlogPost()` (the
+dead path noted below — ported rather than left as a trap), the admin Blog
+generator, and `functions/src/seo/content-writer.ts` (SEO agent, 700–900 words →
+1,200–1,600 plus the visual requirements).
+
 
 ## Verification (measured, 2026-11-02)
 

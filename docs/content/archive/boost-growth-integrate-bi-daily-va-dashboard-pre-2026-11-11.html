@@ -1,0 +1,280 @@
+<style>
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.cv-fade-up { animation: fadeInUp 0.8s ease-out forwards; }
+.cv-fade-up-d1 { animation: fadeInUp 0.8s ease-out 0.2s forwards; opacity: 0; }
+.cv-fade-up-d2 { animation: fadeInUp 0.8s ease-out 0.4s forwards; opacity: 0; }
+.cv-fade-up-d3 { animation: fadeInUp 0.8s ease-out 0.6s forwards; opacity: 0; }
+.cv-slide-left { animation: slideInLeft 0.8s ease-out forwards; }
+.cv-slide-right { animation: slideInRight 0.8s ease-out forwards; }
+.cv-pulse { animation: pulse 3s ease-in-out infinite; }
+.cv-float { animation: float 6s ease-in-out infinite; }
+@property --cv-num { syntax: '<integer>'; initial-value: 0; inherits: false; }
+@keyframes cvCount { to { --cv-num: var(--cv-target); } }
+.cv-counter { animation: cvCount 2s ease-out forwards; counter-reset: num var(--cv-num); font-variant-numeric: tabular-nums; }
+.cv-counter::after { content: counter(num); }
+.cv-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.cv-lift:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,45,114,0.12); }
+
+@media (max-width: 768px) {
+  .cv-grid-2 { grid-template-columns: 1fr !important; }
+  .cv-grid-3 { grid-template-columns: 1fr !important; }
+  .cv-stat-banner { flex-direction: column !important; gap: 24px !important; }
+  .cv-flip-card { height: 220px !important; }
+  .cv-hero-text { font-size: 32px !important; }
+  .cv-section-pad { padding: 40px 20px !important; }
+  .cv-hide-mobile { display: none !important; }
+}
+@media (max-width: 480px) {
+  .cv-display-num { font-size: 36px !important; }
+  .cv-section-pad { padding: 32px 16px !important; }
+}
+</style>
+
+<div class="cv-fade-up" style="max-width:1280px;margin:0 auto;padding:24px">
+  <h1 style="font-size:42px;font-weight:700;color:#002D72;text-align:center;margin-bottom:24px;line-height:1.2" class="cv-hero-text">Boost Growth: Integrate Business Intelligence into Your Daily VA Dashboard</h1>
+  <p style="font-size:18px;color:#4D5358;text-align:center;max-width:800px;margin:0 auto 40px">In today's fast-paced business world, making informed decisions isn't a luxury—it's a necessity. Integrating critical business intelligence (BI) data directly into your daily virtual assistant operations dashboard is the fastest way to gain the clarity needed for unparalleled growth and efficiency.</p>
+
+  <div style="border-left:4px solid #005148;background:#F9FBFF;padding:24px 28px;border-radius:0 12px 12px 0;margin:32px 0;opacity:0;animation:fadeInUp 0.8s ease-out 0.2s forwards;">
+    <p style="font-size:18px;color:#002D72;font-weight:500;margin:0"><strong>A rapid implementation plan to integrate BI data involves selecting key metrics for bookings, marketing, and customer health, then visualizing them on a centralized dashboard.</strong> This real-time visibility empowers proactive decision-making across all operational aspects of your virtual assistant service, driving significant improvements in resource allocation and client satisfaction.</p>
+  </div>
+
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80" alt="Analytics dashboard showing growth charts and data visualization for business intelligence" loading="lazy" style="width:100%;max-width:900px;height:auto;border-radius:16px;object-fit:cover;margin:40px auto;display:block;box-shadow:var(--shadow-md);opacity:0;animation:fadeInUp 0.8s ease-out 0.4s forwards;"/>
+
+  <h2 style="font-size:32px;font-weight:700;color:#002D72;margin-top:60px;margin-bottom:30px;text-align:center" class="cv-fade-up-d1">Bookings: Fueling Your Growth Pipeline</h2>
+  <p style="font-size:16px;color:#4D5358;margin-bottom:24px;text-align:center" class="cv-fade-up-d1">Understanding your booking funnel is crucial for scaling. Real-time data helps you identify bottlenecks and optimize conversion paths.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;margin-bottom:40px" class="cv-grid-2 cv-fade-up-d1">
+    <div style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;box-shadow:var(--shadow-sm)">
+      <h3 style="font-size:24px;font-weight:700;color:#005148;margin-bottom:16px">Key Booking Metrics:</h3>
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong style="color:#002D72;font-size:18px">Booking Conversion Rate</strong>
+          <p style="color:#697077;margin-top:4px">Percentage of leads that successfully convert into a booked consultation or service.</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong style="color:#002D72;font-size:18px">Average Booking Value (ABV)</strong>
+          <p style="color:#697077;margin-top:4px">Average monetary value of each new booking, indicating plan popularity.</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong style="color:#002D72;font-size:18px">Booking Velocity</strong>
+          <p style="color:#697077;margin-top:4px">Time taken from initial lead contact to a confirmed booking, highlighting sales efficiency.</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong style="color:#002D72;font-size:18px">Lead Source Performance</strong>
+          <p style="color:#697077;margin-top:4px">Which channels are driving the most, and highest quality, bookings.</p>
+        </div>
+      </div>
+    </div>
+    <div style="background:#F9FBFF;border-radius:16px;padding:32px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:center">
+      <h3 style="font-size:24px;font-weight:700;color:#002D72;margin-bottom:16px">Expected Impact:</h3>
+      <ul style="list-style:none;padding:0;margin:0">
+        <li style="display:flex;align-items:center;gap:10px;margin-bottom:10px;color:#002D72"><svg width="20" height="20" viewBox="0 0 24 24" fill="#005148"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4 5.6 21.2l2.4-7.2-6-4.8h7.6z"/></svg> Optimize sales funnel to <strong>increase booking conversion by ~15%</strong>.</li>
+        <li style="display:flex;align-items:center;gap:10px;margin-bottom:10px;color:#002D72"><svg width="20" height="20" viewBox="0 0 24 24" fill="#005148"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4 5.6 21.2l2.4-7.2-6-4.8h7.6z"/></svg> Improve resource allocation by <strong>identifying high-performing lead sources</strong>.</li>
+        <li style="display:flex;align-items:center;gap:10px;color:#002D72"><svg width="20" height="20" viewBox="0 0 24 24" fill="#005148"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4 5.6 21.2l2.4-7.2-6-4.8h7.6z"/></svg> Reduce booking cancellation by <strong>~10%</strong> through optimized follow-ups.</li>
+      </ul>
+    </div>
+  </div>
+
+  <svg viewBox="0 0 1440 120" style="width:100%;height:auto;display:block;margin:-1px 0" preserveAspectRatio="none" class="cv-fade-up-d1">
+    <path d="M0,64 C360,120 720,0 1080,64 C1260,96 1380,80 1440,64 L1440,120 L0,120 Z" fill="#F9FBFF"/>
+  </svg>
+
+  <div style="background:#F9FBFF;padding:60px 0;text-align:center">
+    <h2 style="font-size:32px;font-weight:700;color:#002D72;margin-bottom:30px" class="cv-fade-up-d2">Marketing Campaigns: Optimizing Every Dollar</h2>
+    <p style="font-size:16px;color:#4D5358;margin-bottom:24px;max-width:800px;margin-left:auto;margin-right:auto" class="cv-fade-up-d2">Are your marketing efforts truly paying off? Data-driven campaign optimization ensures every dollar spent translates into measurable results.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;margin:0 auto 40px;max-width:1000px" class="cv-grid-2 cv-fade-up-d2">
+      <div style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;box-shadow:var(--shadow-sm)">
+        <h3 style="font-size:24px;font-weight:700;color:#005148;margin-bottom:16px">Essential Campaign Metrics:</h3>
+        <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>
+            <strong style="color:#002D72;font-size:18px">Return on Ad Spend (ROAS)</strong>
+            <p style="color:#697077;margin-top:4px">Direct revenue generated for every dollar spent on a specific campaign.</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>
+            <strong style="color:#002D72;font-size:18px">Cost Per Lead (CPL)</strong>
+            <p style="color:#697077;margin-top:4px">The cost incurred to acquire one new lead, indicating campaign efficiency.</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>
+            <strong style="color:#002D72;font-size:18px">Campaign Conversion Rate</strong>
+            <p style="color:#697077;margin-top:4px">Percentage of clicks or impressions that result in a desired action (e.g., form submission).</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>
+            <strong style="color:#002D72;font-size:18px">Customer Lifetime Value (LTV) by Source</strong>
+            <p style="color:#697077;margin-top:4px">Understanding which campaigns attract the most valuable, long-term customers.</p>
+          </div>
+        </div>
+      </div>
+      <div style="background:#F9FBFF;border-radius:16px;padding:32px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:center">
+        <h3 style="font-size:24px;font-weight:700;color:#002D72;margin-bottom:16px">Expected Impact:</h3>
+        <ul style="list-style:none;padding:0;margin:0">
+          <li style="display:flex;align-items:center;gap:10px;margin-bottom:10px;color:#002D72"><svg width="20" height="20" viewBox="0 0 24 24" fill="#FF6B35"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4 5.6 21.2l2.4-7.2-6-4.8h7.6z"/></svg> <strong>Increase ROAS by ~20%</strong> through real-time budget reallocation.</li>
+          <li style="display:flex;align-items:center;gap:10px;margin-bottom:10px;color:#002D72"><svg width="20" height="20" viewBox="0 0 24 24" fill="#FF6B35"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4 5.6 21.2l2.4-7.2-6-4.8h7.6z"/></svg> Reduce CPL by <strong>~15%</strong> by pausing underperforming ads.</li>
+          <li style="display:flex;align-items:center;gap:10px;color:#002D72"><svg width="20" height="20" viewBox="0 0 24 24" fill="#FF6B35"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4 5.6 21.2l2.4-7.2-6-4.8h7.6z"/></svg> Improve overall campaign effectiveness by <strong>~25%</strong> with data-driven audience targeting.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <svg viewBox="0 0 1440 120" style="width:100%;height:auto;display:block;margin:-1px 0" preserveAspectRatio="none" class="cv-fade-up-d2">
+    <path d="M0,40 C480,100 960,0 1440,60 L1440,120 L0,120 Z" fill="#FFFFFF"/>
+  </svg>
+
+  <h2 style="font-size:32px;font-weight:700;color:#002D72;margin-top:60px;margin-bottom:30px;text-align:center" class="cv-fade-up-d3">Customer Health: Proactive Retention & Expansion</h2>
+  <p style="font-size:16px;color:#4D5358;margin-bottom:24px;text-align:center" class="cv-fade-up-d3">Retaining and growing existing clients is more cost-effective than acquiring new ones. Visibility into customer health allows for proactive support and strategic upsells.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;margin-bottom:40px" class="cv-grid-2 cv-fade-up-d3">
+    <div style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;box-shadow:var(--shadow-sm)">
+      <h3 style="font-size:24px;font-weight:700;color:#005148;margin-bottom:16px">Critical Customer Metrics:</h3>
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong style="color:#002D72;font-size:18px">Churn Risk Score</strong>
+          <p style="color:#697077;margin-top:4px">A predictive score based on engagement, task completion rates, and feedback to identify at-risk clients.</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong style="color:#002D72;font-size:18px">Customer Lifetime Value (LTV)</strong>
+          <p style="color:#697077;margin-top:4px">Total revenue expected from a customer throughout their relationship with CreedaVA.</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong style="color:#002D72;font-size:18px">Customer Satisfaction Score (CSAT/NPS)</strong>
+          <p style="color:#697077;margin-top:4px">Direct feedback from clients on their happiness and willingness to recommend.</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#005148"/><path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <strong style="color:#002D72;font-size:18px">Upsell/Cross-sell Rate</strong>
+          <p style="color:#697077;margin-top:4px">Percentage of existing clients who upgrade their service or purchase additional <a href="/services">services</a>.</p>
+        </div>
+      </div>
+    </div>
+    <div style="background:#F9FBFF;border-radius:16px;padding:32px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:center">
+      <h3 style="font-size:24px;font-weight:700;color:#002D72;margin-bottom:16px">Expected Impact:</h3>
+      <ul style="list-style:none;padding:0;margin:0">
+        <li style="display:flex;align-items:center;gap:10px;margin-bottom:10px;color:#002D72"><svg width="20" height="20" viewBox="0 0 24 24" fill="#005148"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4 5.6 21.2l2.4-7.2-6-4.8h7.6z"/></svg> Proactively reduce churn by <strong>~10-15%</strong> through early intervention.</li>
+        <li style="display:flex;align-items:center;gap:10px;margin-bottom:10px;color:#002D72"><svg width="20" height="20" viewBox="0 0 24 24" fill="#005148"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4 5.6 21.2l2.4-7.2-6-4.8h7.6z"/></svg> Identify upsell opportunities to <strong>increase ARPA by ~8%</strong>.</li>
+        <li style="display:flex;align-items:center;gap:10px;color:#002D72"><svg width="20" height="20" viewBox="0 0 24 24" fill="#005148"><path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4 5.6 21.2l2.4-7.2-6-4.8h7.6z"/></svg> Boost customer satisfaction, leading to <strong>more referrals</strong> and stronger brand loyalty.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="background:#F9FBFF;border-radius:20px;padding:40px;position:relative;margin:60px auto;max-width:800px;box-shadow:var(--shadow-md);opacity:0;animation:fadeInUp 0.8s ease-out 0.8s forwards;">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="#005148" style="opacity:0.15;position:absolute;top:20px;left:20px">
+      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H0z"/>
+    </svg>
+    <p style="font-size:18px;line-height:1.7;color:#002D72;font-style:italic;margin-top:20px">"With CreedaVA's dashboard, I no longer guess. I see exactly where my leads are coming from, how campaigns are performing, and which clients need extra attention. It's transformed how I allocate my resources and doubled our client retention rates!"</p>
+    <p style="margin-top:16px;font-weight:600;color:#005148">— Alex M., E-commerce Entrepreneur</p>
+  </div>
+
+  <svg viewBox="0 0 1440 120" style="width:100%;height:auto;display:block;margin:-1px 0" preserveAspectRatio="none" class="cv-fade-up-d3">
+    <path d="M0,64 C360,120 720,0 1080,64 C1260,96 1380,80 1440,64 L1440,120 L0,120 Z" fill="#F9FBFF"/>
+  </svg>
+
+  <div style="background:#F9FBFF;padding:60px 0;text-align:center">
+    <h2 style="font-size:32px;font-weight:700;color:#002D72;margin-bottom:30px" class="cv-fade-up-d2">Rapid Implementation Plan: Your Data-Driven Journey</h2>
+    <p style="font-size:16px;color:#4D5358;margin-bottom:40px;max-width:800px;margin-left:auto;margin-right:auto" class="cv-fade-up-d2">Implementing this level of business intelligence is simpler than you think. Here's how you can achieve rapid integration:</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;max-width:1000px;margin:0 auto" class="cv-grid-3">
+      <div class="cv-lift" style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;text-align:center;opacity:0;animation:fadeInUp 0.8s ease-out 0.2s forwards;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#005148,#007A6D);color:white;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin:0 auto 20px">1</div>
+        <h3 style="font-size:20px;font-weight:700;color:#002D72;margin-bottom:12px">Define Core KPIs</h3>
+        <p style="color:#697077">Identify the 3-5 most critical metrics for each area (bookings, marketing, customer health) that align with your growth objectives. Focus on what truly drives decisions.</p>
+      </div>
+      <div class="cv-lift" style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;text-align:center;opacity:0;animation:fadeInUp 0.8s ease-out 0.4s forwards;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#005148,#007A6D);color:white;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin:0 auto 20px">2</div>
+        <h3 style="font-size:20px;font-weight:700;color:#002D72;margin-bottom:12px">Integrate Data Sources</h3>
+        <p style="color:#697077">Leverage existing integrations (e.g., Google Ads, Google Analytics, Firebase Firestore for leads/customers) to feed real-time data into your central dashboard. Automation is key.</p>
+      </div>
+      <div class="cv-lift" style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;text-align:center;opacity:0;animation:fadeInUp 0.8s ease-out 0.6s forwards;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#005148,#007A6D);color:white;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin:0 auto 20px">3</div>
+        <h3 style="font-size:20px;font-weight:700;color:#002D72;margin-bottom:12px">Visualize & Act</h3>
+        <p style="color:#697077">Design a clean, intuitive dashboard interface (like the <a href="/admin" style="color:#005148;text-decoration:underline">CreedaVA admin dashboard</a>) that displays these metrics clearly. Review daily and implement actions based on insights.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cv-fade-up" style="display:flex;flex-wrap:wrap;justify-content:center;gap:48px;padding:48px 24px;background:linear-gradient(135deg,#005148,#002D72);border-radius:24px;margin:60px 0" class="cv-stat-banner">
+    <div style="text-align:center;color:white">
+      <div style="font-size:48px;font-weight:700" class="cv-counter" style="--cv-target:25"></div>
+      <span style="font-size:48px;font-weight:700">%</span>
+      <div style="font-size:13px;opacity:0.8;text-transform:uppercase;letter-spacing:1px">Increase in Lead Conversion</div>
+    </div>
+    <div style="text-align:center;color:white">
+      <div style="font-size:48px;font-weight:700" class="cv-counter" style="--cv-target:15"></div>
+      <span style="font-size:48px;font-weight:700">%</span>
+      <div style="font-size:13px;opacity:0.8;text-transform:uppercase;letter-spacing:1px">Reduction in Customer Churn</div>
+    </div>
+    <div style="text-align:center;color:white">
+      <div style="font-size:48px;font-weight:700" class="cv-counter" style="--cv-target:10"></div>
+      <span style="font-size:48px;font-weight:700">%</span>
+      <div style="font-size:13px;opacity:0.8;text-transform:uppercase;letter-spacing:1px">Improvement in Marketing ROAS</div>
+    </div>
+  </div>
+
+  <h2 style="font-size:32px;font-weight:700;color:#002D72;margin-top:60px;margin-bottom:30px;text-align:center" class="cv-fade-up">Frequently Asked Questions</h2>
+  <div style="margin-top:20px;max-width:800px;margin-left:auto;margin-right:auto;opacity:0;animation:fadeInUp 0.8s ease-out 0.2s forwards;">
+    <details style="border:1px solid #DDE1E6;border-radius:12px;margin-bottom:12px;overflow:hidden">
+      <summary style="padding:20px 24px;font-weight:600;font-size:18px;color:#002D72;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;background:#F9FBFF">
+        Why is real-time BI crucial for VA businesses?
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005148" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div style="padding:0 24px 20px;color:#697077;line-height:1.7">Real-time BI provides immediate insights into performance across bookings, marketing, and customer health. This allows for rapid adjustments to strategies, proactive problem-solving, and efficient resource allocation, preventing issues from escalating and seizing opportunities instantly.</div>
+    </details>
+    <details style="border:1px solid #DDE1E6;border-radius:12px;margin-bottom:12px;overflow:hidden">
+      <summary style="padding:20px 24px;font-weight:600;font-size:18px;color:#002D72;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;background:#F9FBFF">
+        How does CreedaVA's AI-augmented approach enhance BI?
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005148" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div style="padding:0 24px 20px;color:#697077;line-height:1.7">CreedaVA's AI-augmented operations power its CRM dashboard, automatically collecting and analyzing data from various touchpoints. This provides deeper predictive insights, such as churn risk scores and optimal marketing spend, which would be impossible with traditional BI tools alone. Our VAs use these insights to serve you better.</div>
+    </details>
+    <details style="border:1px solid #DDE1E6;border-radius:12px;overflow:hidden">
+      <summary style="padding:20px 24px;font-weight:600;font-size:18px;color:#002D72;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;background:#F9FBFF">
+        Can this BI integration help with bilingual client acquisition?
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005148" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div style="padding:0 24px 20px;color:#697077;line-height:1.7">Absolutely. By tracking lead source performance and LTV per segment, you can identify which marketing channels are most effective for attracting bilingual clients. This allows you to double down on successful strategies and allocate resources where your unique bilingual advantage yields the highest ROI.</div>
+    </details>
+  </div>
+
+  <div style="text-align:center;padding:64px 32px;background:linear-gradient(135deg,#005148,#007A6D);border-radius:24px;margin:60px 0;opacity:0;animation:fadeInUp 0.8s ease-out 0.4s forwards;">
+    <h3 style="font-size:28px;font-weight:700;color:white;margin-bottom:12px">Ready to Make Data-Driven Decisions?</h3>
+    <p style="font-size:18px;color:rgba(255,255,255,0.85);margin-bottom:24px">Join businesses that are transforming their operations with CreedaVA's intelligent insights.</p>
+    <a href="/join" style="display:inline-flex;align-items:center;gap:8px;padding:16px 40px;background:white;color:#005148;font-weight:700;font-size:18px;border-radius:8px;text-decoration:none">
+      Get Your Free Consultation
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</div>

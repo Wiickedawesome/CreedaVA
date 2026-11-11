@@ -159,25 +159,47 @@ export async function generateJSON<T = unknown>(input: PromptInput): Promise<T> 
 
 // ─── Domain-specific AI functions ────────────────────
 
-/** Generate a blog post draft with creative visual design */
-export async function generateBlogPost(topic: string, tone = "professional", length = "800 words") {
+/** Generate a blog post draft with the editorial body the renderer keeps */
+export async function generateBlogPost(topic: string, tone = "professional", length = "1,200-1,600 words") {
   const trained = buildContentPrompt(
     "Blog Content AI",
-    `Write a visually engaging blog post about: "${topic}"
+    `Write a blog post about: "${topic}"
 
 Tone: ${tone}
 Target length: ${length}
 
-Use the CREATIVE HTML DESIGN FRAMEWORK to make the content visually stunning.
-Include CSS animations, SVG icons, callout boxes, stat highlights, and a CTA section.
+Follow BLOG BODY RULES exactly. The article renderer rebuilds your body from a
+fixed whitelist, so markup outside it is deleted rather than styled — there is
+no point writing <style> blocks, animation, SVG or inline styling.
+
+The body must carry visuals, not only paragraphs:
+- 3-5 <figure> blocks, each <img> + <figcaption>, using approved
+  images.unsplash.com URLs.
+- A <table> for every comparative or measurable section.
+- Infographic blocks where the section turns on figures or a sequence:
+    <div class="mk-stats">
+      <div class="mk-stat"><strong>15</strong><span>minutes a day to read it</span></div>
+    </div>
+    <div class="mk-bars">
+      <div class="mk-bar"><span>Referral</span><strong>78%</strong></div>
+      <div class="mk-bar"><span>Paid social</span><strong>42%</strong></div>
+    </div>
+    <div class="mk-flow">
+      <div class="mk-step"><strong>Define the questions</strong><span>One sentence.</span></div>
+    </div>
+    <div class="mk-mockup">
+      <div class="mk-mockup-title">Bookings · today</div>
+      <div class="mk-stat"><strong>12</strong><span>confirmed</span></div>
+    </div>
+  Those class names are the only ones that survive; bar lengths are computed
+  from the real figures, so never invent a number to make a bar look right.
 
 Return JSON with these fields:
 - title: compelling blog title (SEO-optimized, under 60 chars)
 - slug: URL-friendly slug
 - excerpt: 1-2 sentence summary
-- content: full blog post in RICH HTML with inline styles, <style> animations,
-  SVG design elements, gradient CTA section, callout boxes, and visual hierarchy.
-  Follow the BLOG CONTENT RULES and CREATIVE HTML DESIGN FRAMEWORK.
+- content: the full article body as semantic HTML following BLOG BODY RULES
+- references: [{ "label", "url", "source", "year" }] in citation order
 - tags: array of 3-5 relevant tags
 - metaDescription: SEO meta description (under 160 chars)
 

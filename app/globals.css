@@ -691,7 +691,7 @@ body {
   .mk-article--wide figcaption {
     margin-top: -1.2em;
     font-size: 0.85rem;
-    color: var(--mk-ink-muted);
+    color: var(--mk-ink-mute);
   }
 
   /* A pull quote, not a footnote. Generated bodies use blockquotes for the one
@@ -741,6 +741,192 @@ body {
 
   .mk-article--wide details[open] summary {
     margin-bottom: 0.7em;
+  }
+
+  /* ── Infographic vocabulary ───────────────────────────────────────────────
+
+     Four sanctioned wrappers, matched exactly by article-body.ts. Everything
+     else in a stored body is unwrapped and every other class stripped, so a
+     body cannot invent a new visual — it can only choose one of these.
+
+     All four are drawn with CSS: no SVG, no chart library, no inline styling
+     beyond the bar width the renderer computes from real figures. That keeps
+     them themeable, printable, readable at 375 px and honest — a bar is a
+     proportion of the group, never a decoration. */
+
+  /* Metric strip: the STAT BLOCK pattern from the design system. Numeral is
+     the display element, label is a caption, separator is a hairline. */
+  .mk-article--wide .mk-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1.75rem 2rem;
+    margin-block: 2.4em;
+    padding-top: 1.6em;
+    border-top: 1px solid var(--mk-line);
+  }
+
+  .mk-article--wide .mk-stat strong {
+    display: block;
+    font-family: var(--font-jakarta);
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+    color: var(--mk-brand);
+  }
+
+  .mk-article--wide .mk-stat span {
+    display: block;
+    margin-top: 0.55em;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--mk-ink-mute);
+  }
+
+  /* Bar chart: label and figure on one line, bar underneath. The track is
+     `::before` and the fill is `::after`, both in the same grid row, so the
+     markup stays two plain elements per bar. */
+  .mk-article--wide .mk-bars {
+    display: grid;
+    gap: 1.15rem;
+    margin-block: 2.4em;
+    padding: 1.6em 1.5em;
+    border: 1px solid var(--mk-line);
+    border-radius: var(--mk-radius-lg);
+    background: var(--mk-paper);
+  }
+
+  .mk-article--wide .mk-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto 0.5rem;
+    gap: 0.5rem 1rem;
+    align-items: baseline;
+  }
+
+  .mk-article--wide .mk-bar span {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--mk-ink-soft);
+  }
+
+  .mk-article--wide .mk-bar strong {
+    font-family: var(--font-jakarta);
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--mk-ink);
+  }
+
+  .mk-article--wide .mk-bar::before,
+  .mk-article--wide .mk-bar::after {
+    grid-area: 2 / 1 / 3 / -1;
+    height: 0.5rem;
+    border-radius: 9999px;
+    content: "";
+  }
+
+  .mk-article--wide .mk-bar::before {
+    background: var(--mk-paper-deep);
+  }
+
+  .mk-article--wide .mk-bar::after {
+    width: var(--mk-width, 0%);
+    background: var(--mk-brand);
+  }
+
+  /* Process flow: a numbered sequence. The marker comes from a CSS counter, so
+     the model never writes "Step 1:" and never doubles up with it. */
+  .mk-article--wide .mk-flow {
+    display: grid;
+    gap: 1.3rem;
+    margin-block: 2.4em;
+    counter-reset: mk-step;
+  }
+
+  .mk-article--wide .mk-step {
+    position: relative;
+    padding-left: 2.9rem;
+    counter-increment: mk-step;
+  }
+
+  .mk-article--wide .mk-step::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    background: var(--mk-brand-deep);
+    color: var(--mk-accent);
+    font-family: var(--font-jakarta);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    content: counter(mk-step, decimal-leading-zero);
+  }
+
+  .mk-article--wide .mk-step strong {
+    display: block;
+    font-family: var(--font-jakarta);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--mk-ink);
+  }
+
+  .mk-article--wide .mk-step span {
+    display: block;
+    margin-top: 0.2em;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--mk-ink-soft);
+  }
+
+  /* Screen mockup: a titled panel of metrics. This is the honest stand-in for
+     a product screenshot — the card frame, a hairline and the reader's own
+     numbers, rather than an image pretending to be a real dashboard. */
+  .mk-article--wide .mk-mockup {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 1.25rem;
+    margin-block: 2.4em;
+    padding: 1.15rem 1.4rem 1.6rem;
+    border: 1px solid var(--mk-line);
+    border-radius: var(--mk-radius-lg);
+    background: var(--mk-white);
+    box-shadow: var(--mk-shadow-card);
+  }
+
+  .mk-article--wide .mk-mockup-title {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: 0.55rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--mk-line);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mk-ink-mute);
+  }
+
+  .mk-article--wide .mk-mockup-title::before {
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--mk-brand);
+    content: "";
+  }
+
+  /* Inside the frame the figures drop one step so four of them still breathe. */
+  .mk-article--wide .mk-mockup .mk-stat strong {
+    font-size: clamp(1.4rem, 2.4vw, 1.8rem);
   }
 }
 

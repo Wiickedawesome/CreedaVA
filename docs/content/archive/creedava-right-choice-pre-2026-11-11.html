@@ -1,0 +1,295 @@
+<style>
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.cv-fade-up { animation: fadeInUp 0.8s ease-out forwards; }
+.cv-fade-up-d1 { animation: fadeInUp 0.8s ease-out 0.2s forwards; opacity: 0; }
+.cv-fade-up-d2 { animation: fadeInUp 0.8s ease-out 0.4s forwards; opacity: 0; }
+.cv-fade-up-d3 { animation: fadeInUp 0.8s ease-out 0.6s forwards; opacity: 0; }
+.cv-slide-left { animation: slideInLeft 0.8s ease-out forwards; }
+.cv-slide-right { animation: slideInRight 0.8s ease-out forwards; }
+.cv-pulse { animation: pulse 3s ease-in-out infinite; }
+.cv-float { animation: float 6s ease-in-out infinite; }
+@property --cv-num { syntax: '<integer>'; initial-value: 0; inherits: false; }
+@keyframes cvCount { to { --cv-num: var(--cv-target); } }
+.cv-counter { animation: cvCount 2s ease-out forwards; counter-reset: num var(--cv-num); font-variant-numeric: tabular-nums; }
+.cv-counter::after { content: counter(num); }
+.cv-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.cv-lift:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,45,114,0.12); }
+@media (max-width: 768px) {
+  .cv-grid-2 { grid-template-columns: 1fr !important; }
+  .cv-grid-3 { grid-template-columns: 1fr !important; }
+  .cv-stat-banner { flex-direction: column !important; gap: 24px !important; }
+  .cv-flip-card { height: 220px !important; }
+  .cv-hero-text { font-size: 32px !important; }
+  .cv-section-pad { padding: 40px 20px !important; }
+  .cv-hide-mobile { display: none !important; }
+}
+@media (max-width: 480px) {
+  .cv-display-num { font-size: 36px !important; }
+  .cv-section-pad { padding: 32px 16px !important; }
+}
+</style>
+
+<div class="cv-fade-up" style="background-color:#FFFFFF;padding:40px 0;text-align:center;">
+  <h1 style="font-size:42px;font-weight:700;color:#002D72;margin-bottom:16px;line-height:1.2;">Elevate Your Business: Why CreedaVA is the Smart Choice</h1>
+  <p style="font-size:18px;color:#4D5358;max-width:800px;margin:0 auto 32px;">In today's fast-paced business world, efficiency and strategic support are paramount. Many entrepreneurs and small business owners find themselves at a crossroads: how to scale operations without overwhelming costs or losing precious time. This often leads to considering external support, but what kind?</p>
+  <p style="font-size:18px;font-weight:600;color:#005148;max-width:800px;margin:0 auto;">At CreedaVA, we believe in a partnership model that transcends traditional outsourcing, offering dedicated virtual assistant services that truly integrate with your vision.</p>
+</div>
+
+<svg viewBox="0 0 1440 120" style="width:100%;height:auto;display:block;margin:-1px 0" preserveAspectRatio="none">
+  <path d="M0,64 C360,120 720,0 1080,64 C1260,96 1380,80 1440,64 L1440,120 L0,120 Z" fill="#F9FBFF"/>
+</svg>
+
+<div class="cv-section-pad" style="background-color:#F9FBFF;padding:64px 24px;">
+  <h2 style="font-size:32px;font-weight:700;color:#002D72;margin-bottom:24px;text-align:center;">Virtual Assistant vs. Business Process Outsourcing (BPO)</h2>
+  <p style="font-size:18px;color:#4D5358;max-width:800px;margin:0 auto 32px;text-align:center;">Understanding the distinction between a Virtual Assistant (VA) and Business Process Outsourcing (BPO) is crucial for making the right choice for your business. While both involve delegating tasks, their fundamental approaches and benefits differ significantly.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:32px;max-width:1100px;margin:40px auto;" class="cv-grid-2">
+    <div class="cv-fade-up-d1" style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;">
+      <h3 style="font-size:24px;font-weight:700;color:#005148;margin-bottom:16px;">What is a Virtual Assistant?</h3>
+      <p style="font-size:16px;color:#4D5358;line-height:1.7;">A Virtual Assistant is a <strong style="color:#002D72;">highly skilled, dedicated remote professional</strong> who provides personalized administrative, technical, or creative assistance to clients. They work closely with you, often becoming an extension of your team, understanding your specific needs and preferences. VAs offer flexibility and direct communication, focusing on building a long-term, supportive relationship.</p>
+      <ul style="list-style:none;padding:0;margin-top:24px;">
+        <li style="display:flex;align-items:center;gap:12px;margin-bottom:12px;font-size:16px;color:#4D5358;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+            <circle cx="12" cy="12" r="12" fill="#005148"/>
+            <path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <strong style="color:#002D72;">Dedicated Support:</strong> One VA, focused solely on your tasks.
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;margin-bottom:12px;font-size:16px;color:#4D5358;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+            <circle cx="12" cy="12" r="12" fill="#005148"/>
+            <path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <strong style="color:#002D72;">Personalized Service:</strong> Tailored to your specific workflows.
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;font-size:16px;color:#4D5358;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+            <circle cx="12" cy="12" r="12" fill="#005148"/>
+            <path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <strong style="color:#002D72;">Flexible & Adaptable:</strong> Can handle a wide range of evolving tasks.
+        </li>
+      </ul>
+    </div>
+
+    <div class="cv-fade-up-d2" style="background:#FFFFFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;">
+      <h3 style="font-size:24px;font-weight:700;color:#DA1E28;margin-bottom:16px;">What is Business Process Outsourcing (BPO)?</h3>
+      <p style="font-size:16px;color:#4D5358;line-height:1.7;">BPO involves <strong style="color:#002D72;">contracting out specific, standardized business processes</strong> to a third-party provider. This typically includes large-volume, repetitive tasks like call center operations, data entry, or payroll processing. BPO models often focus on cost reduction through economies of scale and standardized procedures, with less emphasis on individual client relationships or task customization.</p>
+      <ul style="list-style:none;padding:0;margin-top:24px;">
+        <li style="display:flex;align-items:center;gap:12px;margin-bottom:12px;font-size:16px;color:#4D5358;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+            <circle cx="12" cy="12" r="12" fill="#DA1E28"/>
+            <path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <strong style="color:#002D72;">Team-Based/Pooled:</strong> Tasks handled by a shared team.
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;margin-bottom:12px;font-size:16px;color:#4D5358;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+            <circle cx="12" cy="12" r="12" fill="#DA1E28"/>
+            <path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <strong style="color:#002D72;">Standardized Processes:</strong> Less room for customization.
+        </li>
+        <li style="display:flex;align-items:center;gap:12px;font-size:16px;color:#4D5358;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+            <circle cx="12" cy="12" r="12" fill="#DA1E28"/>
+            <path d="M7 12.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <strong style="color:#002D72;">Volume-Focused:</strong> Emphasis on processing high task quantities.
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cv-fade-up" style="border-left:4px solid #005148;background:#E8F5F3;padding:24px 28px;border-radius:0 12px 12px 0;margin:40px auto;max-width:800px;">
+    <p style="font-size:18px;color:#002D72;font-weight:500;margin:0">If you're seeking a strategic partner to directly support your growth, handle diverse tasks, and integrate seamlessly into your daily operations, a <strong style="color:#005148;">Virtual Assistant is the superior choice.</strong></p>
+  </div>
+</div>
+
+<svg viewBox="0 0 1440 120" style="width:100%;height:auto;display:block;margin:-1px 0" preserveAspectRatio="none">
+  <path d="M0,40 C480,100 960,0 1440,60 L1440,120 L0,120 Z" fill="#FFFFFF"/>
+</svg>
+
+<div class="cv-section-pad" style="background-color:#FFFFFF;padding:64px 24px;">
+  <h2 style="font-size:32px;font-weight:700;color:#002D72;margin-bottom:40px;text-align:center;">Why CreedaVA Stands Apart as Your Ideal Partner</h2>
+  <p style="font-size:18px;color:#4D5358;max-width:800px;margin:0 auto 40px;text-align:center;">Choosing the right virtual assistant service can be transformative. CreedaVA is built on principles designed for your success, blending personalized support with cutting-edge transparency.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;max-width:1200px;margin:0 auto;" class="cv-grid-3">
+    <div class="cv-lift cv-fade-up-d1" style="background:#F9FBFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:#005148;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </div>
+      <h3 style="font-size:20px;font-weight:700;color:#002D72;margin-bottom:8px;">Dedicated Virtual Assistants</h3>
+      <p style="font-size:16px;color:#697077;">You get a dedicated VA, not a shared pool. This means consistent, personalized support from someone who understands your business deeply and grows with your needs.</p>
+    </div>
+
+    <div class="cv-lift cv-fade-up-d2" style="background:#F9FBFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:#005148;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"></path>
+          <path d="M12 18V6"></path>
+          <path d="M10.29 8.29L12 6.59l1.71 1.71"></path>
+          <path d="M13.71 15.71L12 17.41l-1.71-1.71"></path>
+          <path d="M12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8"></path>
+          <path d="M12 4c4.42 0 8 3.58 8 8s-3.58 8-8 8"></path>
+          <path d="M6 12H18"></path>
+          <path d="M15 9l-6 6"></path>
+          <path d="M9 9l6 6"></path>
+        </svg>
+      </div>
+      <h3 style="font-size:20px;font-weight:700;color:#002D72;margin-bottom:8px;">Bilingual Advantage (English + Spanish)</h3>
+      <p style="font-size:16px;color:#697077;">Tap into a broader market. Our VAs are fluent in both English and Spanish, opening doors for businesses to serve a growing and underserved demographic with confidence.</p>
+    </div>
+
+    <div class="cv-lift cv-fade-up-d3" style="background:#F9FBFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:#005148;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+          <line x1="12" y1="3" x2="12" y2="21"></line>
+          <line x1="16" y1="3" x2="16" y2="10"></line>
+          <line x1="8" y1="3" x2="8" y2="10"></line>
+          <line x1="8" y1="14" x2="8" y2="21"></line>
+          <line x1="16" y1="14" x2="16" y2="21"></line>
+        </svg>
+      </div>
+      <h3 style="font-size:20px;font-weight:700;color:#002D72;margin-bottom:8px;">Transparent CRM Dashboard</h3>
+      <p style="font-size:16px;color:#697077;">See your ROI in real-time. Our intuitive client CRM dashboard provides full transparency on tasks, projects, and performance, giving you valuable business intelligence at your fingertips.</p>
+    </div>
+
+    <div class="cv-lift cv-fade-up" style="background:#F9FBFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:#005148;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+      </div>
+      <h3 style="font-size:20px;font-weight:700;color:#002D72;margin-bottom:8px;">Customized Support, Not One-Size-Fits-All</h3>
+      <p style="font-size:16px;color:#697077;">We tailor our services to your unique business needs. Whether it's executive assistance, customer service, or social media management, your VA adapts to your workflow for maximum impact.</p>
+    </div>
+    
+    <div class="cv-lift cv-fade-up-d1" style="background:#F9FBFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:#005148;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
+          <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
+        </svg>
+      </div>
+      <h3 style="font-size:20px;font-weight:700;color:#002D72;margin-bottom:8px;">Operational Efficiency, Realized</h3>
+      <p style="font-size:16px;color:#697077;">Beyond just tasks, CreedaVA focuses on making your operations smoother. By offloading time-consuming work, you reclaim hours to focus on strategic initiatives and growth.</p>
+    </div>
+    
+    <div class="cv-lift cv-fade-up-d2" style="background:#F9FBFF;border:1px solid #DDE1E6;border-radius:16px;padding:32px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:#005148;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+      </div>
+      <h3 style="font-size:20px;font-weight:700;color:#002D72;margin-bottom:8px;">Security & Reliability</h3>
+      <p style="font-size:16px;color:#697077;">We prioritize the security of your data and the reliability of our services. Our VAs are professionals, committed to maintaining confidentiality and delivering consistent, high-quality work.</p>
+    </div>
+  </div>
+</div>
+
+<svg viewBox="0 0 1440 120" style="width:100%;height:auto;display:block;margin:-1px 0" preserveAspectRatio="none">
+  <path d="M0,64 C360,120 720,0 1080,64 C1260,96 1380,80 1440,64 L1440,120 L0,120 Z" fill="#F9FBFF"/>
+</svg>
+
+<div class="cv-fade-up" style="display:flex;flex-wrap:wrap;justify-content:center;gap:48px;padding:48px 24px;background:linear-gradient(135deg,#005148,#002D72);border-radius:24px;max-width:1100px;margin:48px auto;" class="cv-stat-banner">
+  <div style="text-align:center;color:white">
+    <div class="cv-counter" style="--cv-target:500;font-size:48px;font-weight:700;color:white"></div><span style="font-size:48px;font-weight:700;color:white">+</span>
+    <div style="font-size:13px;opacity:0.8;text-transform:uppercase;letter-spacing:1px">Businesses Supported</div>
+  </div>
+  <div style="text-align:center;color:white">
+    <div class="cv-counter" style="--cv-target:95;font-size:48px;font-weight:700;color:white"></div><span style="font-size:48px;font-weight:700;color:white">%</span>
+    <div style="font-size:13px;opacity:0.8;text-transform:uppercase;letter-spacing:1px">Client Satisfaction</div>
+  </div>
+  <div style="text-align:center;color:white">
+    <div style="font-size:48px;font-weight:700;color:white">20+</div>
+    <div style="font-size:13px;opacity:0.8;text-transform:uppercase;letter-spacing:1px">Hours Saved Weekly</div>
+  </div>
+</div>
+
+<div class="cv-section-pad" style="background-color:#FFFFFF;padding:64px 24px;">
+  <h2 style="font-size:32px;font-weight:700;color:#002D72;margin-bottom:40px;text-align:center;">Hear From Our Happy Clients</h2>
+  <div style="background:#F9FBFF;border-radius:20px;padding:40px;position:relative;max-width:800px;margin:0 auto 40px;" class="cv-fade-up">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="#005148" style="opacity:0.15;position:absolute;top:20px;left:20px;">
+      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H0z"/>
+    </svg>
+    <p style="font-size:18px;line-height:1.7;color:#002D72;font-style:italic;margin-top:20px;margin-bottom:16px;">"CreedaVA transformed how we manage our administrative tasks. Our dedicated assistant quickly understood our complex needs and consistently delivers high-quality work, allowing our team to focus purely on strategic growth. The bilingual support has been invaluable!"</p>
+    <p style="margin-top:16px;font-weight:600;color:#005148;">— Sarah L., Tech Startup Founder</p>
+  </div>
+</div>
+
+<svg viewBox="0 0 1440 120" style="width:100%;height:auto;display:block;margin:-1px 0" preserveAspectRatio="none">
+  <path d="M0,40 C480,100 960,0 1440,60 L1440,120 L0,120 Z" fill="#F9FBFF"/>
+</svg>
+
+<div class="cv-section-pad" style="background-color:#F9FBFF;padding:64px 24px;">
+  <h2 style="font-size:32px;font-weight:700;color:#002D72;margin-bottom:32px;text-align:center;">Frequently Asked Questions</h2>
+  <div style="max-width:800px;margin:0 auto;">
+    <details style="border:1px solid #DDE1E6;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <summary style="padding:20px 24px;font-weight:600;font-size:18px;color:#002D72;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;background:#F9FBFF">
+        How does a CreedaVA Virtual Assistant differ from a traditional employee?
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005148" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div style="padding:0 24px 20px;color:#697077;line-height:1.7;">A CreedaVA Virtual Assistant is an independent contractor, meaning you save on overhead costs like benefits, office space, and equipment. You gain specialized skills on demand, paying only for the productive hours you need, with the flexibility to scale up or down.</div>
+    </details>
+    <details style="border:1px solid #DDE1E6;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <summary style="padding:20px 24px;font-weight:600;font-size:18px;color:#002D72;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;background:#F9FBFF">
+        What kind of tasks can a CreedaVA handle?
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005148" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div style="padding:0 24px 20px;color:#697077;line-height:1.7;">Our VAs are proficient in a wide array of tasks, including executive assistance, administrative support, customer service, social media management, bookkeeping, project management, data entry, research, and more. Check out our <a href="/services" style="color:#005148;text-decoration:underline;">services page</a> for a detailed list.</div>
+    </details>
+    <details style="border:1px solid #DDE1E6;border-radius:12px;margin-bottom:12px;overflow:hidden;">
+      <summary style="padding:20px 24px;font-weight:600;font-size:18px;color:#002D72;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;background:#F9FBFF">
+        How do I get started with CreedaVA?
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#005148" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div style="padding:0 24px 20px;color:#697077;line-height:1.7;">Getting started is simple! Just visit our <a href="/join" style="color:#005148;text-decoration:underline;">join page</a> to schedule a free consultation. We'll discuss your needs, match you with the perfect VA, and have you streamlining your operations in no time.</div>
+    </details>
+  </div>
+</div>
+
+<div class="cv-fade-up" style="text-align:center;padding:64px 32px;background:linear-gradient(135deg,#005148,#007A6D);border-radius:24px;margin:48px auto;max-width:1100px;">
+  <h3 style="font-size:28px;font-weight:700;color:white;margin-bottom:12px;">Ready to Reclaim Your Time and Drive Growth?</h3>
+  <p style="font-size:18px;color:rgba(255,255,255,0.85);margin-bottom:24px;">Experience the CreedaVA difference – dedicated, bilingual support for your success.</p>
+  <a href="/join" style="display:inline-flex;align-items:center;gap:8px;padding:16px 40px;background:white;color:#005148;font-weight:700;font-size:18px;border-radius:8px;text-decoration:none;">
+    Schedule Your Free Consultation
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+</div>

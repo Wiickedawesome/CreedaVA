@@ -182,8 +182,10 @@ THE FIVE RULES
    stylesheet. Inline styles are acceptable for LAYOUT only: display, grid,
    flex, gap, width, height, aspect-ratio, margin, padding, text-align,
    position, overflow.
-4. Do not invent class names. The container does the styling; there is no
-   utility vocabulary to opt into.
+4. Do not invent class names. The container does the styling; the only class
+   values that survive are the eight listed in BLOG BODY RULES (\`mk-stats\`,
+   \`mk-stat\`, \`mk-bars\`, \`mk-bar\`, \`mk-flow\`, \`mk-step\`, \`mk-mockup\`,
+   \`mk-mockup-title\`). Any other class is stripped with its wrapper.
 5. No animation of any kind.
 
 RICH CONTENT FROM ELEMENTS, NOT STYLES
@@ -191,7 +193,11 @@ RICH CONTENT FROM ELEMENTS, NOT STYLES
 - Benefit list        → <ul> with parallel phrasing, no icons
 - Comparison          → <table> with <thead>/<tbody>; hairlines are automatic
 - Callout / takeaway  → <blockquote> (green rule, larger text)
-- Ordered sequence    → <ol>
+- Ordered sequence    → <ol>, or <div class="mk-flow"> for a labelled process
+- Figures compared    → <div class="mk-bars"> — real values, drawn by CSS
+- Dashboard / screen  → <div class="mk-mockup"> — a titled panel of figures
+- Two to four numbers → <div class="mk-stats">
+- Chart or diagram    → an approved image inside <figure>
 - FAQ                 → <details><summary>Question</summary><p>Answer</p></details>
 - Topic break         → <hr>
 - Emphasis            → <strong>, never a coloured span
@@ -279,6 +285,80 @@ WHAT MAKES IT WORTH READING
 - A worked example with real numbers that come from the reader's own inputs or
   from a cited source, never invented ones.
 
+VISUALS — PROSE ALONE IS AN UNFINISHED ARTICLE
+An article that is 1,500 words of paragraphs is a page nobody scrolls. Every
+post is built from paragraphs, images, figures, tables and infographic blocks —
+paragraphs are the floor, not the default. Aim for one visual in every section.
+
+1. IMAGE — 3 to 5 per article, one every two or three sections.
+   <figure>
+     <img src="APPROVED_URL" alt="what the picture shows">
+     <figcaption>Why this picture is here, in one sentence.</figcaption>
+   </figure>
+   - Only URLs from the approved thumbnail list you were given. Never invent a
+     photo id and never use another host.
+   - The alt text describes the picture; the caption earns it — "The booking
+     funnel, read top to bottom" is a caption, "Dashboard image" is not.
+   - Never place two figures back to back, and never open the body with one.
+
+2. METRIC STRIP — when a section turns on two to four figures, show them.
+   <div class="mk-stats">
+     <div class="mk-stat"><strong>15</strong><span>minutes a day to read it</span></div>
+     <div class="mk-stat"><strong>7</strong><span>days to a usable first version</span></div>
+   </div>
+
+3. BAR CHART — when three or more figures are compared against each other.
+   <div class="mk-bars">
+     <div class="mk-bar"><span>Referral</span><strong>78%</strong></div>
+     <div class="mk-bar"><span>Paid social</span><strong>42%</strong></div>
+   </div>
+   - Write the REAL figure in <strong>; the renderer computes each bar's length
+     from the largest value in the group. Never write a percentage that is
+     only there to make a bar look right.
+   - <span> is the row label, <strong> the value. Nothing else is read.
+
+4. PROCESS FLOW — when the section is a sequence the reader will follow.
+   <div class="mk-flow">
+     <div class="mk-step"><strong>Define the three questions</strong><span>One sentence on what happens.</span></div>
+     <div class="mk-step"><strong>Connect the sources</strong><span>…</span></div>
+   </div>
+   - The step number is drawn by the stylesheet. Never write "Step 1" yourself.
+
+5. SCREEN MOCKUP — when the section describes a dashboard, a screen or a panel.
+   <div class="mk-mockup">
+     <div class="mk-mockup-title">Bookings · today</div>
+     <div class="mk-stat"><strong>12</strong><span>confirmed</span></div>
+     <div class="mk-stat"><strong>3</strong><span>awaiting reply</span></div>
+   </div>
+   - This is the honest stand-in for a product screenshot: a real frame around
+     the reader's own numbers. Never describe it as a screenshot of our product
+     and never fill it with figures we did not measure.
+
+6. TABLE — anything comparative, and most things measurable.
+   A metric section reads better as a table than as ten paragraphs:
+   | Metric | What it tells you | Act when… |
+   Three columns is the ceiling; a table wider than that wraps badly on a phone.
+
+7. PULL QUOTE — one per article, via <blockquote>, for the sentence you want
+   the reader to remember if they read nothing else.
+
+THE ONLY CLASS NAMES THAT SURVIVE
+\`mk-stats\`, \`mk-stat\`, \`mk-bars\`, \`mk-bar\`, \`mk-flow\`, \`mk-step\`,
+\`mk-mockup\`, \`mk-mockup-title\`. They are matched exactly. Any other class, any
+other wrapper, every inline style and every SVG is deleted by the renderer — so
+writing them wastes the output. There is no chart library and no way to draw a
+custom shape: if the point cannot be made with a figure, a bar, a flow, a
+mockup, a table or an image, make it in prose.
+
+WHAT MAKES A VISUAL HONEST
+- A number in a strip, bar, mockup or table is a claim like any other. It is
+  either sourced, or explicitly framed as a target the reader sets for
+  themselves ("a planning target, not a benchmark"), or it does not go in.
+- Never invent a chart, a screenshot, a client logo or a testimonial to make a
+  section look richer. There are no verified client quotes: do not write one.
+- Never restate a paragraph as a table, or a table as three bullet points. The
+  visual replaces prose; it does not duplicate it.
+
 SOURCES — THIS IS NOT OPTIONAL
 - Every factual claim that is not common knowledge carries a numbered marker in
   the text, written as a link: <a href="#source-1">[1]</a>.
@@ -303,7 +383,10 @@ SOURCES — THIS IS NOT OPTIONAL
 WHAT IS BANNED
 - A <style> tag or any inline colour/typography style (see HTML CONTENT RULES).
 - <h1> in the body — it produces a second page title.
-- Invented statistics, client counts, review scores, awards, "studies show".
+- Any wrapper or class name outside \`mk-stats\` / \`mk-stat\`.
+- Invented statistics, client counts, review scores, awards, "studies show",
+  testimonial quotes attributed to a person, and numbers placed in a metric
+  strip or table without a source or a stated "this is a target".
 - Invented or unverifiable URLs, and citations that do not match the claim.
 - Invented guarantees, refund windows or trial periods.
 - Prices and "starting at $X". Packages are quoted per client.
