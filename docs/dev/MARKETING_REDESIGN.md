@@ -2872,6 +2872,136 @@ generated posts start losing a line, that threshold is the first thing to check.
 weight rather than a live source of bad markup. It should be deleted or ported to
 `BLOG_BODY_RULES_2026` — a decision for the owner.
 
+### 2026-11-11 (final) — the logo is an inline element; blog photos de-duplicated
+
+**The `public/` problem is real and unresolved — so the dependency was removed.**
+Measured on `a4a2650` *after* a successful rollout: `/creedava-logo.svg`,
+`/logo.webp`, `/world-atlas-110m.json` and `/firebase-messaging-sw.js` all return
+**404** on both `creedava.com` and the backend URL, while `app/` routes
+(`/robots.txt`, `/favicon.ico`, `/icon.svg`) and `/_next/static/**` serve
+normally. The 404 body is byte-identical (15,468 B) to Next's own not-found page
+for a random path, and `next start` from the repo root serves every one of them
+correctly — so the files are absent from the deployment bundle, not cached badly.
+
+Two things were tried against that:
+
+| Attempt | Result |
+|---|---|
+| `outputFiles.serverApp.include: ["."]` in `apphosting.yaml` | Rolled out on `a4a2650`; all four paths still 404. Reverted rather than left as dead config. |
+| Static `import` of the SVG (emits to `_next/static/media`) | Would work, but still depends on the bundle step behaving. |
+
+**Shipped instead — `components/brand/brand-logo.tsx`.** The lockup as an inline
+`<svg>` element, generated from `lib/brand/creedava-logo.svg` (3 mark paths, 8
+wordmark paths, original gradient geometry preserved). It cannot 404 because it
+*is* the markup. `tone="mono"` paints every shape in `currentColor`, which is how
+the footer renders the white lockup with no CSS filter and no second asset.
+
+Consumers switched: footer, `/login`, `/satisfaction/[token]`, the survey
+component. JSON-LD cannot carry an element, so it points at
+`https://creedava.com/icon.svg` — a file-based metadata route under `app/`,
+measured 200 `image/svg+xml`. The static-import module was deleted; the SVG
+source stays as the generator input.
+
+⚠️ **Still broken, not fixed here:** the admin world map (`/admin/analytics`,
+`/admin/leads`) fetches `/world-atlas-110m.json`, which still 404s, so it shows
+its "Failed to load map" state. Fixing it means bundling the 108 kB topology as a
+JSON import into the admin chunk — a separate change. `firebase-messaging-sw.js`
+(web push registration) is in the same position.
+
+**Blog photos de-duplicated.** Owner: *"we have 3 images that have been used
+before… Remove the other image of laptops document and hands since we already
+have another image."*
+
+| Post | Change |
+|---|---|
+| Boost Growth / BI | The dashboard shot was the page's **own hero** (readers saw it twice before reaching it); the planner-with-charts shot was removed. The bookings section now opens with a `mk-flow` of the funnel (enquiry → contacted → qualified → booked) plus a booked-consultation photo. |
+| VA vs BPO | The round-table photo was the hero-class shot and rendered ~700 px tall; replaced with a pull quote. A remote-desk photo was added to the first-week section. |
+
+Measured live, body region only, with the hero excluded:
+
+| | figures | photos | hero ∉ body | duplicate photos | mockup / bars / flow / stats |
+|---|---|---|---|---|---|
+| Boost Growth | 2 | `1515378960530`, `1556745753` | ✅ | 0 | all four |
+| VA vs BPO | 2 | `1522071820081`, `1593642632559` | ✅ | 0 | all four |
+
+**Oversized images were a CSS bug, not a content one.** `.mk-article--wide img`
+had no aspect ratio, so a 3:2 photo filled the 933 px column at ~700 px tall.
+Body images are now `aspect-ratio: 16/9; object-fit: cover`, and a `figure`'s
+image no longer adds its own `margin-block` on top of the figure's (that doubled
+the gap around every captioned image). `figcaption` lost the `-1.2em` hack that
+existed only to cancel the old image margin.
+
+Verified on production after `deed3ae`: inline SVG present on `/` and `/login`
+(1 each), `fill="currentColor"` on the footer mark, **0** references to
+`creedava-logo.svg` left in the served HTML, JSON-LD logo = `/icon.svg`.
+`tsc` clean · eslint 0 errors · 470/470 tests · `audit:design` 0/0 · build OK.
+
+
+Owner: *"We need mock up/infographics. that is a must. lets fix all that isnt
+before we commit push deploy. We need to standardize our design everywhere."*
+
+**The renderer now keeps four sanctioned wrappers.** `article-body.ts` had allowed
+exactly one (`mk-stats`), which meant a post could not draw a chart, a process or
+a panel. All four are CSS-only — no chart library, no SVG, no inline styling the
+model writes.
+
+| Wrapper | Shape | Used for |
+|---|---|---|
+| `mk-stats` → `mk-stat` | `<strong>` figure + `<span>` label | two to four numbers |
+| `mk-bars` → `mk-bar` | `<span>` label + `<strong>` value | comparing three or more figures |
+| `mk-flow` → `mk-step` | `<strong>` title + `<span>` detail | a sequence the reader follows |
+| `mk-mockup` (+ `mk-mockup-title`) | titled panel of `mk-stat` | a dashboard or screen |
+
+The two rules that keep it honest:
+
+- **Bar lengths are computed, never written.** The renderer reads the number out
+  of `<strong>` (`$1,200` → 1200), finds the largest value in the group and emits
+  `style="--mk-width:NN%"`. Every `style` attribute in the output is produced by
+  `article-body.ts` from a validated figure; nothing is copied from model markup.
+  A bar with no label, no figure, or an unreadable figure is dropped.
+- **The class vocabulary is closed.** Matched by exact string, eight values only.
+  An unknown class is still stripped with its wrapper, so this cannot grow into a
+  utility system by accident.
+
+`globals.css` implements them as full-width blocks: bars in a bordered panel with
+a `--mk-paper-deep` track and `--mk-brand` fill; flow steps with a CSS-counter
+marker (`01`, `02`) so the model never writes "Step 1"; the mockup as a real card
+(`--mk-white`, hairline, `--mk-shadow-card`, `--mk-accent` dot in the title).
+
+**Enforcement, not just instruction.** New `lib/utils/article-visuals.ts`:
+`measureArticleVisuals()` and `visualGaps()`. The admin Blog page calls it after
+save and publish and toasts what is missing (`under 800 words`, `fewer than 2
+images`, `no table, bar chart or mockup`, `no metric strip or bar chart`). It
+never blocks a save — a short post is sometimes right — but a prose-only body can
+no longer be published silently.
+
+**Both published posts replaced.** The bodies were read from Firestore, rewritten
+and written back (`content` + `updatedAt` only, field mask; status and title
+untouched). The originals are archived at
+`docs/content/archive/*-pre-2026-11-11.html`.
+
+| | Boost Growth / BI | VA vs BPO |
+|---|---|---|
+| words | 1,749 | 1,196 |
+| `<h2>` | 8 | 8 |
+| images | 3 | 2 |
+| tables | 4 | 3 |
+| metric strips | 1 | 1 |
+| bar charts | 1 | 1 |
+| process flows | 1 | 1 |
+| mockups | 1 | 1 |
+| gaps reported | none | none |
+| `style` attrs | 4 (bar widths only) | 3 (bar widths only) |
+| `style` tags / SVG | 0 / 0 | 0 / 0 |
+
+The second post had a "Hear From Our Happy Clients" section with invented
+testimonials; that is gone. Neither body contains a number presented as a
+measured CreedaVA result — the two charts are explicitly labelled illustrative,
+and "packages are quoted per client" is stated rather than a rate invented.
+
+Verified: `tsc` clean (app + `functions`) · eslint 0 errors · **470/470** tests
+(40 files) · `audit:design` 0/0.
+
 ### 2026-11-11 (later) — infographic vocabulary; both published posts rewritten
 
 Owner: *"We need mock up/infographics. that is a must. lets fix all that isnt
