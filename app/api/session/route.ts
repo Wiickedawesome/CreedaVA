@@ -104,3 +104,32 @@ export async function DELETE() {
 
   return NextResponse.json({ status: "ok" });
 }
+
+/**
+ * Rebuild the CLIENT Firebase session from the httpOnly session cookie.
+ *
+ * The cookie is the authority for access; the client SDK session is a separate
+ * thing that normally survives a reload via IndexedDB. When browser storage is
+ * restricted the SDK comes back with no user, and every client read then fails
+ * even though the visitor is legitimately signed in. Minting a custom token for
+ * the cookie's uid lets the client log back in without another Google prompt.
+ *
+ * Returns 401 when there is no valid session — that is the signal "genuinely
+ * signed out", as opposed to "could not restore".
+ */
+export async function GET() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get("__session")?.value;
+
+  if (!sessionCookie) {
+    return NextResponse.json({ error: "No session" }, { status: 401 });
+  }
+
+  try {
+    const decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
+    const customToken = await adminAuth.createCustomToken(decoded.uid);
+    return NextResponse.json({ customToken });
+  } catch {
+    return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
+  }
+}

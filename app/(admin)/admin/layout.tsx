@@ -8,27 +8,27 @@ import { AdminSidebar, AdminTopbar, ToastProvider, PageSkeleton } from "@/compon
 const MemoSidebar = memo(AdminSidebar);
 
 function AdminLayout_Inner({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, status } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
+  // Only an explicitly anonymous visitor is sent to the login page. Redirecting
+  // on `!user` was the cause of the login loop: when the client SDK cannot
+  // rebuild its own session, `user` is null even though the httpOnly cookie is
+  // valid and the proxy already let the request through. `status` resolves the
+  // two cases apart instead of guessing from `user`.
   useEffect(() => {
-    if (!loading && !user) {
-      const from = encodeURIComponent(pathname);
-      router.replace(`/login?from=${from}`);
+    if (status === "anonymous") {
+      router.replace(`/login?from=${encodeURIComponent(pathname)}`);
     }
-  }, [user, loading, router, pathname]);
+  }, [status, router, pathname]);
 
-  if (loading) {
+  if (status !== "authenticated" || !user) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-20">
         <PageSkeleton />
       </div>
     );
-  }
-
-  if (!user) {
-    return null; // Will redirect
   }
 
   return (

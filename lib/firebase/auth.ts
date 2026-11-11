@@ -1,5 +1,6 @@
 import {
   signInWithPopup,
+  signInWithCustomToken as firebaseSignInWithCustomToken,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged as firebaseOnAuthStateChanged,
@@ -25,6 +26,18 @@ const googleProvider = new GoogleAuthProvider();
  */
 export async function signInWithGoogle(): Promise<User> {
   const result = await signInWithPopup(auth, googleProvider);
+  return result.user;
+}
+
+/**
+ * Restore a client session from a token minted by /api/session.
+ *
+ * Used when the SDK comes back with no user after a reload — the httpOnly
+ * session cookie still proves who the visitor is, so we do not need to ask
+ * Google again.
+ */
+export async function signInWithCustomToken(token: string): Promise<User> {
+  const result = await firebaseSignInWithCustomToken(auth, token);
   return result.user;
 }
 
