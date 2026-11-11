@@ -10,10 +10,8 @@ import {
 } from "react";
 import {
   onAuthStateChanged,
-  readRedirectResult,
   signInWithCustomToken,
   signInWithGoogle,
-  signInWithGoogleRedirect,
   signOut,
   type User,
 } from "./auth";
@@ -35,15 +33,6 @@ interface AuthContextType {
   loading: boolean;
   status: AuthStatus;
   signIn: () => Promise<User>;
-  /**
-   * Sign in by navigating to the auth handler instead of opening a popup.
-   *
-   * The popup cannot complete in every browser — embedded browsers and strict
-   * third-party-storage settings break the Google GIS iframe — so this is also
-   * offered to the visitor directly rather than only being reached
-   * automatically.
-   */
-  signInWithRedirect: () => Promise<void>;
   logOut: () => Promise<void>;
 }
 
@@ -71,28 +60,6 @@ async function syncSessionCookie(user: User) {
   }
 }
 
-/**
- * Popup failures that mean "this browser cannot run the popup flow" rather
- * than "this sign-in was refused".
- *
- * The popup renders the Google GIS iframe, which needs third-party storage on
- * the auth domain. Embedded browsers and strict storage settings deny it and
- * the SDK surfaces `auth/internal-error`. A cancelled popup is deliberately
- * NOT in this list — that is a decision, not a limitation, and redirecting
- * after it would sign the visitor in against their intent.
- */
-const POPUP_UNAVAILABLE_CODES = new Set([
-  "auth/internal-error",
-  "auth/popup-blocked",
-  "auth/operation-not-supported-in-this-environment",
-  "auth/web-storage-unsupported",
-]);
-
-function isPopupUnavailable(error: unknown): boolean {
-  const code = (error as { code?: string } | null)?.code;
-  return typeof code === "string" && POPUP_UNAVAILABLE_CODES.has(code);
-}
-
 /** Ask the server who we are, per the session cookie. Returns null if nobody. */
 async function fetchRestoreToken(): Promise<string | null> {
   try {
@@ -109,10 +76,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<AuthStatus>("checking");
   const restoredRef = useRef(false);
-  // Mirror of `user` for the async restore path, which must not decide a
-  // visitor is anonymous after a concurrent callback has already signed them
-  // in. Reading state there would see a stale value.
-  const userRef = useRef<User | null>(null);
   // Track the previous UID so we only sync the session cookie when the user
   // identity actually changes (sign-in / sign-out), not on every silent
   // hourly token refresh that also triggers onAuthStateChanged.
@@ -128,27 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * the client back in. A 401 here is the genuine "signed out" answer.
    */
   async function restoreSession() {
-    // A page load that came back from a redirect sign-in resolves here. The
-    // SDK's own listener fires with the user too, but the cookie has to be
-    // written before anything asks the server who we are.
-    try {
-      const redirectResult = await readRedirectResult();
-      if (redirectResult?.user) {
-        prevUidRef.current = redirectResult.user.uid;
-        userRef.current = redirectResult.user;
-        setUser(redirectResult.user);
-        setStatus("authenticated");
-        void syncSessionCookie(redirectResult.user);
-        return;
-      }
-    } catch (error) {
-      console.error("Failed to read redirect sign-in result:", error);
-    }
-
     const customToken = await fetchRestoreToken();
     if (!customToken) {
-      // A callback may have signed the visitor in while this was in flight.
-      if (!userRef.current) setStatus("anonymous");
+      setStatus("anonymous");
       return;
     }
 
@@ -168,7 +113,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const unsubscribe = onAuthStateChanged((firebaseUser) => {
       if (!active) return;
-      userRef.current = firebaseUser;
       setUser(firebaseUser);
 
       if (firebaseUser) {
@@ -199,13 +143,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       return await signInWithGoogle();
     } catch (error) {
-      // Embedded browsers cannot run the popup flow. Navigate instead and
-      // never settle: the page is unloading, so reporting the popup failure
-      // would only flash an error on a page nobody is going to see.
-      if (isPopupUnavailable(error)) {
-        await signInWithGoogleRedirect();
-        return new Promise<User>(() => {});
-      }
       console.error("Sign-in failed:", error);
       throw error;
     }
@@ -225,14 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        loading: status === "checking",
-        status,
-        signIn,
-        signInWithRedirect: signInWithGoogleRedirect,
-        logOut,
-      }}
+      value={{ user, loading: status === "checking", status, signIn, logOut }}
     >
       <FirebaseInit />
       {children}
