@@ -1,10 +1,13 @@
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signInWithCustomToken as firebaseSignInWithCustomToken,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged as firebaseOnAuthStateChanged,
   type User,
+  type UserCredential,
 } from "firebase/auth";
 import { auth } from "./config";
 
@@ -27,6 +30,29 @@ const googleProvider = new GoogleAuthProvider();
 export async function signInWithGoogle(): Promise<User> {
   const result = await signInWithPopup(auth, googleProvider);
   return result.user;
+}
+
+/**
+ * Sign in by navigating to the auth handler and back.
+ *
+ * The popup flow runs the Google GIS iframe, which needs third-party storage
+ * on the auth domain. Embedded browsers and strict storage settings refuse
+ * that and the popup fails with `auth/internal-error`, so the full-page
+ * redirect is the fallback: it is a top-level navigation, so no third-party
+ * storage is involved.
+ */
+export async function signInWithGoogleRedirect(): Promise<void> {
+  await signInWithRedirect(auth, googleProvider);
+}
+
+/**
+ * Complete a sign-in that came back from `signInWithGoogleRedirect`.
+ *
+ * Returns null when this page load is not a redirect return, which is the
+ * usual case. Must be awaited before deciding a visitor is signed out.
+ */
+export function readRedirectResult(): Promise<UserCredential | null> {
+  return getRedirectResult(auth);
 }
 
 /**

@@ -4,6 +4,8 @@ import { render, screen, act } from "@testing-library/react";
 // ── Mock Firebase auth module ────────────────────────
 let authCallback: ((user: unknown) => void) | null = null;
 const mockSignInWithGoogle = vi.fn();
+const mockSignInWithGoogleRedirect = vi.fn();
+const mockReadRedirectResult = vi.fn();
 const mockSignInWithCustomToken = vi.fn();
 const mockSignOut = vi.fn();
 
@@ -25,9 +27,10 @@ vi.mock("@/lib/firebase/auth", () => ({
     };
   },
   signInWithGoogle: () => mockSignInWithGoogle(),
+  signInWithGoogleRedirect: () => mockSignInWithGoogleRedirect(),
+  readRedirectResult: () => mockReadRedirectResult(),
   signInWithCustomToken: (token: string) => mockSignInWithCustomToken(token),
   signOut: () => mockSignOut(),
-  checkRedirectResult: () => Promise.resolve(null),
 }));
 
 // Mock fetch for session cookie sync
@@ -42,8 +45,10 @@ function TestConsumer() {
     <div>
       <span data-testid="loading">{String(loading)}</span>
       <span data-testid="user">{user ? (user as { email: string }).email : "none"}</span>
-      <button onClick={signIn}>Sign In</button>
-      <button onClick={logOut}>Log Out</button>
+      {/* Swallow rejections the way the login page does: this fixture is about
+          which flow the provider picks, not about how errors are displayed. */}
+      <button onClick={() => void signIn().catch(() => {})}>Sign In</button>
+      <button onClick={() => void logOut().catch(() => {})}>Log Out</button>
     </div>
   );
 }
@@ -52,6 +57,7 @@ describe("AuthProvider", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authCallback = null;
+    mockReadRedirectResult.mockResolvedValue(null);
   });
 
   it("starts in loading state", () => {
@@ -187,6 +193,83 @@ describe("AuthProvider", () => {
     expect(mockSignInWithCustomToken).not.toHaveBeenCalled();
     // loading must resolve, or a guard would wait forever on the skeleton
     expect(screen.getByTestId("loading").textContent).toBe("false");
+  });
+
+  it("finishes a redirect sign-in and writes the cookie", async () => {
+    // Returning from signInWithGoogleRedirect: the SDK resolves the pending
+    // credential, and the cookie must be written before anything asks the
+    // server who we are.
+    const redirectedUser = {
+      uid: "u2",
+      email: "user@creedava.com",
+      getIdToken: () => Promise.resolve("redirect-token"),
+    };
+    mockReadRedirectResult.mockResolvedValueOnce({ user: redirectedUser });
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+
+    await act(async () => {
+      authCallback?.(null);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId("user").textContent).toBe("user@creedava.com");
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/session",
+      expect.objectContaining({ method: "POST" }),
+    );
+    // The cookie is authoritative now, so no custom-token round trip is needed.
+    expect(mockSignInWithCustomToken).not.toHaveBeenCalled();
+  });
+
+  it("falls back to a redirect when the popup cannot run", async () => {
+    // Measured in an embedded Chromium: signInWithPopup rejects with
+    // auth/internal-error from the Google GIS iframe because third-party
+    // storage on the auth domain is denied. Firefox completes the same popup.
+    mockSignInWithGoogle.mockRejectedValueOnce({ code: "auth/internal-error" });
+    mockSignInWithGoogleRedirect.mockResolvedValue(undefined);
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+
+    await act(async () => {
+      authCallback?.(null);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      screen.getByText("Sign In").click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockSignInWithGoogleRedirect).toHaveBeenCalled();
+  });
+
+  it("does not redirect when the visitor closed the popup themselves", async () => {
+    mockSignInWithGoogle.mockRejectedValueOnce({ code: "auth/popup-closed-by-user" });
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+
+    await act(async () => {
+      screen.getByText("Sign In").click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockSignInWithGoogleRedirect).not.toHaveBeenCalled();
   });
 });
 
