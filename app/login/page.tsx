@@ -24,7 +24,7 @@ function getSafeRedirectPath(value: string | null) {
 }
 
 function LoginComponent() {
-  const { user, signIn } = useAuth();
+  const { user, signIn, signInWithRedirect } = useAuth();
   const searchParams = useSearchParams();
   const redirectTo = getSafeRedirectPath(searchParams.get("from"));
   const [error, setError] = useState<string | null>(null);
@@ -107,6 +107,26 @@ function LoginComponent() {
     }
   }
 
+  /**
+   * Sign in without a popup, by navigating to the auth handler and back.
+   *
+   * Offered directly because the popup needs third-party storage on the auth
+   * domain, which some browsers refuse — the SDK then reports the popup as
+   * closed and the visitor never learns why. This path has no such dependency.
+   */
+  async function handleRedirectSignIn() {
+    if (signingIn || redirecting) return;
+    setError(null);
+    setRedirecting(true);
+    try {
+      await signInWithRedirect();
+    } catch (err) {
+      console.error("[Auth] redirect sign-in failed", err);
+      setError("Could not start sign-in. Please try again.");
+      setRedirecting(false);
+    }
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-mk-paper text-center px-4">
       <div className="max-w-md w-full bg-mk-white p-8 rounded-(--mk-radius-lg) shadow-(--mk-shadow-card) border border-mk-line">
@@ -133,6 +153,15 @@ function LoginComponent() {
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
             </svg>
             Sign in with Google
+          </button>
+        )}
+
+        {!signingIn && !redirecting && (
+          <button
+            onClick={handleRedirectSignIn}
+            className="mt-3 w-full px-6 py-2.5 text-xs font-semibold text-mk-brand hover:text-mk-brand-bright rounded-full transition-colors"
+          >
+            Popup not opening? Sign in without it
           </button>
         )}
 

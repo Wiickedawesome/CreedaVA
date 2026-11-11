@@ -35,6 +35,15 @@ interface AuthContextType {
   loading: boolean;
   status: AuthStatus;
   signIn: () => Promise<User>;
+  /**
+   * Sign in by navigating to the auth handler instead of opening a popup.
+   *
+   * The popup cannot complete in every browser — embedded browsers and strict
+   * third-party-storage settings break the Google GIS iframe — so this is also
+   * offered to the visitor directly rather than only being reached
+   * automatically.
+   */
+  signInWithRedirect: () => Promise<void>;
   logOut: () => Promise<void>;
 }
 
@@ -216,7 +225,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading: status === "checking", status, signIn, logOut }}
+      value={{
+        user,
+        loading: status === "checking",
+        status,
+        signIn,
+        signInWithRedirect: signInWithGoogleRedirect,
+        logOut,
+      }}
     >
       <FirebaseInit />
       {children}
