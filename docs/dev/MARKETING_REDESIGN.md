@@ -3069,6 +3069,57 @@ and "packages are quoted per client" is stated rather than a rate invented.
 Verified: `tsc` clean (app + `functions`) · eslint 0 errors · **470/470** tests
 (40 files) · `audit:design` 0/0.
 
+### 2026-11-11 — varied composition per post, and the admin map
+
+Owner: *"we need to make sure all new posts follow this, different variance of
+this mixture of picture and elements… and also fix the admin maps."*
+
+**Brief B — the admin world map was dead in production, same cause as the logo.**
+`components/admin/world-map.tsx` fetched `/world-atlas-110m.json`, and `public/`
+is not shipped in this deployment, so the panel sat on "Failed to load map" while
+working perfectly under `next start`. The 108 kB topology moved to
+`lib/data/world-atlas-110m.json` and is now imported, which compiles it into the
+same client chunk as the component. Fetch, loading state and error state are gone
+— a build-time import cannot fail at runtime, so there is nothing left to render.
+
+Measured in the build output: `World map of visitor countries` and `"countries"`
+live in one chunk, `/_next/static/chunks/3k1rsdxdks_bf.js`, under the
+`/_next/static/**` prefix that does serve 200 in production. The marketing map
+(`components/ui/world-map.tsx`) was never affected — it draws from bundled
+`LAND_PATHS`, no fetch.
+
+**Brief A — variance is now a rule, not a hope.** The vocabulary was mandatory,
+but nothing stopped every post from being assembled the same way, which is its
+own kind of uniform. `BLOG_BODY_RULES_2026` gained **VARY THE COMPOSITION**:
+
+- at least three different kinds of visual — one kind repeated is a template
+- never two of the same kind adjacent
+- change which visual opens a section
+- rotate the emphasis by subject: a numbers piece leans on bars and a table, a
+  how-to on a flow and a mockup, a comparison on the table and a pull quote
+- vary section and word counts inside their ranges; never copy the last post
+- the invariant that does not move: every visual still replaces prose
+
+The same sentence was added to the four prompt entry points, so the SEO agent
+and the admin builder cannot drift back to a fixed shape.
+
+`lib/utils/article-visuals.ts` gained `visualVariety()` — it counts distinct
+*kinds*, not blocks, because five metric strips in a row are one idea, not five.
+`visualGaps()` reports `only N kinds of visual` only when nothing else is
+missing: while a body is still short of images or charts, those messages already
+name what to add, and adding a missing kind raises the variety as a side effect.
+Reporting both would bury the actionable line.
+
+Measured: both published posts use all six kinds across 8 `<h2>` each, so both
+still report no gaps.
+
+Verified: `tsc` clean (app + `functions`) · eslint 0 errors · **477/477** tests
+(40 files) · `audit:design` 0/0 · `npm run build` success.
+
+**Not verified:** the map has not been seen rendering on `/admin/analytics` —
+that route needs Google popup sign-in and there are no test credentials. It is
+proven only by the build output above.
+
 ### 2026-11-11 (first) — article bodies must carry visuals, not only paragraphs
 
 Owner: *"the content itself is poor. We have tons of opportunity to use visuals…
