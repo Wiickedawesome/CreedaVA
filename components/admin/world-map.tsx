@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { geoPath, geoEqualEarth } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Topology, GeometryCollection, GeometryObject } from "topojson-specification";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
+// Imported, not fetched. `public/` is not shipped in this deployment — measured
+// 2026-11-11, every file in it 404s on both the custom domain and the backend
+// URL, so `fetch("/world-atlas-110m.json")` always failed and the map sat on
+// "Failed to load map". A JSON import is compiled into the chunk that uses it.
+import worldTopology from "@/lib/data/world-atlas-110m.json";
 
 interface WorldMapProps {
   countryData: Array<{ countryCode: string; country: string; count: number }>;
@@ -67,27 +72,9 @@ const HEAT_RAMP = [
 const NO_DATA_FILL = "color-mix(in srgb, var(--gray-40) 60%, transparent)";
 
 export function WorldMap({ countryData }: WorldMapProps) {
-  const [topology, setTopology] = useState<WorldTopology | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // The topology is a build-time import, so there is no loading or error state
+  // to render — either the chunk is there or the whole page is not.
   const [hover, setHover] = useState<{ name: string; count: number; x: number; y: number } | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/world-atlas-110m.json")
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data: WorldTopology) => {
-        if (!cancelled) setTopology(data);
-      })
-      .catch((e: unknown) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load map");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const maxCount = useMemo(
     () => Math.max(...countryData.map((c) => c.count), 1),
@@ -124,13 +111,13 @@ export function WorldMap({ countryData }: WorldMapProps) {
   }
 
   const features = useMemo<Feature<Geometry>[]>(() => {
-    if (!topology) return [];
+    const topology = worldTopology as unknown as WorldTopology;
     const fc = feature(
       topology,
       topology.objects.countries as GeometryObject,
     ) as unknown as FeatureCollection<Geometry>;
     return fc.features;
-  }, [topology]);
+  }, []);
 
   const projection = useMemo(
     () => geoEqualEarth().scale(155).translate([width / 2, height / 2 + 10]),
@@ -182,16 +169,6 @@ export function WorldMap({ countryData }: WorldMapProps) {
       </div>
 
       <div className="relative w-full overflow-hidden rounded-lg bg-gray-10/40">
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-50 z-10">
-            Could not load map data ({error})
-          </div>
-        )}
-        {!topology && !error && (
-          <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-50">
-            Loading map…
-          </div>
-        )}
         <svg
           viewBox={`0 0 ${width} ${height}`}
           className="w-full h-auto block"

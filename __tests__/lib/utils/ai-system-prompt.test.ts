@@ -73,6 +73,12 @@ describe("AI System Prompt", () => {
       expect(BLOG_BODY_RULES_2026).toContain("invented credibility");
     });
 
+    it("BLOG_BODY_RULES_2026 requires a varied visual composition", () => {
+      expect(BLOG_BODY_RULES_2026).toContain("VARY THE COMPOSITION");
+      expect(BLOG_BODY_RULES_2026).toContain("at least THREE different kinds of visual");
+      expect(BLOG_BODY_RULES_2026).toContain("Never put two of the same kind back to back");
+    });
+
     it("LANDING_PAGE_RULES_2026 forbids rebuilding the process cards", () => {
       expect(LANDING_PAGE_RULES_2026).toContain("LANDING PAGE BODY RULES");
       expect(LANDING_PAGE_RULES_2026).toContain("number circles");

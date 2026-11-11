@@ -194,6 +194,11 @@ The body must carry visuals, not only paragraphs:
   Those class names are the only ones that survive; bar lengths are computed
   from the real figures, so never invent a number to make a bar look right.
 
+Vary the composition from post to post while keeping this same mix of pictures
+and elements: use at least three different kinds of visual, never two of the
+same kind back to back, and change which visual opens a section. Lead with the
+two or three the argument needs rather than spending every kind equally.
+
 Return JSON with these fields:
 - title: compelling blog title (SEO-optimized, under 60 chars)
 - slug: URL-friendly slug

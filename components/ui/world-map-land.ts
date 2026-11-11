@@ -1,7 +1,7 @@
 // GENERATED FILE — do not edit by hand.
 // Regenerate with: node scripts/build-world-map-paths.mjs
 //
-// Natural Earth 110m land polygons from public/world-atlas-110m.json,
+// Natural Earth 110m land polygons from lib/data/world-atlas-110m.json,
 // projected equirectangularly to the marketing plate's viewBox:
 //   x = (lon + 180) * (1000 / 360)
 //   y = (90 - lat)  * (1000 / 360)

@@ -16,6 +16,8 @@
 const MIN_WORDS = 800;
 const MIN_SECTIONS = 4;
 const MIN_FIGURES = 2;
+/** Distinct visual kinds a body should use, so posts do not all look alike. */
+const MIN_VARIETY = 3;
 
 export interface ArticleVisuals {
   words: number;
@@ -53,6 +55,24 @@ export function measureArticleVisuals(html: string): ArticleVisuals {
 }
 
 /**
+ * How many different kinds of visual the body uses.
+ *
+ * One kind repeated is a template, not an article — five metric strips in a row
+ * read as a data dump, and two posts written the same way make the blog look
+ * automated. Counting distinct kinds is the cheapest way to notice.
+ */
+export function visualVariety(visuals: ArticleVisuals): number {
+  return [
+    visuals.figures,
+    visuals.tables,
+    visuals.metricStrips,
+    visuals.barCharts,
+    visuals.flows,
+    visuals.mockups,
+  ].filter((n) => n > 0).length;
+}
+
+/**
  * What is missing, in the reader's terms.
  *
  * Ordered most-important first so a truncated toast still says the useful part.
@@ -69,5 +89,14 @@ export function visualGaps(visuals: ArticleVisuals): string[] {
   if (charts === 0) gaps.push("no table, bar chart or mockup");
   if (figures === 0) gaps.push("no metric strip or bar chart");
 
+  // Only worth saying once the body otherwise clears the bar: until then the
+  // gaps above already name what to add, and adding a missing kind fixes the
+  // variety as a side effect.
+  const kinds = visualVariety(visuals);
+  if (gaps.length === 0 && kinds < MIN_VARIETY) {
+    gaps.push(`only ${kinds} kinds of visual — vary the mix across posts`);
+  }
+
   return gaps;
 }
+

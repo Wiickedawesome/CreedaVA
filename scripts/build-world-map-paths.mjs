@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Regenerates `components/ui/world-map-land.ts` from the Natural Earth 110m
- * TopoJSON already bundled at `public/world-atlas-110m.json` — the same file
+ * TopoJSON already bundled at `lib/data/world-atlas-110m.json` — the same file
  * the admin map reads at runtime.
  *
  * The marketing map is a Server Component with no data fetching, so its
@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { feature } from "topojson-client";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SOURCE = join(ROOT, "public", "world-atlas-110m.json");
+const SOURCE = join(ROOT, "lib", "data", "world-atlas-110m.json");
 const TARGET = join(ROOT, "components", "ui", "world-map-land.ts");
 
 /** Equirectangular projection matching the plate's `viewBox="0 10 1000 400"`. */
@@ -179,7 +179,7 @@ function main() {
     `// GENERATED FILE — do not edit by hand.
 // Regenerate with: node scripts/build-world-map-paths.mjs
 //
-// Natural Earth 110m land polygons from public/world-atlas-110m.json,
+// Natural Earth 110m land polygons from lib/data/world-atlas-110m.json,
 // projected equirectangularly to the marketing plate's viewBox:
 //   x = (lon + 180) * (1000 / 360)
 //   y = (90 - lat)  * (1000 / 360)

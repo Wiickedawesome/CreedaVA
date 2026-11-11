@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { measureArticleVisuals, visualGaps } from "@/lib/utils/article-visuals";
+import { measureArticleVisuals, visualGaps, visualVariety } from "@/lib/utils/article-visuals";
 
 /** Filler prose, so a fixture clears the word floor without padding by hand. */
 const prose = (words = 900) => `<p>${Array.from({ length: words }, () => "word").join(" ")}</p>`;
@@ -43,6 +43,20 @@ describe("measureArticleVisuals", () => {
   });
 });
 
+describe("visualVariety", () => {
+  it("counts distinct kinds, not total blocks", () => {
+    const visuals = measureArticleVisuals(
+      '<img src="/a.jpg" alt="A"><img src="/b.jpg" alt="B"><img src="/c.jpg" alt="C">',
+    );
+    expect(visuals.figures).toBe(3);
+    expect(visualVariety(visuals)).toBe(1);
+  });
+
+  it("counts each sanctioned block kind once", () => {
+    expect(visualVariety(measureArticleVisuals(RICH_BODY))).toBe(6);
+  });
+});
+
 describe("visualGaps", () => {
   it("reports nothing for a body that has the shapes", () => {
     expect(visualGaps(measureArticleVisuals(RICH_BODY))).toEqual([]);
@@ -65,6 +79,58 @@ describe("visualGaps", () => {
       <figure><img src="/a.jpg" alt="A"></figure>
       <figure><img src="/b.jpg" alt="B"></figure>
       <div class="mk-mockup"><div class="mk-stat"><strong>1</strong><span>B</span></div></div>
+      <div class="mk-stats"><div class="mk-stat"><strong>1</strong><span>B</span></div></div>
+      ${prose()}
+    `;
+    expect(visualGaps(measureArticleVisuals(body))).toEqual([]);
+  });
+
+  it("names the missing kinds before it complains about variety", () => {
+    const body = `
+      <h2>A</h2><h2>B</h2><h2>C</h2><h2>D</h2>
+      <div class="mk-stats"><div class="mk-stat"><strong>1</strong><span>B</span></div></div>
+      <div class="mk-stats"><div class="mk-stat"><strong>2</strong><span>C</span></div></div>
+      ${prose()}
+    `;
+    const gaps = visualGaps(measureArticleVisuals(body));
+    expect(gaps).toEqual([
+      "fewer than 2 images",
+      "no table, bar chart or mockup",
+    ]);
+  });
+
+  it("warns about variety once nothing else is missing", () => {
+    const body = `
+      <h2>A</h2><h2>B</h2><h2>C</h2><h2>D</h2>
+      <figure><img src="/a.jpg" alt="A"></figure>
+      <figure><img src="/b.jpg" alt="B"></figure>
+      <table><tr><td>1</td></tr></table>
+      <div class="mk-stats"><div class="mk-stat"><strong>1</strong><span>B</span></div></div>
+      <div class="mk-stats"><div class="mk-stat"><strong>2</strong><span>C</span></div></div>
+      ${prose()}
+    `;
+    expect(visualGaps(measureArticleVisuals(body))).toEqual([]);
+  });
+
+  it("warns when a complete body still leans on two kinds", () => {
+    const body = `
+      <h2>A</h2><h2>B</h2><h2>C</h2><h2>D</h2>
+      <figure><img src="/a.jpg" alt="A"></figure>
+      <figure><img src="/b.jpg" alt="B"></figure>
+      <div class="mk-bars"><div class="mk-bar"><span>A</span><strong>1</strong></div></div>
+      ${prose()}
+    `;
+    expect(visualGaps(measureArticleVisuals(body))).toEqual([
+      "only 2 kinds of visual — vary the mix across posts",
+    ]);
+  });
+
+  it("does not warn about variety once three kinds are present", () => {
+    const body = `
+      <h2>A</h2><h2>B</h2><h2>C</h2><h2>D</h2>
+      <figure><img src="/a.jpg" alt="A"></figure>
+      <figure><img src="/b.jpg" alt="B"></figure>
+      <table><tr><td>1</td></tr></table>
       <div class="mk-stats"><div class="mk-stat"><strong>1</strong><span>B</span></div></div>
       ${prose()}
     `;

@@ -350,6 +350,29 @@ writing them wastes the output. There is no chart library and no way to draw a
 custom shape: if the point cannot be made with a figure, a bar, a flow, a
 mockup, a table or an image, make it in prose.
 
+VARY THE COMPOSITION — THIS IS HOW THE BLOG AVOIDS LOOKING AUTOMATED
+Readers see the listing page, and a run of posts built the same way is obvious
+even when each one is good on its own. The rules above say WHAT must be in the
+article; these say how to arrange it differently every time.
+
+- Use at least THREE different kinds of visual per post. Images, tables, bar
+  charts, metric strips, process flows and mockups are six tools; a post that
+  reaches for only one of them is not varied, it is a template.
+- Change which visual opens a section. If section one opens with an image, do
+  not open section two with one as well.
+- Never put two of the same kind back to back. Two tables in a row, two flows in
+  a row or two figures in a row read as a single long block.
+- Rotate the emphasis by subject. A numbers piece leans on bars and a table; a
+  how-to leans on a flow and a mockup; a comparison leans on the table and a
+  pull quote. Lead with the two or three the argument actually needs and use
+  the rest sparingly — a post that spends every kind equally has no emphasis,
+  which reads just as flat as one that repeats a single kind.
+- Vary the opening. Some posts open with prose, some with a mockup, some with a
+  single figure. Do not copy the arrangement of the last post you were shown.
+- Vary the section count between 6 and 9 and the word count inside the range.
+- The one thing that does not move: every section still earns its visual, and
+  every visual still replaces prose rather than restating it.
+
 WHAT MAKES A VISUAL HONEST
 - A number in a strip, bar, mockup or table is a claim like any other. It is
   either sourced, or explicitly framed as a target the reader sets for

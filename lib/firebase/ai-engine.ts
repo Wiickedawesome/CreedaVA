@@ -334,6 +334,10 @@ whitelist, so anything outside it is deleted rather than styled:
     </div>
   Those class names are the only ones that survive the renderer; every other
   wrapper, class, inline style and SVG is deleted.
+Vary the composition from post to post while keeping this same mix of pictures
+and elements: use at least three different kinds of visual, never two of the
+same kind back to back, and change which visual opens a section. Lead with the
+two or three the argument needs rather than spending every kind equally.
 - One <blockquote> for the sentence worth remembering.
 - An FAQ section of 3-5 <details>/<summary> pairs.
 - A numbered <a href="#source-1">[1]</a> marker on every factual claim, and the

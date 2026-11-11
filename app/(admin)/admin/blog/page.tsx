@@ -460,6 +460,11 @@ Return ONLY valid JSON with these fields:
   stripped. Each <strong> holds a figure, each <span> the words that say what
   it measures. Bar lengths are computed from the real figures — never write a
   number just to make a bar look right.
+  VARY THE COMPOSITION: use at least three different kinds of visual, never two
+  of the same kind back to back, and change which visual opens a section. Do
+  not reuse the arrangement of the previous post — check the existing posts and
+  arrange this one differently while keeping the same mix of pictures and
+  elements.
 - references: array of the sources cited above, in citation order:
   [{ "label": "Title of the page or report", "url": "https://…", "source": "Publisher", "year": "2025" }]
   Only sources you were given or can name as a primary publisher. If a claim
