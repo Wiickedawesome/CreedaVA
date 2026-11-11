@@ -1,10 +1,10 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/firebase/auth-context";
 import type { User } from "@/lib/firebase/auth";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 function getSafeRedirectPath(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
@@ -111,14 +111,7 @@ function LoginComponent() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-mk-paper text-center px-4">
       <div className="max-w-md w-full bg-mk-white p-8 rounded-(--mk-radius-lg) shadow-(--mk-shadow-card) border border-mk-line">
         <div className="flex justify-center mb-6">
-          <Image
-            src="/creedava-logo.svg"
-            alt="CreedaVA Logo"
-            width={96}
-            height={80}
-            className="h-20 w-auto"
-            unoptimized
-          />
+          <BrandLogo className="h-20 w-auto" />
         </div>
         <h1 className="font-display text-[clamp(1.8rem,4vw,2.4rem)] font-extrabold leading-[1.08] tracking-[-0.025em] text-mk-ink mb-2">Welcome Back</h1>
         <p className="text-sm text-mk-ink-mute mb-8">

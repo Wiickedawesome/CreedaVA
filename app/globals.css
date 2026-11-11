@@ -684,12 +684,20 @@ body {
   .mk-article--wide img {
     width: 100%;
     height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
     margin-block: 2em;
     border-radius: var(--mk-radius-lg);
   }
 
+  /* The figure owns the vertical rhythm; the image inside it must not add a
+     second margin, or a captioned image costs twice the space of a bare one. */
+  .mk-article--wide figure img {
+    margin-block: 0;
+  }
+
   .mk-article--wide figcaption {
-    margin-top: -1.2em;
+    margin-top: 0.85em;
     font-size: 0.85rem;
     color: var(--mk-ink-mute);
   }

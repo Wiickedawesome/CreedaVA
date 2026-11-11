@@ -15,8 +15,15 @@ const SITE = "https://creedava.com";
  */
 const ORG_NAME = "Creeda Virtual Assistants";
 const ORG_ALTERNATE_NAMES = ["CreedaVA", "Creeda"];
-/** Served from public/creedava-logo.svg — the current mark + wordmark. */
-const LOGO = `${SITE}/creedava-logo.svg`;
+/**
+ * Absolute URL of the brand mark.
+ *
+ * `/icon.svg` is a file-based metadata route under `app/`, which is measured to
+ * serve in production. The footer and sign-in pages no longer use any URL at
+ * all — they render `components/brand/brand-logo.tsx` inline — but JSON-LD needs
+ * an absolute address a crawler can fetch.
+ */
+const LOGO = `${SITE}/icon.svg`;
 const PHONE = "+1-844-702-2202";
 
 // ─── Shared fragments ────────────────────────────────

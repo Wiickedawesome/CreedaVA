@@ -963,7 +963,7 @@ export const TECHNICAL_SEO_EXPERTISE = `TECHNICAL SEO DEEP DIVE — Infrastructu
 3. SCHEMA MARKUP LIBRARY:
    ORGANIZATION (homepage):
    { "@type": "Organization", "name": "CreedaVA", "url": "https://creedava.com",
-     "logo": "https://creedava.com/creedava-logo.svg", "contactPoint": { "@type": "ContactPoint",
+     "logo": "https://creedava.com/icon.svg", "contactPoint": { "@type": "ContactPoint",
      "telephone": "+1-844-702-2202", "contactType": "customer service", "availableLanguage": ["English", "Spanish"] } }
 
    SERVICE (service pages):

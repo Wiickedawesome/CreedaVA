@@ -5,7 +5,7 @@ import { Container } from "@/components/ui";
 import { fetchOne } from "@/lib/firebase/firestore";
 import { cloudSubmitSatisfaction } from "@/lib/firebase/cloud-functions";
 import { useParams } from "next/navigation";
-import Image from "next/image";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import SatisfactionSurvey, { type SurveyAnswers } from "@/components/survey/satisfaction-survey";
 
 interface SatisfactionToken {
@@ -72,14 +72,7 @@ export default function SatisfactionPage() {
       <div className="min-h-screen bg-linear-to-b from-mk-paper to-mk-white py-20">
         <Container size="sm">
           <div className="text-center space-y-6">
-            <Image
-              src="/creedava-logo.svg"
-              alt="CreedaVA"
-              width={77}
-              height={64}
-              className="mx-auto h-16 w-auto"
-              unoptimized
-            />
+            <BrandLogo className="mx-auto h-16 w-auto" />
             <div className="w-16 h-16 mx-auto rounded-full bg-mk-paper-deep flex items-center justify-center">
               <svg className="w-8 h-8 text-mk-ink-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />

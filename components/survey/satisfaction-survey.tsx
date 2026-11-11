@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { Container } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n/context";
-import Image from "next/image";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 interface SurveyQuestion {
   id: string;
@@ -193,14 +193,7 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
       <div className="min-h-screen bg-linear-to-b from-mk-paper to-mk-white py-20">
         <Container size="sm">
           <div className="text-center space-y-6">
-            <Image
-              src="/creedava-logo.svg"
-              alt="CreedaVA"
-              width={77}
-              height={64}
-              className="mx-auto h-16 w-auto"
-              unoptimized
-            />
+            <BrandLogo className="mx-auto h-16 w-auto" />
             <div className="w-16 h-16 mx-auto rounded-full bg-mk-brand/10 flex items-center justify-center">
               <svg className="w-8 h-8 text-mk-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
@@ -247,14 +240,7 @@ export default function SatisfactionSurvey({ customerName, onSubmit, isDemo }: S
 
           {/* Header */}
           <div className="text-center space-y-4">
-            <Image
-              src="/creedava-logo.svg"
-              alt="CreedaVA"
-              width={77}
-              height={64}
-              className="mx-auto h-16 w-auto"
-              unoptimized
-            />
+            <BrandLogo className="mx-auto h-16 w-auto" />
             <h1 className="text-3xl font-bold text-mk-ink">{t.title}</h1>
             <p className="text-mk-ink-mute">{t.greeting(customerName)}</p>
           </div>

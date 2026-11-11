@@ -29,7 +29,10 @@ const organizationJsonLd = {
   name: "Creeda Virtual Assistants",
   alternateName: ["CreedaVA", "Creeda"],
   url: "https://creedava.com",
-  logo: "https://creedava.com/creedava-logo.svg",
+  // A file-based metadata route under `app/`, so it serves in production. The
+  // visible logo is inline (components/brand/brand-logo.tsx); JSON-LD still
+  // needs an absolute URL a crawler can fetch.
+  logo: "https://creedava.com/icon.svg",
   description:
     "Professional virtual assistant services for businesses. Save time, reduce costs, and scale your operations.",
   address: {

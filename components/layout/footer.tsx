@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Container } from "@/components/ui";
 import { Bloom } from "@/components/marketing/primitives";
 import { useTranslation } from "@/lib/i18n";
 import { SERVICE_ANCHORS } from "@/lib/constants/services";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 const companyHrefs = [
   { href: "/about", key: "about" as const },
@@ -44,13 +44,13 @@ export function Footer() {
             {/* Brand */}
             <div className="lg:col-span-1">
               <Link href="/" className="flex items-center gap-2 mb-4">
-                <Image
-                  src="/creedava-logo.svg"
-                  alt="CreedaVA"
-                  width={96}
-                  height={80}
-                  className="h-20 w-auto brightness-0 invert"
-                  unoptimized
+                {/* `mono` paints every shape in `currentColor`, which the footer
+                    already sets to `--mk-paper` — the white lockup with no CSS
+                    filter and no second asset. */}
+                <BrandLogo
+                  tone="mono"
+                  className="h-20 w-auto"
+                  title="CreedaVA"
                 />
               </Link>
               <p className="text-mk-paper-mute text-sm leading-relaxed max-w-xs">
