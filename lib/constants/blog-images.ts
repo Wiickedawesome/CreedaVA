@@ -78,7 +78,7 @@ export const THUMBNAIL_PHOTOS: ThumbnailPhoto[] = [
   {
     id: "photo-1553877522-43269d4ea984",
     label: "person working on a laptop in an office",
-    keywords: ["admin", "assistant", "virtual", "assistant", "task", "time", "saving"],
+    keywords: ["admin", "assistant", "virtual", "task", "time", "saving"],
   },
 ];
 

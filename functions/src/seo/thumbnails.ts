@@ -1,9 +1,13 @@
 /**
  * Curated Unsplash thumbnails for SEO-agent-written blog drafts.
  *
- * NOTE: functions/ is a separate TypeScript project (`rootDir: "src"`), so it
- * cannot import from the Next app's `lib/`. This list intentionally mirrors
- * `lib/constants/blog-images.ts` — keep the two in sync when adding photos.
+ * ⚠️ GENERATED FILE — do not edit by hand.
+ * Source of truth: `lib/constants/blog-images.ts`
+ * Regenerate with `npm run sync:thumbnails`; verify with
+ * `npm run sync:thumbnails:check` (wired into `check:preflight`).
+ *
+ * This exists because `functions/` is a separate TypeScript project
+ * (`rootDir: "src"`) and cannot import from the Next app's `lib/`.
  */
 
 export interface ThumbnailPhoto {

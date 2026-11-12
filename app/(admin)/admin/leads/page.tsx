@@ -1,6 +1,5 @@
 "use client";
 
-import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -12,7 +11,6 @@ import {
   Select,
   DashboardSection,
   StatCard,
-  AIPromptButton,
   useToast,
 } from "@/components/admin";
 import type { Column } from "@/components/admin";
@@ -260,30 +258,6 @@ export default function LeadsPage() {
         description="Track and manage your sales pipeline"
         actions={
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-            <AIPromptButton
-              section="Leads AI"
-              description="Analyze leads and improve conversion"
-              placeholder="e.g. Draft follow-up emails for stale leads, score and rank leads by potential..."
-              presets={[
-                { label: "Follow-up Emails", prompt: "Draft personalised follow-up email templates for leads that need attention. For each lead, write a short email (subject + 3-4 sentences) tailored to their status and value." },
-                { label: "Lead Scoring", prompt: "Score and rank all leads from highest to lowest potential. For each lead give: Score (1-10), reasoning, and recommended next action." },
-                { label: "Conversion Tips", prompt: "Give 5 specific tactics to improve lead conversion rate. For each tactic explain what to do, why it works, and the expected improvement." },
-                { label: "Stale Lead Recovery", prompt: "Identify stale leads (no activity in 14+ days). For each, draft a personalized re-engagement message and suggest the best channel (email, phone, LinkedIn)." },
-                { label: "Pipeline Review", prompt: "Review the sales pipeline health. Identify bottlenecks, stuck deals, and leads that are most likely to close this week. Recommend specific actions for each." },
-                { label: "Source Analysis", prompt: "Analyze lead sources and their conversion rates. Identify which channels produce the highest quality leads and recommend where to invest more effort." },
-                { label: "Objection Handler", prompt: "List the top 5 common objections from leads in the VA industry and draft persuasive responses for each. Keep them concise and value-focused." },
-                { label: "Weekly Report", prompt: "Generate a weekly lead activity report. Cover: new leads, status changes, pipeline value change, top opportunities, and one key action for next week." },
-              ]}
-              dataContext={(() => {
-                const byStatus = Object.entries(leads.reduce((acc, l) => ({ ...acc, [l.status]: (acc[l.status] || 0) + 1 }), {} as Record<string, number>)).map(([s, c]) => `${s}: ${c}`).join(", ");
-                const bySource = Object.entries(leads.reduce((acc, l) => ({ ...acc, [l.source]: (acc[l.source] || 0) + 1 }), {} as Record<string, number>)).map(([s, c]) => `${s}: ${c}`).join(", ");
-                const topLeads = leads.filter(l => l.status !== "won" && l.status !== "lost").slice(0, 5).map(l => `${l.name} (${l.company || "no company"}, $${l.value}, ${l.status})`).join("; ");
-                return `CreedaVA Leads (${leads.length} total):\nBy status: ${byStatus}\nBy source: ${bySource}\nPipeline: $${pipeline.toLocaleString()}, Win rate: ${winRate}%\nTop open leads: ${topLeads}`;
-              })()}
-              buildPrompt={(input, ctx) =>
-                buildTrainedPrompt("Leads", input, ctx, { includeCompetitors: true, includeKPIs: true })
-              }
-            />
             <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               Export

@@ -1,9 +1,12 @@
 // Canonical admin destinations used by legacy/alias routes.
 // All SEO surfaces now live under the unified /admin/seo hub. The `section`
 // query parameter selects the tab.
+//
+// Creeda AI is no longer an SEO surface: it is reached from the admin dashboard,
+// which is its single entry point.
 export const ADMIN_ROUTE_ALIASES = {
+  creedAI: "/admin",
   seoHub: "/admin/seo",
-  seoCreedaAI: "/admin/seo?section=ai",
   seoPages: "/admin/seo?section=pages",
   seoAudits: "/admin/seo?section=pages",
   seoKeywords: "/admin/seo?section=keywords",

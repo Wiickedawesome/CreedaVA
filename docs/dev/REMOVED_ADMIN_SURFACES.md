@@ -38,8 +38,8 @@ would have been, as a flat Content item directly after Blog.
   and projects. Deleted, along with its `tasks` / `projects` route mappings.
   `ALL_SPECIALISTS` is now six: ARIA, ORACLE, NOVA, MAVERICK, SCOUT, GUIDE.
 - `lib/utils/ai-page-context.ts` — removed both page configs, both collection fetchers, and
-  `projects` from the customers page's collection list. `DEFAULT_CONFIG.collections` is
-  now `["leads"]`.
+  `projects` from the customers page's collection list. (`DEFAULT_CONFIG.collections` was
+  cut to `["leads"]` at the time; superseded by §5 below.)
 - `lib/utils/ai-data-context.ts` — removed `tasks` / `projects` from `AllCollections`,
   removed `summarizeTasks`, `summarizeProjects`, and `buildOperationsContext` (which was
   tasks + projects + bookings and nothing else, and had no production caller).
@@ -103,7 +103,66 @@ Wiring kept in sync:
 
 ---
 
-## 4. Deliberately kept — do not "clean these up"
+## 5. Creeda AI consolidated onto the dashboard
+
+**Decided 2026-11-12.** Creeda AI had two entry points that were verified to be the *same*
+assistant — same `ai-core` orchestrator, same per-user conversation in `ai-conversations`,
+shared memory, same ARIA specialist. The SEO Hub tab was titled "Creeda AI", the dashboard
+button "ARIA — Chief of Staff", and both exposed the same history. Keeping two doors to one
+room was the single largest source of confusion in the admin.
+
+### Removed
+
+| Removed | Detail |
+|---|---|
+| SEO Hub → **Creeda AI** tab | `app/(admin)/admin/seo/_components/sections/ai-section.tsx` deleted |
+| `SectionId` value `"ai"` | SEO Hub now opens on **Pages & Audits** |
+| `AiSection` lazy import | plus its `SectionSkeleton` loading label |
+| `ADMIN_ROUTE_ALIASES.seoCreedaAI` | replaced by `creedAI: "/admin"` |
+
+`/admin/analytics/ai` still exists as a redirect, now pointing at `/admin`.
+`ai-redirect.test.tsx` asserts the new target.
+
+### Moved, not deleted — this mattered
+
+`ai-section.tsx` was not only a chat box. It was the sole client-side trigger for the
+**weekly scheduled report** (`useScheduledReports().autoGenerate`), and it rendered
+`BusinessPulse`. Deleting it outright would have silently stopped weekly report
+generation with no error anywhere.
+
+The `autoGenerate` trigger moved to `weekly-digest-section.tsx` — the tab that *displays*
+those reports, so generation now sits beside its consumer. Its empty state no longer claims
+the trigger "fires from the analytics dashboard", which was already untrue.
+
+`BusinessPulse` was **deleted on 2026-11-12**, along with the whole of
+`components/admin/report-categories.tsx`. Once `ai-section.tsx` went away, nothing
+imported that file: `ReportCategoryCard`, `ScheduledReportCard`, `InsightCard`, and
+`BusinessPulse` were all unreferenced and absent from the `components/admin` barrel.
+
+`BusinessPulse` was removed rather than relocated because its headline number was not
+a measurement. `score` came from a Gemini response to a text summary —
+`useScheduledReports.generateReport` writes whatever `score` the model returns, and
+**no cloud function writes `score` at all** (verified across `scheduled-reports.ts`,
+`scheduled.ts`, `synthesizer.ts`, `report-delivery.ts`). The seven area bars were
+computed separately from raw collections (`won ÷ leads`, `published ÷ blog`,
+`tracked ÷ keywords`, …), so the circle and the bars were two unrelated scales
+presented as one score, with the "Grade" derived from the AI-invented half.
+
+### Made broader
+
+Creeda AI previously answered dashboard questions from **leads only**: `loadPageAwareContext`
+normalised `/admin` to `""`, matched no config, and fell through to a `DEFAULT_CONFIG`
+carrying `collections: ["leads"]`. Meanwhile the deleted SEO tab fetched all eleven
+collections — so the *retired* surface had better data access than the surviving one.
+
+Both `""`/`dashboard` and the fallback now load every collection with `buildFullContext`
+(11 collections, 80k-token budget, sampling at >70 rows). The dashboard button also stopped
+passing its own 4-line `dataContext`, which had been short-circuiting the page-aware loader
+(`if (!dataContext)` in `ai-core.sendMessage`).
+
+---
+
+## 6. Deliberately kept — do not "clean these up"
 
 | Kept | Why |
 |---|---|

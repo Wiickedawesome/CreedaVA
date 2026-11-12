@@ -47,7 +47,44 @@ interface PageConfig {
   contextBuilder: (data: AllCollections) => string;
 }
 
+/**
+ * Every collection Creeda AI can draw on.
+ *
+ * Creeda AI is one assistant with one conversation, so any surface that has no
+ * narrower, purpose-built config gets the whole business. A fragment context
+ * made the dashboard answer whole-business questions from leads alone.
+ */
+const FULL_BUSINESS_COLLECTIONS: (keyof AllCollections)[] = [
+  "leads",
+  "customers",
+  "contacts",
+  "bookings",
+  "campaigns",
+  "emails",
+  "blog",
+  "keywords",
+  "seoAudits",
+  "landingPages",
+  "forumThreads",
+];
+
+/** The admin dashboard is Creeda AI's home, so it owns the full picture. */
+const DASHBOARD_CONFIG: PageConfig = {
+  section: "Creeda AI",
+  collections: FULL_BUSINESS_COLLECTIONS,
+  contextBuilder: buildFullContext,
+};
+
+/** Fallback for any admin route without its own config. */
+const DEFAULT_CONFIG: PageConfig = {
+  section: "CreedaVA AI",
+  collections: FULL_BUSINESS_COLLECTIONS,
+  contextBuilder: buildFullContext,
+};
+
 const PAGE_CONFIGS: Record<string, PageConfig> = {
+  "": DASHBOARD_CONFIG,
+  dashboard: DASHBOARD_CONFIG,
   analytics: {
     section: "Analytics AI",
     collections: ["leads", "customers", "bookings", "campaigns", "blog"],
@@ -108,13 +145,6 @@ const PAGE_CONFIGS: Record<string, PageConfig> = {
     collections: ["keywords", "blog", "seoAudits"],
     contextBuilder: buildKeywordContext,
   },
-};
-
-// Default for unrecognized pages — minimal footprint, only core CRM data
-const DEFAULT_CONFIG: PageConfig = {
-  section: "CreedaVA AI",
-  collections: ["leads"],
-  contextBuilder: buildFullContext,
 };
 
 // ─── Collection fetchers ─────────────────────────────

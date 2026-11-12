@@ -50,14 +50,50 @@ so selection is deterministic and reviewable, with no image-search API or key.
 - `content-writer.ts` validates the model's URL against `isApprovedThumbnail()` and
   falls back the same way — the model cannot inject an arbitrary remote image.
 
-`functions/` is a separate TS project (`rootDir: "src"`) and cannot import from `lib/`,
-so `functions/src/seo/thumbnails.ts` mirrors the list. **Keep the two in sync.**
+`functions/` is a separate TypeScript project (`rootDir: "src"`) and cannot import
+from `lib/`, so `functions/src/seo/thumbnails.ts` holds a second copy of the list.
+As of 2026-11-12 that copy is **generated**, not hand-maintained:
 
-### Backfill for existing posts
+- **Source of truth:** `lib/constants/blog-images.ts` (edit photos here only).
+- `npm run sync:thumbnails` regenerates `functions/src/seo/thumbnails.ts` from it.
+- `npm run sync:thumbnails:check` exits `1` if the two differ, and is the first
+  step of `check:preflight`, so drift fails the gate rather than reaching the agent.
 
-New **"Add missing thumbnails"** button in `/admin/blog`. It writes a deterministic
-`featuredImage` to posts where the field is empty, and never overwrites a manually
-uploaded image.
+The generator refuses to emit if an entry is missing an id/label/keywords, has a
+**duplicate keyword** (that double-counts in `pickFeaturedImage` scoring and skews
+which photo wins), or repeats a photo id. Verified 2026-11-12: artificial drift →
+exit 1; restore → exit 0; both projects compile; 22 blog-content tests pass.
+
+Found and fixed during the sync: the last photo listed `"assistant"` twice, which
+was silently weighting that photo's score.
+
+### Coverage — every write path sets `featuredImage`
+
+Blog posts are produced by the **AI agent** (`functions/src/seo/content-writer.ts`).
+That is the normal path. The manual `/admin/blog` form is a rarely used fallback,
+mostly for editing an existing post. Both are covered, so no post can be written
+without a thumbnail:
+
+1. **SEO agent — `content-writer.ts` (primary path).** The prompt requires
+   `featuredImage` from the injected allow-list; the code validates the model's
+   URL with `isApprovedThumbnail()` and falls back to `pickFeaturedImage()`.
+   The agent therefore always ships a thumbnail and can never inject an arbitrary
+   remote image.
+2. **Blog AI button in `/admin/blog`.** Same contract: the prompt requires
+   `featuredImage` from `thumbnailPromptList()`, and `onResult` falls back to
+   `pickFeaturedImage()` if the model omits or invents a URL.
+3. **Manual `+ New Post` / edit.** `handleSave` applies `pickFeaturedImage()` when
+   the form has no image, so the seldom-used manual path cannot save a bare post.
+
+All existing posts carry a thumbnail. A one-off **"Add missing thumbnails"** button
+used to sit in `/admin/blog` to backfill posts written before thumbnail support
+existed. It was **removed on 2026-11-12**: with all three paths guaranteed, it could
+only ever report "all posts already have a thumbnail", and the agent — not a manual
+button — is what keeps the corpus correct.
+
+`app/(marketing)/news/news-list.tsx` still renders a typographic `CoverImage`
+fallback. That is a display safeguard only; it is not a substitute for the field
+being set, and it should not be relied on.
 
 ## 2. Duplicate `<h1>` (High) — Fixed
 

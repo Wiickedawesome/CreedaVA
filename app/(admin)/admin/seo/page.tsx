@@ -7,10 +7,6 @@ import { AdminTabs, PageHeader } from "@/components/admin";
 import type { Tab } from "@/components/admin/tabs";
 
 // Lazy-load every section so the hub stays light and each tab only pays its own bundle cost.
-const AiSection = dynamic(() => import("./_components/sections/ai-section"), {
-  ssr: false,
-  loading: () => <SectionSkeleton label="Loading Creeda AI…" />,
-});
 const PagesSection = dynamic(() => import("./_components/sections/pages-section"), {
   ssr: false,
   loading: () => <SectionSkeleton label="Loading pages…" />,
@@ -40,7 +36,7 @@ const ActionItemsBoard = dynamic(
   { ssr: false, loading: () => <SectionSkeleton label="Loading action items…" /> },
 );
 
-type SectionId = "ai" | "pages" | "keywords" | "opportunities" | "briefs" | "outreach" | "agent" | "action-items";
+type SectionId = "pages" | "keywords" | "opportunities" | "briefs" | "outreach" | "agent" | "action-items";
 
 // Legacy ?section= values that now live inside a merged tab.
 const SECTION_ALIASES: Record<string, SectionId> = {
@@ -50,7 +46,6 @@ const SECTION_ALIASES: Record<string, SectionId> = {
 };
 
 const SECTIONS: { value: SectionId; label: string; description: string }[] = [
-  { value: "ai", label: "Creeda AI", description: "Chat with Creeda AI about your whole business and watch your live health pulse." },
   { value: "pages", label: "Pages & Audits", description: "Manage on-page SEO metadata and run AI audits for each public page." },
   { value: "keywords", label: "Keywords", description: "Track target keywords, pull Search Console rankings, and get AI keyword ideas." },
   { value: "opportunities", label: "Opportunities", description: "Content gaps, backlink prospects, brand mentions, and AIO/GEO citations found by the agent." },
@@ -73,10 +68,10 @@ export default function SeoHubPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const rawSection = searchParams?.get("section") ?? "ai";
+  const rawSection = searchParams?.get("section") ?? "pages";
   const section: SectionId = useMemo(() => {
     const aliased = SECTION_ALIASES[rawSection] ?? rawSection;
-    return SECTIONS.find((s) => s.value === aliased)?.value ?? "ai";
+    return SECTIONS.find((s) => s.value === aliased)?.value ?? "pages";
   }, [rawSection]);
 
   const handleChange = useCallback(
@@ -97,7 +92,7 @@ export default function SeoHubPage() {
     <div className="space-y-6">
       <PageHeader
         title="SEO Hub"
-        description="Your operational SEO workspace — Creeda AI, pages, keywords, the autonomous agent, and outreach."
+        description="Your operational SEO workspace — pages, keywords, the autonomous agent, and outreach."
       />
       <div>
         <AdminTabs tabs={tabs} activeTab={section} onChange={handleChange} />
@@ -106,7 +101,6 @@ export default function SeoHubPage() {
         )}
       </div>
       <Suspense fallback={<SectionSkeleton label="Loading…" />}>
-        {section === "ai" && <AiSection />}
         {section === "pages" && <PagesSection />}
         {section === "keywords" && <KeywordsSection />}
         {section === "opportunities" && <OpportunitiesSection />}

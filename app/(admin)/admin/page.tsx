@@ -379,8 +379,8 @@ export default function AdminDashboardPage() {
               {forecastLoading ? "Forecasting..." : "Revenue Forecast"}
             </Button>
             <AIPromptButton
-            section="Dashboard AI"
-            description="Analyze your business data — get growth strategies, weekly priorities, and SEO quick wins."
+            section="Creeda AI"
+            description="Ask anything about the whole business — leads, customers, bookings, campaigns, content, SEO, and the forum. Creeda AI has full data access and remembers past conversations."
             placeholder="e.g. What should we focus on this week to grow revenue?"
             presets={[
               { label: "Growth Strategy", prompt: "Analyze our metrics and suggest a 5-step growth strategy focusing on lead conversion, customer retention, and revenue growth." },
@@ -392,14 +392,6 @@ export default function AdminDashboardPage() {
               { label: "Bottleneck Finder", prompt: "Identify the single biggest bottleneck slowing our growth right now. Explain why it matters, its impact, and give 3 actions to fix it." },
               { label: "30-Day Plan", prompt: "Create a 30-day action plan to improve key business metrics. Break into weekly milestones with owners and measurable outcomes." },
             ]}
-            dataContext={(() => {
-              const newLeads = leads.filter((l) => l.status === "new").length;
-              const pipeline = leads.filter((l) => !["won", "lost"].includes(l.status)).reduce((s, l) => s + (l.value || 0), 0);
-              const activeClients = customers.filter((c) => c.status === "active").length;
-              const churned = customers.filter((c) => c.status === "churned").length;
-              const pending = bookings.filter((b) => b.status === "pending").length;
-              return `CreedaVA Dashboard Summary:\n- ${leads.length} total leads (${newLeads} new), pipeline value $${pipeline}\n- Win rate: ${wonRate}%, ${leads.filter(l=>l.status==="lost").length} lost\n- ${activeClients} active customers, ${churned} churned, MRR $${customers.filter(c=>c.status==="active").reduce((s,c)=>s+(c.monthlyValue||0),0)}\n- ${bookings.length} bookings (${pending} pending)`;
-            })()}
           />
           </div>
         }

@@ -1,6 +1,5 @@
 "use client";
 
-import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -9,7 +8,6 @@ import {
   Modal,
   Select,
   AdminTabs,
-  AIPromptButton,
   useToast,
 } from "@/components/admin";
 import type { Column } from "@/components/admin";
@@ -262,30 +260,6 @@ export default function ContactsPage() {
         description="Manage your contact directory"
         actions={
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-            <AIPromptButton
-              section="Contacts AI"
-              description="Draft outreach and nurture contacts"
-              placeholder="e.g. Draft an outreach email to re-engage enterprise contacts..."
-              presets={[
-                { label: "Outreach Email", prompt: "Draft a personalised outreach email for contacts. Include subject line + email body (3-5 sentences, professional, warm) with a clear CTA." },
-                { label: "Segment Analysis", prompt: "Segment contacts into 3-4 actionable groups based on company type, role, and tags. For each segment, suggest a specific outreach strategy." },
-                { label: "Newsletter Draft", prompt: "Write a newsletter email with subject line, then HTML email body with sections (intro, main content, tips/value, CTA). Professional and engaging. 300-500 words." },
-                { label: "Re-engage Stale", prompt: "Identify contacts who haven't been engaged in 30+ days. Draft a re-engagement email sequence (2 emails) that offers value and reignites the relationship." },
-                { label: "LinkedIn Message", prompt: "Draft 3 LinkedIn connection request messages for different contact segments (startup founders, enterprise managers, solopreneurs). Keep each under 300 characters." },
-                { label: "Referral Ask", prompt: "Write a professional email asking existing contacts for referrals. Include subject line, explain the value of referring, and make it easy with a one-click CTA." },
-                { label: "Event Invite", prompt: "Draft an event invitation email for a virtual assistant webinar. Include subject line, event details, 3 key takeaways, and RSVP CTA." },
-                { label: "Contact Cleanup", prompt: "Analyze the contact list for data quality issues: missing emails, duplicate companies, incomplete tags. Suggest a cleanup plan with priorities." },
-              ]}
-              dataContext={(() => {
-                const companies = [...new Set(contacts.map(c => c.company).filter(Boolean))];
-                const roles = [...new Set(contacts.map(c => c.role).filter(Boolean))];
-                const tags = [...new Set(contacts.flatMap(c => c.tags || []))];
-                return `CreedaVA Contacts (${contacts.length} total):\nCompanies: ${companies.slice(0, 10).join(", ")}\nRoles: ${roles.slice(0, 10).join(", ")}\nTags: ${tags.slice(0, 10).join(", ")}`;
-              })()}
-              buildPrompt={(input, ctx) =>
-                buildTrainedPrompt("Contacts", input, ctx, { includeCompetitors: true })
-              }
-            />
             <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               Export

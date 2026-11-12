@@ -1,6 +1,5 @@
 "use client";
 
-import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -10,14 +9,12 @@ import {
   AdminTabs,
   WorldMap,
   CountryMap,
-  AIPromptButton,
 } from "@/components/admin";
 import { Button } from "@/components/ui";
 import { useAuth } from "@/lib/firebase/auth-context";
 import {
   fetchAnalyticsEvents,
   type AnalyticsEvent,
-  type AnalyticsSummary,
 } from "@/lib/firebase/analytics";
 import {
   cloudFetchAnalyticsReport,
@@ -406,7 +403,6 @@ function ConversionFunnel({
 export default function AnalyticsPage() {
   const { user } = useAuth();
   const [events, setEvents] = useState<AnalyticsEvent[]>([]);
-  const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<"7d" | "30d" | "90d">("30d");
@@ -501,12 +497,10 @@ export default function AnalyticsPage() {
     try {
       const data = await fetchAnalyticsEvents(daysFilter);
       setEvents(data.events);
-      setSummary(data.summary);
     } catch (err) {
       console.error("Analytics fetch failed", err);
       setError("Failed to load analytics data.");
       setEvents([]);
-      setSummary(null);
     } finally {
       setLoading(false);
     }
@@ -717,31 +711,6 @@ export default function AnalyticsPage() {
         description={syncDescription}
         actions={
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-            <AIPromptButton
-              section="Analytics AI"
-              description="Interpret traffic data and improve SEO performance"
-              placeholder="e.g. Explain traffic patterns, give SEO recommendations, find content gaps..."
-              presets={[
-                { label: "Traffic Insights", prompt: "Analyze traffic data and explain what's happening. Provide: key trends, what's working, what needs attention, and 3 specific actions to increase organic traffic." },
-                { label: "SEO Recommendations", prompt: "Give 5 high-impact SEO recommendations. For each: the action, why it matters, implementation steps, and expected traffic impact. Prioritize by effort vs. result." },
-                { label: "Content Gaps", prompt: "Identify content gaps based on current page performance. Suggest 5 new pages/blog posts that would fill gaps and capture search traffic. For each: title, target keyword, estimated search volume, and why it would rank." },
-                { label: "Bounce Rate Fix", prompt: "Analyze pages with high bounce rates. For each: explain likely causes, suggest UX or content changes, and estimate the impact of fixing them." },
-                { label: "Conversion Funnel", prompt: "Map the visitor-to-lead conversion funnel. Identify where visitors drop off, suggest improvements at each stage, and estimate potential conversion lift." },
-                { label: "Top Referrers", prompt: "Analyze referral traffic sources. Rank by quality (not just volume). Suggest 3 ways to get more traffic from the best-performing referrers." },
-                { label: "Mobile vs Desktop", prompt: "Compare mobile vs desktop performance. Highlight any significant differences in engagement, conversion, or bounce rate. Suggest mobile-specific optimizations." },
-                { label: "Weekly Digest", prompt: "Write a concise weekly analytics digest. Cover: traffic trend, top pages, new vs returning visitors, best traffic source, and one key action item for next week." },
-              ]}
-              dataContext={(() => {
-                const views = filtered.length;
-                const uniquePages = summary?.uniquePages ?? 0;
-                const topPgs = topPages.slice(0, 5).map(p => `${p.label} (${p.value} views)`).join(", ");
-                const countries = countryData.slice(0, 5).map(c => `${c.country} (${c.count})`).join(", ");
-                return `CreedaVA Analytics (${period}):\nTotal events: ${views}, Unique pages: ${uniquePages}\nTop pages: ${topPgs}\nTop countries: ${countries}`;
-              })()}
-              buildPrompt={(input, ctx) =>
-                buildTrainedPrompt("Analytics", input, ctx, { includeCompetitors: true, includeKPIs: true })
-              }
-            />
             <div className="flex items-center gap-3 justify-end w-full sm:w-auto">
               <label className="flex items-center gap-1.5 text-xs text-gray-50">
                 <input

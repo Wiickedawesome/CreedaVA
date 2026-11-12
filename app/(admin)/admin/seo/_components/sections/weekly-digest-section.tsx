@@ -1,9 +1,21 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { useCollection } from "@/hooks/useCollection";
+import { useScheduledReports } from "@/hooks/useScheduledReports";
 import { DashboardSection, PageHeader, StatusBadge } from "@/components/admin";
-import type { AIReport } from "@/lib/types/content";
+import type {
+  AIReport,
+  BlogPost,
+  Campaign,
+  EmailDraft,
+  ForumThread,
+  LandingPage,
+  SEOAudit,
+  SEOKeyword,
+} from "@/lib/types/content";
+import type { Booking, Contact, Customer, Lead } from "@/lib/types/crm";
+import type { AllCollections } from "@/lib/utils/ai-data-context";
 
 function formatDate(d: unknown): string {
   if (!d) return "—";
@@ -19,6 +31,64 @@ export default function WeeklyDigestSection() {
     orderByField: "createdAt",
     orderDirection: "desc",
   });
+
+  // ─── Keep this digest fresh ─────────────────────────
+  // The weekly scheduled report is generated on the client (the hook debounces
+  // via localStorage and only touches the weekly period). This tab is its only
+  // reader, so the trigger lives here beside the output it produces. Previously
+  // it ran from the SEO Hub's Creeda AI tab, which has since been retired in
+  // favour of the admin dashboard entry point.
+  const { data: leads } = useCollection<Lead>("leads");
+  const { data: customers } = useCollection<Customer>("customers");
+  const { data: contacts } = useCollection<Contact>("contacts");
+  const { data: bookings } = useCollection<Booking>("bookings");
+  const { data: campaigns } = useCollection<Campaign>("campaigns");
+  const { data: emails } = useCollection<EmailDraft>("emails");
+  const { data: blog } = useCollection<BlogPost>("blog");
+  const { data: keywords } = useCollection<SEOKeyword>("keywords");
+  const { data: seoAudits } = useCollection<SEOAudit>("seo");
+  const { data: landingPages } = useCollection<LandingPage>("landing-pages");
+  const { data: forumThreads } = useCollection<ForumThread>("forum");
+
+  const allData: AllCollections = useMemo(
+    () => ({
+      leads,
+      customers,
+      contacts,
+      bookings,
+      campaigns,
+      emails,
+      blog,
+      keywords,
+      seoAudits,
+      landingPages,
+      forumThreads,
+    }),
+    [
+      leads,
+      customers,
+      contacts,
+      bookings,
+      campaigns,
+      emails,
+      blog,
+      keywords,
+      seoAudits,
+      landingPages,
+      forumThreads,
+    ],
+  );
+
+  const { autoGenerate } = useScheduledReports();
+  const autoRanRef = useRef(false);
+  useEffect(() => {
+    if (autoRanRef.current) return;
+    if (leads.length + customers.length + bookings.length === 0) return;
+    autoRanRef.current = true;
+    autoGenerate(allData).catch((err) =>
+      console.warn("[weekly-digest] autoGenerate failed:", err),
+    );
+  }, [leads.length, customers.length, bookings.length, allData, autoGenerate]);
 
   // Show only true weekly reports: explicit type="weekly" OR scheduled-weekly category.
   const weekly = reports
@@ -38,7 +108,8 @@ export default function WeeklyDigestSection() {
           <p className="text-sm text-gray-60">Loading…</p>
         ) : weekly.length === 0 ? (
           <p className="text-sm text-gray-60">
-            No weekly reports yet. The synthesizer runs Sundays and the scheduled-report autogenerate fires from the analytics dashboard.
+            No weekly reports yet. The synthesizer runs Sundays; a stale report is
+            regenerated automatically the first time this tab opens each week.
           </p>
         ) : (
           <div className="space-y-3">

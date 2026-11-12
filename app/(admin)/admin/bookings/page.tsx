@@ -1,6 +1,5 @@
 "use client";
 
-import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -9,7 +8,6 @@ import {
   DataTable,
   StatusBadge,
   Modal,
-  AIPromptButton,
   CalendarView,
   useToast,
 } from "@/components/admin";
@@ -18,13 +16,11 @@ import { Button, Input } from "@/components/ui";
 import { cloudListCalendarEvents, cloudRetrySyncBooking } from "@/lib/firebase/cloud-functions";
 import type { Booking } from "@/lib/types/crm";
 import { statusVariant, BOOKING_STATUSES } from "@/lib/types/crm";
-import type { EmailDraft } from "@/lib/types/content";
 
 export default function BookingsPage() {
   const { data: bookings, loading, add, edit, del } = useCollection<Booking>("bookings", {
     orderByField: "createdAt",
   });
-  const { add: addEmail } = useCollection<EmailDraft>("emails", { orderByField: "createdAt" });
   const { toast } = useToast();
 
   const [tab, setTab] = useState("all");
@@ -133,62 +129,6 @@ export default function BookingsPage() {
     () => [...bookingCalendarEvents, ...googleCalendarEvents],
     [bookingCalendarEvents, googleCalendarEvents],
   );
-
-  /** Save AI output — emails go to the Emails collection, analysis goes to booking notes */
-  async function handleAIResult(result: string) {
-    const text = result.trim();
-    // Detect email-like content: look for "Subject:" pattern
-    const subjectMatch = text.match(/Subject\s*:\s*(.+)/i);
-    const isEmail = !!subjectMatch;
-
-    if (isEmail) {
-      const subject = subjectMatch![1].trim();
-      // Body = everything after the subject line
-      const bodyStart = text.indexOf(subjectMatch![0]) + subjectMatch![0].length;
-      const body = text.slice(bodyStart).trim();
-      try {
-        await addEmail({
-          purpose: "follow-up",
-          subject,
-          body,
-          previewText: body.slice(0, 120).replace(/\n/g, " "),
-          status: "draft",
-        });
-        toast("Email draft saved to Emails", "success");
-      } catch {
-        toast("Failed to save email draft", "error");
-      }
-    } else {
-      // Save analysis / non-email output as a note on the selected booking
-      if (selected) {
-        try {
-          const existing = selected.notes || "";
-          const updated = existing
-            ? `${existing}\n\n--- AI Insight ---\n${text}`
-            : `--- AI Insight ---\n${text}`;
-          await edit(selected.id, { notes: updated });
-          setForm((f) => ({ ...f, notes: updated }));
-          toast("AI insight saved to booking notes", "success");
-        } catch {
-          toast("Failed to save AI insight", "error");
-        }
-      } else {
-        // No booking selected — save as a standalone email draft for reference
-        try {
-          await addEmail({
-            purpose: "ai-generated",
-            subject: "AI Generated — Bookings",
-            body: text,
-            previewText: text.slice(0, 120).replace(/\n/g, " "),
-            status: "draft",
-          });
-          toast("AI content saved to Emails as draft", "success");
-        } catch {
-          toast("Failed to save AI content", "error");
-        }
-      }
-    }
-  }
 
   async function handleViewCalendar() {
     setViewMode("calendar");
@@ -382,31 +322,6 @@ export default function BookingsPage() {
         description="Manage service bookings and appointments"
         actions={
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-          <AIPromptButton
-            section="Bookings AI"
-            description="Improve booking follow-up and conversion"
-            placeholder="e.g. Draft follow-up emails for pending bookings, analyze service popularity..."
-            presets={[
-              { label: "Follow-up Emails", prompt: "Draft follow-up emails for pending/recent bookings. For each pending booking write a short confirmation/follow-up email (subject + 3 sentences). Be professional and reassuring." },
-              { label: "Service Analysis", prompt: "Analyze booking patterns and service popularity. Provide: most popular services, conversion rates by status, suggestions for improving booking completion, and ideas for new service offerings." },
-              { label: "Thank You Email", prompt: "Draft a professional thank-you email template that thanks the client, summarises what was discussed, suggests next steps, and asks for a referral. Include subject line." },
-              { label: "No-Show Recovery", prompt: "Draft a friendly re-engagement email for clients who missed their booking. Offer to reschedule and emphasize value. Include subject line and 3-4 sentences." },
-              { label: "Upsell After Call", prompt: "Draft a post-consultation email that upsells additional services based on common booking types. Include 2-3 service recommendations with benefits." },
-              { label: "Weekly Summary", prompt: "Generate a weekly booking summary report. Cover: total bookings, completion rate, most requested services, cancellations, and revenue opportunity from pending bookings." },
-              { label: "Reminder Template", prompt: "Draft a booking reminder email to send 24 hours before the scheduled call. Professional, concise, includes what to prepare for the meeting." },
-              { label: "Availability Tips", prompt: "Analyze booking times and suggest optimal availability windows. Identify peak demand hours and recommend schedule adjustments to maximize bookings." },
-            ]}
-            dataContext={(() => {
-              const byStatus = Object.entries(bookings.reduce((acc, b) => ({ ...acc, [b.status]: (acc[b.status] || 0) + 1 }), {} as Record<string, number>)).map(([s, c]) => `${s}: ${c}`).join(", ");
-              const services = [...new Set(bookings.map(b => b.service).filter(Boolean))];
-              const recent = bookings.slice(0, 5).map(b => `${b.name} (${b.service}, ${b.status})`).join("; ");
-              return `CreedaVA Bookings (${bookings.length} total):\nBy status: ${byStatus}\nServices: ${services.join(", ")}\nRecent: ${recent}`;
-            })()}
-            buildPrompt={(input, ctx) =>
-              buildTrainedPrompt("Bookings", input, ctx, { includeKPIs: true })
-            }
-            onResult={handleAIResult}
-          />
           <Button variant="outline" size="sm" onClick={() => {
             if (viewMode === "calendar") {
               setViewMode("table");

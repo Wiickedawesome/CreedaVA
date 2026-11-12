@@ -108,20 +108,6 @@ const contentItems: NavItem[] = [
   },
 ];
 
-const seoItems: NavItem[] = [
-  {
-    label: "SEO Hub",
-    href: "/admin/seo",
-    exact: false,
-    icon: (
-      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </svg>
-    ),
-  },
-];
-
 const marketingItems: NavItem[] = [
   {
     label: "Landing Pages",
@@ -168,9 +154,17 @@ const analyticsItems: NavItem[] = [
       </svg>
     ),
   },
+  {
+    label: "SEO Hub",
+    href: "/admin/seo",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    ),
+  },
 ];
-
-
 
 function NavSection({ title, items, onNavigate }: { title?: string; items: NavItem[]; onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -232,7 +226,6 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
       crm: filterItems(crmItems, query),
       analytics: filterItems(analyticsItems, query),
       content: filterItems(contentItems, query),
-      seo: filterItems(seoItems, query),
       marketing: filterItems(marketingItems, query),
     };
   }, [searchQuery]);
@@ -242,7 +235,6 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
       ...filteredNav.crm,
       ...filteredNav.analytics,
       ...filteredNav.content,
-      ...filteredNav.seo,
       ...filteredNav.marketing,
     ],
     [filteredNav],
@@ -319,7 +311,6 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
             <NavSection items={filteredNav.crm} onNavigate={onNavigate} />
             <NavSection title="Analytics" items={filteredNav.analytics} onNavigate={onNavigate} />
             <NavSection title="Content" items={filteredNav.content} onNavigate={onNavigate} />
-            <NavSection title="SEO" items={filteredNav.seo} onNavigate={onNavigate} />
             <NavSection title="Marketing" items={filteredNav.marketing} onNavigate={onNavigate} />
             {allFilteredItems.length === 0 && searchQuery.trim() && (
               <p className="px-3 py-2 text-xs text-gray-50">No matching navigation items</p>

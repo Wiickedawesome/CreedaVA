@@ -1,6 +1,5 @@
 "use client";
 
-import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { useState, useRef } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -9,7 +8,6 @@ import {
   DataTable,
   StatusBadge,
   Modal,
-  AIPromptButton,
   RichTextEditor,
   Select,
   useToast,
@@ -457,33 +455,6 @@ export default function CampaignsPage() {
         description="Ad campaigns and email campaigns"
         actions={
           <div className="flex items-center gap-2">
-            <AIPromptButton
-              section="Campaigns AI"
-              description="Optimise campaigns and boost ROI"
-              placeholder="e.g. Suggest campaign ideas for targeting startups, review campaign performance..."
-              presets={[
-                { label: "Campaign Ideas", prompt: "Suggest 3 campaign ideas. For each: name, platform (Google/Facebook/LinkedIn), target audience, ad copy (headline + description), suggested budget, and expected results." },
-                { label: "Performance Review", prompt: "Review campaign performance and suggest optimizations. For each active campaign: assess ROI, identify problems, and give 2-3 specific optimisations. Then give overall budget reallocation recommendation." },
-                { label: "Ad Copy", prompt: "Write compelling ad copy. Provide 3 variations, each with: headline (max 30 chars), description (max 90 chars), and CTA. Then one long-form version (2-3 sentences)." },
-                { label: "A/B Test Ideas", prompt: "Suggest 5 A/B test ideas for current campaigns. For each: what to test, hypothesis, how to measure, and expected impact on conversions." },
-                { label: "Budget Optimizer", prompt: "Analyze current campaign spending vs results. Recommend an optimal budget allocation across platforms to maximize ROI. Include specific dollar reallocation suggestions." },
-                { label: "Audience Targeting", prompt: "Define 4 ideal audience segments for VA services. For each: demographics, pain points, preferred platform, messaging angle, and estimated audience size." },
-                { label: "Retargeting Plan", prompt: "Design a retargeting campaign strategy. Include: audience segments to retarget, ad creative suggestions, frequency caps, and expected conversion improvement." },
-                { label: "Monthly Report", prompt: "Write a monthly campaign performance report. Cover: spend vs budget, key metrics (CPC, CTR, conversions), winning and underperforming campaigns, and recommended actions for next month." },
-              ]}
-              dataContext={(() => {
-                const totalBudget = campaigns.reduce((s, c) => s + c.budget, 0);
-                const totalSpent = campaigns.reduce((s, c) => s + c.spent, 0);
-                const totalClicks = campaigns.reduce((s, c) => s + c.clicks, 0);
-                const totalConversions = campaigns.reduce((s, c) => s + c.conversions, 0);
-                const totalImpressions = campaigns.reduce((s, c) => s + c.impressions, 0);
-                const activeCampaigns = campaigns.filter(c => c.status === "active").map(c => `${c.name} (${c.platform}, $${c.spent}/$${c.budget}, ${c.clicks} clicks, ${c.conversions} conversions)`).join("; ");
-                return `CreedaVA Campaigns (${campaigns.length} total):\nBudget: $${totalBudget} total, $${totalSpent} spent\nPerformance: ${totalImpressions} impressions, ${totalClicks} clicks, ${totalConversions} conversions\nCTR: ${totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : 0}%\nActive: ${activeCampaigns || "none"}`;
-              })()}
-              buildPrompt={(input, ctx) =>
-                buildTrainedPrompt("Campaigns", input, ctx, { includeCompetitors: true, includeKPIs: true })
-              }
-            />
             <Button size="sm" onClick={() => openModal()}>
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />

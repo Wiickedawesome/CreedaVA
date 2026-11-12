@@ -1,6 +1,5 @@
 "use client";
 
-import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import React, { useState, useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -12,7 +11,6 @@ import {
   Select,
   DashboardSection,
   StatCard,
-  AIPromptButton,
   useToast,
 } from "@/components/admin";
 import type { Column } from "@/components/admin";
@@ -587,32 +585,6 @@ export default function CustomersPage() {
         description={`${customers.filter((c) => c.status === "active").length} active · MRR $${mrr.toLocaleString()}`}
         actions={
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-            <AIPromptButton
-              section="Customers AI"
-              description="Retain customers and grow revenue"
-              placeholder="e.g. Suggest churn prevention tactics, find upsell opportunities..."
-              presets={[
-                { label: "Retention Strategy", prompt: "Analyze customer data and suggest a churn prevention strategy. Provide 5 specific retention tactics, early warning signs, and a re-engagement plan for churned customers." },
-                { label: "Upsell Opportunities", prompt: "Identify upsell opportunities. For each customer with upsell potential: explain why they're ready, what to offer, and draft a 2-sentence pitch. Prioritize by revenue impact." },
-                { label: "Client Email", prompt: "Draft a professional email to the customer base announcing updates. Include subject line and HTML body. Personalise for the audience with a clear CTA." },
-                { label: "QBR Template", prompt: "Create a quarterly business review template for a client meeting. Include: accomplishments, KPIs, hours saved, ROI summary, and recommendations for next quarter." },
-                { label: "Churn Analysis", prompt: "Analyze churned customers for patterns. Identify common churn reasons, time-to-churn, plan types most at risk, and 3 specific actions to reduce future churn." },
-                { label: "NPS Survey", prompt: "Draft a Net Promoter Score survey email for customers. Include subject line, brief intro, the NPS question, and a follow-up open-ended question. Keep it short." },
-                { label: "Win-Back Campaign", prompt: "Design a 3-email win-back sequence for churned customers. Each email should offer increasing value and a compelling reason to return. Include subject lines." },
-                { label: "LTV Analysis", prompt: "Analyze customer lifetime value by plan type and tenure. Identify the most valuable customer segments and suggest strategies to increase LTV across all tiers." },
-              ]}
-              dataContext={(() => {
-                const active = customers.filter(c => c.status === "active");
-                const churned = customers.filter(c => c.status === "churned");
-                const mrr = active.reduce((s, c) => s + (c.monthlyValue || 0), 0);
-                const plans = [...new Set(customers.map(c => c.plan).filter(Boolean))];
-                const topCustomers = active.sort((a, b) => (b.monthlyValue || 0) - (a.monthlyValue || 0)).slice(0, 5).map(c => `${c.name} ($${c.monthlyValue || 0}/mo, ${c.plan || "no plan"})`);
-                return `CreedaVA Customers (${customers.length} total, ${active.length} active, ${churned.length} churned):\nMRR: $${mrr}, ARR: $${mrr * 12}\nPlans: ${plans.join(", ")}\nTop customers: ${topCustomers.join("; ")}`;
-              })()}
-              buildPrompt={(input, ctx) =>
-                buildTrainedPrompt("Customers", input, ctx, { includeCompetitors: true, includeKPIs: true })
-              }
-            />
             <Button variant="outline" size="sm" onClick={handleHealthAnalysis} isLoading={healthLoading} className="w-full sm:w-auto">
               <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
