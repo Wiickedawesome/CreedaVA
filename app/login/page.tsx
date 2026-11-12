@@ -6,6 +6,27 @@ import { AuthProvider, useAuth } from "@/lib/firebase/auth-context";
 import type { User } from "@/lib/firebase/auth";
 import { BrandLogo } from "@/components/brand/brand-logo";
 
+/**
+ * Firebase error codes are not readable by a visitor, and some of them are not
+ * even distinguishable by their default message. Translate the ones that
+ * actually surface at this step so a failed sign-in says what to change rather
+ * than looking like the button did nothing.
+ */
+const SIGN_IN_ERROR_MESSAGES: Record<string, string> = {
+  "auth/popup-blocked":
+    "Your browser blocked the sign-in window. Allow pop-ups for creedava.com and try again.",
+  "auth/network-request-failed":
+    "Could not reach Google. Check your connection, VPN or ad-blocker and try again.",
+  "auth/operation-not-allowed":
+    "Google sign-in is disabled for this project. Contact the site owner.",
+  "auth/unauthorized-domain":
+    "This domain is not authorised for sign-in. Contact the site owner.",
+  "auth/firebase-app-check-token-is-invalid":
+    "The security check (reCAPTCHA) could not complete. Turn off ad-blockers for creedava.com, or try another network.",
+  "auth/internal-error":
+    "The security check (reCAPTCHA) could not complete. Turn off ad-blockers for creedava.com, or try another network.",
+};
+
 function getSafeRedirectPath(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
     return "/admin";
@@ -110,8 +131,12 @@ function LoginComponent() {
         setRedirecting(false);
         return;
       }
-      
-      setError(msg || "Sign-in failed. Please try again.");
+
+      setError(
+        (code && SIGN_IN_ERROR_MESSAGES[code]) ||
+          msg ||
+          "Sign-in failed. Please try again.",
+      );
       console.error("[Auth]", code, msg);
       setSigningIn(false);
       setRedirecting(false);

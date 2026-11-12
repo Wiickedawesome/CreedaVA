@@ -15,6 +15,7 @@ import {
   signOut,
   type User,
 } from "./auth";
+import { ensureAppCheckToken } from "./app-check";
 import { FirebaseInit } from "./firebase-init";
 
 /**
@@ -160,6 +161,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function signIn() {
+    // Must happen before the popup: App Check is enforced on identitytoolkit,
+    // and App Check initialises lazily, so a first click would otherwise send a
+    // sign-in request with no token and be rejected with a closed popup.
+    await ensureAppCheckToken();
+
     try {
       return await signInWithGoogle();
     } catch (error) {

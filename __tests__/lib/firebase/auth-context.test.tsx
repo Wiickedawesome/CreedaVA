@@ -7,6 +7,19 @@ const mockSignInWithGoogle = vi.fn();
 const mockSignInWithCustomToken = vi.fn();
 const mockSignOut = vi.fn();
 
+/** Records the order sign-in steps actually ran in. */
+const callOrder: string[] = [];
+
+// App Check is enforced on identitytoolkit, so a sign-in request must not leave
+// before a token exists. Mock it so the ordering can be asserted.
+vi.mock("@/lib/firebase/app-check", () => ({
+  ensureAppCheckToken: () => {
+    callOrder.push("app-check");
+    return Promise.resolve(true);
+  },
+  getAppCheckHeaders: () => Promise.resolve({}),
+}));
+
 vi.mock("@/lib/firebase/config", () => ({
   app: {},
   auth: {},
@@ -24,7 +37,10 @@ vi.mock("@/lib/firebase/auth", () => ({
       authCallback = null;
     };
   },
-  signInWithGoogle: () => mockSignInWithGoogle(),
+  signInWithGoogle: () => {
+    callOrder.push("popup");
+    return mockSignInWithGoogle();
+  },
   signInWithCustomToken: (token: string) => mockSignInWithCustomToken(token),
   signOut: () => mockSignOut(),
   checkRedirectResult: () => Promise.resolve(null),
@@ -52,6 +68,29 @@ describe("AuthProvider", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authCallback = null;
+  });
+
+  it("mints an App Check token before opening the sign-in popup", async () => {
+    // Regression: App Check is ENFORCED on identitytoolkit and initialises
+    // lazily, so the popup used to launch before reCAPTCHA had produced a
+    // token. The sign-in request was rejected and the popup just closed,
+    // returning the visitor to /login with no explanation — in every browser,
+    // which is what made it look like a broken site rather than a race.
+    mockSignInWithGoogle.mockResolvedValue({ uid: "u1" });
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+
+    await act(async () => {
+      screen.getByText("Sign In").click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(callOrder).toEqual(["app-check", "popup"]);
   });
 
   it("starts in loading state", () => {

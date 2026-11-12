@@ -97,3 +97,46 @@ export async function getAppCheckHeaders(): Promise<Record<string, string>> {
     return {};
   }
 }
+
+/**
+ * How long to wait for reCAPTCHA before letting the caller proceed anyway.
+ * Generous enough for a slow mobile connection, short enough that a visitor on
+ * a network that blocks reCAPTCHA is not left staring at a dead button.
+ */
+const APP_CHECK_WAIT_MS = 10_000;
+
+/**
+ * Resolve once an App Check token exists, or after APP_CHECK_WAIT_MS.
+ *
+ * Auth is the one caller that cannot skip this. App Check is ENFORCED on
+ * `identitytoolkit`, so a sign-in request that leaves without a token is
+ * rejected outright — measured: 401 "Firebase App Check token is invalid."
+ * The visitor sees only a popup that closes and returns them to /login.
+ *
+ * App Check itself is initialised lazily, on purpose, to keep reCAPTCHA's
+ * ~350 KB off public pages. Everywhere else that is harmless because the SDK
+ * refreshes the token in the background. Sign-in is the exception: it is the
+ * first thing a new visitor does, so a click within the first few seconds used
+ * to fire the popup while the reCAPTCHA script was still in flight. Minting the
+ * token here removes that race instead of hoping the visitor waits.
+ *
+ * Returns false when no token could be produced. Callers proceed regardless:
+ * enforcement may be off in another environment, and blocking sign-in on a
+ * token we could not mint would be worse than trying without one.
+ */
+export async function ensureAppCheckToken(): Promise<boolean> {
+  const appCheck = initializeAppCheck();
+  if (!appCheck) return false;
+
+  try {
+    const token = await Promise.race([
+      getToken(appCheck, false).then((result) => result.token),
+      new Promise<null>((resolve) =>
+        window.setTimeout(() => resolve(null), APP_CHECK_WAIT_MS),
+      ),
+    ]);
+    return Boolean(token);
+  } catch {
+    return false;
+  }
+}
