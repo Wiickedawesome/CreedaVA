@@ -13,6 +13,6 @@ export const ADMIN_ROUTE_ALIASES = {
   seoCitations: "/admin/seo?section=opportunities",
   seoDigest: "/admin/seo?section=agent",
   seoAgent: "/admin/seo?section=agent",
-  seoTasks: "/admin/seo?section=tasks",
+  seoTasks: "/admin/seo?section=action-items",
   seoRankings: "/admin/seo?section=keywords&tab=rankings",
 } as const;

@@ -6,7 +6,7 @@
  * large collections and including only the most recent/relevant items.
  */
 
-import type { Lead, Customer, Task, Project, Contact, Booking } from "@/lib/types/crm";
+import type { Lead, Customer, Contact, Booking } from "@/lib/types/crm";
 import type {
   BlogPost,
   SEOKeyword,
@@ -22,8 +22,6 @@ import type {
 export interface AllCollections {
   leads?: Lead[];
   customers?: Customer[];
-  tasks?: Task[];
-  projects?: Project[];
   contacts?: Contact[];
   bookings?: Booking[];
   campaigns?: Campaign[];
@@ -104,8 +102,6 @@ export function buildFullContext(data: AllCollections): string {
 
   if (sampledData.leads?.length) sections.push(summarizeLeads(sampledData.leads));
   if (sampledData.customers?.length) sections.push(summarizeCustomers(sampledData.customers));
-  if (sampledData.tasks?.length) sections.push(summarizeTasks(sampledData.tasks));
-  if (sampledData.projects?.length) sections.push(summarizeProjects(sampledData.projects));
   if (sampledData.contacts?.length) sections.push(summarizeContacts(sampledData.contacts));
   if (sampledData.bookings?.length) sections.push(summarizeBookings(sampledData.bookings));
   if (sampledData.campaigns?.length) sections.push(summarizeCampaigns(sampledData.campaigns));
@@ -159,8 +155,6 @@ export function buildPeriodContext(
   const filtered: AllCollections = {
     leads: data.leads ? filterByDate(data.leads) : undefined,
     customers: data.customers ? filterByDate(data.customers) : undefined,
-    tasks: data.tasks ? filterByDate(data.tasks) : undefined,
-    projects: data.projects,
     contacts: data.contacts ? filterByDate(data.contacts) : undefined,
     bookings: data.bookings ? filterByDate(data.bookings) : undefined,
     campaigns: data.campaigns,
@@ -175,7 +169,6 @@ export function buildPeriodContext(
   const totals = `\n--- ALL-TIME TOTALS (for comparison) ---
 Leads: ${data.leads?.length || 0} total
 Customers: ${data.customers?.length || 0} total
-Tasks: ${data.tasks?.length || 0} total
 Bookings: ${data.bookings?.length || 0} total\n`;
 
   return header + buildFullContext(filtered) + totals;
@@ -205,14 +198,6 @@ export function buildMarketingContext(data: AllCollections): string {
   if (data.campaigns?.length) sections.push(summarizeCampaigns(data.campaigns));
   if (data.emails?.length) sections.push(summarizeEmails(data.emails));
   if (data.landingPages?.length) sections.push(summarizeLandingPages(data.landingPages));
-  return sections.join("\n");
-}
-
-export function buildOperationsContext(data: AllCollections): string {
-  const sections = ["OPERATIONS CONTEXT"];
-  if (data.tasks?.length) sections.push(summarizeTasks(data.tasks));
-  if (data.projects?.length) sections.push(summarizeProjects(data.projects));
-  if (data.bookings?.length) sections.push(summarizeBookings(data.bookings));
   return sections.join("\n");
 }
 
@@ -267,7 +252,6 @@ export function buildContentVelocityContext(data: AllCollections): string {
 export function buildCustomerLTVContext(data: AllCollections): string {
   const sections = ["CUSTOMER LTV & CHURN RISK CONTEXT"];
   if (data.customers?.length) sections.push(summarizeCustomers(data.customers));
-  if (data.projects?.length) sections.push(summarizeProjects(data.projects));
   if (data.bookings?.length) sections.push(summarizeBookings(data.bookings));
   if (data.leads?.length) sections.push(summarizeLeads(data.leads));
   return sections.join("\n");
@@ -345,28 +329,6 @@ By status: ${countBy(customers, (c) => c.status)}
 MRR: $${mrr.toLocaleString()}, ARR: $${(mrr * 12).toLocaleString()}
 Plans: ${plans.join(", ") || "none defined"}
 Top by revenue: ${top || "none"}`;
-}
-
-function summarizeTasks(tasks: Task[]): string {
-  const overdue = tasks.filter(
-    (t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "done",
-  );
-  return `\n--- TASKS (${tasks.length}) ---
-By status: ${countBy(tasks, (t) => t.status)}
-By priority: ${countBy(tasks, (t) => t.priority)}
-Overdue: ${overdue.length} (${overdue.map((t) => t.title).join(", ") || "none"})`;
-}
-
-function summarizeProjects(projects: Project[]): string {
-  const totalBudget = projects.reduce((s, p) => s + (p.budget || 0), 0);
-  const active = projects
-    .filter((p) => p.status === "active")
-    .map((p) => `${p.name} (${p.clientName || "—"}, $${p.budget || 0})`)
-    .join("; ");
-  return `\n--- PROJECTS (${projects.length}) ---
-By status: ${countBy(projects, (p) => p.status)}
-Total budget: $${totalBudget.toLocaleString()}
-Active: ${active || "none"}`;
 }
 
 function summarizeContacts(contacts: Contact[]): string {

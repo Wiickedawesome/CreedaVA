@@ -6,8 +6,6 @@
  *   leads           → Lead            (lib/types/crm.ts)
  *   contacts        → Contact         (lib/types/crm.ts)
  *   customers       → Customer        (lib/types/crm.ts)
- *   tasks           → Task            (lib/types/crm.ts)
- *   projects        → Project         (lib/types/crm.ts)
  *   bookings        → Booking         (lib/types/crm.ts)
  *   notes           → (see below)
  *   seo             → SEOAudit        (lib/types/content.ts)
@@ -160,8 +158,6 @@ export const COLLECTION_MAP = {
   "leads":             "Lead",
   "contacts":          "Contact",
   "customers":         "Customer",
-  "tasks":             "Task",
-  "projects":          "Project",
   "bookings":          "Booking",
   "notes":             "Note",
 

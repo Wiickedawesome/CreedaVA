@@ -59,7 +59,7 @@ export default function BriefsSection() {
         affectedPath: brief.rankingPage ?? null,
       });
       await edit(brief.id, { status: "in-progress" });
-      toast("Task created in pipeline");
+      toast("Action item created in pipeline");
     } catch (err) {
       toast(err instanceof Error ? err.message : "Failed to create task", "error");
     } finally {

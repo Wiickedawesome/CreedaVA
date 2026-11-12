@@ -1244,9 +1244,7 @@ ROI:
 - Marketing spend efficiency (target: >3x ROAS)
 
 EFFICIENCY:
-- Task completion rate (target: >90%)
 - Average response time to leads (target: <2 hours)
-- Project delivery on-time rate (target: >85%)
 - Customer churn rate (target: <5% monthly)
 
 REVENUE:
@@ -1786,10 +1784,6 @@ Key actions: Identify low-converting pages, suggest copy/CTA improvements, recom
 Apply CRO expertise: persuasion sequence, form optimization, trust elements, psychological triggers. Apply AIO: ensure pages are cited by AI.
 Cross-reference: Traffic data, lead conversion by landing page, SEO keyword targets, CRO metrics.`,
 
-  projects: `You are on the PROJECTS page. Focus on: delivery status, budget utilization, timeline adherence, resource allocation.
-Key actions: Flag at-risk projects, suggest resource optimizations, identify scope creep, recommend process improvements.
-Cross-reference: Task completion rates, customer satisfaction, team workload.`,
-
   "seo/content": `You are on the SEO CONTENT page. Focus on: content optimization, keyword targeting, content gaps, topical authority building.
 Key actions: Audit existing content for SEO improvements, identify content gaps vs competitors, suggest content updates for ranking gains.
 Apply SERP feature targeting: featured snippets, PAA, rich results. Apply GEO: optimize for AI citation. Apply AIO: ensure AI engines cite our content.
@@ -1802,10 +1796,6 @@ Cross-reference: Blog content, landing pages, competitor keyword gaps, SERP feat
 
   settings: `You are on the SETTINGS page. Focus on: system configuration, integration health, user management.
 Key actions: Recommend optimal settings, check integration status, suggest workflow automations.`,
-
-  tasks: `You are on the TASKS page. Focus on: task prioritization, workload balance, completion rates, bottleneck identification.
-Key actions: Prioritize tasks by business impact, identify blockers, suggest task delegation, flag overdue items.
-Cross-reference: Project deadlines, team capacity, customer commitments.`,
 };
 
 /**

@@ -35,17 +35,18 @@ const AgentDashboard = dynamic(() => import("./_components/sections/agent-hub-se
   ssr: false,
   loading: () => <SectionSkeleton label="Loading agent…" />,
 });
-const TasksBoard = dynamic(
+const ActionItemsBoard = dynamic(
   () => import("./_components/tasks-board").then((m) => m.SeoTasksBoard),
-  { ssr: false, loading: () => <SectionSkeleton label="Loading tasks…" /> },
+  { ssr: false, loading: () => <SectionSkeleton label="Loading action items…" /> },
 );
 
-type SectionId = "ai" | "pages" | "keywords" | "opportunities" | "briefs" | "outreach" | "agent" | "tasks";
+type SectionId = "ai" | "pages" | "keywords" | "opportunities" | "briefs" | "outreach" | "agent" | "action-items";
 
 // Legacy ?section= values that now live inside a merged tab.
 const SECTION_ALIASES: Record<string, SectionId> = {
   citations: "opportunities",
   digest: "agent",
+  tasks: "action-items",
 };
 
 const SECTIONS: { value: SectionId; label: string; description: string }[] = [
@@ -56,7 +57,7 @@ const SECTIONS: { value: SectionId; label: string; description: string }[] = [
   { value: "briefs", label: "Briefs", description: "AI-generated content briefs ready to hand off to writers." },
   { value: "outreach", label: "Outreach", description: "Draft and track backlink/PR outreach emails." },
   { value: "agent", label: "Agent", description: "Run the autonomous SEO agent, review its run history, and read the weekly digest." },
-  { value: "tasks", label: "Tasks", description: "SEO action items generated from agent findings." },
+  { value: "action-items", label: "Action items", description: "SEO actions the agent has queued from its findings." },
 ];
 
 function SectionSkeleton({ label }: { label: string }) {
@@ -112,7 +113,7 @@ export default function SeoHubPage() {
         {section === "briefs" && <BriefsSection />}
         {section === "outreach" && <OutreachSection />}
         {section === "agent" && <AgentDashboard />}
-        {section === "tasks" && <TasksBoard />}
+        {section === "action-items" && <ActionItemsBoard />}
       </Suspense>
     </div>
   );

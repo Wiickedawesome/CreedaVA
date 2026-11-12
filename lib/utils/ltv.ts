@@ -1,36 +1,25 @@
-import type { Customer, Project } from "@/lib/types/crm";
+import type { Customer } from "@/lib/types/crm";
 
 /**
  * Compute a customer's Lifetime Value on the fly.
  *
- * Formula:  LTV = (monthlyValue × months active) + Σ completed-goal values
+ * Formula:  LTV = monthlyValue × months active
  *
- * - "months active" = months between startDate and now (minimum 0)
- * - completed-goal values come from all projects linked to this customer
+ * "months active" = months between startDate and now (minimum 0).
+ *
+ * This used to add the value of completed project goals. Projects were removed
+ * from the admin (see docs/dev/REMOVED_ADMIN_SURFACES.md), so that term is gone
+ * and LTV is recurring revenue only. The sole surviving project document was
+ * test data, so the number did not change for any real customer.
  */
-export function computeLTV(
-  customer: Customer,
-  projects: Project[],
-): number {
-  // ── Recurring revenue portion ──────────────────────
-  let recurringRevenue = 0;
-  if (customer.monthlyValue && customer.startDate) {
-    const start = new Date(customer.startDate);
-    const now = new Date();
-    const monthsActive =
-      (now.getFullYear() - start.getFullYear()) * 12 +
-      (now.getMonth() - start.getMonth());
-    recurringRevenue = customer.monthlyValue * Math.max(0, monthsActive);
-  }
+export function computeLTV(customer: Customer): number {
+  if (!customer.monthlyValue || !customer.startDate) return 0;
 
-  // ── Goal-based revenue portion ─────────────────────
-  const linkedProjects = projects.filter(
-    (p) => p.clientId === customer.id || p.clientName === customer.name,
-  );
-  const goalRevenue = linkedProjects.reduce((sum, p) => {
-    const completedGoals = (p.goals || []).filter((g) => g.status === "completed");
-    return sum + completedGoals.reduce((s, g) => s + (g.value || 0), 0);
-  }, 0);
+  const start = new Date(customer.startDate);
+  const now = new Date();
+  const monthsActive =
+    (now.getFullYear() - start.getFullYear()) * 12 +
+    (now.getMonth() - start.getMonth());
 
-  return recurringRevenue + goalRevenue;
+  return customer.monthlyValue * Math.max(0, monthsActive);
 }

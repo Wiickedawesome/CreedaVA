@@ -5,7 +5,7 @@ import { useCollection } from "@/hooks/useCollection";
 import { useScheduledReports } from "@/hooks/useScheduledReports";
 import { PageHeader, Markdown } from "@/components/admin";
 import { BusinessPulse } from "@/components/admin/report-categories";
-import type { Lead, Customer, Task, Project, Contact, Booking } from "@/lib/types/crm";
+import type { Lead, Customer, Contact, Booking } from "@/lib/types/crm";
 import type {
   AIReport,
   BlogPost,
@@ -362,8 +362,6 @@ export default function AiSection() {
   const { data: reports, loading: reportsLoading } = useCollection<AIReport>("reports", { orderByField: "createdAt" });
   const { data: leads } = useCollection<Lead>("leads");
   const { data: customers } = useCollection<Customer>("customers");
-  const { data: tasks } = useCollection<Task>("tasks");
-  const { data: projects } = useCollection<Project>("projects");
   const { data: contacts } = useCollection<Contact>("contacts");
   const { data: bookings } = useCollection<Booking>("bookings");
   const { data: campaigns } = useCollection<Campaign>("campaigns");
@@ -378,8 +376,6 @@ export default function AiSection() {
     () => ({
       leads,
       customers,
-      tasks,
-      projects,
       contacts,
       bookings,
       campaigns,
@@ -390,7 +386,7 @@ export default function AiSection() {
       landingPages,
       forumThreads,
     }),
-    [leads, customers, tasks, projects, contacts, bookings, campaigns, emails, blog, keywords, seoAudits, landingPages, forumThreads],
+    [leads, customers, contacts, bookings, campaigns, emails, blog, keywords, seoAudits, landingPages, forumThreads],
   );
 
   // ─── Keep the weekly digest fresh ──────────────────
@@ -403,10 +399,10 @@ export default function AiSection() {
   useEffect(() => {
     if (autoRanRef.current) return;
     if (reportsLoading) return;
-    if (leads.length + customers.length + bookings.length + tasks.length === 0) return;
+    if (leads.length + customers.length + bookings.length === 0) return;
     autoRanRef.current = true;
     autoGenerate(allData).catch((err) => console.warn("[creeda-ai] autoGenerate failed:", err));
-  }, [reportsLoading, leads.length, customers.length, bookings.length, tasks.length, allData, autoGenerate]);
+  }, [reportsLoading, leads.length, customers.length, bookings.length, allData, autoGenerate]);
 
   // ─── Business Pulse score + area breakdown ─────────
   const latestScore = useMemo(() => {
@@ -417,7 +413,6 @@ export default function AiSection() {
   const pulseAreas = useMemo(
     () => [
       { label: "Sales", value: leads.length > 0 ? Math.round((leads.filter((l) => l.status === "won").length / leads.length) * 100) : 0 },
-      { label: "Operations", value: tasks.length > 0 ? Math.round((tasks.filter((t) => t.status === "done").length / tasks.length) * 100) : 0 },
       { label: "Content", value: blog.length > 0 ? Math.round((blog.filter((b) => b.status === "published").length / blog.length) * 100) : 0 },
       { label: "Marketing", value: campaigns.length > 0 ? Math.round((campaigns.filter((c) => c.status === "active" || c.status === "completed").length / campaigns.length) * 100) : 0 },
       { label: "SEO", value: seoAudits.length > 0 ? Math.round(seoAudits.reduce((s, a) => s + a.score, 0) / seoAudits.length) : 0 },
@@ -425,7 +420,7 @@ export default function AiSection() {
       { label: "Forum", value: forumThreads.length > 0 ? Math.round((forumThreads.filter((t) => t.replies > 0).length / forumThreads.length) * 100) : 0 },
       { label: "Keywords", value: keywords.length > 0 ? Math.round((keywords.filter((k) => k.tracked).length / keywords.length) * 100) : 0 },
     ],
-    [leads, tasks, blog, campaigns, seoAudits, bookings, forumThreads, keywords],
+    [leads, blog, campaigns, seoAudits, bookings, forumThreads, keywords],
   );
 
   return (

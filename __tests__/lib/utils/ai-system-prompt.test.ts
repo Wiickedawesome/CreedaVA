@@ -108,11 +108,9 @@ describe("AI System Prompt", () => {
         "leads",
         "marketing/campaigns",
         "marketing/landing-pages",
-        "projects",
         "seo/content",
         "seo/keywords",
         "settings",
-        "tasks",
       ];
       for (const page of expected) {
         expect(PAGE_CONTEXT_MAP).toHaveProperty(page);

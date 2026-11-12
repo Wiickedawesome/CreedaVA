@@ -19,7 +19,7 @@ import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { exportToCsv } from "@/lib/utils/csv";
 import { cloudCreateClientFolder, cloudExportToSheets, cloudListDriveFiles, cloudSendEmail } from "@/lib/firebase/cloud-functions";
-import type { Customer, CustomerFormData, BillingCycle, Project } from "@/lib/types/crm";
+import type { Customer, CustomerFormData, BillingCycle } from "@/lib/types/crm";
 import type { Contact } from "@/lib/types/crm";
 import type { EmailDraft } from "@/lib/types/content";
 import { computeLTV } from "@/lib/utils/ltv";
@@ -94,9 +94,6 @@ export default function CustomersPage() {
     orderByField: "createdAt",
   });
   const { data: contacts, add: addContact } = useCollection<Contact>("contacts", {
-    orderByField: "createdAt",
-  });
-  const { data: projects } = useCollection<Project>("projects", {
     orderByField: "createdAt",
   });
   const { toast } = useToast();
@@ -211,8 +208,8 @@ export default function CustomersPage() {
     [active],
   );
   const customerLtvMap = useMemo(
-    () => new Map(customers.map((c) => [c.id, computeLTV(c, projects)])),
-    [customers, projects],
+    () => new Map(customers.map((c) => [c.id, computeLTV(c)])),
+    [customers],
   );
   const totalLtv = useMemo(
     () => Array.from(customerLtvMap.values()).reduce((sum, v) => sum + v, 0),

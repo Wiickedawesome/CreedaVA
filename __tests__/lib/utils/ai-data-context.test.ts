@@ -6,7 +6,6 @@ import {
   buildSalesContext,
   buildSEOContext,
   buildMarketingContext,
-  buildOperationsContext,
   buildKeywordContext,
   buildLandingPageContext,
   buildBookingContext,
@@ -30,12 +29,7 @@ const SAMPLE_DATA: AllCollections = {
   customers: [
     { id: "c1", name: "Charlie", email: "c@c.com", status: "active", plan: "pro", mrr: 500, createdAt: new Date().toISOString() } as never,
   ],
-  tasks: [
-    { id: "t1", title: "Follow up", status: "open", priority: "high", createdAt: new Date().toISOString() } as never,
-  ],
-  projects: [
-    { id: "p1", name: "Website redesign", status: "active", budget: 5000 } as never,
-  ],
+
   contacts: [
     { id: "co1", name: "Diana", email: "d@d.com", company: "ACME", createdAt: new Date().toISOString() } as never,
   ],
@@ -139,13 +133,6 @@ describe("AI Data Context Builders", () => {
     });
   });
 
-  describe("buildOperationsContext", () => {
-    it("includes operations header", () => {
-      const result = buildOperationsContext(SAMPLE_DATA);
-      expect(result).toContain("OPERATIONS");
-    });
-  });
-
   describe("buildKeywordContext", () => {
     it("includes keyword header", () => {
       const result = buildKeywordContext(SAMPLE_DATA);
@@ -225,7 +212,6 @@ describe("AI Data Context Builders", () => {
         buildSalesContext,
         buildSEOContext,
         buildMarketingContext,
-        buildOperationsContext,
         buildKeywordContext,
         buildLandingPageContext,
         buildBookingContext,
@@ -246,8 +232,6 @@ describe("AI Data Context Builders", () => {
       const emptyArrays: AllCollections = {
         leads: [],
         customers: [],
-        tasks: [],
-        projects: [],
         contacts: [],
         bookings: [],
         campaigns: [],

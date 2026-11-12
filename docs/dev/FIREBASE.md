@@ -100,6 +100,25 @@ firebase deploy --only functions
 | `triggers.ts`         | Firestore document triggers        |
 | `webhooks.ts`         | External webhook handlers          |
 
+### Memory limits
+
+2nd-gen functions default to **256 MiB**, which is tight for anything that fetches and
+parses a large JSON payload — the parse roughly doubles the response in memory.
+
+Measured 2026-11-12: `fetchAnalyticsReport` and `fetchRealtimeAnalytics` were being killed
+at **259–267 MiB** on every call, which is why the analytics panels had no data and why
+Firebase emailed a stream of "Memory limit exceeded" alerts. Both are now `512MiB`.
+
+**If you see `Memory limit of N MiB exceeded` in the logs, that is a configuration bug, not
+a logic bug.** Raise `memory` in the function's options; do not go hunting for a leak.
+
+```bash
+firebase functions:log --project creeda-va | head -80
+```
+
+Note that `firebase functions:log --only fn1,fn2` fails with `Failed to list log entries`
+on this project — run it without `--only` and read the output.
+
 ### Local Development
 
 ```bash

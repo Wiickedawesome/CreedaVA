@@ -12,7 +12,7 @@
  */
 
 import { fetchAll } from "@/lib/firebase/firestore";
-import type { Lead, Customer, Task, Project, Contact, Booking } from "@/lib/types/crm";
+import type { Lead, Customer, Contact, Booking } from "@/lib/types/crm";
 import type {
   BlogPost,
   SEOKeyword,
@@ -70,7 +70,7 @@ const PAGE_CONFIGS: Record<string, PageConfig> = {
   },
   customers: {
     section: "Customers AI",
-    collections: ["customers", "projects", "bookings", "leads"],
+    collections: ["customers", "bookings", "leads"],
     contextBuilder: buildCustomerLTVContext,
   },
   emails: {
@@ -125,8 +125,6 @@ const COLLECTION_FETCHERS: Record<
 > = {
   leads: () => fetchAll<Lead>("leads"),
   customers: () => fetchAll<Customer>("customers"),
-  tasks: () => fetchAll<Task>("tasks"),
-  projects: () => fetchAll<Project>("projects"),
   contacts: () => fetchAll<Contact>("contacts"),
   bookings: () => fetchAll<Booking>("bookings"),
   campaigns: () => fetchAll<Campaign>("campaigns"),

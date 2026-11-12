@@ -176,7 +176,7 @@ describe("loadSlimContext", () => {
   it("returns proper AllCollections shape", async () => {
     mockFetchAll.mockResolvedValueOnce([{ id: "1" }]);
     mockFetchAll.mockResolvedValueOnce([]);
-    const result = await loadSlimContext(["leads", "tasks"]);
+    const result = await loadSlimContext(["leads", "customers"]);
     expect(result).toBeDefined();
   });
 
