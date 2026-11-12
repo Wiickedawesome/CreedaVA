@@ -123,21 +123,52 @@ export async function DELETE() {
  * even though the visitor is legitimately signed in. Minting a custom token for
  * the cookie's uid lets the client log back in without another Google prompt.
  *
- * Returns 401 when there is no valid session — that is the signal "genuinely
- * signed out", as opposed to "could not restore".
+ * Two different failures are reported separately, because they mean opposite
+ * things to the caller:
+ *
+ *   401 no_session / invalid_session — genuinely signed out, show /login.
+ *   503 restore_unavailable — the session is VALID but a custom token could not
+ *       be minted. Reporting this as 401 marked a signed-in visitor as
+ *       anonymous, and the admin guard then replaced the URL with /login — so
+ *       they were bounced to the sign-in screen while holding a good cookie.
+ *
+ * The two steps are also logged separately. They used to share one silent catch,
+ * which is why a hard configuration failure looked like "expired session" and
+ * went undiagnosed.
  */
 export async function GET(request: NextRequest) {
   const sessionCookie = request.cookies.get(SESSION_COOKIE)?.value;
 
   if (!sessionCookie) {
-    return NextResponse.json({ error: "No session" }, { status: 401 });
+    return NextResponse.json(
+      { error: "No session", code: "no_session" },
+      { status: 401 },
+    );
+  }
+
+  let uid: string;
+  try {
+    ({ uid } = await adminAuth.verifySessionCookie(sessionCookie, true));
+  } catch (error) {
+    console.error("[/api/session] session cookie verification failed:", error);
+    return NextResponse.json(
+      { error: "Invalid or expired session", code: "invalid_session" },
+      { status: 401 },
+    );
   }
 
   try {
-    const decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
-    const customToken = await adminAuth.createCustomToken(decoded.uid);
+    const customToken = await adminAuth.createCustomToken(uid);
     return NextResponse.json({ customToken });
-  } catch {
-    return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
+  } catch (error) {
+    // Measured 2026-11-12: the App Hosting runtime account holds
+    // firebase.sdkAdminServiceAgent, which grants firebaseauth.users.createSession
+    // (so the cookie above works) but NOT signBlob, which minting a custom token
+    // requires. See docs/dev/AUTH_SIGNIN.md for the one-line grant.
+    console.error("[/api/session] custom token creation failed:", error);
+    return NextResponse.json(
+      { error: "Session restore unavailable", code: "restore_unavailable" },
+      { status: 503 },
+    );
   }
 }

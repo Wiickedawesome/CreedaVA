@@ -1,16 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 
 const mockVerifyIdToken = vi.fn();
 const mockCreateSessionCookie = vi.fn();
+const mockVerifySessionCookie = vi.fn();
+const mockCreateCustomToken = vi.fn();
 
 vi.mock("@/lib/firebase-admin", () => ({
   adminAuth: {
     verifyIdToken: (...args: unknown[]) => mockVerifyIdToken(...args),
     createSessionCookie: (...args: unknown[]) => mockCreateSessionCookie(...args),
+    verifySessionCookie: (...args: unknown[]) => mockVerifySessionCookie(...args),
+    createCustomToken: (...args: unknown[]) => mockCreateCustomToken(...args),
   },
 }));
 
-import { POST, DELETE } from "@/app/api/session/route";
+import { POST, DELETE, GET } from "@/app/api/session/route";
+
+function getRequest(sessionCookie?: string) {
+  return new NextRequest("https://creedava.com/api/session", {
+    headers: sessionCookie ? { cookie: `__session=${sessionCookie}` } : {},
+  });
+}
 
 function postRequest(token = "id-token") {
   return new Request("https://creedava.com/api/session", {
@@ -102,5 +113,50 @@ describe("DELETE /api/session", () => {
     const setCookie = res.headers.get("set-cookie");
     expect(setCookie).toContain("__session=");
     expect(setCookie).toContain("Max-Age=0");
+  });
+});
+
+describe("GET /api/session", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockVerifySessionCookie.mockResolvedValue({ uid: "uid-1" });
+    mockCreateCustomToken.mockResolvedValue("custom-token");
+  });
+
+  it("returns a custom token for a valid session", async () => {
+    const res = await GET(getRequest("good-cookie"));
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ customToken: "custom-token" });
+  });
+
+  it("reports a missing session as no_session", async () => {
+    const res = await GET(getRequest());
+
+    expect(res.status).toBe(401);
+    expect(await res.json()).toMatchObject({ code: "no_session" });
+  });
+
+  it("reports an unverifiable cookie as invalid_session", async () => {
+    mockVerifySessionCookie.mockRejectedValue(new Error("expired"));
+
+    const res = await GET(getRequest("bad-cookie"));
+
+    expect(res.status).toBe(401);
+    expect(await res.json()).toMatchObject({ code: "invalid_session" });
+  });
+
+  it("distinguishes a valid session that could not be restored", async () => {
+    // Regression: this case was reported as 401, identical to "signed out".
+    // The admin guard then treated a legitimate visitor as anonymous and
+    // replaced the URL with /login, sending them back to the sign-in screen
+    // while they still held a valid session cookie. It is a server-side
+    // failure, not a sign-out, so it must not look like one.
+    mockCreateCustomToken.mockRejectedValue(new Error("signBlob denied"));
+
+    const res = await GET(getRequest("good-cookie"));
+
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({ code: "restore_unavailable" });
   });
 });
