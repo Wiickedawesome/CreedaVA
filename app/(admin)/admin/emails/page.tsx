@@ -167,24 +167,43 @@ export default function EmailsPage() {
   }, [draftsLoading, emails, add, edit]);
 
   // ─── Derived data ─────────────────
-  const filteredInbox = useMemo(() => {
-    let msgs = inboxMessages.filter((m) => !m.archived);
-    const filter = BUSINESS_ADDRESSES.find((entry) => entry.label === inboxFilter);
-    if (filter) msgs = msgs.filter((m) => isReceivedBy(m, filter));
-    return msgs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [inboxMessages, inboxFilter]);
+  /**
+   * Only mail addressed to a business group. The Gmail account this syncs is
+   * `john@` — a personal inbox — so its alerts, receipts and internal reports
+   * dominated the view while saying nothing about whether customers can reach
+   * CreedaVA. Stakeholder mail stays in Gmail; this page is the business inbox.
+   */
+  const businessMessages = useMemo(
+    () =>
+      inboxMessages.filter(
+        (m) => !m.archived && BUSINESS_ADDRESSES.some((entry) => isReceivedBy(m, entry)),
+      ),
+    [inboxMessages],
+  );
 
-  const unreadCount = useMemo(() => inboxMessages.filter((m) => !m.seen && !m.archived).length, [inboxMessages]);
+  /** Business mail hidden only by the active mailbox filter. */
+  const hiddenPersonalCount = inboxMessages.length - businessMessages.length;
+
+  const filteredInbox = useMemo(() => {
+    const filter = BUSINESS_ADDRESSES.find((entry) => entry.label === inboxFilter);
+    const msgs = filter ? businessMessages.filter((m) => isReceivedBy(m, filter)) : businessMessages;
+    return [...msgs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [businessMessages, inboxFilter]);
+
+  const unreadCount = useMemo(
+    () => businessMessages.filter((m) => !m.seen).length,
+    [businessMessages],
+  );
 
   /**
-   * Per-mailbox receiving state. "Nothing received yet" is the useful signal
-   * here: it means mail to that address is not reaching the synced inbox, which
-   * is the only way this app can tell whether an alias is live.
+   * Per-mailbox receiving state. "No mail yet" is not an error — it means nothing
+   * has been sent to that group, which is the only way this app can show that an
+   * alias is live.
    */
   const mailboxHealth = useMemo(
     () =>
       BUSINESS_ADDRESSES.map((entry) => {
-        const mine = inboxMessages.filter((m) => !m.archived && isReceivedBy(m, entry));
+        const mine = businessMessages.filter((m) => isReceivedBy(m, entry));
         const latest = mine.reduce<string | null>((newest, m) => {
           if (!newest) return m.date;
           return new Date(m.date) > new Date(newest) ? m.date : newest;
@@ -196,7 +215,7 @@ export default function EmailsPage() {
           lastReceived: latest ? formatReceivedDate(latest) : null,
         };
       }),
-    [inboxMessages],
+    [businessMessages],
   );
 
   // Separate system templates from user drafts
@@ -712,12 +731,18 @@ export default function EmailsPage() {
               <button onClick={() => setInboxFilter("all")} className="text-primary hover:underline text-xs">Clear</button>
             </div>
           )}
+          {hiddenPersonalCount > 0 && (
+            <p className="text-xs text-gray-50">
+              {hiddenPersonalCount} message{hiddenPersonalCount === 1 ? "" : "s"} addressed to a
+              personal mailbox {hiddenPersonalCount === 1 ? "is" : "are"} hidden — those stay in Gmail.
+            </p>
+          )}
           <DataTable
             columns={inboxColumns}
             data={filteredInbox}
             keyExtractor={(m) => m.id}
             onRowClick={(m) => openInboxMessage(m)}
-            emptyMessage="No emails in inbox — click Sync to check for new messages"
+            emptyMessage="No mail to a business address yet — nothing has been sent to these groups"
           />
         </>
       )}

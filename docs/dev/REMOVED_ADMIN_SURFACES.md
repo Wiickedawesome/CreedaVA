@@ -170,7 +170,7 @@ neither. It is now:
 | Was | Now | Route |
 |---|---|---|
 | Tab "Page SEO" (`page-seo` collection) | **Page Metadata** — top-level page | `/admin/metadata` |
-| Tab "Audits" (`seo` + `onpage-audits`) | **Audits** sub-tab inside the agent that produces them | `/admin/seo?section=agent&tab=audits` |
+| Tab "Audits" (`seo` + `onpage-audits`) | **Findings** sub-tab inside the agent that produces them | `/admin/seo?section=agent&tab=audits` |
 | Tab "Opportunities" (`keyword-gaps`) | **Gaps** sub-tab of Keywords | `/admin/seo?section=keywords&tab=gaps` |
 
 Why: **Page Metadata is not an SEO-reporting surface.** `getPageSEO()` overrides
@@ -311,6 +311,13 @@ Each mailbox gets a health card: count, unread, and **last received date**. "No
 mail yet" is not an error — it means nothing has been sent to that group so far.
 Once mail does arrive, the date is the proof that the alias is live.
 
+**The inbox shows business mail only.** The synced account is `john@creedava.com`,
+so its Google alerts, receipts and internal reports dominated the view while
+proving nothing about whether customers can reach CreedaVA. Mail not addressed to
+one of the eight groups is hidden, with a count of what was hidden rather than a
+silent filter. All 56 stored messages were addressed to `john@`, so the business
+inbox is correctly empty until something is sent to a group.
+
 **The inbox was never polled.** `syncInboxToFirestore` only ran when someone
 pressed Sync, so the stored data could be months stale with nothing to indicate it.
 `dailyGoogleSync` now calls the shared `runInboxSync()` (extracted from the
@@ -360,8 +367,26 @@ Two bugs this exposed, both fixed:
    `draft-generated`. Those briefs rendered with an unstyled badge and matched no
    filter. The union now covers every value, including `needs-review`.
 
-### Action items: receipts vs. work
+### The `seo` collection has no writer
 
+The Findings tab used to hold a second table, "One-off AI reviews", reading `seo`.
+Nothing produces that collection: no cloud function, no app code. The two
+documents left in it were a stale `/join` review and one whose `url` field was a
+prompt string (`"Review and optimize meta titles and descriptions for the top 5
+pages."`) — the AI prompt was echoed back into the field meant to hold a URL.
+
+A table of data no process writes is not a finding, so it is gone. The weekly
+digest still passes `seo` as model context, which is harmless.
+
+### The crawl already feeds Page Metadata
+
+Worth stating because it explains why Findings and Page Metadata look similar:
+`onpage.ts` is what writes `page-seo`. Its `tryAutoApplyMeta()` only overwrites a
+page's description when the crawl found something usable by
+`isUsableMetaValue()`. So the Findings list is the evidence behind the Default /
+Ignored / Live badges on `/admin/metadata`.
+
+### Action items: receipts vs. work
 Half the rows in `seo-tasks` are `autoApplied: true, status: "done"` — a record
 that the agent already changed the live page. The other half are genuine todos
 from the synthesizer. They were rendered in one kanban, so an already-completed

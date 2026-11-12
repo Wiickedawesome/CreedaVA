@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { AdminTabs } from "@/components/admin";
 import { SeoAgentDashboard } from "../agent-dashboard";
 import WeeklyDigestSection from "./weekly-digest-section";
-import { AuditsSection } from "./audits-section";
+import { FindingsSection } from "./findings-section";
 import BriefsSection from "./briefs-section";
 import { SeoTasksBoard } from "../tasks-board";
 
@@ -17,7 +17,7 @@ import { SeoTasksBoard } from "../tasks-board";
  */
 const SUB_TABS = [
   { label: "Agent runs", value: "runs" },
-  { label: "Audits", value: "audits" },
+  { label: "Findings", value: "audits" },
   { label: "Briefs", value: "briefs" },
   { label: "Action items", value: "action-items" },
   { label: "Weekly digest", value: "digest" },
@@ -36,7 +36,7 @@ export default function AgentHubSection() {
     <div className="space-y-6">
       <AdminTabs tabs={SUB_TABS} activeTab={tab} onChange={setTab} />
       {tab === "runs" && <SeoAgentDashboard />}
-      {tab === "audits" && <AuditsSection />}
+      {tab === "audits" && <FindingsSection />}
       {tab === "briefs" && <BriefsSection />}
       {tab === "action-items" && <SeoTasksBoard />}
       {tab === "digest" && <WeeklyDigestSection />}
