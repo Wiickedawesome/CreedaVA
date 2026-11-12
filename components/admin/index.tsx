@@ -41,8 +41,3 @@ export const CalendarView = dynamic(() => import("./calendar-view"), {
   ssr: false,
   loading: () => <div className="h-96 animate-pulse rounded-xl bg-gray-20 border border-border" />,
 });
-
-export const ImageGenerator = dynamic(
-  () => import("./image-generator").then((m) => m.ImageGenerator),
-  { ssr: false },
-);

@@ -45,6 +45,14 @@ const ASPECT_RATIO = "16:9";
 const MAX_TITLE_LENGTH = 200;
 const MAX_EXCERPT_LENGTH = 600;
 
+/**
+ * Cap on free-form source material (the Image studio). Deliberately larger than
+ * an excerpt: people paste a whole post body or a rough brief, and truncating
+ * that at 600 characters would silently drop the part that describes the scene.
+ * 4000 is still small enough that the scene-brief call stays cheap.
+ */
+const MAX_MATERIAL_LENGTH = 4000;
+
 interface Candidate {
   dataUrl: string;
   mimeType: string;
@@ -57,6 +65,21 @@ interface Rejected {
 
 function badRequest(error: string) {
   return NextResponse.json({ error }, { status: 400 });
+}
+
+/**
+ * A short label for free-form material: its first non-empty line.
+ *
+ * The scene brief needs *something* to name the subject, and a paste has no
+ * title. Falling back to the first line beats asking the user to invent one.
+ */
+function firstLine(text: string): string {
+  const line =
+    text
+      .split("\n")
+      .map((part) => part.trim())
+      .find(Boolean) ?? "";
+  return line.slice(0, MAX_TITLE_LENGTH);
 }
 
 /** Ask the text model for a scene brief. Falls back to the title alone. */
@@ -123,7 +146,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let body: { title?: string; excerpt?: string };
+  let body: { title?: string; excerpt?: string; material?: string };
   try {
     body = await req.json();
   } catch {
@@ -132,13 +155,26 @@ export async function POST(req: NextRequest) {
 
   const title = body.title?.trim() ?? "";
   const excerpt = body.excerpt?.trim() ?? "";
+  const material = body.material?.trim() ?? "";
 
-  if (!title) {
-    return badRequest("A title is required to choose a subject");
+  if (!title && !material) {
+    return badRequest(
+      "Provide a title, or some source material to choose a subject from",
+    );
   }
-  if (title.length > MAX_TITLE_LENGTH || excerpt.length > MAX_EXCERPT_LENGTH) {
-    return badRequest("Title or excerpt is too long");
+  if (
+    title.length > MAX_TITLE_LENGTH ||
+    excerpt.length > MAX_EXCERPT_LENGTH ||
+    material.length > MAX_MATERIAL_LENGTH
+  ) {
+    return badRequest("Title, excerpt or source material is too long");
   }
+
+  // Two callers, one pipeline: an article sends title + excerpt, the studio
+  // sends pasted material. Whichever arrived, the subject brief ends up the
+  // same shape.
+  const subject = title || firstLine(material);
+  const context = material || excerpt;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -150,7 +186,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const scene = await writeSceneBrief(ai, title, excerpt);
+  const scene = await writeSceneBrief(ai, subject, context);
   const prompt = buildImagePrompt(scene);
 
   // Draw all candidates together: they are independent, and serialising them
