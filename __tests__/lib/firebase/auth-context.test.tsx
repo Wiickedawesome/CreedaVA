@@ -314,13 +314,14 @@ describe("AuthProvider", () => {
     expect(screen.getByTestId("loading").textContent).toBe("false");
   });
 
-  it("does not report a sign-out when the server cannot restore the session", async () => {
-    // Regression: GET /api/session answered 503 while a perfectly valid session
-    // cookie was held (a missing IAM permission on the runtime account). That
-    // was reported as `anonymous`, so the admin guard replaced the URL with
-    // /login — the visitor saw the dashboard begin to render and was then
-    // thrown back to the sign-in screen. A server fault is not a sign-out.
-    mockFetch.mockResolvedValueOnce({ ok: false, status: 503 });
+  it("retries a failed restore instead of signing the visitor out on one error", async () => {
+    // A single server fault used to be reported as `anonymous`, so the admin
+    // guard replaced the URL with /login while a valid session cookie was held.
+    // One bad answer is not proof of a sign-out — retry before deciding.
+    mockFetch
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ customToken: "ct" }) });
+    mockSignInWithCustomToken.mockResolvedValueOnce({ uid: "u1" });
 
     render(
       <AuthProvider>
@@ -330,12 +331,31 @@ describe("AuthProvider", () => {
 
     await act(async () => {
       authCallback?.(null);
-      await Promise.resolve();
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 1200));
     });
 
-    // Still resolving, so no guard redirects and no login form is forced.
-    expect(screen.getByTestId("loading").textContent).toBe("true");
+    expect(mockSignInWithCustomToken).toHaveBeenCalledWith("ct");
+    expect(mockSignOut).not.toHaveBeenCalled();
+  });
+
+  it("falls back to the login page when the server never recovers", async () => {
+    // Persistent failure means the admin cannot load its data at all. A bare
+    // skeleton forever explains nothing; the login page is a working path.
+    mockFetch.mockResolvedValue({ ok: false, status: 503 });
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+
+    await act(async () => {
+      authCallback?.(null);
+      await new Promise((resolve) => setTimeout(resolve, 2200));
+    });
+
+    expect(screen.getByTestId("loading").textContent).toBe("false");
+    expect(mockSignInWithCustomToken).not.toHaveBeenCalled();
   });
 });
 

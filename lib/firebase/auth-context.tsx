@@ -105,6 +105,14 @@ async function fetchRestoreToken(): Promise<{
   }
 }
 
+/**
+ * How many times to ask the server for a restore token before giving up.
+ * Two retries ride out the brief window where a dependency is still
+ * propagating; beyond that the admin genuinely cannot load.
+ */
+const RESTORE_ATTEMPTS = 3;
+const RESTORE_RETRY_MS = 800;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<AuthStatus>("checking");
@@ -124,19 +132,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * the client back in. A 401 here is the genuine "signed out" answer.
    */
   async function restoreSession() {
-    const { token: customToken, unavailable } = await fetchRestoreToken();
+    let attempt = await fetchRestoreToken();
+
+    // Retry a server fault rather than deciding on the first answer. Staying in
+    // `checking` forever would leave the admin on a bare skeleton, which is a
+    // worse outcome than the login page: nothing tells the visitor why.
+    for (let i = 1; attempt.unavailable && i < RESTORE_ATTEMPTS; i += 1) {
+      console.error(`Session restore unavailable — retry ${i}.`);
+      await new Promise((resolve) => setTimeout(resolve, RESTORE_RETRY_MS));
+      attempt = await fetchRestoreToken();
+    }
+
+    const { token: customToken } = attempt;
 
     if (!customToken) {
-      if (unavailable) {
-        // The cookie may well be valid — the server just could not answer.
-        // Report neither "signed out" nor "signed in": stay in `checking` so
-        // the guard holds the loading state instead of redirecting. A false
-        // sign-out is far worse than a slow page; it is exactly what sent
-        // signed-in people back to /login during the session outage.
+      // Out of retries: the server never produced a token, so the admin cannot
+      // load its data. Say so by falling back to the login page, where signing
+      // in again is at least a working path.
+      if (attempt.unavailable) {
         console.error(
-          "Session restore unavailable — leaving the visitor signed in place.",
+          "Session restore unavailable after retries — treating as signed out.",
         );
-        return;
       }
       setStatus("anonymous");
       return;
