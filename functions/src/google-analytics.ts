@@ -66,7 +66,11 @@ interface GARow {
 }
 
 export const fetchAnalyticsReport = onCall(
-  { region: "us-east4", memory: "256MiB" },
+  // 256 MiB was the default and it was not enough: measured 2026-11-12 at
+  // 259-267 MiB in use, so every call was killed before it could respond and
+  // reported "Memory limit exceeded". A GA4 report response is large and the
+  // JSON parse doubles it in memory; 512 MiB leaves real headroom.
+  { region: "us-east4", memory: "512MiB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
@@ -232,7 +236,8 @@ export const fetchAnalyticsReport = onCall(
 // ─── Realtime Report ─────────────────────────────────
 
 export const fetchRealtimeAnalytics = onCall(
-  { region: "us-east4", memory: "256MiB" },
+  // Same reason as fetchAnalyticsReport: this ran past 256 MiB and was killed.
+  { region: "us-east4", memory: "512MiB" },
   async (request) => {
     verifyAdminEmail(request.auth?.token?.email);
 
