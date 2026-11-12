@@ -3120,6 +3120,61 @@ Verified: `tsc` clean (app + `functions`) · eslint 0 errors · **477/477** test
 that route needs Google popup sign-in and there are no test credentials. It is
 proven only by the build output above.
 
+### 2026-11-11 — generated article images, screened for AI tells
+
+Owner: *"add an image generator… using our AI… it should be anti-AI, don't make
+it look AI."*
+
+**The stack is the Gemini Developer API, not Vertex.** Measured: `@google/generative-ai@0.24.1`
+in both `package.json` files, zero hits for `vertex`/`aiplatform` in `lib/`,
+`app/`, `functions/src/`, and auth is a `GEMINI_API_KEY` from Secret Manager.
+That matters because the old key had been revoked by Google — every AI call in
+production was failing, not just images. A new key fixed it; verified working
+before any code was written.
+
+**Three steps, all exercised against the live API before shipping:**
+
+1. The text model writes a scene brief from the post's title and excerpt. Asking
+   for the scene keeps subjects from repeating across posts — the same variance
+   problem the article bodies had.
+2. `gemini-3.1-flash-lite-image` draws three candidates at `16:9`, which matches
+   `.mk-article--wide img { aspect-ratio: 16/9 }` so nothing is cropped.
+3. Each candidate is sent back to the vision model, which has to name a tell from
+   a fixed list before it can reject. Rejected candidates are never shown.
+
+⚠️ **The aspect ratio is `16:9` with a colon, not `16/9`.** The API rejects the
+CSS spelling with a 400 listing its accepted values. That cost one probe run and
+would have been a runtime-only failure.
+
+**No people, by design.** A convincing stock face reads as an invented client
+photo — the same honesty problem as the testimonials removed from the blog. The
+measured output was a cream ceramic mug, an open notebook, a dark wood desk and a
+trailing plant in window light; screening returned `{"passes": true, "tells": []}`.
+
+**Screening fails closed.** `parseScreening()` returns `passes: false` when the
+verdict is missing, malformed, or a truthy non-boolean — a broken screener must
+not become a rubber stamp. If no candidate survives, the route returns them all
+flagged plus a message, so the admin can still judge rather than get nothing.
+
+**Images are uploaded client-side** through the existing `uploadImage`, so the
+route needs no bucket credentials and writes nothing.
+
+Also in the same change: `getAdminUidFromSession()` extracted to
+`lib/firebase/admin-session.ts` (it was duplicated), and the two near-identical
+rate limiters collapsed into one windowed helper. Image generation gets its own
+**10/hour** budget — a stuck button must not run up a bill. Cost is ~$0.034 per
+image on Flash-Lite, so a generation of three is about a dime.
+
+Verified: `tsc` clean · eslint 0 errors · **496/496** tests (41 files) · build OK
+with `/api/ai/image` in the route manifest.
+
+**Not verified:** the admin panel has not been clicked — `/admin` needs Google
+popup sign-in and there are no test credentials.
+
+**3 pre-existing advisories remain** (`node-forge`, `fast-xml-parser` via
+`firebase-admin`). Measured identical before and after adding `@google/genai`; the
+fix is a `firebase-admin` major bump, so it was left alone rather than bundled in.
+
 ### 2026-11-11 (first) — article bodies must carry visuals, not only paragraphs
 
 Owner: *"the content itself is poor. We have tons of opportunity to use visuals…
