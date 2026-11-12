@@ -11,6 +11,12 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Read-only by default. Both jobs only check out the repo and run npm, so
+# nothing here needs a write scope — declaring it keeps a compromised or
+# malicious step from gaining one (actions/missing-workflow-permissions).
+permissions:
+  contents: read
+
 jobs:
   app:
     name: App (lint + test + build)
