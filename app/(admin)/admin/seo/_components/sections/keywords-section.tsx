@@ -21,6 +21,10 @@ import { cloudFetchSearchConsoleData } from "@/lib/firebase/cloud-functions";
 import type { SEOKeyword } from "@/lib/types/content";
 import { parseAiJson } from "@/lib/utils/ai-json";
 import { RankingsTable } from "../rankings-table";
+// `keyword-gaps` are keyword data produced by the agent's keyword-gaps skill.
+// They render here rather than in their own hub tab so everything keyword-
+// related lives in one place.
+import OpportunitiesSection from "./opportunities-section";
 
 const intentVariant: Record<string, "default" | "success" | "warning" | "error" | "info"> = {
   informational: "info",
@@ -329,6 +333,7 @@ export default function KeywordsSection() {
       <AdminTabs
         tabs={[
           { label: "Keywords", value: "keywords", badge: keywords.length },
+          { label: "Gaps", value: "gaps" },
           { label: "Rankings", value: "rankings" },
         ]}
         defaultValue={initialTab}
@@ -344,11 +349,12 @@ export default function KeywordsSection() {
             <li><strong>Manual entry</strong> — add a keyword you know you want to rank for (New Keyword button).</li>
           </ul>
           <p className="mt-2 text-xs text-gray-50">
-            The SEO agent also discovers <em>striking-distance</em> opportunities automatically — see the <strong>Opportunities</strong> tab.
+            The SEO agent also discovers <em>striking-distance</em> opportunities automatically — see the <strong>Gaps</strong> tab.
           </p>
         </div>
       )}
 
+      {tab === "gaps" && <OpportunitiesSection />}
       {tab === "rankings" && <RankingsTable />}
 
       {tab === "keywords" && (

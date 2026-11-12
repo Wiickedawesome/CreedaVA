@@ -28,7 +28,6 @@ import {
   buildSalesContext,
   buildSEOContext,
   buildMarketingContext,
-  buildKeywordContext,
   buildLandingPageContext,
   buildBookingContext,
   buildBlogContext,
@@ -135,15 +134,15 @@ const PAGE_CONFIGS: Record<string, PageConfig> = {
     collections: ["landingPages", "campaigns", "leads"],
     contextBuilder: buildLandingPageContext,
   },
-  "seo/content": {
-    section: "SEO Content AI",
-    collections: ["blog", "keywords", "seoAudits", "landingPages"],
+  seo: {
+    section: "SEO AI",
+    collections: ["keywords", "seoAudits", "blog", "landingPages"],
     contextBuilder: buildSEOContext,
   },
-  "seo/keywords": {
-    section: "SEO Keywords AI",
-    collections: ["keywords", "blog", "seoAudits"],
-    contextBuilder: buildKeywordContext,
+  metadata: {
+    section: "Metadata AI",
+    collections: ["seoAudits", "keywords", "blog"],
+    contextBuilder: buildSEOContext,
   },
 };
 
@@ -161,7 +160,11 @@ const COLLECTION_FETCHERS: Record<
   emails: () => fetchAll<EmailDraft>("emails"),
   blog: () => fetchAll<BlogPost>("blog"),
   keywords: () => fetchAll<SEOKeyword>("keywords"),
-  seoAudits: () => fetchAll<SEOAudit>("seo"),
+  // Crawler findings, not manual reviews. `onpage-audits` is what the SEO agent
+  // actually writes on every run; the legacy `seo` collection only ever held
+  // one-off AI reviews from a button, so it was usually empty — which left the
+  // AI reasoning about SEO from keywords alone.
+  seoAudits: () => fetchAll<SEOAudit>("onpage-audits"),
   landingPages: () => fetchAll<LandingPage>("landing-pages"),
   forumThreads: () => fetchAll<ForumThread>("forum"),
 };

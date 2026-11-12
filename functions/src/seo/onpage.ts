@@ -127,9 +127,23 @@ export function auditOne(url: string, status: number, html: string, ms: number):
 
   // Strip non-visible nodes first: cheerio's .text() includes <script> contents,
   // which would feed inline JSON-LD into bodyText (and then into meta descriptions).
-  const $visibleBody = $("body").clone();
-  $visibleBody.find("script, style, noscript, template").remove();
-  const text = $visibleBody.text().replace(/\s+/g, " ").trim();
+  //
+  // Prefer <main> and drop site chrome. Falling back to the whole <body> pulls in
+  // nav, footer and skip-links; because whitespace is collapsed afterwards, those
+  // labels run together ("HomeServicesPricingAbout") and then get truncated into
+  // a meta description that ships live. Joining block elements with ". " keeps a
+  // sentence boundary between them.
+  const $scope = ($("main").length > 0 ? $("main") : $("body")).clone();
+  $scope.find("script, style, noscript, template, nav, footer, header, form, aside").remove();
+
+  const blockText = $scope
+    .find("p, li, h1, h2, h3, h4, h5, h6, blockquote, figcaption, td, th")
+    .toArray()
+    .map((el) => $(el).text().replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .join(". ");
+
+  const text = (blockText || $scope.text().replace(/\s+/g, " ").trim()).trim();
   const wordCount = text ? text.split(/\s+/).length : 0;
 
   const issues: AuditOutput["issues"] = [];
@@ -446,11 +460,15 @@ async function tryAutoApplyMeta(audit: AuditOutput): Promise<boolean> {
 /**
  * Extract the first sentence of ≥70 chars from the body text.
  * Used for auto-generating meta descriptions.
+ *
+ * Only accepts text that reads as prose: navigation labels, cookie banners and
+ * other chrome have no sentence-ending punctuation, so anything stitched
+ * together from fragments is rejected rather than truncated into a description.
  */
 function extractFirstSentence(bodyText: string): string | null {
   if (!bodyText || bodyText.length < 70) return null;
   // Split on sentence-ending punctuation followed by whitespace.
-  const sentences = bodyText.split(/(?<=[.!?])\s+/);
+  const sentences = bodyText.split(/(?<=[.!?])\s+/).filter((s) => isProse(s));
   // Find the first sentence that's substantial (≥70 chars).
   for (const s of sentences) {
     const trimmed = s.trim();
@@ -459,7 +477,7 @@ function extractFirstSentence(bodyText: string): string | null {
       return trimmed.length > 160 ? trimmed.slice(0, 157) + "..." : trimmed;
     }
   }
-  // Fallback: concatenate until we hit 70+ chars.
+  // Fallback: concatenate consecutive prose sentences until we hit 70+ chars.
   let combined = "";
   for (const s of sentences) {
     combined += (combined ? " " : "") + s.trim();
@@ -468,6 +486,18 @@ function extractFirstSentence(bodyText: string): string | null {
     }
   }
   return null;
+}
+
+/** Skip-link and menu labels that are never a page's description. */
+const CHROME_LABEL =
+  /^(skip to (main )?content|menu|home|services|pricing|about|news|contact|blog|faq|log ?in|sign ?in|get started|book a call|back to top)$/i;
+
+/** A fragment is prose when it is long enough and ends like a sentence. */
+function isProse(fragment: string): boolean {
+  const trimmed = fragment.trim();
+  if (trimmed.length < 25) return false;
+  if (CHROME_LABEL.test(trimmed)) return false;
+  return /[.!?]$/.test(trimmed);
 }
 
 function prettyPath(p: string): string {

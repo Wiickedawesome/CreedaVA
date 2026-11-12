@@ -162,7 +162,60 @@ passing its own 4-line `dataContext`, which had been short-circuiting the page-a
 
 ---
 
-## 6. Deliberately kept — do not "clean these up"
+## 6. SEO Hub split — "Pages & Audits" was three different things
+
+The tab labelled **Pages & Audits** did two unrelated jobs and was named after
+neither. It is now:
+
+| Was | Now | Route |
+|---|---|---|
+| Tab "Page SEO" (`page-seo` collection) | **Page Metadata** — top-level page | `/admin/metadata` |
+| Tab "Audits" (`seo` + `onpage-audits`) | **Audits** sub-tab inside the agent that produces them | `/admin/seo?section=agent&tab=audits` |
+| Tab "Opportunities" (`keyword-gaps`) | **Gaps** sub-tab of Keywords | `/admin/seo?section=keywords&tab=gaps` |
+
+Why: **Page Metadata is not an SEO-reporting surface.** `getPageSEO()` overrides
+`generateMetadata` on 11 marketing pages, cached 60s — editing a row changes the
+live `<title>`, `<meta>`, OG and Twitter tags with no deploy. Filing that under a
+report tab hid how dangerous it is.
+
+`keyword-gaps` are written by the agent's `keyword-gaps` skill and consumed by the
+Keywords surface, so they render there now (the `OpportunitiesSection` component is
+reused, not duplicated).
+
+Retired route aliases still resolve:
+
+- `/admin/seo/content` → `/admin/metadata`
+- `/admin/seo/audits` → `/admin/seo?section=agent&tab=audits`
+- `?section=opportunities` / `?section=citations` → `?section=keywords`
+- `?section=pages` → falls through to the hub default (`keywords`)
+
+### The nav-glue meta description bug
+
+`functions/src/seo/onpage.ts` collapsed whole-`<body>` text with
+`.replace(/\s+/g, " ")`. Nav labels have no whitespace between the elements, so
+they fused into `Skip to main contentCreedaVAHomeServicesPricingAboutNewsContact…`;
+`extractFirstSentence()` then found no `.!?` sentence, concatenated fragments to
+157 chars, appended `"..."`, and `tryAutoApplyMeta()` wrote it into
+`page-seo.description` — served live because `isUsableMetaValue()` only rejected
+JSON-LD.
+
+Three fixes, defence in depth:
+
+1. **Crawl scoped to `<main>`** with `nav/footer/header/form/aside` stripped, and
+   block elements joined with `". "` so a sentence boundary survives.
+2. **`extractFirstSentence()` only accepts prose** — ≥25 chars, ends in `.!?`, not
+   a known chrome label. Fragments can no longer be stitched into a description.
+3. **`isUsableMetaValue()` rejects the corruption** — `skip to main content`, two
+   adjacent nav labels, or a trailing `"..."`. A poisoned row now loses to the
+   page's hand-written `metadata()` constant instead of shipping.
+
+Existing bad rows in `page-seo` are **not** deleted (data is irreversible). Fix 3
+means they no longer reach the live page; the row still shows the bad text in the
+Page Metadata table so it can be edited deliberately.
+
+---
+
+## 7. Deliberately kept — do not "clean these up"
 
 | Kept | Why |
 |---|---|

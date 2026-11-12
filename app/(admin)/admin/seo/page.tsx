@@ -7,18 +7,11 @@ import { AdminTabs, PageHeader } from "@/components/admin";
 import type { Tab } from "@/components/admin/tabs";
 
 // Lazy-load every section so the hub stays light and each tab only pays its own bundle cost.
-const PagesSection = dynamic(() => import("./_components/sections/pages-section"), {
-  ssr: false,
-  loading: () => <SectionSkeleton label="Loading pages…" />,
-});
 const KeywordsSection = dynamic(() => import("./_components/sections/keywords-section"), {
   ssr: false,
   loading: () => <SectionSkeleton label="Loading keywords…" />,
 });
-const OpportunitiesSection = dynamic(() => import("./_components/sections/opportunities-hub-section"), {
-  ssr: false,
-  loading: () => <SectionSkeleton label="Loading opportunities…" />,
-});
+
 const BriefsSection = dynamic(() => import("./_components/sections/briefs-section"), {
   ssr: false,
   loading: () => <SectionSkeleton label="Loading briefs…" />,
@@ -36,19 +29,20 @@ const ActionItemsBoard = dynamic(
   { ssr: false, loading: () => <SectionSkeleton label="Loading action items…" /> },
 );
 
-type SectionId = "pages" | "keywords" | "opportunities" | "briefs" | "outreach" | "agent" | "action-items";
+type SectionId = "keywords" | "briefs" | "outreach" | "agent" | "action-items";
 
-// Legacy ?section= values that now live inside a merged tab.
+// Legacy ?section= values and retired tabs.
 const SECTION_ALIASES: Record<string, SectionId> = {
-  citations: "opportunities",
+  citations: "keywords",
+  opportunities: "keywords",
   digest: "agent",
   tasks: "action-items",
 };
 
+const DEFAULT_SECTION: SectionId = "keywords";
+
 const SECTIONS: { value: SectionId; label: string; description: string }[] = [
-  { value: "pages", label: "Pages & Audits", description: "Manage on-page SEO metadata and run AI audits for each public page." },
-  { value: "keywords", label: "Keywords", description: "Track target keywords, pull Search Console rankings, and get AI keyword ideas." },
-  { value: "opportunities", label: "Opportunities", description: "Content gaps, backlink prospects, brand mentions, and AIO/GEO citations found by the agent." },
+  { value: "keywords", label: "Keywords", description: "Tracked keywords, AI-discovered gaps (content, backlinks, brand mentions, citations), and Search Console rankings." },
   { value: "briefs", label: "Briefs", description: "AI-generated content briefs ready to hand off to writers." },
   { value: "outreach", label: "Outreach", description: "Draft and track backlink/PR outreach emails." },
   { value: "agent", label: "Agent", description: "Run the autonomous SEO agent, review its run history, and read the weekly digest." },
@@ -68,10 +62,10 @@ export default function SeoHubPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const rawSection = searchParams?.get("section") ?? "pages";
+  const rawSection = searchParams?.get("section") ?? DEFAULT_SECTION;
   const section: SectionId = useMemo(() => {
     const aliased = SECTION_ALIASES[rawSection] ?? rawSection;
-    return SECTIONS.find((s) => s.value === aliased)?.value ?? "pages";
+    return SECTIONS.find((s) => s.value === aliased)?.value ?? DEFAULT_SECTION;
   }, [rawSection]);
 
   const handleChange = useCallback(
@@ -92,7 +86,7 @@ export default function SeoHubPage() {
     <div className="space-y-6">
       <PageHeader
         title="SEO Hub"
-        description="Your operational SEO workspace — pages, keywords, the autonomous agent, and outreach."
+        description="Keywords, opportunities, briefs, outreach and the autonomous agent. Page metadata has its own page."
       />
       <div>
         <AdminTabs tabs={tabs} activeTab={section} onChange={handleChange} />
@@ -101,9 +95,7 @@ export default function SeoHubPage() {
         )}
       </div>
       <Suspense fallback={<SectionSkeleton label="Loading…" />}>
-        {section === "pages" && <PagesSection />}
         {section === "keywords" && <KeywordsSection />}
-        {section === "opportunities" && <OpportunitiesSection />}
         {section === "briefs" && <BriefsSection />}
         {section === "outreach" && <OutreachSection />}
         {section === "agent" && <AgentDashboard />}

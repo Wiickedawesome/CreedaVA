@@ -38,11 +38,31 @@ const DEFAULT_OG_IMAGE = {
 } as const;
 
 /**
- * Reject values corrupted by the SEO agent before the crawler fix:
- * inline JSON-LD was captured as body text and written into `description`.
+ * Reject values corrupted by the SEO agent's crawler from reaching the live page.
+ *
+ * Two known corruption shapes, both caused by reading collapsed `body` text:
+ *
+ *  1. Inline JSON-LD captured as body text and written into `description`.
+ *  2. Navigation/skip-link text glued together by whitespace collapsing —
+ *     "Skip to main contentCreedaVAHomeServicesPricingAbout…". This one is worse
+ *     than useless: it ships on the live page and in the SERP snippet.
+ *
+ * Matching here means the page-level `metadata()` constant wins instead.
  */
 function isUsableMetaValue(value: string): boolean {
-  return !value.includes('"@context"');
+  if (value.includes('"@context"')) return false;
+
+  // Chrome leaked into the description.
+  if (/skip to (main )?content/i.test(value)) return false;
+
+  // Two nav labels concatenated with no separator: "HomeServices", "AboutNews".
+  if (/\b(Home|Services|Pricing|About|News|Contact)(Services|Pricing|About|News|Contact)\b/.test(value)) {
+    return false;
+  }
+
+  // Every description the old extractor produced was capped with "..." — it
+  // only truncates when nothing looked like a real sentence.
+  return !value.endsWith("...");
 }
 
 function nonEmpty(value: unknown, fallbackValue: string): string {

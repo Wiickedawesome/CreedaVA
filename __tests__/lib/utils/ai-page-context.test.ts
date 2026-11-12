@@ -67,10 +67,15 @@ describe("getPageConfig", () => {
     expect(config.collections).toContain("campaigns");
   });
 
-  it("handles nested routes like seo/keywords", () => {
-    const config = getPageConfig("/admin/seo/keywords");
-    expect(config.section).toBe("SEO Keywords AI");
-    expect(config.collections).toContain("keywords");
+  it("handles the seo hub and the metadata page", () => {
+    const seo = getPageConfig("/admin/seo");
+    expect(seo.section).toBe("SEO AI");
+    expect(seo.collections).toContain("keywords");
+
+    // Page metadata has its own route since it controls live <title>/<meta>.
+    const metadata = getPageConfig("/admin/metadata");
+    expect(metadata.section).toBe("Metadata AI");
+    expect(metadata.collections).toContain("seoAudits");
   });
 
   it("returns default config for unknown pages", () => {
@@ -94,7 +99,7 @@ describe("getPageConfig", () => {
       "analytics", "blog", "bookings", "contacts", "customers",
       "emails", "forum", "leads", "marketing/campaigns",
       "marketing/landing-pages",
-      "seo/content", "seo/keywords",
+      "seo", "metadata",
     ];
     for (const page of expectedPages) {
       const config = getPageConfig(page);

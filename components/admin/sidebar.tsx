@@ -164,6 +164,19 @@ const analyticsItems: NavItem[] = [
       </svg>
     ),
   },
+  {
+    label: "Page Metadata",
+    href: "/admin/metadata",
+    exact: true,
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 4h16v16H4z" />
+        <line x1="8" y1="9" x2="16" y2="9" />
+        <line x1="8" y1="13" x2="16" y2="13" />
+        <line x1="8" y1="17" x2="12" y2="17" />
+      </svg>
+    ),
+  },
 ];
 
 function NavSection({ title, items, onNavigate }: { title?: string; items: NavItem[]; onNavigate?: () => void }) {
