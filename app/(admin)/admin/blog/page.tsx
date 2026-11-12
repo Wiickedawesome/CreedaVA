@@ -13,7 +13,7 @@ import {
 } from "@/components/admin";
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
-import { AIPromptButton, RichTextEditor } from "@/components/admin";
+import { AIPromptButton, ImageGenerator, RichTextEditor } from "@/components/admin";
 import { uploadImage, uploadFile } from "@/lib/firebase/storage";
 import { cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
 import type { BlogPost, BlogPostFormData } from "@/lib/types/content";
@@ -588,6 +588,21 @@ Return ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, in
             ) : (
               <p className="text-xs text-gray-50">No images — upload or import from Drive</p>
             )}
+
+            <div className="mt-3 pt-3 border-t border-border">
+              <ImageGenerator
+                title={form.title}
+                excerpt={form.excerpt}
+                folder={`blog/${selected?.id || form.slug || "draft"}`}
+                onAdd={(urls) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    images: [...(prev.images || []), ...urls],
+                    featuredImage: prev.featuredImage || urls[0] || "",
+                  }))
+                }
+              />
+            </div>
           </div>
 
           {/* ── Attachments ─────────────────────────── */}

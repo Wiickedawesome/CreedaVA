@@ -29,34 +29,14 @@ import {
   FunctionCallingMode,
 } from "@google/generative-ai";
 import type { Content, Part } from "@google/generative-ai";
-import { cookies } from "next/headers";
-import { adminAuth } from "@/lib/firebase-admin";
 import {
   MAX_CONVERSATION_PARTS,
   MAX_SYSTEM_INSTRUCTION_LENGTH,
   MAX_USER_CONTENT_LENGTH,
 } from "@/lib/constants/ai";
 import { ALL_TOOLS } from "@/lib/firebase/ai-tools";
+import { getAdminUidFromSession } from "@/lib/firebase/admin-session";
 import { checkRateLimit, checkGroundedSearchLimit } from "./rate-limit";
-
-// ─── Auth helper ─────────────────────────────────────
-
-async function getUidFromSession(): Promise<string | null> {
-  try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("__session")?.value;
-    if (!session) return null;
-    const decoded = await adminAuth.verifySessionCookie(session, true);
-    // Re-check the admin gate here as well. /api/session is the only place that
-    // mints these cookies, but cookies minted before the gate tightened live for
-    // up to 5 days, so don't trust the cookie alone.
-    if (!decoded.email?.endsWith("@creedava.com")) return null;
-    if (decoded.email_verified !== true) return null;
-    return decoded.uid;
-  } catch {
-    return null;
-  }
-}
 
 // ─── Grounding source extractor ───────────────────────
 
@@ -98,7 +78,7 @@ function extractSources(response: GroundingResponse): GroundingSource[] {
 
 export async function POST(req: NextRequest) {
   // 1. Verify session
-  const uid = await getUidFromSession();
+  const uid = await getAdminUidFromSession();
   if (!uid) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
