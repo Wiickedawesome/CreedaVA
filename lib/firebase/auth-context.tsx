@@ -39,22 +39,42 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 /**
- * Refresh the httpOnly session cookie from a freshly signed-in user.
+ * Ask the server to mint the httpOnly session cookie for this user.
  *
- * Only ever writes. It must never clear the cookie: the client SDK having no
- * user does not mean the session cookie is wrong — browser storage can be
- * restricted, and then this would delete a perfectly valid session on every
- * page load, which is exactly how a login loop starts. Clearing belongs to
- * `logOut`, where the intent is explicit.
+ * Only ever writes the cookie; it must never clear one that might be valid.
+ * The client SDK reporting no user does not mean the cookie is wrong — browser
+ * storage can be restricted — and clearing on that basis is how a login loop
+ * starts. Clearing belongs to `logOut`, where the intent is explicit.
+ *
+ * A 403 is different: the server refused this identity outright (email is not
+ * on the allowed domain, or is unverified). That refusal is permanent, and the
+ * SDK has already persisted the user, so leaving it in place traps the person —
+ * every page load re-sends the same rejected identity, the proxy still sees no
+ * cookie, and they bounce back to /login unable to choose another account.
+ * Signing out here is what makes the refusal recoverable. The server-side gate
+ * is untouched.
  */
 async function syncSessionCookie(user: User) {
   try {
     const token = await user.getIdToken();
-    await fetch("/api/session", {
+    const res = await fetch("/api/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
     });
+
+    if (res.ok) return;
+
+    if (res.status !== 403) {
+      console.error(
+        "Session cookie not created:",
+        res.status,
+        await res.text(),
+      );
+      return;
+    }
+
+    await signOut();
   } catch (error) {
     console.error("Failed to sync session cookie:", error);
   }

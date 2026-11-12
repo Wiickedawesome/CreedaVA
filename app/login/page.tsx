@@ -46,7 +46,18 @@ function LoginComponent() {
       });
 
       if (res.status === 403) {
-        setError("Access denied. Only @creedava.com accounts are authorized.");
+        // Two different refusals share this status. Reporting them as the same
+        // thing sends the person (and whoever is helping them) after the wrong
+        // cause, so read which one the server actually returned.
+        const refusal = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+
+        setError(
+          refusal?.error === "Email address is not verified"
+            ? "Your email address is not verified. Sign in with a verified @creedava.com account."
+            : "Access denied. Only @creedava.com accounts are authorized.",
+        );
         setSigningIn(false);
         setRedirecting(false);
         redirectStartedRef.current = false;

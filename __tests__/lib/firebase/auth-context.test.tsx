@@ -126,6 +126,62 @@ describe("AuthProvider", () => {
     }));
   });
 
+  it("signs out when the server refuses the identity, so another account can be tried", async () => {
+    // Regression: a 403 (wrong email domain, or unverified address) left the
+    // rejected identity persisted by the client SDK. Every page load re-sent
+    // that identity, the proxy saw no session cookie, and the person bounced
+    // back to /login forever with no way to choose a different account.
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 403,
+      json: () => Promise.resolve({ error: "Unauthorized domain" }),
+    });
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+
+    await act(async () => {
+      authCallback?.({
+        uid: "rejected-uid",
+        email: "someone@gmail.com",
+        getIdToken: () => Promise.resolve("test-token"),
+      });
+      await Promise.resolve();
+    });
+
+    expect(mockSignOut).toHaveBeenCalled();
+  });
+
+  it("does not sign the user out when the cookie is simply not written yet", async () => {
+    // A 401/500 is transient or token-clock related; signing out over it would
+    // break sign-in for people who are perfectly entitled to a session.
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      text: () => Promise.resolve("Session creation failed"),
+    });
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+
+    await act(async () => {
+      authCallback?.({
+        uid: "slow-uid",
+        email: "user@creedava.com",
+        getIdToken: () => Promise.resolve("test-token"),
+      });
+      await Promise.resolve();
+    });
+
+    expect(mockSignOut).not.toHaveBeenCalled();
+  });
+
   it("never deletes the session cookie just because the client lost its user", async () => {
     // Regression: the client SDK reports no user whenever its own persistence
     // is empty (restricted browser storage). Clearing the httpOnly session
