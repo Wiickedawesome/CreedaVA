@@ -37,7 +37,7 @@ const TYPE_DESCRIPTION: Record<GapType, string> = {
   "competitor-only": "Known competitor pages rank for these queries but CreedaVA doesn't appear at all.",
 };
 
-export default function OpportunitiesSection() {
+export default function KeywordGapsSection() {
   const { data: gaps, loading } = useCollection<KeywordGap>("keyword-gaps", {
     orderByField: "priority",
     orderDirection: "desc",
@@ -91,8 +91,8 @@ export default function OpportunitiesSection() {
     <div className="space-y-6">
       <PageHeader
         as="h2"
-        title="Opportunities"
-        description="Keyword gaps the SEO agent surfaces from Search Console + competitor probes. Track promising ones to manage them in the Keywords tab."
+        title="Keyword gaps"
+        description="Written by the agent's keyword-gaps skill from real Search Console queries. Track a gap to add it to the keyword list, which the agent then reads on every run."
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -119,7 +119,8 @@ export default function OpportunitiesSection() {
           <p className="text-sm text-gray-60">Loading…</p>
         ) : filtered.length === 0 ? (
           <p className="text-sm text-gray-60">
-            No opportunities yet. The agent runs daily — check the Agent tab to trigger a manual run.
+            No gaps yet. The <strong>keyword-gaps</strong> skill runs Tuesdays and needs tracked
+            keywords plus Search Console data — run it from the SEO Hub → Agent tab.
           </p>
         ) : (
           <div className="space-y-3">

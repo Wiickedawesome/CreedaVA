@@ -9,14 +9,43 @@ import { slugify } from "@/lib/utils/slug";
 interface ContentBrief {
   id: string;
   keyword: string;
-  status: "draft" | "in-progress" | "published" | "archived";
+  status: BriefStatus;
   priority?: number;
   currentPosition?: number;
   impressions?: number;
   rankingPage?: string;
   recommendedOutline?: string[];
   generatedAt?: string;
+  /** Set by `content-writer` once it has produced a blog draft. */
+  blogId?: string | null;
+  /** How many times `content-writer` failed to compose this brief. */
+  draftAttempts?: number;
 }
+
+/**
+ * Every status the writers can set. Keep in sync with
+ * `functions/src/seo/synthesizer.ts` (initial write: `draft`) and
+ * `functions/src/seo/content-writer.ts` (`draft-generated`, `needs-review`).
+ */
+type BriefStatus =
+  | "draft"
+  | "draft-generated"
+  | "needs-review"
+  | "in-progress"
+  | "published"
+  | "archived";
+
+const STATUS_BADGE: Record<BriefStatus, { label: string; variant: "default" | "success" | "warning" | "error" | "info" }> = {
+  draft: { label: "Draft", variant: "default" },
+  "draft-generated": { label: "Blog draft ready", variant: "info" },
+  "needs-review": { label: "Needs review", variant: "error" },
+  "in-progress": { label: "In progress", variant: "warning" },
+  published: { label: "Published", variant: "success" },
+  archived: { label: "Archived", variant: "default" },
+};
+
+const badgeFor = (status: string) =>
+  STATUS_BADGE[status as BriefStatus] ?? { label: status, variant: "default" as const };
 
 interface SeoTaskInput {
   kind: string;
@@ -67,7 +96,7 @@ export default function BriefsSection() {
     }
   }
 
-  async function markStatus(brief: ContentBrief, status: ContentBrief["status"]) {
+  async function markStatus(brief: ContentBrief, status: BriefStatus) {
     setBusyId(brief.id);
     try {
       await edit(brief.id, { status });
@@ -109,14 +138,15 @@ export default function BriefsSection() {
       <PageHeader
         as="h2"
         title="Content Briefs"
-        description="Auto-generated weekly from striking-distance keywords (positions 11–30). Convert to a task when ready to write."
+        description="Written by the synthesizer from crawler findings — thin pages and striking-distance keywords. The content writer then turns each draft into a blog post."
       />
       <DashboardSection title="All briefs">
         {loading ? (
           <p className="text-sm text-gray-60">Loading…</p>
         ) : briefs.length === 0 ? (
           <p className="text-sm text-gray-60">
-            No briefs yet. The synthesizer generates these every Sunday from striking-distance keywords surfaced in the Opportunities tab.
+            No briefs yet. The synthesizer writes these every Sunday from thin-content audits and
+            striking-distance keywords, then the content writer drafts a blog post for each.
           </p>
         ) : (
           <div className="space-y-3">
@@ -130,16 +160,25 @@ export default function BriefsSection() {
                     </div>
                   </div>
                   <StatusBadge
-                    status={b.status}
-                    variant={
-                      b.status === "published" ? "success" : b.status === "in-progress" ? "info" : "default"
-                    }
+                    status={badgeFor(b.status).label}
+                    variant={badgeFor(b.status).variant}
                   />
                 </div>
                 {b.rankingPage && (
                   <div className="text-xs text-gray-50 mb-2">
                     Existing page: <code>{b.rankingPage}</code>
                   </div>
+                )}
+                {b.blogId && (
+                  <div className="text-xs text-gray-50 mb-2">
+                    Blog draft: <code>{b.blogId}</code>
+                  </div>
+                )}
+                {b.status === "needs-review" && (
+                  <p className="text-xs text-error mb-2">
+                    The content writer gave up after {b.draftAttempts ?? 0} attempts. Retry to
+                    queue it again, or write it by hand.
+                  </p>
                 )}
                 {b.recommendedOutline && b.recommendedOutline.length > 0 && (
                   <ol className="text-sm text-gray-70 list-decimal pl-5 space-y-0.5 mb-3">
@@ -164,7 +203,16 @@ export default function BriefsSection() {
                       Convert to blog draft
                     </Button>
                   )}
-                  {b.status !== "published" && (
+                  {b.status === "needs-review" && (
+                    <Button
+                      size="sm"
+                      onClick={() => markStatus(b, "draft")}
+                      disabled={busyId === b.id}
+                    >
+                      Retry next run
+                    </Button>
+                  )}
+                  {b.status !== "published" && b.status !== "archived" && (
                     <Button
                       size="sm"
                       variant="outline"

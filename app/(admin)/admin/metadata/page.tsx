@@ -14,6 +14,8 @@ import {
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import type { PageSEO } from "@/lib/types/content";
+// Pure predicate, no Firebase import — keeps the Admin SDK out of this bundle.
+import { isUsableMetaValue } from "@/lib/utils/meta-guard";
 
 // ─── Default page metadata ───────────────────────────
 // Mirrors the in-code fallbacks in each marketing page's metadata() call, so an
@@ -54,6 +56,24 @@ interface EditForm {
   noIndex: boolean;
 }
 
+/** A row in the table, plus what the live site actually ships for it. */
+interface PageRow {
+  id?: string;
+  path: string;
+  title: string;
+  description: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  keywords?: string[];
+  noIndex?: boolean;
+  isDefault: boolean;
+  /** Post-guard values. Equals the stored value unless it was rejected. */
+  served: { title: string; description: string };
+  /** The stored value exists but `getPageSEO()` refuses it, so defaults ship. */
+  storedRejected: boolean;
+}
+
 const EMPTY_FORM: EditForm = {
   path: "",
   title: "",
@@ -75,35 +95,73 @@ export default function PageMetadataSection() {
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState<EditForm>(EMPTY_FORM);
   const [seeding, setSeeding] = useState(false);
+  const [repairing, setRepairing] = useState(false);
 
-  // Merge Firestore entries with defaults for pages not yet saved
-  const mergedPages = useMemo(() => {
+  // Merge Firestore entries with defaults for pages not yet saved.
+  //
+  // Each row carries what the live site actually serves, because `getPageSEO()`
+  // drops stored values that fail `isUsableMetaValue()`. Showing the raw stored
+  // string without that distinction implies a corrupt description is live when
+  // the page's own hand-written default is what ships.
+  const mergedPages = useMemo<PageRow[]>(() => {
     const defaultPaths = new Set(DEFAULT_PAGES.map((d) => d.path));
     const existing = new Map(seoEntries.map((e) => [e.path, e]));
-    const pages = DEFAULT_PAGES.map((d) => {
-      const saved = existing.get(d.path);
-      return saved
-        ? { ...d, ...definedOnly(saved), isDefault: false }
-        : { ...d, id: `default-${d.path}`, isDefault: true };
-    });
-    // Include custom Firestore entries whose paths are not in DEFAULT_PAGES
-    for (const entry of seoEntries) {
-      if (!defaultPaths.has(entry.path)) {
-        pages.push({
-          ...entry,
-          title: entry.title ?? "",
-          description: entry.description ?? "",
-          isDefault: false,
-        });
+
+    const pages: PageRow[] = DEFAULT_PAGES.map((fallback) => {
+      const saved = existing.get(fallback.path);
+      if (!saved) {
+        return {
+          ...fallback,
+          id: `default-${fallback.path}`,
+          isDefault: true,
+          served: { title: fallback.title, description: fallback.description },
+          storedRejected: false,
+        };
       }
+
+      const stored = definedOnly(saved);
+      const title = stored.title ?? fallback.title;
+      const description = stored.description ?? fallback.description;
+      const rejected = !isUsableMetaValue(title) || !isUsableMetaValue(description);
+
+      return {
+        ...fallback,
+        ...stored,
+        title,
+        description,
+        isDefault: false,
+        served: {
+          title: isUsableMetaValue(title) ? title : fallback.title,
+          description: isUsableMetaValue(description) ? description : fallback.description,
+        },
+        storedRejected: rejected,
+      };
+    });
+
+    // Custom Firestore entries whose paths are not in DEFAULT_PAGES. There is no
+    // code default to fall back to, so an unusable value simply ships as-is.
+    for (const entry of seoEntries) {
+      if (defaultPaths.has(entry.path)) continue;
+      const title = entry.title ?? "";
+      const description = entry.description ?? "";
+      pages.push({
+        ...entry,
+        title,
+        description,
+        isDefault: false,
+        served: { title, description },
+        storedRejected: !isUsableMetaValue(title) || !isUsableMetaValue(description),
+      });
     }
+
     return pages;
   }, [seoEntries]);
 
   const pagesWithSeo = mergedPages.filter((p) => !p.isDefault).length;
+  const rejectedCount = mergedPages.filter((p) => p.storedRejected).length;
 
   // ─── Handlers ──────────────────────────────────────
-  function openEdit(page: (typeof mergedPages)[0]) {
+  function openEdit(page: PageRow) {
     const entry = seoEntries.find((e) => e.path === page.path);
     setEditForm({
       id: entry?.id,
@@ -171,8 +229,36 @@ export default function PageMetadataSection() {
     }
   }
 
+  /**
+   * Overwrite stored values that `isUsableMetaValue()` rejects with the page's
+   * own default. The live site already serves that default, so this changes no
+   * output — it only stops the corrupt string from sitting in Firestore and
+   * being re-edited by hand.
+   */
+  async function handleRepairIgnored() {
+    const broken = mergedPages.filter((p) => p.storedRejected && !p.isDefault && p.id);
+    if (broken.length === 0) return;
+    setRepairing(true);
+    try {
+      for (const page of broken) {
+        const fallback = DEFAULT_PAGES.find((d) => d.path === page.path);
+        await editSeo(page.id!, {
+          title: isUsableMetaValue(page.title) ? page.title : (fallback?.title ?? page.title),
+          description: isUsableMetaValue(page.description)
+            ? page.description
+            : (fallback?.description ?? page.description),
+        });
+      }
+      toast(`Repaired ${broken.length} page${broken.length === 1 ? "" : "s"}`, "success");
+    } catch {
+      toast("Failed to repair — try editing the row directly", "error");
+    } finally {
+      setRepairing(false);
+    }
+  }
+
   // ─── Table columns ─────────────────────────────────
-  const columns: Column<(typeof mergedPages)[0]>[] = [
+  const columns: Column<PageRow>[] = [
     {
       key: "path",
       header: "Page",
@@ -190,26 +276,29 @@ export default function PageMetadataSection() {
     {
       key: "title",
       header: "Title Tag",
-      render: (p) => <span className="text-sm text-gray-70 truncate max-w-xs block">{p.title}</span>,
+      render: (p) => (
+        <span className="text-sm text-gray-70 truncate max-w-xs block">{p.served.title}</span>
+      ),
     },
     {
       key: "description",
       header: "Meta Description",
       render: (p) => (
         <span className="text-sm text-gray-50 truncate max-w-sm block">
-          {p.description.length > 80 ? p.description.slice(0, 80) + "…" : p.description}
+          {p.served.description.length > 80
+            ? p.served.description.slice(0, 80) + "…"
+            : p.served.description}
         </span>
       ),
     },
     {
       key: "status",
       header: "Status",
-      render: (p) =>
-        p.isDefault ? (
-          <StatusBadge status="Default" variant="warning" />
-        ) : (
-          <StatusBadge status="Custom" variant="success" />
-        ),
+      render: (p) => {
+        if (p.storedRejected) return <StatusBadge status="Ignored" variant="error" />;
+        if (p.isDefault) return <StatusBadge status="Default" variant="warning" />;
+        return <StatusBadge status="Live" variant="success" />;
+      },
     },
   ];
 
@@ -249,6 +338,24 @@ export default function PageMetadataSection() {
         />
         <StatCard label="In Sitemap" value={mergedPages.length.toString()} badge="pages" />
       </div>
+
+      {rejectedCount > 0 && (
+        <div className="rounded-lg border border-error/30 bg-error/5 p-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-error">
+              {rejectedCount} stored value{rejectedCount === 1 ? "" : "s"} being ignored
+            </p>
+            <p className="text-xs text-gray-60 mt-0.5">
+              The SEO agent wrote navigation text into these fields. The live site already
+              rejects it and serves each page&apos;s built-in default — repairing just clears
+              the bad value so it stops reappearing when you edit.
+            </p>
+          </div>
+          <Button size="sm" onClick={handleRepairIgnored} isLoading={repairing}>
+            Repair {rejectedCount}
+          </Button>
+        </div>
+      )}
 
       {pagesWithSeo < mergedPages.length && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between">
@@ -301,6 +408,16 @@ export default function PageMetadataSection() {
         }
       >
         <div className="space-y-4">
+          {editForm.id &&
+            (!isUsableMetaValue(editForm.title) || !isUsableMetaValue(editForm.description)) && (
+              <div className="rounded-md border border-error/30 bg-error/5 p-3">
+                <p className="text-xs font-medium text-error">This stored value is not live</p>
+                <p className="text-xs text-gray-60 mt-0.5">
+                  The live site is serving the built-in default instead. Replace the text below
+                  with a real sentence to publish it.
+                </p>
+              </div>
+            )}
           <div>
             <label className="block text-xs font-medium text-gray-50 mb-1">Page Path</label>
             <Input

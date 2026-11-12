@@ -13,6 +13,7 @@
 
 import { fetchAll } from "@/lib/firebase/firestore";
 import type { Lead, Customer, Contact, Booking } from "@/lib/types/crm";
+import type { KeywordGap } from "@/lib/types/seo-agent";
 import type {
   BlogPost,
   SEOKeyword,
@@ -28,6 +29,7 @@ import {
   buildSalesContext,
   buildSEOContext,
   buildMarketingContext,
+  buildKeywordContext,
   buildLandingPageContext,
   buildBookingContext,
   buildBlogContext,
@@ -62,6 +64,7 @@ const FULL_BUSINESS_COLLECTIONS: (keyof AllCollections)[] = [
   "emails",
   "blog",
   "keywords",
+  "keywordGaps",
   "seoAudits",
   "landingPages",
   "forumThreads",
@@ -136,8 +139,13 @@ const PAGE_CONFIGS: Record<string, PageConfig> = {
   },
   seo: {
     section: "SEO AI",
-    collections: ["keywords", "seoAudits", "blog", "landingPages"],
+    collections: ["keywords", "keywordGaps", "seoAudits", "blog", "landingPages"],
     contextBuilder: buildSEOContext,
+  },
+  keywords: {
+    section: "Keyword AI",
+    collections: ["keywords", "keywordGaps", "seoAudits", "blog"],
+    contextBuilder: buildKeywordContext,
   },
   metadata: {
     section: "Metadata AI",
@@ -160,6 +168,7 @@ const COLLECTION_FETCHERS: Record<
   emails: () => fetchAll<EmailDraft>("emails"),
   blog: () => fetchAll<BlogPost>("blog"),
   keywords: () => fetchAll<SEOKeyword>("keywords"),
+  keywordGaps: () => fetchAll<KeywordGap>("keyword-gaps"),
   // Crawler findings, not manual reviews. `onpage-audits` is what the SEO agent
   // actually writes on every run; the legacy `seo` collection only ever held
   // one-off AI reviews from a button, so it was usually empty — which left the

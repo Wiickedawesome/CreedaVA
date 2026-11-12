@@ -16,6 +16,7 @@
 
 import { unstable_cache } from "next/cache";
 import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
+import { isUsableMetaValue } from "@/lib/utils/meta-guard";
 import type { PageSEO } from "@/lib/types/content";
 import type { Metadata } from "next";
 
@@ -40,30 +41,13 @@ const DEFAULT_OG_IMAGE = {
 /**
  * Reject values corrupted by the SEO agent's crawler from reaching the live page.
  *
- * Two known corruption shapes, both caused by reading collapsed `body` text:
+ * The predicate lives in `lib/utils/meta-guard.ts` so the client-side Page
+ * Metadata table can share it without bundling the Admin SDK. Re-exported here
+ * so existing server-side callers keep their import path.
  *
- *  1. Inline JSON-LD captured as body text and written into `description`.
- *  2. Navigation/skip-link text glued together by whitespace collapsing —
- *     "Skip to main contentCreedaVAHomeServicesPricingAbout…". This one is worse
- *     than useless: it ships on the live page and in the SERP snippet.
- *
- * Matching here means the page-level `metadata()` constant wins instead.
+ * Matching means the page-level `metadata()` constant wins instead.
  */
-function isUsableMetaValue(value: string): boolean {
-  if (value.includes('"@context"')) return false;
-
-  // Chrome leaked into the description.
-  if (/skip to (main )?content/i.test(value)) return false;
-
-  // Two nav labels concatenated with no separator: "HomeServices", "AboutNews".
-  if (/\b(Home|Services|Pricing|About|News|Contact)(Services|Pricing|About|News|Contact)\b/.test(value)) {
-    return false;
-  }
-
-  // Every description the old extractor produced was capped with "..." — it
-  // only truncates when nothing looked like a real sentence.
-  return !value.endsWith("...");
-}
+export { isUsableMetaValue };
 
 function nonEmpty(value: unknown, fallbackValue: string): string {
   if (typeof value !== "string") return fallbackValue;

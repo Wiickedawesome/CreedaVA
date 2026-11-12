@@ -7,7 +7,7 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 }
 
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, error, helperText, className = "", id, ...props }, ref) => {
+  ({ label, error, helperText, className = "", id, rows = 5, ...props }, ref) => {
     const textareaId = id || label?.toLowerCase().replace(/\s+/g, "-");
 
     return (
@@ -23,6 +23,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           id={textareaId}
+          rows={rows}
           className={`
             w-full px-4 py-2.5 rounded-md
             border border-gray-40 bg-card text-gray-100
@@ -30,6 +31,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
             disabled:bg-gray-20 disabled:text-gray-50 disabled:cursor-not-allowed
             transition-colors duration-150 resize-y min-h-30
+            field-sizing-content max-h-96
             ${error ? "border-error focus:ring-error" : ""}
             ${className}
           `}

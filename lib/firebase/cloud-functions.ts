@@ -206,11 +206,23 @@ interface SearchPage {
   position: number;
 }
 
+/** One row per (query, page) pair — what `rank-history` keys on. */
+interface SearchQueryPage {
+  query: string;
+  page: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+}
+
 interface SearchConsoleResult {
   success: boolean;
   period: { startDate: string; endDate: string };
   queries: SearchQuery[];
   pages: SearchPage[];
+  /** Absent on responses from a deployment predating the combined dimension. */
+  queryPages?: SearchQueryPage[];
   summary: {
     totalClicks: number;
     totalImpressions: number;

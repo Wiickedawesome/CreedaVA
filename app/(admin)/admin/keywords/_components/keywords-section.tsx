@@ -1,7 +1,8 @@
 "use client";
 
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
-import React, { useState } from "react";
+import type { TrainedPrompt } from "@/lib/utils/ai-system-prompt";
+import React, { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCollection } from "@/hooks/useCollection";
 import {
@@ -18,13 +19,22 @@ import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { AIPromptButton } from "@/components/admin";
 import { cloudFetchSearchConsoleData } from "@/lib/firebase/cloud-functions";
+import { createWithId } from "@/lib/firebase/firestore";
+import type { DocumentData } from "firebase/firestore";
 import type { SEOKeyword } from "@/lib/types/content";
+import type { KeywordGap } from "@/lib/types/seo-agent";
 import { parseAiJson } from "@/lib/utils/ai-json";
-import { RankingsTable } from "../rankings-table";
-// `keyword-gaps` are keyword data produced by the agent's keyword-gaps skill.
-// They render here rather than in their own hub tab so everything keyword-
-// related lives in one place.
-import OpportunitiesSection from "./opportunities-section";
+import {
+  latestMetricsByKeyword,
+  rankDayKey,
+  rankHistoryId,
+  type RankHistoryRow,
+} from "@/lib/utils/rank-history";
+import { RankingsTable } from "./rankings-table";
+// The agent's `keyword-gaps` skill output. It renders as a sub-tab here because
+// gaps are keyword data — they were a separate hub tab, which split one subject
+// across two screens.
+import KeywordGapsSection from "./keyword-gaps-section";
 
 const intentVariant: Record<string, "default" | "success" | "warning" | "error" | "info"> = {
   informational: "info",
@@ -39,9 +49,55 @@ const difficultyVariant: Record<string, "default" | "success" | "warning" | "err
   high: "error",
 };
 
+/** Fallback prompts for a site with no gap data yet. */
+const DEFAULT_PRESETS = [
+  { label: "VA Services", prompt: "virtual assistant services for small businesses" },
+  { label: "Remote Work", prompt: "remote work productivity and tools" },
+  { label: "Outsourcing", prompt: "business process outsourcing benefits" },
+  { label: "Executive Support", prompt: "executive assistant services for CEOs and founders" },
+  { label: "Cost Savings", prompt: "cost of hiring virtual assistant vs full-time employee" },
+  { label: "Admin Tasks", prompt: "administrative tasks to delegate to virtual assistants" },
+  { label: "Industry Specific", prompt: "virtual assistant for real estate agents and brokers" },
+  { label: "Scaling Business", prompt: "scaling small business with virtual assistants and automation" },
+];
+
+/** Instructions that keep suggestions anchored to observed demand. */
+function buildKeywordPrompt(topic: string, dataContext: string): TrainedPrompt {
+  return buildTrainedPrompt(
+    "SEO Keywords",
+    `Suggest 8-10 SEO keywords related to: "${topic}"
+
+` +
+      `Ground every suggestion in the data above. Prefer terms that extend the KEYWORD GAPS and ` +
+      `SEO KEYWORDS already listed, and reuse the business's real services and locations. Do not ` +
+      `propose unrelated industries, generic marketing buzzwords, or terms already in the tracked ` +
+      `keyword list.
+
+` +
+      `Return ONLY valid JSON: { "keywords": [{ "keyword": string, "searchIntent": "informational"|"commercial"|"transactional"|"navigational", "difficulty": "low"|"medium"|"high", "suggestedTitle": string }] }
+
+No markdown fences.`,
+    dataContext,
+    { includeCompetitors: true },
+  );
+}
+
 export default function KeywordsSection() {
   const { data: keywords, loading, add, edit, del } = useCollection<SEOKeyword>("keywords", {
     orderByField: "createdAt",
+  });
+  // The agent's gap findings. They become the AI's starting points so suggestions
+  // extend real demand instead of drifting into unrelated industries.
+  const { data: gaps } = useCollection<KeywordGap>("keyword-gaps", {
+    orderByField: "priority",
+    orderDirection: "desc",
+  });
+  // Measurements. `rank-history` is the single source of truth for clicks,
+  // impressions, CTR and position — written by both the agent's `rank-history`
+  // skill and the Search Console button below, in the same shape.
+  const { data: rankRows, refetch: refetchRankRows } = useCollection<RankHistoryRow>("rank-history", {
+    orderByField: "dayKey",
+    orderDirection: "desc",
   });
   const { toast } = useToast();
 
@@ -55,6 +111,7 @@ export default function KeywordsSection() {
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ keyword: "", searchIntent: "informational" as string, difficulty: "medium" as string, suggestedTitle: "" });
   const [saving, setSaving] = useState(false);
+  const [addingAll, setAddingAll] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState({ keyword: "", searchIntent: "informational", difficulty: "medium", suggestedTitle: "" });
 
@@ -74,32 +131,77 @@ export default function KeywordsSection() {
     setFetchingConsole(true);
     try {
       const result = await cloudFetchSearchConsoleData(28);
-      if (result.success) {
-        setConsoleData({ queries: result.queries, summary: result.summary });
-        setConsoleOpen(true);
-        // Persist metrics to existing keyword records
-        const now = new Date().toISOString();
-        let synced = 0;
-        for (const q of result.queries) {
-          const match = keywords.find((k) => k.keyword.toLowerCase() === q.query.toLowerCase());
-          if (match) {
-            await edit(match.id, {
-              clicks: q.clicks,
-              impressions: q.impressions,
-              ctr: q.ctr,
-              position: q.position,
-              lastSynced: now,
-            });
-            synced++;
-          }
-        }
-        const msg = synced > 0
-          ? `Fetched ${result.queries.length} queries, synced metrics to ${synced} keywords`
-          : `Fetched ${result.queries.length} search queries from Google Search Console`;
-        toast(msg, "success");
-      } else {
+      if (!result.success) {
         toast("Fetch failed — check Search Console integration", "error");
+        return;
       }
+
+      setConsoleData({ queries: result.queries, summary: result.summary });
+      setConsoleOpen(true);
+
+      // Persist as rank-history rows, not onto the keyword docs.
+      //
+      // The agent's `rank-history` skill already writes this collection as a
+      // time series. Flattening the same numbers onto `keywords` meant two
+      // stores of one measurement, with this button silently overwriting the
+      // agent's. Same shape, same id format, so both upsert the same rows.
+      const dayKey = rankDayKey();
+      const trackedByKeyword = new Map(
+        keywords.map((k) => [k.keyword.toLowerCase(), k] as const),
+      );
+
+      let synced = 0;
+
+      // Prefer the (query, page) rows: they carry the landing page, so each
+      // measurement maps to the agent's rank-history key exactly. Older cloud
+      // deployments return no `queryPages`, so fall back to the aggregated
+      // `queries` rows with an empty page rather than dropping the sync.
+      const measurements = result.queryPages?.length
+        ? result.queryPages.map((row) => ({
+            keyword: row.query,
+            page: row.page,
+            clicks: row.clicks,
+            impressions: row.impressions,
+            ctr: row.ctr,
+            position: row.position,
+          }))
+        : result.queries.map((row) => ({
+            keyword: row.query,
+            page: "",
+            clicks: row.clicks,
+            impressions: row.impressions,
+            ctr: row.ctr,
+            position: row.position,
+          }));
+
+      for (const measurement of measurements) {
+        if (!trackedByKeyword.has(measurement.keyword.toLowerCase())) continue;
+        // `createWithId` merges on a stable id — `add()` would use addDoc and
+        // mint a random id, appending a duplicate row on every sync.
+        await createWithId<DocumentData>(
+          "rank-history",
+          rankHistoryId(dayKey, measurement.keyword, measurement.page),
+          {
+            keyword: measurement.keyword,
+            page: measurement.page,
+            position: measurement.position,
+            clicks: measurement.clicks,
+            impressions: measurement.impressions,
+            ctr: measurement.ctr,
+            dayKey,
+            capturedAt: new Date().toISOString(),
+          },
+        );
+        synced++;
+      }
+      if (synced > 0) refetchRankRows();
+
+      toast(
+        synced > 0
+          ? `Fetched ${measurements.length} rows · saved ${synced} measurements`
+          : `Fetched ${measurements.length} rows — none match a tracked keyword yet`,
+        "success",
+      );
     } catch {
       toast("Failed to fetch — ensure Search Console is configured in Settings → Integrations", "error");
     } finally {
@@ -124,6 +226,19 @@ export default function KeywordsSection() {
       toast("Failed to add keyword", "error");
     }
   }
+
+  // Presets come from the agent's highest-priority gaps once it has data, so the
+  // quick-start chips point at real opportunities instead of a fixed list.
+  const aiPresets = useMemo(() => {
+    const fromGaps = gaps
+      .filter((g) => g.keyword && !keywords.some((k) => k.keyword.toLowerCase() === g.keyword.toLowerCase()))
+      .slice(0, 8)
+      .map((g) => ({
+        label: g.keyword.length > 22 ? `${g.keyword.slice(0, 21)}…` : g.keyword,
+        prompt: g.keyword,
+      }));
+    return fromGaps.length > 0 ? fromGaps : DEFAULT_PRESETS;
+  }, [gaps, keywords]);
 
   const filtered = keywords.filter((k) => {
     if (!search) return true;
@@ -150,6 +265,43 @@ export default function KeywordsSection() {
       setSuggestions((prev) => prev.filter((s) => s.keyword !== kw.keyword));
     } catch {
       toast("Failed to add keyword", "error");
+    }
+  }
+
+  /**
+   * Accept every remaining suggestion at once.
+   *
+   * Suggestions used to require one click each, so a good set of ten was ten
+   * round trips and usually abandoned halfway — which left the agent's gap and
+   * SERP skills with a thinner keyword list than the operator intended.
+   */
+  async function handleAddAllSuggestions() {
+    if (suggestions.length === 0) return;
+    setAddingAll(true);
+    try {
+      const tracked = new Set(keywords.map((k) => k.keyword.toLowerCase()));
+      let added = 0;
+      const remaining = [...suggestions];
+
+      for (const suggestion of remaining) {
+        if (tracked.has(suggestion.keyword.toLowerCase())) continue;
+        await add({
+          keyword: suggestion.keyword,
+          searchIntent: suggestion.searchIntent as SEOKeyword["searchIntent"],
+          difficulty: suggestion.difficulty as SEOKeyword["difficulty"],
+          suggestedTitle: suggestion.suggestedTitle,
+          tracked: true,
+        });
+        tracked.add(suggestion.keyword.toLowerCase());
+        added++;
+      }
+
+      setSuggestions([]);
+      toast(added > 0 ? `Added ${added} keywords` : "All of those are already tracked");
+    } catch {
+      toast("Failed to add keywords", "error");
+    } finally {
+      setAddingAll(false);
     }
   }
 
@@ -220,6 +372,9 @@ export default function KeywordsSection() {
     }
   }
 
+  // Latest measured position/clicks per keyword, from the shared store.
+  const metrics = useMemo(() => latestMetricsByKeyword(rankRows), [rankRows]);
+
   const columns: Column<SEOKeyword>[] = [
     {
       key: "keyword",
@@ -249,25 +404,47 @@ export default function KeywordsSection() {
       key: "clicks",
       header: "Clicks",
       sortable: true,
-      render: (k) => <span className="text-sm tabular-nums">{k.clicks ?? "—"}</span>,
+      render: (k) => (
+        <span className="text-sm tabular-nums">
+          {metrics.get(k.keyword.toLowerCase())?.clicks ?? "—"}
+        </span>
+      ),
     },
     {
       key: "impressions",
       header: "Impr.",
       sortable: true,
-      render: (k) => <span className="text-sm tabular-nums">{k.impressions ?? "—"}</span>,
+      render: (k) => (
+        <span className="text-sm tabular-nums">
+          {metrics.get(k.keyword.toLowerCase())?.impressions ?? "—"}
+        </span>
+      ),
     },
     {
       key: "ctr",
       header: "CTR",
       sortable: true,
-      render: (k) => <span className="text-sm tabular-nums">{k.ctr != null ? `${(k.ctr * 100).toFixed(1)}%` : "—"}</span>,
+      render: (k) => {
+        const ctr = metrics.get(k.keyword.toLowerCase())?.ctr;
+        return (
+          <span className="text-sm tabular-nums">
+            {ctr != null ? `${(ctr * 100).toFixed(1)}%` : "—"}
+          </span>
+        );
+      },
     },
     {
       key: "position",
       header: "Pos.",
       sortable: true,
-      render: (k) => <span className="text-sm tabular-nums">{k.position != null ? k.position.toFixed(1) : "—"}</span>,
+      render: (k) => {
+        const position = metrics.get(k.keyword.toLowerCase())?.position;
+        return (
+          <span className="text-sm tabular-nums">
+            {position != null ? position.toFixed(1) : "—"}
+          </span>
+        );
+      },
     },
   ];
 
@@ -289,18 +466,9 @@ export default function KeywordsSection() {
           <div className="flex items-center gap-2">
           <AIPromptButton
             section="Keyword AI"
-            description="Enter a topic to get AI-powered keyword suggestions with search intent, difficulty, and suggested titles."
+            description="Suggests keywords grounded in what the agent already measured — your gaps, tracked keywords and page audits."
             placeholder="e.g. virtual assistant services, remote work, business outsourcing"
-            presets={[
-              { label: "VA Services", prompt: "virtual assistant services for small businesses" },
-              { label: "Remote Work", prompt: "remote work productivity and tools" },
-              { label: "Outsourcing", prompt: "business process outsourcing benefits" },
-              { label: "Executive Support", prompt: "executive assistant services for CEOs and founders" },
-              { label: "Cost Savings", prompt: "cost of hiring virtual assistant vs full-time employee" },
-              { label: "Admin Tasks", prompt: "administrative tasks to delegate to virtual assistants" },
-              { label: "Industry Specific", prompt: "virtual assistant for real estate agents and brokers" },
-              { label: "Scaling Business", prompt: "scaling small business with virtual assistants and automation" },
-            ]}
+            presets={aiPresets}
             onResult={(raw) => {
               try {
                 setSuggestions(
@@ -311,9 +479,7 @@ export default function KeywordsSection() {
                 toast("AI returned an unreadable response — try again", "error");
               }
             }}
-            buildPrompt={(input) =>
-              buildTrainedPrompt("SEO Keywords", `Suggest 8-10 SEO keywords related to: "${input}"\n\nReturn ONLY valid JSON: { "keywords": [{ "keyword": string, "searchIntent": "informational"|"commercial"|"transactional"|"navigational", "difficulty": "low"|"medium"|"high", "suggestedTitle": string }] }\n\nNo markdown fences.`, "", { includeCompetitors: true })
-            }
+            buildPrompt={(input, dataContext) => buildKeywordPrompt(input, dataContext)}
           />
           <Button variant="outline" size="sm" onClick={handleFetchConsole} isLoading={fetchingConsole}>
             <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
@@ -341,20 +507,23 @@ export default function KeywordsSection() {
       />
 
       {keywords.length === 0 && tab === "keywords" && !loading && (
-        <div className="rounded-lg border border-border bg-card p-4 text-sm text-gray-70">
+        <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 text-sm text-gray-70">
           <p className="font-medium text-foreground mb-1">No keywords tracked yet — three ways to add some:</p>
           <ul className="list-disc pl-5 space-y-0.5">
+            <li><strong>AI suggestions</strong> — describe a topic and get 8–10 ideas grounded in your gaps (Keyword AI button).</li>
             <li><strong>Search Console</strong> — pull the last 28 days of real queries (top-right button).</li>
-            <li><strong>AI suggestions</strong> — describe a topic and get 8–10 keyword ideas (Keyword AI button).</li>
             <li><strong>Manual entry</strong> — add a keyword you know you want to rank for (New Keyword button).</li>
           </ul>
-          <p className="mt-2 text-xs text-gray-50">
-            The SEO agent also discovers <em>striking-distance</em> opportunities automatically — see the <strong>Gaps</strong> tab.
+          <p className="mt-2 text-xs text-gray-60">
+            <strong className="text-gray-80">This list is the agent&apos;s input.</strong>{" "}
+            <code>keyword-gaps</code> uses it to skip terms you already track, and{" "}
+            <code>serp-analysis</code> returns <em>skipped</em> without it — so competitor-gap
+            detection stays off until at least one keyword exists here.
           </p>
         </div>
       )}
 
-      {tab === "gaps" && <OpportunitiesSection />}
+      {tab === "gaps" && <KeywordGapsSection />}
       {tab === "rankings" && <RankingsTable />}
 
       {tab === "keywords" && (
@@ -565,9 +734,16 @@ export default function KeywordsSection() {
         title="AI Keyword Suggestions"
         size="lg"
         footer={
-          <Button variant="outline" size="sm" onClick={() => setSuggestOpen(false)}>
-            Close
-          </Button>
+          <>
+            {suggestions.length > 0 && (
+              <Button size="sm" onClick={handleAddAllSuggestions} isLoading={addingAll}>
+                Add all {suggestions.length}
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => setSuggestOpen(false)}>
+              Close
+            </Button>
+          </>
         }
       >
         {suggestions.length === 0 ? (

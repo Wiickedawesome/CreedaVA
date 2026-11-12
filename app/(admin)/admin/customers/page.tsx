@@ -14,7 +14,7 @@ import {
   useToast,
 } from "@/components/admin";
 import type { Column } from "@/components/admin";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, Textarea } from "@/components/ui";
 import { exportToCsv } from "@/lib/utils/csv";
 import { cloudCreateClientFolder, cloudExportToSheets, cloudListDriveFiles, cloudSendEmail } from "@/lib/firebase/cloud-functions";
 import type { Customer, CustomerFormData, BillingCycle } from "@/lib/types/crm";
@@ -858,15 +858,12 @@ export default function CustomersPage() {
               options={[{ value: "", label: "Select source" }, ...REFERRAL_SOURCES.map((s) => ({ value: s, label: s }))]}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-70 mb-1">Notes</label>
-            <textarea
-              className="w-full rounded-md border border-border bg-gray-10/50 px-3 py-2 text-sm min-h-16 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20"
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Additional notes..."
-            />
-          </div>
+          <Textarea
+            label="Notes"
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            placeholder="Additional notes..."
+          />
         </div>
       </Modal>
 

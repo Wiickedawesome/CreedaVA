@@ -89,6 +89,23 @@ export const fetchSearchConsoleData = onCall(
         },
       });
 
+      // Fetch query+page together.
+      //
+      // The `query` dimension above is aggregated across every landing page, so
+      // it cannot say *which* page ranks. Writing those rows to `rank-history`
+      // meant recording an empty page. This combined query gives one row per
+      // (query, page), which is exactly the agent's rank-history key.
+      const queryPageResult = await searchconsole.searchanalytics.query({
+        siteUrl,
+        requestBody: {
+          startDate: startDate.toISOString().split("T")[0],
+          endDate: endDate.toISOString().split("T")[0],
+          dimensions: ["query", "page"],
+          rowLimit: 200,
+          type: "web",
+        },
+      });
+
       const queries = (queryResult.data.rows || []).map((row) => ({
         query: row.keys?.[0] || "",
         clicks: row.clicks || 0,
@@ -99,6 +116,15 @@ export const fetchSearchConsoleData = onCall(
 
       const pages = (pageResult.data.rows || []).map((row) => ({
         page: row.keys?.[0] || "",
+        clicks: row.clicks || 0,
+        impressions: row.impressions || 0,
+        ctr: row.ctr || 0,
+        position: row.position || 0,
+      }));
+
+      const queryPages = (queryPageResult.data.rows || []).map((row) => ({
+        query: row.keys?.[0] || "",
+        page: row.keys?.[1] || "",
         clicks: row.clicks || 0,
         impressions: row.impressions || 0,
         ctr: row.ctr || 0,
@@ -124,6 +150,7 @@ export const fetchSearchConsoleData = onCall(
         period: { startDate: startDate.toISOString(), endDate: endDate.toISOString() },
         queries,
         pages,
+        queryPages,
         summary: {
           totalClicks: queries.reduce((s, q) => s + q.clicks, 0),
           totalImpressions: queries.reduce((s, q) => s + q.impressions, 0),

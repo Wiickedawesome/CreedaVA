@@ -11,7 +11,7 @@ import {
   useToast,
 } from "@/components/admin";
 import type { Column } from "@/components/admin";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, Textarea } from "@/components/ui";
 import { exportToCsv } from "@/lib/utils/csv";
 import type { Contact, ContactFormData } from "@/lib/types/crm";
 import type { Lead, Customer } from "@/lib/types/crm";
@@ -352,7 +352,7 @@ export default function ContactsPage() {
             <Input label="Company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
           </div>
           <Input label="Role / Job Title" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />
-          <Input label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+          <Textarea label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
         </div>
       </Modal>
 

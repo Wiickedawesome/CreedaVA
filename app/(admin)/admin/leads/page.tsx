@@ -14,7 +14,7 @@ import {
   useToast,
 } from "@/components/admin";
 import type { Column } from "@/components/admin";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, Textarea } from "@/components/ui";
 import { exportToCsv } from "@/lib/utils/csv";
 import type { Lead, LeadFormData } from "@/lib/types/crm";
 import type { Contact } from "@/lib/types/crm";
@@ -411,7 +411,7 @@ export default function LeadsPage() {
             value={String(form.value || "")}
             onChange={(e) => setForm({ ...form, value: Number(e.target.value) || 0 })}
           />
-          <Input label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+          <Textarea label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
         </div>
       </Modal>
 

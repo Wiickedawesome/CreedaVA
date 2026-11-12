@@ -25,9 +25,11 @@ interface BriefDoc {
   id: string;
   keyword?: string;
   status?: string;
+  priority?: number;
   recommendedOutline?: string[];
   rankingPage?: string;
   blogId?: string | null;
+  draftAttempts?: number;
 }
 
 export interface ContentWriterResult {
@@ -37,6 +39,16 @@ export interface ContentWriterResult {
 
 const MAX_BRIEFS_PER_RUN = 5;
 
+/**
+ * Stop retrying a brief that keeps failing.
+ *
+ * Without this, a brief the model can never compose would hold one of the
+ * `MAX_BRIEFS_PER_RUN` slots every week forever. At the cap the brief is moved
+ * to `needs-review` so it becomes visible in the admin instead of silently
+ * consuming budget.
+ */
+const MAX_DRAFT_ATTEMPTS = 3;
+
 export async function writeBlogDraftsFromBriefs(
   config: SeoAgentConfigDoc,
   runId: string,
@@ -45,29 +57,59 @@ export async function writeBlogDraftsFromBriefs(
     return { draftsWritten: 0, skipped: 0 };
   }
 
-  const since = new Date(Date.now() - 7 * 86_400_000);
+  // Select by status, not by date.
+  //
+  // This previously used `updatedAt >= now - 7d`, which silently expired any
+  // brief the writer could not get to within a week — the brief stayed `draft`
+  // with no `blogId` and was never queried again. Status is the real signal:
+  // `draft` means "pending", and every path that consumes a brief rewrites the
+  // status (`in-progress`, `draft-generated`, `archived`). No orderBy, because
+  // `orderBy priority` would need a new composite index and prioritisation is
+  // cheap to do in memory.
   const snap = await db
     .collection("content-briefs")
-    .where("updatedAt", ">=", since)
+    .where("status", "==", "draft")
     .get()
     .catch(() => null);
   if (!snap || snap.empty) return { draftsWritten: 0, skipped: 0 };
 
   const candidates: BriefDoc[] = snap.docs
     .map((d) => ({ id: d.id, ...(d.data() as Omit<BriefDoc, "id">) }))
-    .filter((b) => !b.blogId && b.keyword)
+    .filter(
+      (b) =>
+        !b.blogId &&
+        b.keyword &&
+        (b.draftAttempts ?? 0) < MAX_DRAFT_ATTEMPTS,
+    )
+    .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
     .slice(0, MAX_BRIEFS_PER_RUN);
 
   let draftsWritten = 0;
   let skipped = 0;
 
+  /** Count a failed attempt and surface the brief once it stops being retryable. */
+  async function recordAttempt(brief: BriefDoc) {
+    const attempts = (brief.draftAttempts ?? 0) + 1;
+    await db
+      .collection("content-briefs")
+      .doc(brief.id)
+      .set(
+        {
+          draftAttempts: attempts,
+          status: attempts >= MAX_DRAFT_ATTEMPTS ? "needs-review" : "draft",
+          updatedAt: new Date(),
+        },
+        { merge: true },
+      )
+      .catch((err) => console.warn("[seo-agent] attempt marker failed:", err));
+    skipped++;
+  }
+
   for (const brief of candidates) {
     try {
       const blog = await composeBlogDraft(brief);
       if (!blog) {
-        // No AI output, so there is no post. Leave the brief untouched (it has
-        // no blogId yet) and let the next run pick it up.
-        skipped++;
+        await recordAttempt(brief);
         continue;
       }
       const blogRef = db.collection("blog").doc(blog.slug);
@@ -85,7 +127,7 @@ export async function writeBlogDraftsFromBriefs(
       );
 
       await db.collection("content-briefs").doc(brief.id).set(
-        { blogId: blog.slug, status: "draft-generated", updatedAt: new Date() },
+        { blogId: blog.slug, status: "draft-generated", draftAttempts: 0, updatedAt: new Date() },
         { merge: true },
       );
 
@@ -103,7 +145,7 @@ export async function writeBlogDraftsFromBriefs(
       draftsWritten++;
     } catch (err) {
       console.warn("[seo-agent] content-writer brief", brief.id, "failed:", err);
-      skipped++;
+      await recordAttempt(brief);
     }
   }
 

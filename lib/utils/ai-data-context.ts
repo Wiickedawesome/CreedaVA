@@ -16,6 +16,7 @@ import type {
   LandingPage,
   ForumThread,
 } from "@/lib/types/content";
+import type { KeywordGap } from "@/lib/types/seo-agent";
 
 // ─── Collection data shape passed into builders ──────
 
@@ -28,6 +29,8 @@ export interface AllCollections {
   emails?: EmailDraft[];
   blog?: BlogPost[];
   keywords?: SEOKeyword[];
+  /** Written by the agent's `keyword-gaps` skill — the measured counterpart to `keywords`. */
+  keywordGaps?: KeywordGap[];
   seoAudits?: SEOAudit[];
   landingPages?: LandingPage[];
   forumThreads?: ForumThread[];
@@ -108,6 +111,7 @@ export function buildFullContext(data: AllCollections): string {
   if (sampledData.emails?.length) sections.push(summarizeEmails(sampledData.emails));
   if (sampledData.blog?.length) sections.push(summarizeBlog(sampledData.blog));
   if (sampledData.keywords?.length) sections.push(summarizeKeywords(sampledData.keywords));
+  if (sampledData.keywordGaps?.length) sections.push(summarizeKeywordGaps(sampledData.keywordGaps));
   if (sampledData.seoAudits?.length) sections.push(summarizeSEO(sampledData.seoAudits));
   if (sampledData.landingPages?.length) sections.push(summarizeLandingPages(sampledData.landingPages));
   if (sampledData.forumThreads?.length) sections.push(summarizeForum(sampledData.forumThreads));
@@ -161,6 +165,7 @@ export function buildPeriodContext(
     emails: data.emails ? filterByDate(data.emails) : undefined,
     blog: data.blog ? filterByDate(data.blog) : undefined,
     keywords: data.keywords,
+    keywordGaps: data.keywordGaps,
     seoAudits: data.seoAudits,
     landingPages: data.landingPages,
   };
@@ -188,6 +193,7 @@ export function buildSEOContext(data: AllCollections): string {
   const sections = ["SEO & CONTENT CONTEXT"];
   if (data.blog?.length) sections.push(summarizeBlog(data.blog));
   if (data.keywords?.length) sections.push(summarizeKeywords(data.keywords));
+  if (data.keywordGaps?.length) sections.push(summarizeKeywordGaps(data.keywordGaps));
   if (data.seoAudits?.length) sections.push(summarizeSEO(data.seoAudits));
   if (data.landingPages?.length) sections.push(summarizeLandingPages(data.landingPages));
   return sections.join("\n");
@@ -204,6 +210,7 @@ export function buildMarketingContext(data: AllCollections): string {
 export function buildKeywordContext(data: AllCollections): string {
   const sections = ["KEYWORD HEALTH CONTEXT"];
   if (data.keywords?.length) sections.push(summarizeKeywords(data.keywords));
+  if (data.keywordGaps?.length) sections.push(summarizeKeywordGaps(data.keywordGaps));
   if (data.blog?.length) sections.push(summarizeBlog(data.blog));
   if (data.seoAudits?.length) sections.push(summarizeSEO(data.seoAudits));
   return sections.join("\n");
@@ -393,6 +400,25 @@ function summarizeKeywords(keywords: SEOKeyword[]): string {
 By difficulty: ${byDifficulty}
 By intent: ${byIntent}
 Keywords: ${keywords.slice(0, 20).map((k) => k.keyword).join(", ")}`;
+}
+
+/**
+ * Gaps are the measured side of the keyword picture: real Search Console queries
+ * the site already appears for. Included so keyword suggestions stay anchored to
+ * observed demand instead of drifting into unrelated industries.
+ */
+function summarizeKeywordGaps(gaps: KeywordGap[]): string {
+  const byType = countBy(gaps, (g) => g.type);
+  const top = gaps
+    .slice(0, 20)
+    .map((g) => {
+      const position = typeof g.currentPosition === "number" ? ` pos ${g.currentPosition.toFixed(1)}` : "";
+      return `${g.keyword} (${g.type}${position})`;
+    })
+    .join(", ");
+  return `\n--- KEYWORD GAPS (${gaps.length}) ---
+By type: ${byType}
+Gaps: ${top}`;
 }
 
 function summarizeSEO(audits: SEOAudit[]): string {

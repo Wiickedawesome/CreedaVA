@@ -155,6 +155,17 @@ const analyticsItems: NavItem[] = [
     ),
   },
   {
+    label: "Keywords",
+    href: "/admin/keywords",
+    exact: true,
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 5h7a2 2 0 012 2v12a2 2 0 00-2-2H4z" />
+        <path d="M20 5h-7a2 2 0 00-2 2v12a2 2 0 012-2h7z" />
+      </svg>
+    ),
+  },
+  {
     label: "SEO Hub",
     href: "/admin/seo",
     icon: (

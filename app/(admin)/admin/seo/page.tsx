@@ -1,21 +1,13 @@
 "use client";
 
-import React, { Suspense, useCallback, useMemo } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { AdminTabs, PageHeader } from "@/components/admin";
 import type { Tab } from "@/components/admin/tabs";
+import { ADMIN_ROUTE_ALIASES } from "@/lib/utils/admin-route-aliases";
 
 // Lazy-load every section so the hub stays light and each tab only pays its own bundle cost.
-const KeywordsSection = dynamic(() => import("./_components/sections/keywords-section"), {
-  ssr: false,
-  loading: () => <SectionSkeleton label="Loading keywords…" />,
-});
-
-const BriefsSection = dynamic(() => import("./_components/sections/briefs-section"), {
-  ssr: false,
-  loading: () => <SectionSkeleton label="Loading briefs…" />,
-});
 const OutreachSection = dynamic(() => import("./_components/sections/outreach-section"), {
   ssr: false,
   loading: () => <SectionSkeleton label="Loading outreach…" />,
@@ -24,29 +16,37 @@ const AgentDashboard = dynamic(() => import("./_components/sections/agent-hub-se
   ssr: false,
   loading: () => <SectionSkeleton label="Loading agent…" />,
 });
-const ActionItemsBoard = dynamic(
-  () => import("./_components/tasks-board").then((m) => m.SeoTasksBoard),
-  { ssr: false, loading: () => <SectionSkeleton label="Loading action items…" /> },
-);
 
-type SectionId = "keywords" | "briefs" | "outreach" | "agent" | "action-items";
+type SectionId = "outreach" | "agent";
 
-// Legacy ?section= values and retired tabs.
+type SectionConfig = { value: SectionId; label: string; description: string };
+
+// Legacy ?section= values. Anything the agent produces is a sub-tab of `agent`.
 const SECTION_ALIASES: Record<string, SectionId> = {
-  citations: "keywords",
-  opportunities: "keywords",
   digest: "agent",
-  tasks: "action-items",
+  briefs: "agent",
+  tasks: "agent",
+  "action-items": "agent",
 };
 
-const DEFAULT_SECTION: SectionId = "keywords";
+/**
+ * Sections that moved to their own top-level page. `?section=keywords` is still
+ * bookmarked in places, so it redirects instead of silently opening Outreach.
+ */
+const MOVED_SECTIONS: Record<string, string> = {
+  keywords: ADMIN_ROUTE_ALIASES.seoKeywords,
+  gaps: ADMIN_ROUTE_ALIASES.seoOpportunities,
+  opportunities: ADMIN_ROUTE_ALIASES.seoOpportunities,
+  citations: ADMIN_ROUTE_ALIASES.seoOpportunities,
+  rankings: ADMIN_ROUTE_ALIASES.seoRankings,
+  pages: ADMIN_ROUTE_ALIASES.seoPages,
+};
 
-const SECTIONS: { value: SectionId; label: string; description: string }[] = [
-  { value: "keywords", label: "Keywords", description: "Tracked keywords, AI-discovered gaps (content, backlinks, brand mentions, citations), and Search Console rankings." },
-  { value: "briefs", label: "Briefs", description: "AI-generated content briefs ready to hand off to writers." },
+const DEFAULT_SECTION: SectionId = "agent";
+
+const SECTIONS: SectionConfig[] = [
+  { value: "agent", label: "Agent", description: "The autonomous agent: runs, its audits, the briefs and action items it writes, and the weekly digest." },
   { value: "outreach", label: "Outreach", description: "Draft and track backlink/PR outreach emails." },
-  { value: "agent", label: "Agent", description: "Run the autonomous SEO agent, review its run history, and read the weekly digest." },
-  { value: "action-items", label: "Action items", description: "SEO actions the agent has queued from its findings." },
 ];
 
 function SectionSkeleton({ label }: { label: string }) {
@@ -63,6 +63,13 @@ export default function SeoHubPage() {
   const searchParams = useSearchParams();
 
   const rawSection = searchParams?.get("section") ?? DEFAULT_SECTION;
+  const moved = MOVED_SECTIONS[rawSection];
+
+  // Redirect rather than fall through to the default tab.
+  useEffect(() => {
+    if (moved) router.replace(moved);
+  }, [moved, router]);
+
   const section: SectionId = useMemo(() => {
     const aliased = SECTION_ALIASES[rawSection] ?? rawSection;
     return SECTIONS.find((s) => s.value === aliased)?.value ?? DEFAULT_SECTION;
@@ -86,7 +93,7 @@ export default function SeoHubPage() {
     <div className="space-y-6">
       <PageHeader
         title="SEO Hub"
-        description="Keywords, opportunities, briefs, outreach and the autonomous agent. Page metadata has its own page."
+        description="Outreach and the autonomous agent. Keywords and page metadata have their own pages."
       />
       <div>
         <AdminTabs tabs={tabs} activeTab={section} onChange={handleChange} />
@@ -95,11 +102,8 @@ export default function SeoHubPage() {
         )}
       </div>
       <Suspense fallback={<SectionSkeleton label="Loading…" />}>
-        {section === "keywords" && <KeywordsSection />}
-        {section === "briefs" && <BriefsSection />}
         {section === "outreach" && <OutreachSection />}
         {section === "agent" && <AgentDashboard />}
-        {section === "action-items" && <ActionItemsBoard />}
       </Suspense>
     </div>
   );

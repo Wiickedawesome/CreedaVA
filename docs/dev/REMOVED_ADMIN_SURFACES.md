@@ -186,8 +186,118 @@ Retired route aliases still resolve:
 
 - `/admin/seo/content` → `/admin/metadata`
 - `/admin/seo/audits` → `/admin/seo?section=agent&tab=audits`
-- `?section=opportunities` / `?section=citations` → `?section=keywords`
-- `?section=pages` → falls through to the hub default (`keywords`)
+- `/admin/seo/briefs` → `/admin/seo?section=agent&tab=briefs`
+- `/admin/seo/tasks` → `/admin/seo?section=agent&tab=action-items`
+- `?section=opportunities` / `?section=citations` → `/admin/keywords?tab=gaps`
+- `?section=keywords` → `/admin/keywords`
+- `?section=briefs` / `?section=tasks` / `?section=action-items` → `?section=agent`
+- `?section=pages` → `/admin/metadata`
+
+The hub itself is now only **Agent | Outreach**. Everything the agent *produces*
+sits inside the agent, next to the runs that produce it.
+
+### Keywords is the agent's input, not its output
+
+Every other SEO surface is written *by* the agent. `keywords` is the one it reads:
+no cloud function writes it — both `keyword-gaps.ts` and `serp-analysis.ts` only
+`get()` it. Every write comes from the admin UI (New Keyword, Keyword AI → Add,
+Search Console sync), which is why it now has its own top-level page rather than
+being a hub tab next to outputs.
+
+Two consequences that were invisible before:
+
+- **An empty `keywords` collection silently disables `serp-analysis`.** It returns
+  `status: "skipped", reason: "no-tracked-keywords"` — no error, no alert — so
+  competitor-gap detection is off until at least one keyword exists. The empty
+  state on `/admin/keywords` now says so explicitly.
+- **Keyword AI was answering without data.** `buildPrompt` ignored the page-aware
+  `dataContext` it was handed (hard-coded `""`), so suggestions came from the model
+  alone — hence the off-topic results. It now receives the real context, plus
+  `keyword-gaps` was added to `AllCollections` so the prompt sees measured demand.
+  The prompt also forbids unrelated industries and terms already tracked.
+
+Keyword AI presets are now derived from the agent's highest-priority gaps (falling
+back to a static list when no gaps exist), so the quick-start chips point at real
+opportunities. Suggesting is still human-approved — nothing is auto-written to
+`keywords`, because that list drives what the agent measures.
+
+The suggestions modal gained **Add all N**. Accepting a set of ten previously took
+ten clicks, so it was usually abandoned halfway, which left the gap and SERP skills
+with a thinner keyword list than the operator intended.
+
+### One measurement store: `rank-history`
+
+`rank-history` was already the agent's time series — one doc per
+(keyword, page, day), id `dayKey__slug(keyword)__slug(page)`. The admin's Search
+Console button independently fetched the same API and flattened
+`clicks/impressions/ctr/position` onto the `keywords` docs. Two stores, one
+measurement, and whichever ran last silently defined the meaning of the numbers.
+
+Now there is one store:
+
+- The button writes `rank-history` rows in the agent's exact shape, with the
+  agent's exact id format (`lib/utils/rank-history.ts`), so both upsert the same
+  documents for a given day.
+- The Keywords table's Clicks / Impr. / CTR / Pos. columns derive from the latest
+  `rank-history` row per keyword (`latestMetricsByKeyword`). Same-day duplicates
+  resolve to the better position, which is what "where do I rank for this" means.
+- `keywords.lastSynced` is no longer written. The field stays on `SEOKeyword` so
+  older docs keep type-checking; nothing reads it.
+
+Two traps this walked into, both worth remembering:
+
+1. **`useCollection.add()` is `addDoc`.** It discards any `id` you pass and mints a
+   random one, so a "stable id" write via `add()` appends a duplicate row on every
+   sync. The upsert path is `createWithId` from `lib/firebase/firestore`.
+2. **The agent's slug is not the app's `slugify`.** Agent: lowercase, `[^a-z0-9]+`
+   → `_`. App: hyphens. Using `slugify` would fork the id space. The contract is
+   pinned by `__tests__/lib/utils/rank-history.test.ts`.
+
+Search Console's `queries` dimension is an aggregate across pages, so those rows
+record `page: ""` — the honest value — rather than a fabricated page.
+
+### What the agent actually writes
+
+One crawler and one synthesizer feed four surfaces. This was not visible anywhere
+in the UI, which is why "Briefs" and "Action items" looked like independent
+features:
+
+| Collection | Written by | Cadence |
+|---|---|---|
+| `onpage-audits` | `onpage.ts` crawl | Mon 03:00 + manual Run now |
+| `seo-tasks` (`autoApplied: true`, status `done`) | `onpage.ts:425` — receipt of a meta fix it already applied | same crawl |
+| `seo-tasks` (status `todo`) | `synthesizer.ts:508` — high-severity issues it did **not** fix | Sun 02:00 |
+| `content-briefs` | `synthesizer.ts` (thin-content, striking-distance, competitor gap) | Sun 02:00 |
+| `blog` (status `draft`) | `content-writer.ts` from `content-briefs` | Sun 02:00 |
+
+`content-writer` never auto-publishes: `autonomy.content: "execute"` still only
+produces `status: "draft"`.
+
+Two bugs this exposed, both fixed:
+
+1. **`content-writer` silently expired briefs.** It selected
+   `updatedAt >= now - 7d`, so any brief it could not reach within a week stayed
+   `draft` with no `blogId` and was never queried again — the work was lost with
+   no error. It now selects on `status == "draft"`, which is the real pending
+   signal, and orders by priority in memory (no new composite index needed).
+   `draftAttempts` caps retries at 3 so a brief the model can never compose stops
+   consuming one of the 5 per-run slots; it lands in `needs-review` instead.
+2. **`ContentBrief.status` omitted values the writers set.** The union was
+   `draft | in-progress | published | archived`, but `content-writer` writes
+   `draft-generated`. Those briefs rendered with an unstyled badge and matched no
+   filter. The union now covers every value, including `needs-review`.
+
+### Action items: receipts vs. work
+
+Half the rows in `seo-tasks` are `autoApplied: true, status: "done"` — a record
+that the agent already changed the live page. The other half are genuine todos
+from the synthesizer. They were rendered in one kanban, so an already-completed
+receipt sat in the Done column looking like finished work.
+
+The board now splits them: the three columns carry only actionable tasks, and
+auto-applied changes get a separate read-only **Auto-applied changes** list with
+path and timestamp.
+
 
 ### The nav-glue meta description bug
 
