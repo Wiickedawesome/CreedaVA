@@ -1,7 +1,23 @@
 # Security posture — scans, alerts and why each is resolved the way it is
 
-Last reviewed: **2026-11-11**. Every statement here was measured against this
+Last reviewed: **2026-11-12**. Every statement here was measured against this
 repository or the Google Cloud project `creeda-va`, not assumed.
+
+## State at time of writing
+
+Fixed in `6b51e0c`. All three scanners verified at `0` open alerts after the
+push — not asserted, queried:
+
+```
+dependabot open: 0     codescan open: 0     secret-scanning open: 0
+```
+
+The dependency fix was confirmed independently of the alert counter, because
+the counter lags: `GET /dependency-graph/sbom` at `6b51e0c` resolves
+`node-forge@1.4.3` and `fast-xml-parser@5.12.0`, and the graph diff against the
+previous commit lists `node-forge 1.4.2` and `fast-xml-parser 5.7.2` as
+removed. GitHub took roughly 25 minutes to re-evaluate the alerts and mark them
+`fixed`; there is no API to force that sweep.
 
 ## The three scanners
 
