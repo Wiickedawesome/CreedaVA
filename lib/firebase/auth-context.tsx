@@ -81,15 +81,27 @@ async function syncSessionCookie(user: User) {
   }
 }
 
-/** Ask the server who we are, per the session cookie. Returns null if nobody. */
-async function fetchRestoreToken(): Promise<string | null> {
+/**
+ * Ask the server who we are, per the session cookie.
+ *
+ * `unavailable` distinguishes "nobody is signed in" from "the server could not
+ * answer". They look the same to the caller but mean opposite things: the first
+ * is a real sign-out, the second is an outage while the visitor still holds a
+ * valid cookie. Collapsing them is how a signed-in person gets dumped on
+ * /login by a server-side fault.
+ */
+async function fetchRestoreToken(): Promise<{
+  token: string | null;
+  unavailable: boolean;
+}> {
   try {
     const res = await fetch("/api/session");
-    if (!res.ok) return null;
+    if (res.status === 401) return { token: null, unavailable: false };
+    if (!res.ok) return { token: null, unavailable: true };
     const data = (await res.json()) as { customToken?: string };
-    return data.customToken ?? null;
+    return { token: data.customToken ?? null, unavailable: false };
   } catch {
-    return null;
+    return { token: null, unavailable: true };
   }
 }
 
@@ -112,8 +124,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * the client back in. A 401 here is the genuine "signed out" answer.
    */
   async function restoreSession() {
-    const customToken = await fetchRestoreToken();
+    const { token: customToken, unavailable } = await fetchRestoreToken();
+
     if (!customToken) {
+      if (unavailable) {
+        // The cookie may well be valid — the server just could not answer.
+        // Report neither "signed out" nor "signed in": stay in `checking` so
+        // the guard holds the loading state instead of redirecting. A false
+        // sign-out is far worse than a slow page; it is exactly what sent
+        // signed-in people back to /login during the session outage.
+        console.error(
+          "Session restore unavailable — leaving the visitor signed in place.",
+        );
+        return;
+      }
       setStatus("anonymous");
       return;
     }

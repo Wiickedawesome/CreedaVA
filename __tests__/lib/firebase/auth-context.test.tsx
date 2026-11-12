@@ -313,6 +313,30 @@ describe("AuthProvider", () => {
     // loading must resolve, or a guard would wait forever on the skeleton
     expect(screen.getByTestId("loading").textContent).toBe("false");
   });
+
+  it("does not report a sign-out when the server cannot restore the session", async () => {
+    // Regression: GET /api/session answered 503 while a perfectly valid session
+    // cookie was held (a missing IAM permission on the runtime account). That
+    // was reported as `anonymous`, so the admin guard replaced the URL with
+    // /login — the visitor saw the dashboard begin to render and was then
+    // thrown back to the sign-in screen. A server fault is not a sign-out.
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 503 });
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+
+    await act(async () => {
+      authCallback?.(null);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // Still resolving, so no guard redirects and no login form is forced.
+    expect(screen.getByTestId("loading").textContent).toBe("true");
+  });
 });
 
 describe("useAuth", () => {

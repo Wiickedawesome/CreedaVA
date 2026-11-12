@@ -3,6 +3,72 @@
 Last measured: **2026-11-12**. Everything below was queried from the project, not
 inferred from the code alone.
 
+## The login loop, resolved (2026-11-12)
+
+Two independent faults, both required to fix it. It is worth reading both,
+because each one on its own looked like "the browser is refusing cookies".
+
+### Fault 1 — `/api/session` sent no `Set-Cookie`
+
+Measured in a browser network trace:
+
+```
+POST /api/session -> 200 | set-cookie: ABSENT
+GET  /admin       -> 200 | (no cookie sent)
+GET  /api/session -> 401
+```
+
+The handler verified the ID token, created the session cookie, answered `200`,
+and sent **no `Set-Cookie` header at all**. `cookies().set()` mutated the
+request-scoped store without reaching the response. The client believed it had
+signed in; the proxy found no `__session`; every visit to `/admin` redirected
+back to `/login`. Removed the mutable-store write entirely — the cookie is now
+set on the `NextResponse` itself.
+
+### Fault 2 — the runtime account cannot sign a custom token
+
+With the cookie finally arriving, this appeared in Cloud Logging:
+
+```
+[/api/session] custom token creation failed: Error: Permission
+'iam.serviceAccounts.signBlob' denied on resource
+```
+
+`createCustomToken` signs a JWT, which needs `iam.serviceAccounts.signBlob`. The
+App Hosting runtime account holds `firebase.sdkAdminServiceAgent` — verified to
+include `firebaseauth.users.createSession` (so the session cookie worked) but
+**not** `signBlob`, and `roles/editor` does not grant it either.
+
+Fixed with a least-privilege grant on the service account itself:
+
+```
+roles/iam.serviceAccountTokenCreator
+  -> serviceAccount:firebase-app-hosting-compute@creeda-va.iam.gserviceaccount.com
+```
+
+Scope it to the SA, not the project. IAM propagation took **~2 minutes** — a
+retry immediately after the grant still failed, so do not conclude the grant is
+wrong from one retry.
+
+### Why the symptom looked like "the dashboard tries to load then bounces"
+
+Because it did. The cookie was valid, so `proxy.ts` let `/admin` through and the
+admin layout rendered its skeleton. Status was never `authenticated` because the
+restore failed, so the guard replaced the URL with `/login`. That brief flash of
+the dashboard is the signature of a failing **restore**, not a failing sign-in.
+
+### Two behaviours that made this hard to see
+
+- `syncSessionCookie` discarded the `/api/session` response, so a refusal was
+  indistinguishable from success and the rejected identity stayed persisted.
+- `GET /api/session` had one silent `catch` covering two very different
+  failures: "no valid session" (401, a real sign-out) and "could not mint a
+  token" (a server fault). Both returned 401, so a configuration error was
+  reported as an expiry and the client signed the visitor out.
+
+Both are fixed. `503 restore_unavailable` is now distinct from `401`, and the
+client deliberately does **not** treat a 5xx as a sign-out.
+
 ## Sign-in is Google popup only
 
 `lib/firebase/auth.ts` → `signInWithPopup` with the Google provider, against
@@ -120,7 +186,7 @@ client out, which makes the refusal recoverable. 401/500 deliberately do not,
 because signing out over a transient failure would lock out people who are
 entitled to a session.
 
-## Diagnosing a report
+## Diagnostics that work
 
 Ask for the exact on-screen text. It is decisive:
 
@@ -129,10 +195,13 @@ Ask for the exact on-screen text. It is decisive:
 | `Access denied. Only @creedava.com accounts are authorized.` | gate 3, wrong domain | account decision |
 | `Your email address is not verified.` | gate 3, unverified | verify or re-create the account |
 | `Session creation failed.` | 401/500 from `/api/session` | check token clock, then logs |
+| dashboard skeleton, then `/login` | **restore failing** | `GET /api/session` in the network tab, then Cloud Logging for `custom token creation failed` |
 | any other Firebase string | gate 1 or 2 — popup/App Check | test from a plain Chrome profile on a non-VPN network |
 
 Work in this order: (1) is the address actually a `@creedava.com` Google account,
-verified? (2) can they reach `google.com/recaptcha`? (3) only then suspect code.
+verified? (2) does `POST /api/session` return `Set-Cookie`? (3) does
+`GET /api/session` return 200, and if not, what does Cloud Logging say? (4) only
+then suspect the popup or App Check.
 
 ## Known limitation
 
