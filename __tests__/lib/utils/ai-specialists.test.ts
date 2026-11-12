@@ -35,9 +35,11 @@ describe("getSpecialist", () => {
     expect(getSpecialist("/admin/customers")).toMatchObject({ codename: "SCOUT" });
   });
 
-  it("returns ATLAS for task/project pages", () => {
-    expect(getSpecialist("/admin/tasks")).toMatchObject({ codename: "ATLAS" });
-    expect(getSpecialist("/admin/projects")).toMatchObject({ codename: "ATLAS" });
+  it("no longer assigns a specialist to removed task/project pages", () => {
+    // Tasks and Projects were removed from the admin. They must fall through to
+    // the default rather than resolving to a specialist that no longer exists.
+    expect(getSpecialist("/admin/tasks")).toMatchObject({ codename: "ARIA" });
+    expect(getSpecialist("/admin/projects")).toMatchObject({ codename: "ARIA" });
   });
 
   it("returns GUIDE for settings page", () => {
@@ -54,28 +56,38 @@ describe("getSpecialist", () => {
     // Short-form paths without the /admin/ prefix are fully lowercased.
     expect(getSpecialist("LEADS")).toMatchObject({ codename: "SCOUT" });
     expect(getSpecialist("BLOG")).toMatchObject({ codename: "NOVA" });
-    expect(getSpecialist("TASKS")).toMatchObject({ codename: "ATLAS" });
+    expect(getSpecialist("SETTINGS")).toMatchObject({ codename: "GUIDE" });
   });
 
   it("normalizes paths with trailing slashes", () => {
-    expect(getSpecialist("/admin/tasks/")).toMatchObject({ codename: "ATLAS" });
+    expect(getSpecialist("/admin/leads/")).toMatchObject({ codename: "SCOUT" });
   });
 
   it("accepts short-form segments without /admin/ prefix", () => {
     expect(getSpecialist("leads")).toMatchObject({ codename: "SCOUT" });
-    expect(getSpecialist("tasks")).toMatchObject({ codename: "ATLAS" });
     expect(getSpecialist("settings")).toMatchObject({ codename: "GUIDE" });
   });
 });
 
 describe("ALL_SPECIALISTS", () => {
-  it("contains exactly 7 specialists", () => {
-    expect(ALL_SPECIALISTS).toHaveLength(7);
+  it("contains exactly 6 specialists", () => {
+    expect(ALL_SPECIALISTS).toHaveLength(6);
   });
 
   it("contains the expected codenames in order", () => {
     const codenames = ALL_SPECIALISTS.map((s) => s.codename);
-    expect(codenames).toEqual(["ARIA", "ORACLE", "NOVA", "MAVERICK", "SCOUT", "ATLAS", "GUIDE"]);
+    expect(codenames).toEqual(["ARIA", "ORACLE", "NOVA", "MAVERICK", "SCOUT", "GUIDE"]);
+  });
+
+  it("no longer includes the operations specialist", () => {
+    // ATLAS existed only to cover the Tasks and Projects pages. Leaving a
+    // specialist behind with a specialistPath pointing at a deleted route would
+    // send the AI panel to a 404.
+    expect(ALL_SPECIALISTS.map((s) => s.codename)).not.toContain("ATLAS");
+    for (const specialist of ALL_SPECIALISTS) {
+      expect(specialist.specialistPath).not.toBe("/admin/tasks");
+      expect(specialist.specialistPath).not.toBe("/admin/projects");
+    }
   });
 
   it("each specialist has required fields", () => {

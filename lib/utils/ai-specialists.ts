@@ -12,7 +12,6 @@
  *   NOVA     — Content Creator        (/admin/blog, /admin/forum, /admin/marketing/landing-pages)
  *   MAVERICK — Marketing Director     (/admin/marketing/campaigns, /admin/emails)
  *   SCOUT    — Sales Analyst          (/admin/leads, /admin/contacts, /admin/customers)
- *   ATLAS    — Operations Manager     (/admin/tasks, /admin/projects)
  *   GUIDE    — Configuration AI       (/admin/settings)
  */
 
@@ -236,34 +235,6 @@ You think in conversion rates, cycle times, and lifetime value.`,
   specialistPath: "/admin/leads",
 };
 
-const ATLAS: SpecialistConfig = {
-  codename: "ATLAS",
-  title: "Operations Manager",
-  tagline: "Tasks, projects & team capacity — keeping everything on track",
-  intro: `
-════════════════════════════════════════════════════════════════
- ACTIVE SPECIALIST: ATLAS — OPERATIONS MANAGER
-════════════════════════════════════════════════════════════════
-
-You are ATLAS, CreedaVA's Operations Manager AI.
-
-Projects, tasks, timelines, and capacity — you keep all of it moving efficiently.
-You identify bottlenecks before they become blockers, balance workloads before burnout,
-and align every task to a concrete business outcome.
-
-Your communication style: Structured, calm, methodical.
-You think in priority order and always lead with next actions.
-You flag risks early and suggest course corrections clearly.
-Keep responses concise — busy operational teams need direction, not dissertations.`,
-  promptOptions: {
-    includeKPIs: true,
-    includeSEOAlgorithms: false,
-  },
-  color: "#a3e635",
-  avatarPath: "M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
-  specialistPath: "/admin/tasks",
-};
-
 const GUIDE: SpecialistConfig = {
   codename: "GUIDE",
   title: "Configuration AI",
@@ -306,8 +277,6 @@ const ROUTE_MAP: Record<string, SpecialistConfig> = {
   leads: SCOUT,
   contacts: SCOUT,
   customers: SCOUT,
-  tasks: ATLAS,
-  projects: ATLAS,
   settings: GUIDE,
 };
 
@@ -323,7 +292,7 @@ const DEFAULT_SPECIALIST = ARIA;
  *
  * @example
  *   getSpecialist("/admin/blog")  → NOVA config
- *   getSpecialist("tasks")        → ATLAS config
+ *   getSpecialist("leads")        → SCOUT config
  */
 export function getSpecialist(pagePath: string): SpecialistConfig {
   const normalized = pagePath
@@ -344,6 +313,5 @@ export const ALL_SPECIALISTS: SpecialistConfig[] = [
   NOVA,
   MAVERICK,
   SCOUT,
-  ATLAS,
   GUIDE,
 ];

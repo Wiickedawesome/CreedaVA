@@ -28,7 +28,6 @@ import {
   buildSalesContext,
   buildSEOContext,
   buildMarketingContext,
-  buildOperationsContext,
   buildKeywordContext,
   buildLandingPageContext,
   buildBookingContext,
@@ -99,11 +98,6 @@ const PAGE_CONFIGS: Record<string, PageConfig> = {
     collections: ["landingPages", "campaigns", "leads"],
     contextBuilder: buildLandingPageContext,
   },
-  projects: {
-    section: "Projects AI",
-    collections: ["projects", "tasks", "customers"],
-    contextBuilder: buildOperationsContext,
-  },
   "seo/content": {
     section: "SEO Content AI",
     collections: ["blog", "keywords", "seoAudits", "landingPages"],
@@ -114,17 +108,12 @@ const PAGE_CONFIGS: Record<string, PageConfig> = {
     collections: ["keywords", "blog", "seoAudits"],
     contextBuilder: buildKeywordContext,
   },
-  tasks: {
-    section: "Tasks AI",
-    collections: ["tasks", "projects", "bookings"],
-    contextBuilder: buildOperationsContext,
-  },
 };
 
 // Default for unrecognized pages — minimal footprint, only core CRM data
 const DEFAULT_CONFIG: PageConfig = {
   section: "CreedaVA AI",
-  collections: ["leads", "tasks"],
+  collections: ["leads"],
   contextBuilder: buildFullContext,
 };
 

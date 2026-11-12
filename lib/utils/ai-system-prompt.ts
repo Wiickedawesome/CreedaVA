@@ -134,11 +134,9 @@ ADMIN DASHBOARD (protected — /admin/*):
 - /admin/leads — Sales pipeline, lead scoring, conversion tracking
 - /admin/marketing/campaigns — Ad campaign management (Google Ads, social)
 - /admin/marketing/landing-pages — Landing page creation and performance
-- /admin/projects — Project management with SMART goals, phases, history
 - /admin/seo/content — Content optimization, audits, suggestions
 - /admin/seo/keywords — Keyword tracking, gap analysis, ranking monitoring
 - /admin/settings — System configuration and integrations
-- /admin/tasks — Task management with reminders, priorities, assignments
 
 ────────────────────────────────────────────────────
 4. YOUR CAPABILITIES — WHAT YOU CAN DO

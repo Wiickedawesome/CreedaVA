@@ -533,37 +533,6 @@ const crmTools: FunctionDeclaration[] = [
     },
   },
   {
-    name: "create_task",
-    description:
-      "Create a new task in the CRM. Auto-executes (low risk). Use when the user asks to create a to-do, reminder, or follow-up task.",
-    parameters: {
-      type: SchemaType.OBJECT,
-      properties: {
-        title: {
-          type: SchemaType.STRING,
-          description: "Task title",
-        },
-        description: {
-          type: SchemaType.STRING,
-          description: "Task description with details",
-        },
-        priority: {
-          type: SchemaType.STRING,
-          description: "Priority: 'low', 'medium', 'high', or 'urgent'",
-        },
-        dueDate: {
-          type: SchemaType.STRING,
-          description: "Due date in ISO format (YYYY-MM-DD)",
-        },
-        projectId: {
-          type: SchemaType.STRING,
-          description: "Optional project ID to associate with",
-        },
-      },
-      required: ["title", "priority"],
-    },
-  },
-  {
     name: "update_lead_status",
     description:
       "Update the status of a lead in the pipeline. Auto-executes.",
@@ -591,7 +560,6 @@ const crmTools: FunctionDeclaration[] = [
 registerTool("search_leads", "crm", "read-only");
 registerTool("search_customers", "crm", "read-only");
 registerTool("get_lead_details", "crm", "read-only");
-registerTool("create_task", "crm", "auto");
 registerTool("update_lead_status", "crm", "auto");
 
 // ─── SEO Tools ───────────────────────────────────────

@@ -437,25 +437,6 @@ registerHandler("get_lead_details", async (args) => {
   return { success: true, lead };
 });
 
-registerHandler("create_task", async (args) => {
-  const { create } = await import("./firestore");
-
-  const taskData = {
-    title: args.title as string,
-    description: (args.description as string) ?? "",
-    priority: (args.priority as string) ?? "medium",
-    status: "todo",
-    dueDate: (args.dueDate as string) ?? "",
-    projectId: (args.projectId as string) ?? "",
-    projectName: "",
-    assignedTo: "",
-    tags: [],
-  };
-
-  const id = await create("tasks", taskData);
-  return { success: true, taskId: id, title: args.title };
-});
-
 registerHandler("update_lead_status", async (args) => {
   const { update } = await import("./firestore");
 

@@ -93,12 +93,20 @@ describe("getPageConfig", () => {
     const expectedPages = [
       "analytics", "blog", "bookings", "contacts", "customers",
       "emails", "forum", "leads", "marketing/campaigns",
-      "marketing/landing-pages", "projects",
-      "seo/content", "seo/keywords", "tasks",
+      "marketing/landing-pages",
+      "seo/content", "seo/keywords",
     ];
     for (const page of expectedPages) {
       const config = getPageConfig(page);
       expect(config.section).not.toBe("CreedaVA AI");
+    }
+  });
+
+  it("falls back to the default for the removed task/project pages", () => {
+    // Those routes no longer exist, so page-aware AI must not keep a config
+    // pointing at them — it would describe a screen nobody can open.
+    for (const page of ["tasks", "projects"]) {
+      expect(getPageConfig(page).section).toBe("CreedaVA AI");
     }
   });
 });

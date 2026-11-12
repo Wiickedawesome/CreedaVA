@@ -18,7 +18,7 @@ import { lazyGenerateAndSaveReport, lazyForecastRevenue } from "@/lib/firebase/a
 import type { RevenueForecast } from "@/lib/firebase/ai-engine";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { Lead, Customer, Task, Booking } from "@/lib/types/crm";
+import type { Lead, Customer, Booking } from "@/lib/types/crm";
 
 // ─── SVG Chart Components ────────────────────────────
 
@@ -194,14 +194,11 @@ export default function AdminDashboardPage() {
     "customers",
     { orderByField: "createdAt" },
   );
-  const { data: tasks, loading: tl } = useCollection<Task>("tasks", {
-    orderByField: "createdAt",
-  });
   const { data: bookings, loading: bl } = useCollection<Booking>("bookings", {
     orderByField: "createdAt",
   });
 
-  const loading = ll || cl || tl || bl;
+  const loading = ll || cl || bl;
 
   // ─── Daily Status ──────────────────────────────────
   const [dailyRunning, setDailyRunning] = useState(false);
@@ -304,18 +301,10 @@ export default function AdminDashboardPage() {
     [activeCustomers],
   );
 
-  const openTasks = useMemo(
-    () => tasks.filter((t) => t.status !== "done"),
-    [tasks],
+  const pendingBookings = useMemo(
+    () => bookings.filter((b) => b.status === "pending"),
+    [bookings],
   );
-  const completedTasks = useMemo(
-    () => tasks.filter((t) => t.status === "done"),
-    [tasks],
-  );
-  const taskCompletionRate =
-    tasks.length > 0
-      ? Math.round((completedTasks.length / tasks.length) * 100)
-      : 0;
 
   const wonRate = useMemo(() => {
     const closed = leads.filter(
@@ -408,9 +397,8 @@ export default function AdminDashboardPage() {
               const pipeline = leads.filter((l) => !["won", "lost"].includes(l.status)).reduce((s, l) => s + (l.value || 0), 0);
               const activeClients = customers.filter((c) => c.status === "active").length;
               const churned = customers.filter((c) => c.status === "churned").length;
-              const overdue = tasks.filter((t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "done").length;
               const pending = bookings.filter((b) => b.status === "pending").length;
-              return `CreedaVA Dashboard Summary:\n- ${leads.length} total leads (${newLeads} new), pipeline value $${pipeline}\n- Win rate: ${wonRate}%, ${leads.filter(l=>l.status==="lost").length} lost\n- ${activeClients} active customers, ${churned} churned, MRR $${customers.filter(c=>c.status==="active").reduce((s,c)=>s+(c.monthlyValue||0),0)}\n- ${tasks.length} tasks (${overdue} overdue, ${tasks.filter(t=>t.status==="done").length} done)\n- ${bookings.length} bookings (${pending} pending)`;
+              return `CreedaVA Dashboard Summary:\n- ${leads.length} total leads (${newLeads} new), pipeline value $${pipeline}\n- Win rate: ${wonRate}%, ${leads.filter(l=>l.status==="lost").length} lost\n- ${activeClients} active customers, ${churned} churned, MRR $${customers.filter(c=>c.status==="active").reduce((s,c)=>s+(c.monthlyValue||0),0)}\n- ${bookings.length} bookings (${pending} pending)`;
             })()}
           />
           </div>
@@ -457,16 +445,9 @@ export default function AdminDashboardPage() {
               badge="MRR"
             />
             <StatCard
-              label="Task Completion"
-              value={`${taskCompletionRate}%`}
-              badge={`${openTasks.length} open`}
-              trend={
-                taskCompletionRate > 50
-                  ? { value: taskCompletionRate, positive: true }
-                  : taskCompletionRate > 0
-                    ? { value: 100 - taskCompletionRate, positive: false }
-                    : undefined
-              }
+              label="Pending Bookings"
+              value={pendingBookings.length.toString()}
+              badge={`${bookings.length} total`}
             />
           </div>
 
@@ -562,14 +543,14 @@ export default function AdminDashboardPage() {
               title="Recent Activity"
               action={
                 <a
-                  href="/admin/tasks"
+                  href="/admin/leads"
                   className="text-xs font-medium text-primary hover:text-primary-light"
                 >
                   View all &rarr;
                 </a>
               }
             >
-              {openTasks.length === 0 && leads.length === 0 ? (
+              {leads.length === 0 ? (
                 <p className="text-sm text-gray-50 text-center py-6">
                   No recent activity
                 </p>
@@ -592,33 +573,6 @@ export default function AdminDashboardPage() {
                           {lead.name}
                         </p>
                         <p className="text-xs text-gray-50">New lead</p>
-                      </div>
-                    </div>
-                  ))}
-                  {openTasks.slice(0, 2).map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center gap-2.5 py-1.5"
-                    >
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-20">
-                        <svg
-                          className="w-3.5 h-3.5 text-gray-60"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M9 11l3 3L22 4" />
-                          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-80 truncate">
-                          {task.title}
-                        </p>
-                        <p className="text-xs text-gray-50">
-                          {task.priority} priority
-                        </p>
                       </div>
                     </div>
                   ))}
@@ -672,11 +626,6 @@ export default function AdminDashboardPage() {
                     label: "Add New Lead",
                     href: "/admin/leads",
                     icon: "M12 4v16m8-8H4",
-                  },
-                  {
-                    label: "Create Task",
-                    href: "/admin/tasks",
-                    icon: "M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11",
                   },
                   {
                     label: "Write Blog Post",

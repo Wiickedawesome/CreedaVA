@@ -49,10 +49,9 @@ CreedaVA is a virtual assistant services platform built with **Next.js 16** (App
 │   │   ├── forum/              # Forum moderation
 │   │   ├── leads/              # Lead tracking
 │   │   ├── marketing/          # Marketing campaigns
-│   │   ├── projects/           # Project management
 │   │   ├── seo/                # SEO management
 │   │   ├── settings/           # App settings
-│   │   └── tasks/              # Task management
+│   │   └── studio/             # Image studio (images from free-form text)
 │   ├── login/                  # Login page (no nav/footer)
 │   ├── layout.tsx              # Root layout
 │   └── globals.css             # Tailwind + design tokens
