@@ -17,7 +17,7 @@ export const ADMIN_ROUTE_ALIASES = {
   seoKeywords: "/admin/keywords",
   seoOpportunities: "/admin/keywords?tab=gaps",
   seoBriefs: "/admin/seo?section=agent&tab=briefs",
-  seoOutreach: "/admin/seo?section=outreach",
+  seoOutreach: "/admin/emails?tab=outreach",
   seoCitations: "/admin/keywords?tab=gaps",
   seoDigest: "/admin/seo?section=agent&tab=digest",
   seoAgent: "/admin/seo?section=agent",

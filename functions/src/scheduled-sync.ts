@@ -8,6 +8,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { google } from "googleapis";
 import { db, getIntegrationConfig } from "./admin";
 import { toGA4PropertyResourceName } from "./google-analytics-property";
+import { runInboxSync } from "./inbox";
 import { functionOptions } from "./config";
 
 export const dailyGoogleSync = onSchedule(
@@ -285,6 +286,16 @@ export const dailyGoogleSync = onSchedule(
       }
     } catch (err) {
       results.push({ service: "Business Insights", status: "error", detail: (err as Error).message });
+    }
+
+    // ── 6) Sync the Gmail inbox ──────────────────
+    // The admin only refreshed this on a manual Sync click, so a broken or
+    // quiet mailbox looked identical to a working one for months.
+    try {
+      const { synced, repaired } = await runInboxSync();
+      results.push({ service: "Inbox", status: "ok", detail: `${synced} new, ${repaired} repaired` });
+    } catch (err) {
+      results.push({ service: "Inbox", status: "error", detail: (err as Error).message });
     }
 
     // ── Log sync results ──────────────────────────

@@ -3,6 +3,7 @@
 import { buildTrainedPrompt } from "@/lib/utils/ai-system-prompt";
 import { parseAiJson } from "@/lib/utils/ai-json";
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCollection } from "@/hooks/useCollection";
 import {
   PageHeader,
@@ -24,17 +25,38 @@ import {
 import type { EmailDraft, InboxMessage } from "@/lib/types/content";
 import { uploadImage, uploadFile } from "@/lib/firebase/storage";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { update } from "@/lib/firebase/firestore";
+import {
+  BUSINESS_ADDRESSES,
+  SENDABLE_ADDRESS_OPTIONS,
+  isReceivedBy,
+  mailboxDisplayName,
+  senderForReply,
+  DEFAULT_SENDER_ADDRESS,
+} from "@/lib/constants/business-emails";
+
+/** Tabs that render the draft table — everything except Inbox and Outreach. */
+const DRAFT_TABS = ["drafts", "sent", "all"];
+
+const EMAIL_TABS = ["inbox", "drafts", "sent", "all", "outreach"] as const;
+
+const OutreachSection = dynamic(() => import("./_components/outreach-section"), {
+  ssr: false,
+  loading: () => <p className="text-sm text-gray-50">Loading outreach…</p>,
+});
 
 // ─── Business Addresses ─────────────────────────────
+// Canonical list lives in lib/constants/business-emails so the inbox filter,
+// the per-address counters and the compose picker cannot drift apart — and so
+// the Gmail sign-in mailbox (`integrations/email.user`) never appears here.
 
-const BUSINESS_EMAILS = [
-  { label: "contact@creedava.com", value: "contact@creedava.com" },
-  { label: "sales@creedava.com", value: "sales@creedava.com" },
-  { label: "info@creedava.com", value: "info@creedava.com" },
-  { label: "privacy@creedava.com", value: "privacy@creedava.com" },
-  { label: "legal@creedava.com", value: "legal@creedava.com" },
-];
+/** Short date for the address-health cards — "12 Nov" is enough to spot a dead alias. */
+function formatReceivedDate(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "unknown";
+  return parsed.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
 
 const emptyForm = {
   subject: "",
@@ -82,25 +104,21 @@ export default function EmailsPage() {
   const { data: integrations } = useCollection("integrations");
 
   const emailSettings = useMemo(() => integrations.find((i) => i.id === "email")?.config || {}, [integrations]);
-  const aliases = useMemo(() => {
-    const list: { label: string; value: string }[] = [];
-    if (emailSettings.user) list.push({ label: emailSettings.user, value: emailSettings.user });
-    if (emailSettings.aliases) {
-      emailSettings.aliases.split(",").forEach((s: string) => {
-        const email = s.trim();
-        if (email && !list.find((l) => l.value === email)) list.push({ label: email, value: email });
-      });
-    }
-    for (const be of BUSINESS_EMAILS) {
-      if (!list.find((l) => l.value === be.value)) list.push(be);
-    }
-    return list;
-  }, [emailSettings]);
+
+  // Only used to detect whether inbound sync is configured at all — the
+  // addresses themselves come from BUSINESS_ADDRESSES, not from this config.
+  const hasMailboxConfig = Boolean(emailSettings.user);
 
   const { toast } = useToast();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // ─── UI State ─────────────────────
-  const [tab, setTab] = useState("inbox");
+  const [tab, setTab] = useState(() => {
+    const requested = searchParams?.get("tab") ?? "";
+    return (EMAIL_TABS as readonly string[]).includes(requested) ? requested : "inbox";
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -111,7 +129,7 @@ export default function EmailsPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [recipient, setRecipient] = useState("");
-  const [sender, setSender] = useState(BUSINESS_EMAILS[0].value);
+  const [sender, setSender] = useState(DEFAULT_SENDER_ADDRESS);
   const [sending, setSending] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkRecipients, setBulkRecipients] = useState("");
@@ -151,13 +169,35 @@ export default function EmailsPage() {
   // ─── Derived data ─────────────────
   const filteredInbox = useMemo(() => {
     let msgs = inboxMessages.filter((m) => !m.archived);
-    if (inboxFilter !== "all") {
-      msgs = msgs.filter((m) => m.receivedBy?.toLowerCase() === inboxFilter.toLowerCase());
-    }
+    const filter = BUSINESS_ADDRESSES.find((entry) => entry.label === inboxFilter);
+    if (filter) msgs = msgs.filter((m) => isReceivedBy(m, filter));
     return msgs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [inboxMessages, inboxFilter]);
 
   const unreadCount = useMemo(() => inboxMessages.filter((m) => !m.seen && !m.archived).length, [inboxMessages]);
+
+  /**
+   * Per-mailbox receiving state. "Nothing received yet" is the useful signal
+   * here: it means mail to that address is not reaching the synced inbox, which
+   * is the only way this app can tell whether an alias is live.
+   */
+  const mailboxHealth = useMemo(
+    () =>
+      BUSINESS_ADDRESSES.map((entry) => {
+        const mine = inboxMessages.filter((m) => !m.archived && isReceivedBy(m, entry));
+        const latest = mine.reduce<string | null>((newest, m) => {
+          if (!newest) return m.date;
+          return new Date(m.date) > new Date(newest) ? m.date : newest;
+        }, null);
+        return {
+          entry,
+          count: mine.length,
+          unread: mine.filter((m) => !m.seen).length,
+          lastReceived: latest ? formatReceivedDate(latest) : null,
+        };
+      }),
+    [inboxMessages],
+  );
 
   // Separate system templates from user drafts
   const surveyTemplate = useMemo(() => emails.find((e) => e.purpose === "satisfaction-survey"), [emails]);
@@ -174,9 +214,20 @@ export default function EmailsPage() {
     { label: "Drafts", value: "drafts", badge: userEmails.filter((e) => e.status === "draft").length || undefined },
     { label: "Sent", value: "sent", badge: userEmails.filter((e) => e.status === "sent").length || undefined },
     { label: "All Drafts", value: "all", badge: userEmails.length || undefined },
+    { label: "Outreach", value: "outreach" },
   ];
 
   // ─── Sync inbox ───────────────────
+  const handleTabChange = useCallback(
+    (value: string) => {
+      setTab(value);
+      const params = new URLSearchParams(searchParams?.toString() ?? "");
+      params.set("tab", value);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [router, pathname, searchParams],
+  );
+
   const handleSync = useCallback(async () => {
     setSyncing(true);
     try {
@@ -197,11 +248,11 @@ export default function EmailsPage() {
   const initialSyncDone = useRef(false);
 
   useEffect(() => {
-    if (!inboxLoading && inboxMessages.length === 0 && !initialSyncDone.current) {
+    if (hasMailboxConfig && !inboxLoading && inboxMessages.length === 0 && !initialSyncDone.current) {
       initialSyncDone.current = true;
       handleSync();
     }
-  }, [inboxLoading, inboxMessages.length, handleSync]);
+  }, [hasMailboxConfig, inboxLoading, inboxMessages.length, handleSync]);
 
   // ─── Compose / Draft Handlers ─────
 
@@ -218,11 +269,11 @@ export default function EmailsPage() {
         attachments: [],
       });
       setRecipient(replyTo.from);
-      setSender(replyTo.receivedBy || BUSINESS_EMAILS[0].value);
+      setSender(senderForReply(replyTo));
     } else {
       setForm({ ...emptyForm });
       setRecipient("");
-      setSender(BUSINESS_EMAILS[0].value);
+      setSender(DEFAULT_SENDER_ADDRESS);
     }
     setComposeOpen(true);
   }
@@ -333,6 +384,7 @@ export default function EmailsPage() {
     try {
       const result = await cloudSendBulkEmail({
         recipients: emailList,
+        from: sender,
         subject: form.subject,
         html: form.body,
       });
@@ -450,7 +502,7 @@ export default function EmailsPage() {
       header: "To",
       render: (m) => (
         <span className="text-xs px-2 py-0.5 rounded-full bg-gray-10 text-gray-60 whitespace-nowrap">
-          {m.receivedBy?.split("@")[0] || "—"}
+          {mailboxDisplayName(m)}
         </span>
       ),
     },
@@ -584,26 +636,29 @@ export default function EmailsPage() {
         }
       />
 
-      {/* Business Address Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {BUSINESS_EMAILS.map((be) => {
-          const count = inboxMessages.filter((m) => m.receivedBy?.toLowerCase() === be.value.toLowerCase() && !m.archived).length;
-          const unread = inboxMessages.filter((m) => m.receivedBy?.toLowerCase() === be.value.toLowerCase() && !m.seen && !m.archived).length;
+      {/* Business Address Health — one card per mailbox, doubles as the filter */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {mailboxHealth.map(({ entry, count, unread, lastReceived }) => {
+          const isActive = inboxFilter === entry.label;
           return (
             <button
-              key={be.value}
-              onClick={() => { setInboxFilter(inboxFilter === be.value ? "all" : be.value); setTab("inbox"); }}
+              key={entry.label}
+              onClick={() => { setInboxFilter(isActive ? "all" : entry.label); setTab("inbox"); }}
               className={`rounded-lg border p-3 text-left transition-colors ${
-                inboxFilter === be.value ? "border-primary bg-primary/10" : "border-border bg-card hover:border-gray-30"
+                isActive ? "border-primary bg-primary/10" : "border-border bg-card hover:border-gray-30"
               }`}
             >
-              <p className="text-xs text-gray-50 truncate">{be.value.split("@")[0]}</p>
+              <p className="text-xs text-gray-50 truncate">{entry.label}</p>
+              <p className="text-[11px] text-gray-40 truncate">{entry.address}</p>
               <div className="flex items-baseline gap-1.5 mt-1">
                 <span className="text-lg font-semibold text-gray-90">{count}</span>
                 {unread > 0 && (
                   <span className="text-xs font-medium text-primary">{unread} new</span>
                 )}
               </div>
+              <p className="text-[11px] text-gray-40 mt-0.5">
+                {lastReceived ? `Last ${lastReceived}` : "No mail yet"}
+              </p>
             </button>
           );
         })}
@@ -646,7 +701,7 @@ export default function EmailsPage() {
         </div>
       )}
 
-      <AdminTabs tabs={tabs} defaultValue="inbox" onChange={setTab} />
+      <AdminTabs tabs={tabs} activeTab={tab} onChange={handleTabChange} />
 
       {/* Inbox Tab */}
       {tab === "inbox" && (
@@ -668,7 +723,7 @@ export default function EmailsPage() {
       )}
 
       {/* Drafts / Sent / All Tab */}
-      {tab !== "inbox" && (
+      {DRAFT_TABS.includes(tab) && (
         <DataTable
           columns={draftColumns}
           data={filteredDrafts}
@@ -677,6 +732,9 @@ export default function EmailsPage() {
           emptyMessage="No emails — compose one or let AI draft it"
         />
       )}
+
+      {/* Outreach Tab */}
+      {tab === "outreach" && <OutreachSection />}
 
       {/* ─── Inbox View Modal ─────────────────── */}
       <Modal
@@ -803,7 +861,7 @@ export default function EmailsPage() {
           <div className="grid sm:grid-cols-2 gap-3">
             <Select
               label="From"
-              options={aliases}
+              options={SENDABLE_ADDRESS_OPTIONS}
               value={sender}
               onChange={(e) => setSender(e.target.value)}
             />
@@ -941,7 +999,7 @@ export default function EmailsPage() {
           </p>
           <Select
             label="Send From"
-            options={aliases}
+            options={SENDABLE_ADDRESS_OPTIONS}
             value={sender}
             onChange={(e) => setSender(e.target.value)}
           />

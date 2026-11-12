@@ -22,6 +22,7 @@
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db, getIntegrationConfig, getEmailTransport, verifyAdminEmail } from "./admin";
+import { resolveSenderAddress, senderDisplayName } from "./business-emails";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -39,6 +40,8 @@ interface SendEmailRequest {
 
 interface BulkEmailRequest {
   recipients: string[];
+  /** Mailbox to send as; falls back to the configured account when absent. */
+  from?: string;
   subject: string;
   html: string;
   replyTo?: string;
@@ -73,21 +76,14 @@ export const sendEmail = onCall(
 
     const transport = await getTransport();
     const integration = await getIntegrationConfig("email");
-    
-    // Determine 'from' address
-    let sentFrom = integration?.config.user || "admin@creedava.com";
-    if (data.from) {
-      const aliases = (integration?.config.aliases || "").split(",").map((s: string) => s.trim().toLowerCase());
-      if (aliases.includes(data.from.toLowerCase()) || data.from.toLowerCase() === integration?.config.user?.toLowerCase()) {
-        sentFrom = data.from;
-      }
-    } else if (integration?.config.fromEmail) {
-      // Backwards compatibility
-      sentFrom = integration.config.fromEmail;
-    }
+
+    // Allow-list is the business group list plus the configured aliases. Silently
+    // sending as the sign-in account instead is what made every "send as X"
+    // choice appear to work while the mail actually came from `john@`.
+    const sentFrom = resolveSenderAddress(data.from, integration?.config);
 
     const result = await transport.sendMail({
-      from: `"CreedaVA" <${sentFrom}>`,
+      from: `"${senderDisplayName(sentFrom)}" <${sentFrom}>`,
       to: data.to,
       subject: data.subject,
       html: data.html,
@@ -99,6 +95,7 @@ export const sendEmail = onCall(
     // Log to Firestore
     await db.collection("email-log").add({
       to: data.to,
+      from: sentFrom,
       subject: data.subject,
       status: "sent",
       messageId: result.messageId,
@@ -137,14 +134,15 @@ export const sendBulkEmail = onCall(
 
     const transport = await getTransport();
     const integration = await getIntegrationConfig("email");
-    const fromEmail = integration?.config.user || "admin@creedava.com";
+    const sentFrom = resolveSenderAddress(data.from, integration?.config);
+    const fromHeader = `"${senderDisplayName(sentFrom)}" <${sentFrom}>`;
 
     const results: { email: string; success: boolean; error?: string }[] = [];
 
     for (const recipient of data.recipients) {
       try {
         await transport.sendMail({
-          from: `"CreedaVA" <${fromEmail}>`,
+          from: fromHeader,
           to: recipient,
           subject: data.subject,
           html: data.html,
@@ -163,6 +161,7 @@ export const sendBulkEmail = onCall(
     // Log bulk send
     await db.collection("email-log").add({
       type: "bulk",
+      from: sentFrom,
       totalRecipients: data.recipients.length,
       successful: results.filter((r) => r.success).length,
       failed: results.filter((r) => !r.success).length,

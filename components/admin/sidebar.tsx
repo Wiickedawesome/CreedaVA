@@ -166,7 +166,7 @@ const analyticsItems: NavItem[] = [
     ),
   },
   {
-    label: "SEO Hub",
+    label: "Agent",
     href: "/admin/seo",
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

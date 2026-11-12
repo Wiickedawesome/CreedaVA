@@ -112,6 +112,7 @@ export interface InboxMessage extends FirestoreDoc {
   fromName: string;
   to: string;
   receivedBy: string;        // which alias received this
+  receivedByLabel?: string;  // display name on that alias, e.g. "CreedaVA Marketing"
   cc?: string;
   subject: string;
   date: string;

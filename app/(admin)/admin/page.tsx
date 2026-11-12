@@ -12,6 +12,7 @@ import {
   useToast,
 } from "@/components/admin";
 import { Button } from "@/components/ui";
+import { TrafficChart } from "@/components/admin/traffic-chart";
 import { fetchAnalyticsEvents } from "@/lib/firebase/analytics";
 import { cloudFetchBusinessReviews } from "@/lib/firebase/cloud-functions";
 import { lazyGenerateAndSaveReport, lazyForecastRevenue } from "@/lib/firebase/ai-lazy";
@@ -105,85 +106,6 @@ function SparklineChart({
 }
 
 // ─── Dashboard Page ──────────────────────────────────
-
-function TrafficAreaChart({
-  data,
-}: {
-  data: { label: string; value: number }[];
-}) {
-  if (data.length < 2) return null;
-  const values = data.map((d) => d.value);
-  const max = Math.max(...values, 1);
-  const w = 500;
-  const h = 120;
-  const pad = 6;
-
-  const pts = values.map((v, i) => {
-    const x = pad + (i / (values.length - 1)) * (w - pad * 2);
-    const y = h - pad - (v / max) * (h - pad * 2);
-    return { x, y };
-  });
-
-  const line = pts.map((p) => `${p.x},${p.y}`).join(" ");
-  const fill = [
-    `${pad},${h - pad}`,
-    ...pts.map((p) => `${p.x},${p.y}`),
-    `${w - pad},${h - pad}`,
-  ].join(" ");
-
-  return (
-    <svg
-      width={w}
-      height={h + 20}
-      viewBox={`0 0 ${w} ${h + 20}`}
-      className="w-full h-auto"
-    >
-      <defs>
-        <linearGradient id="dashTrafficGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[0.25, 0.5, 0.75].map((frac) => (
-        <line
-          key={frac}
-          x1={pad}
-          x2={w - pad}
-          y1={h - pad - frac * (h - pad * 2)}
-          y2={h - pad - frac * (h - pad * 2)}
-          stroke="var(--gray-10)"
-          strokeWidth="1"
-        />
-      ))}
-      <polygon points={fill} fill="url(#dashTrafficGrad)" />
-      <polyline
-        points={line}
-        fill="none"
-        stroke="var(--primary)"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      {pts.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="3" fill="var(--primary)" />
-      ))}
-      {data.map((d, i) => {
-        if (data.length <= 14 || i % Math.ceil(data.length / 7) === 0)
-          return (
-            <text
-              key={i}
-              x={pts[i].x}
-              y={h + 14}
-              textAnchor="middle"
-              className="traffic-label-text"
-            >
-              {d.label}
-            </text>
-          );
-        return null;
-      })}
-    </svg>
-  );
-}
 
 export default function AdminDashboardPage() {
 
@@ -463,7 +385,7 @@ export default function AdminDashboardPage() {
             {/* Traffic over time */}
             <DashboardSection title="Traffic Over Time">
               {trafficData.length > 1 && trafficData.some((d) => d.value > 0) ? (
-                <TrafficAreaChart data={trafficData} />
+                <TrafficChart data={trafficData} unit="page views" />
               ) : (
                 <p className="text-sm text-gray-50 text-center py-8">
                   No traffic data yet

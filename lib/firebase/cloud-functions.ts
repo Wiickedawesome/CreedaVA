@@ -37,6 +37,8 @@ interface SendEmailResult {
 
 interface BulkEmailParams {
   recipients: string[];
+  /** Mailbox to send as; the server falls back to the configured account. */
+  from?: string;
   subject: string;
   html: string;
   replyTo?: string;
@@ -112,6 +114,8 @@ interface MailboxFolder {
 interface SyncInboxResult {
   success: boolean;
   synced: number;
+  /** Messages already stored whose `receivedBy` was repaired this run. */
+  repaired?: number;
 }
 
 export async function cloudFetchInbox(params?: FetchInboxParams): Promise<FetchInboxResult> {

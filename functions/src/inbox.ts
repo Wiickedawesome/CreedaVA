@@ -125,6 +125,29 @@ function parseFromHeader(header: string): { name: string; address: string } {
   return { name: header, address: header };
 }
 
+/**
+ * Split a raw `To`/`Cc` header into recipients.
+ *
+ * The address is taken from the angle brackets so a display name such as
+ * `CreedaVA Marketing <x@y>` is not stored as if it were the mailbox — that is
+ * what made `inbox.receivedBy` unmatchable by the admin filter.
+ */
+function parseRecipients(header: string): { name: string; address: string }[] {
+  if (!header) return [];
+  return header
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const angled = part.match(/^(.*?)<([^>]+)>/);
+      if (!angled) return { name: part, address: part };
+      const name = angled[1].trim().replace(/^"|"$/g, "");
+      const address = angled[2].trim();
+      return { name: name || address, address };
+    })
+    .filter((recipient) => recipient.address.length > 0);
+}
+
 // ─── Parse Gmail message → InboxMessage ──────────────
 
 function parseGmailMessage(msg: gmail_v1.Schema$Message): InboxMessage {
@@ -322,6 +345,90 @@ export const listMailboxFolders = onCall(
 
 // ─── Sync Inbox to Firestore (for dashboard widgets) ─
 
+/**
+ * Pull the Gmail inbox into `inbox`, newest 100 messages.
+ *
+ * Shared by the manual callable and the daily scheduler — the inbox used to
+ * update only when someone pressed Sync in the admin, which is why the stored
+ * data could be months stale with no signal that anything had stopped.
+ */
+export async function runInboxSync(): Promise<{ synced: number; repaired: number }> {
+  const gmail = await getGmailClient();
+  let synced = 0;
+  let repaired = 0;
+
+  const listRes = await gmail.users.messages.list({
+    userId: "me",
+    q: "in:inbox",
+    maxResults: 100,
+  });
+
+  const messageIds = listRes.data.messages || [];
+
+  for (const meta of messageIds) {
+    if (!meta.id) continue;
+    try {
+      const msg = await gmail.users.messages.get({
+        userId: "me",
+        id: meta.id,
+        format: "full",
+      });
+      if (!msg.data.payload) continue;
+
+      const parsed = parseGmailMessage(msg.data);
+      const primaryRecipient = parseRecipients(parsed.to)[0];
+      const receivedBy = (primaryRecipient?.address || "").toLowerCase();
+      const receivedByLabel = primaryRecipient?.name || "";
+
+      // Check if already synced by messageId header
+      const existing = await db.collection("inbox")
+        .where("messageId", "==", parsed.messageId)
+        .limit(1)
+        .get();
+
+      if (!existing.empty) {
+        // Earlier syncs stored the whole header (`Name <addr>`) as
+        // `receivedBy`, which no admin filter could match. Rewriting the two
+        // address fields repairs history without touching the message body.
+        const doc = existing.docs[0];
+        const stored = (doc.data().receivedBy || "").toLowerCase();
+        if (stored !== receivedBy) {
+          await doc.ref.update({ receivedBy, receivedByLabel });
+          repaired++;
+        }
+        continue;
+      }
+
+      await db.collection("inbox").add({
+        uid: parsed.uid,
+        messageId: parsed.messageId,
+        from: parsed.from,
+        fromName: parsed.fromName,
+        to: parsed.to,
+        receivedBy,
+        receivedByLabel,
+        subject: parsed.subject,
+        date: parsed.date,
+        preview: parsed.preview,
+        bodyHtml: parsed.bodyHtml || "",
+        bodyText: parsed.bodyText || "",
+        seen: parsed.seen,
+        flagged: parsed.flagged,
+        hasAttachments: parsed.hasAttachments,
+        replied: false,
+        archived: false,
+        starred: false,
+        createdAt: parsed.date,
+      });
+      synced++;
+    } catch (fetchErr) {
+      console.error("Failed to sync message:", meta.id, fetchErr);
+    }
+  }
+
+  return { synced, repaired };
+}
+
 export const syncInboxToFirestore = onCall(
   { region: "us-east4", memory: "512MiB", timeoutSeconds: 120 },
   async (request) => {
@@ -330,68 +437,9 @@ export const syncInboxToFirestore = onCall(
     }
     verifyAdminEmail(request.auth.token.email);
 
-    const gmail = await getGmailClient();
-    let synced = 0;
-
     try {
-      const listRes = await gmail.users.messages.list({
-        userId: "me",
-        q: "in:inbox",
-        maxResults: 100,
-      });
-
-      const messageIds = listRes.data.messages || [];
-
-      for (const meta of messageIds) {
-        if (!meta.id) continue;
-        try {
-          const msg = await gmail.users.messages.get({
-            userId: "me",
-            id: meta.id,
-            format: "full",
-          });
-          if (!msg.data.payload) continue;
-
-          const parsed = parseGmailMessage(msg.data);
-
-          // Check if already synced by messageId header
-          const existing = await db.collection("inbox")
-            .where("messageId", "==", parsed.messageId)
-            .limit(1)
-            .get();
-
-          if (!existing.empty) continue;
-
-          const toAddrs = parsed.to.split(", ");
-          const receivedBy = toAddrs[0] || "";
-
-          await db.collection("inbox").add({
-            uid: parsed.uid,
-            messageId: parsed.messageId,
-            from: parsed.from,
-            fromName: parsed.fromName,
-            to: parsed.to,
-            receivedBy,
-            subject: parsed.subject,
-            date: parsed.date,
-            preview: parsed.preview,
-            bodyHtml: parsed.bodyHtml || "",
-            bodyText: parsed.bodyText || "",
-            seen: parsed.seen,
-            flagged: parsed.flagged,
-            hasAttachments: parsed.hasAttachments,
-            replied: false,
-            archived: false,
-            starred: false,
-            createdAt: parsed.date,
-          });
-          synced++;
-        } catch (fetchErr) {
-          console.error("Failed to sync message:", meta.id, fetchErr);
-        }
-      }
-
-      return { success: true, synced };
+      const { synced, repaired } = await runInboxSync();
+      return { success: true, synced, repaired };
     } catch (err) {
       console.error("Inbox sync failed:", err);
       throw new HttpsError("internal", err instanceof Error ? err.message : "Failed to sync inbox");

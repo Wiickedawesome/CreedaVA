@@ -11,6 +11,7 @@ import {
   CountryMap,
 } from "@/components/admin";
 import { Button } from "@/components/ui";
+import { TrafficChart } from "@/components/admin/traffic-chart";
 import { useAuth } from "@/lib/firebase/auth-context";
 import {
   fetchAnalyticsEvents,
@@ -64,77 +65,6 @@ function getEventLabel(type: string) {
 }
 
 // ─── Inline SVG Charts ──────────────────────────────
-
-function AreaChart({
-  data,
-  color = "var(--primary)",
-  height = 120,
-}: {
-  data: { label: string; value: number }[];
-  color?: string;
-  height?: number;
-}) {
-  if (data.length < 2) return null;
-  const values = data.map((d) => d.value);
-  const max = Math.max(...values, 1);
-  const w = 600;
-  const pad = 6;
-
-  const pts = values.map((v, i) => {
-    const x = pad + (i / (values.length - 1)) * (w - pad * 2);
-    const y = height - pad - (v / max) * (height - pad * 2);
-    return { x, y };
-  });
-
-  const line = pts.map((p) => `${p.x},${p.y}`).join(" ");
-  const fill = [
-    `${pad},${height - pad}`,
-    ...pts.map((p) => `${p.x},${p.y}`),
-    `${w - pad},${height - pad}`,
-  ].join(" ");
-
-  return (
-    <svg
-      width={w}
-      height={height + 20}
-      viewBox={`0 0 ${w} ${height + 20}`}
-      className="w-full h-auto"
-    >
-      <defs>
-        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.15" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[0.25, 0.5, 0.75].map((frac) => (
-        <line
-          key={frac}
-          x1={pad}
-          x2={w - pad}
-          y1={height - pad - frac * (height - pad * 2)}
-          y2={height - pad - frac * (height - pad * 2)}
-          stroke="var(--gray-10)"
-          strokeWidth="1"
-        />
-      ))}
-      <polygon points={fill} fill="url(#areaGrad)" />
-      <polyline points={line} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" />
-      {pts.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="3" fill={color} />
-      ))}
-      {/* X labels (show every few) */}
-      {data.map((d, i) => {
-        if (data.length <= 10 || i % Math.ceil(data.length / 8) === 0)
-          return (
-            <text key={i} x={pts[i].x} y={height + 14} textAnchor="middle" style={{ fontSize: "9px", fill: "var(--gray-50)" }}>
-              {d.label}
-            </text>
-          );
-        return null;
-      })}
-    </svg>
-  );
-}
 
 function DonutWithLegend({
   segments,
@@ -815,7 +745,7 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <DashboardSection title="Traffic Over Time" className="lg:col-span-2">
               {timeSeries.length > 1 ? (
-                <AreaChart data={timeSeries} color="var(--primary)" height={140} />
+                <TrafficChart data={timeSeries} unit="page views" height={160} />
               ) : (
                 <p className="text-sm text-gray-50 text-center py-8">
                   Not enough data to chart

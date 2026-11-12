@@ -193,8 +193,14 @@ Retired route aliases still resolve:
 - `?section=briefs` / `?section=tasks` / `?section=action-items` → `?section=agent`
 - `?section=pages` → `/admin/metadata`
 
-The hub itself is now only **Agent | Outreach**. Everything the agent *produces*
-sits inside the agent, next to the runs that produce it.
+The hub itself is now **Agent** only — one "Runs" tab. Everything the agent
+*produces* sits inside the agent, next to the runs that produce it.
+
+**Outreach moved to Emails.** Backlink drafts are emails, and they already lived in
+an email shape (`outreach-emails`); keeping them in an SEO hub meant the operator
+reviewed outbound mail in a different place from every other outbound mail. They
+are now the **Outreach** tab of `/admin/emails`, and `?section=outreach` redirects
+there instantly rather than falling through to the default tab.
 
 ### Keywords is the agent's input, not its output
 
@@ -253,8 +259,75 @@ Two traps this walked into, both worth remembering:
    → `_`. App: hyphens. Using `slugify` would fork the id space. The contract is
    pinned by `__tests__/lib/utils/rank-history.test.ts`.
 
-Search Console's `queries` dimension is an aggregate across pages, so those rows
-record `page: ""` — the honest value — rather than a fabricated page.
+Search Console's `queries` dimension is an aggregate across pages, so rows written
+from it record `page: ""` — the honest value — rather than a fabricated page. The
+function now also returns a `queryPages` dimension (query × page), and the sync
+prefers it so each measurement is keyed to its real landing page. The aggregated
+fallback stays for a deployment that predates the field.
+
+### Inbox: the "which alias received this" bug
+
+`inbox.receivedBy` was written as `parsed.to.split(", ")[0]` — the *raw* first
+`To` entry. For `CreedaVA Marketing <x@creedava.com>` that stored the display name
+as if it were the mailbox, so no filter could ever match it, and the To column
+rendered `CreedaVA Marketing <marketing` after splitting on `@`.
+
+Three changes:
+
+1. **`parseRecipients()`** extracts the address from the angle brackets and keeps
+   the display name separately as `receivedByLabel`.
+2. **Re-sync repairs history.** Already-synced messages were skipped entirely, so
+   a dirty `receivedBy` was permanent. The sync now rewrites the two address
+   fields when the freshly parsed value differs — nothing else is touched.
+3. **The admin filter is a fixed list** (`lib/constants/business-emails.ts`), not
+   `integrations/email`. That config's `user` is the mailbox Gmail *signs in as*
+   (`john@creedava.com`), so the filter offered a personal inbox and made it look
+   like customer mail arrived there.
+
+`CreedaVA Marketing` and `Join` are one mailbox (`join@creedava.com`), modelled as
+a single entry with an alternate label, so the address is not listed twice while
+both spellings still match a received message.
+
+### Send-as: every group, and never a silent substitution
+
+`sendEmail` only honoured a chosen `from` when it appeared in
+`integrations/email.aliases` — a list without `admins`, `billing`, `join` or
+`feedback`. Naming one of those sent as `john@` anyway, with no warning. Worse,
+`sendBulkEmail` had no `from` field at all, so the "Send From" picker in the bulk
+modal was decorative: every bulk send went out as the sign-in account.
+
+`functions/src/business-emails.ts` now holds the server allow-list (same eight
+groups) and `resolveSenderAddress()` rejects anything the account does not own
+instead of substituting quietly. `sendBulkEmail` accepts `from`, and both paths log
+the actual sender to `email-log` and use the business label as the display name
+(`CreedaVA Marketing <join@…>`) rather than a hard-coded `CreedaVA`.
+
+The app and function copies of the list cannot be shared — functions deploy from
+`functions/` alone — so `__tests__/lib/constants/business-emails.test.ts` asserts
+the two address sets are identical. Drift fails a test instead of silently
+rejecting a sender at runtime.
+
+Each mailbox gets a health card: count, unread, and **last received date**. "No
+mail yet" is not an error — it means nothing has been sent to that group so far.
+Once mail does arrive, the date is the proof that the alias is live.
+
+**The inbox was never polled.** `syncInboxToFirestore` only ran when someone
+pressed Sync, so the stored data could be months stale with nothing to indicate it.
+`dailyGoogleSync` now calls the shared `runInboxSync()` (extracted from the
+callable) at 06:00 and logs the result to `sync-log` like every other service.
+
+### Charts: one component, with actual axes
+
+`/admin` and `/admin/analytics` each carried a near-identical hand-rolled SVG area
+chart. Neither drew a y-axis, so the height of the line communicated nothing; the
+x-labels on `/admin` used a `traffic-label-text` class that **was never defined in
+any stylesheet**, so they rendered with the default black fill on a dark card and
+were effectively invisible.
+
+`components/admin/traffic-chart.tsx` replaces both: a rounded ("nice") y-axis with
+labelled gridlines, at most six non-clipping x-labels that always include the first
+and last day, a marked peak, native `<title>` tooltips per point, and a summary row
+(total / daily average / peak day) that answers the question the chart exists for.
 
 ### What the agent actually writes
 
