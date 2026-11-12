@@ -41,7 +41,10 @@ vi.mock("@/lib/firebase/auth", () => ({
     callOrder.push("popup");
     return mockSignInWithGoogle();
   },
-  signInWithCustomToken: (token: string) => mockSignInWithCustomToken(token),
+  signInWithCustomToken: (token: string) => {
+    callOrder.push("custom-token");
+    return mockSignInWithCustomToken(token);
+  },
   signOut: () => mockSignOut(),
   checkRedirectResult: () => Promise.resolve(null),
 }));
@@ -68,6 +71,33 @@ describe("AuthProvider", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authCallback = null;
+    callOrder.length = 0;
+  });
+
+  it("mints an App Check token before rebuilding the client session", async () => {
+    // Regression: restoring from the session cookie also signs in through
+    // identitytoolkit, which is App Check enforced. Without a token the restore
+    // failed, the provider reported `anonymous`, and the admin guard replaced
+    // the URL with /login — so a valid session never survived a page load and
+    // the visitor was pushed back to the sign-in screen in a loop.
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ customToken: "custom-token-123" }),
+    });
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+
+    await act(async () => {
+      authCallback?.(null);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(callOrder).toEqual(["app-check", "custom-token"]);
   });
 
   it("mints an App Check token before opening the sign-in popup", async () => {

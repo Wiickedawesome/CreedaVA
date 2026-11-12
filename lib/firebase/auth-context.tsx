@@ -118,6 +118,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Signing in with the custom token is an identitytoolkit call, so it needs
+    // an App Check token exactly like the popup does. Without this the restore
+    // silently failed and the visitor was reported as signed out — the guard
+    // then bounced them to /login even though their session cookie was valid.
+    // That is the "it takes me back to the sign-in screen" loop.
+    await ensureAppCheckToken();
+
     try {
       await signInWithCustomToken(customToken);
       // onAuthStateChanged fires with the user and sets `authenticated`.

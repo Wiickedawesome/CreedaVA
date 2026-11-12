@@ -1,5 +1,4 @@
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { adminAuth } from "@/lib/firebase-admin";
 
 /**
@@ -12,10 +11,34 @@ import { adminAuth } from "@/lib/firebase-admin";
  *   - expired / revoked tokens are rejected before the cookie is set
  *   - only @creedava.com email accounts can mint a valid session
  *   - the middleware cookie-presence check is backed by a real verified identity
+ *
+ * The cookie is attached to the returned response rather than written through
+ * `cookies()`. Mutating the request-scoped cookie store did not reach the
+ * response here: POST answered 200 while sending no `Set-Cookie` at all, so the
+ * client believed it had signed in, the proxy found no cookie, and every
+ * navigation to /admin bounced straight back to /login. Setting it on the
+ * response is explicit and version-independent.
  */
 
+const SESSION_COOKIE = "__session";
 const ALLOWED_DOMAIN = "creedava.com";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 5; // 5 days
+
+/** Attach the session cookie to `response` and hand it back. */
+function withSessionCookie(
+  response: NextResponse,
+  value: string,
+  maxAge: number,
+): NextResponse {
+  response.cookies.set(SESSION_COOKIE, value, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge,
+    path: "/",
+  });
+  return response;
+}
 
 export async function POST(request: Request) {
   try {
@@ -74,16 +97,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const cookieStore = await cookies();
-    cookieStore.set("__session", sessionCookie, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: SESSION_MAX_AGE,
-      path: "/",
-    });
-
-    return NextResponse.json({ status: "ok" });
+    return withSessionCookie(
+      NextResponse.json({ status: "ok" }),
+      sessionCookie,
+      SESSION_MAX_AGE,
+    );
   } catch {
     return NextResponse.json(
       { error: "Invalid request body" },
@@ -93,16 +111,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  const cookieStore = await cookies();
-  cookieStore.set("__session", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 0,
-    path: "/",
-  });
-
-  return NextResponse.json({ status: "ok" });
+  return withSessionCookie(NextResponse.json({ status: "ok" }), "", 0);
 }
 
 /**
@@ -117,9 +126,8 @@ export async function DELETE() {
  * Returns 401 when there is no valid session — that is the signal "genuinely
  * signed out", as opposed to "could not restore".
  */
-export async function GET() {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("__session")?.value;
+export async function GET(request: NextRequest) {
+  const sessionCookie = request.cookies.get(SESSION_COOKIE)?.value;
 
   if (!sessionCookie) {
     return NextResponse.json({ error: "No session" }, { status: 401 });
