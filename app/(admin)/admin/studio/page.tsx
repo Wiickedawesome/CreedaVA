@@ -23,7 +23,7 @@ import type { BlogPost } from "@/lib/types/content";
 /** Server-side cap, mirrored here so the textarea can stop you before a round trip. */
 const MAX_MATERIAL_LENGTH = 4000;
 
-const FOLDER = "blog/studio";
+const FOLDER = "studio";
 
 interface Candidate {
   dataUrl: string;

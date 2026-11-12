@@ -96,16 +96,25 @@ const contentItems: NavItem[] = [
   {
     label: "Blog",
     href: "/admin/blog",
+    // Exact, so the sibling Image studio route does not highlight both.
+    exact: true,
     icon: (
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
         <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
       </svg>
     ),
-    children: [
-      { label: "All posts", href: "/admin/blog" },
-      { label: "Image studio", href: "/admin/blog/studio" },
-    ],
+  },
+  {
+    label: "Image studio",
+    href: "/admin/studio",
+    icon: (
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <polyline points="21 15 16 10 5 21" />
+      </svg>
+    ),
   },
   {
     label: "Forum",
@@ -200,46 +209,24 @@ function NavSection({ title, items, onNavigate }: { title?: string; items: NavIt
               : pathname.startsWith(item.href);
 
           return (
-            <div key={item.href}>
-              <Link
-                href={item.href}
-                onClick={onNavigate}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-gray-70 hover:bg-gray-20 hover:text-gray-90"
-                }`}
-              >
-                {item.icon}
-                <span className="flex-1">{item.label}</span>
-                {item.badge !== undefined && item.badge > 0 && (
-                  <span className="inline-flex items-center justify-center rounded-full bg-gray-70 px-1.5 py-0.5 text-xs text-white">
-                    {item.badge > 99 ? "99+" : item.badge}
-                  </span>
-                )}
-              </Link>
-
-              {/* Sub-items only while the section is open, so the sidebar does
-                  not grow a permanent second level for every section. */}
-              {item.children && isActive && (
-                <div className="ml-4 mt-0.5 flex flex-col gap-0.5 border-l border-border pl-3">
-                  {item.children.map((child) => (
-                    <Link
-                      key={child.href}
-                      href={child.href}
-                      onClick={onNavigate}
-                      className={`rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
-                        pathname === child.href
-                          ? "text-primary"
-                          : "text-gray-60 hover:text-gray-90"
-                      }`}
-                    >
-                      {child.label}
-                    </Link>
-                  ))}
-                </div>
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-gray-70 hover:bg-gray-20 hover:text-gray-90"
+              }`}
+            >
+              {item.icon}
+              <span className="flex-1">{item.label}</span>
+              {item.badge !== undefined && item.badge > 0 && (
+                <span className="inline-flex items-center justify-center rounded-full bg-gray-70 px-1.5 py-0.5 text-xs text-white">
+                  {item.badge > 99 ? "99+" : item.badge}
+                </span>
               )}
-            </div>
+            </Link>
           );
         })}
       </nav>
@@ -255,11 +242,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const filterItems = (items: NavItem[], query: string): NavItem[] => {
     if (!query.trim()) return items;
     const q = query.trim().toLowerCase();
-    return items.filter(
-      (item) =>
-        item.label.toLowerCase().includes(q) ||
-        item.children?.some((child) => child.label.toLowerCase().includes(q)),
-    );
+    return items.filter((item) => item.label.toLowerCase().includes(q));
   };
 
   const filteredNav = useMemo(() => {
