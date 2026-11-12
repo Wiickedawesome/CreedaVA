@@ -7,6 +7,11 @@ document well")
 **Rule applied:** every statement below is tagged with how it was established. Nothing is asserted
 from memory or inference.
 
+> **Superseded in part (2026-11-12):** the Tasks and Projects admin surfaces were removed
+> (`/admin/tasks`, `/admin/projects`, `/admin/projects/[id]`) along with the `tasks` and
+> `projects` Firestore collections. Any reference to those routes in this report describes
+> pages that no longer exist. See `REMOVED_ADMIN_SURFACES.md` for the current state.
+
 ## Evidence tags
 
 | Tag | Meaning |

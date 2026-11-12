@@ -1553,7 +1553,7 @@ export function buildTrainedPrompt(
     includeKPIs?: boolean;
     /**
      * Include SEO algorithms module. Defaults to TRUE if unset — set to `false`
-     * for specialists that don't need it (ATLAS, GUIDE, SCOUT, MAVERICK).
+     * for specialists that don't need it (GUIDE, SCOUT, MAVERICK).
      */
     includeSEOAlgorithms?: boolean;
     includeMarketIntel?: boolean;

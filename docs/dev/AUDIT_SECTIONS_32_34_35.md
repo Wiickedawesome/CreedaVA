@@ -6,6 +6,10 @@
 > **Superseded in part (2026-11-02):** `/admin/marketing/social` was removed along with its
 > AI wiring. Any reference to that route in this report describes a page that no longer
 > exists. See `INTEGRATIONS.md` for the current state.
+>
+> **Superseded in part (2026-11-12):** the Tasks and Projects admin surfaces were removed
+> (`/admin/tasks`, `/admin/projects`, `/admin/projects/[id]`). Route-presence entries for
+> those paths below are historical. See `REMOVED_ADMIN_SURFACES.md`.
 
 ---
 

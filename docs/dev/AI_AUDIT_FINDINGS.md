@@ -9,6 +9,12 @@
 > wiring (`buildSocialEngagementContext`, `create_social_draft`) were removed. Rows in this
 > report referring to them describe a page that no longer exists. See
 > `INTEGRATIONS.md` for the current state. Everything else here still applies.  
+
+> **Superseded in part (2026-11-12):** the Tasks and Projects admin surfaces were removed
+> (`/admin/tasks`, `/admin/projects`, `/admin/projects/[id]`), along with the `tasks` and
+> `projects` collections and the ATLAS specialist that covered them. Route-presence entries
+> for those paths below are historical. See `REMOVED_ADMIN_SURFACES.md`.
+
 **Remediation Status:** All 12 identified issues resolved ✅  
 
 ---
