@@ -412,14 +412,7 @@ export default function PageMetadataSection() {
           <StatCard label="Dismissed" value={dismissedCount.toString()} badge="by you" />
         </div>
 
-        <DashboardSection
-          title="What the crawler found"
-          action={
-            <Button size="sm" variant="outline" onClick={handleRunAudit} isLoading={auditing}>
-              Run audit
-            </Button>
-          }
-        >
+        <DashboardSection title="What the crawler found">
           <p className="mb-3 text-xs text-gray-50">
             Crawled from the live site. Every issue names the page it was found on and the audit
             run that found it, so nothing here is unattributed. The crawl never edits metadata —
