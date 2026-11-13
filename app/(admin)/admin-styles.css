@@ -217,32 +217,21 @@
 /* Color dot — set --dot-c */
 .color-dot { background-color: var(--dot-c, currentColor); }
 
-/* Specialist color utilities — set --sc on a wrapper or element */
-.specialist-icon { color: var(--sc); }
-.specialist-ring {
+/* Creeda AI accents — set --sc on a wrapper or element */
+.assistant-icon { color: var(--sc); }
+.assistant-ring {
   background: rgba(0, 0, 0, 0.06);
   background: color-mix(in srgb, var(--sc) 10%, transparent);
   border: 1.5px solid rgba(0, 0, 0, 0.12);
   border: 1.5px solid color-mix(in srgb, var(--sc) 20%, transparent);
 }
-.specialist-badge {
+.assistant-badge {
   background: rgba(0, 0, 0, 0.06);
   background: color-mix(in srgb, var(--sc) 10%, transparent);
   color: var(--sc);
 }
-.specialist-tagline { color: var(--sc); }
-.specialist-bg { background-color: var(--sc) !important; }
-.specialist-border-l { border-left-color: var(--sc) !important; }
-.specialist-tag-btn {
-  border-color: var(--sc);
-  color: var(--sc);
-  background-color: transparent;
-}
-.specialist-tag-btn-active {
-  border-color: var(--sc);
-  background-color: var(--sc);
-  color: white;
-}
+.assistant-name { color: var(--sc); }
+.assistant-bg { background-color: var(--sc) !important; }
 /* AI Prompt trigger button */
 .ai-prompt-btn {
   border-color: color-mix(in srgb, var(--sc) 27%, transparent);

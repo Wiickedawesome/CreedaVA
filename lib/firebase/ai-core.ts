@@ -30,7 +30,7 @@ import {
   getPageContext,
 } from "@/lib/utils/ai-system-prompt";
 import { loadPageAwareContext } from "@/lib/utils/ai-page-context";
-import { getSpecialist } from "@/lib/utils/ai-specialists";
+import { getAssistantContext } from "@/lib/utils/ai-assistant-context";
 import { cloudWebSearch } from "@/lib/firebase/cloud-functions";
 import {
   executeTool,
@@ -251,23 +251,22 @@ export async function sendMessage(
     }
   }
 
-  // 5.5 Resolve specialist + NOVA web research pre-fetch
-  const specialist = getSpecialist(pagePath);
-  let novaWebContext = "";
-  if (specialist.codename === "NOVA") {
+  // 5.5 Resolve the skill set for this page, plus content research where it helps
+  const assistant = getAssistantContext(pagePath);
+  let webResearchContext = "";
+  if (assistant.area === "content") {
     const topic = extractContentTopic(userMessage);
     if (topic) {
-      novaWebContext = await fetchWebContextForNova(topic);
+      webResearchContext = await fetchWebContextForNova(topic);
     }
   }
 
-  // 6. Build the fully-trained prompt using specialist modules + memory
+  // 6. Build the fully-trained prompt using the area's modules + memory
   const pageContext = getPageContext(pagePath);
   const trained = buildTrainedPrompt(section, userMessage, dataContext, {
-    ...specialist.promptOptions,
-    specialistIntro: specialist.intro,
+    ...assistant.promptOptions,
     includeToolGuidelines: true,
-    webSearchResults: novaWebContext || undefined,
+    webSearchResults: webResearchContext || undefined,
     pageContext: [
       pageContext,
       historyBlock,

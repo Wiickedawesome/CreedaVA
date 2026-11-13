@@ -1567,8 +1567,6 @@ export function buildTrainedPrompt(
     includeCRO?: boolean;
     includeWebMastery?: boolean;
     includeToolGuidelines?: boolean;
-    /** Specialist persona block injected right after CREEDA_IDENTITY */
-    specialistIntro?: string;
     pageContext?: string;
     webSearchResults?: string;
     customInstructions?: string;
@@ -1576,9 +1574,6 @@ export function buildTrainedPrompt(
 ): TrainedPrompt {
   // ── System instruction: identity + expertise modules ──
   const systemParts: string[] = [CREEDA_IDENTITY];
-
-  // Specialist persona block — overrides the generic "CreedaVA AI" intro
-  if (options.specialistIntro) systemParts.push(options.specialistIntro);
 
   // Design + markup rules come from the 2026 module. The four legacy constants
   // below (DESIGN_SYSTEM, CREATIVE_HTML_FRAMEWORK, LANDING_PAGE_RULES,

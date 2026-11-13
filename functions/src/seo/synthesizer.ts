@@ -17,6 +17,7 @@ import { getAgentConfig } from "./config";
 import { matchesBrand } from "./backlinks";
 import { writeBlogDraftsFromBriefs } from "./content-writer";
 import { injectInternalLinks } from "./internal-links";
+import { syncFindings, type FindingInput } from "./findings";
 import type { SkillContext, SkillResult } from "./types";
 
 const SEVEN_DAYS_MS = 7 * 86_400_000;
@@ -34,31 +35,12 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
     db.collection("rank-history").where("updatedAt", ">=", since).get().catch(() => null),
   ]);
 
-  let tasksWritten = 0;
+  const rankDrops: FindingInput[] = [];
+  let schemaInjected = 0;
   let briefsWritten = 0;
   let outreachWritten = 0;
 
-  // ─ Convert on-page issues to tasks ───────────────
   if (audits) {
-    for (const doc of audits.docs) {
-      const a = doc.data();
-      const issues = (a.issues as Array<{ severity: string; code: string; message: string }> | undefined) ?? [];
-      const high = issues.filter((i) => i.severity === "high");
-      if (high.length === 0) continue;
-      const id = `task_audit_${doc.id}`;
-      await upsertTask(id, {
-        kind: "fix-meta",
-        title: `Fix ${high.length} high-severity SEO issues on ${a.pathKey}`,
-        description: high.map((h) => `• ${h.code}: ${h.message}`).join("\n"),
-        priority: 70 + Math.min(20, high.length * 5),
-        status: "todo",
-        sources: { audits: [doc.id] },
-        affectedPath: a.pathKey,
-        area: "on-page",
-      });
-      tasksWritten++;
-    }
-
     // ─ Thin-content → auto content-brief ────────────
     for (const doc of audits.docs) {
       const a = doc.data();
@@ -151,7 +133,7 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
           result: { success: true },
           executedAt: new Date(),
         });
-        tasksWritten++;
+        schemaInjected++;
       } catch (err) {
         console.warn("[synthesizer] schema inject failed:", err);
       }
@@ -191,78 +173,8 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
         },
         { merge: true },
       );
-      briefsWritten++;
-      await upsertTask(`task_${briefId}`, {
-        kind: "publish-content",
-        title: `Boost striking-distance keyword "${gap.keyword}" (pos ${Math.round(gap.currentPosition ?? 0)})`,
-        description: `Currently ranking #${Math.round(gap.currentPosition ?? 0)} with ${gap.impressions ?? 0} impressions. Brief: /admin/seo/briefs/${briefId}`,
-        priority: gap.priority ?? 50,
-        status: "todo",
-        sources: { briefs: [briefId], gaps: [gap.id] },
-        affectedPath: gap.rankingPage ?? null,
-        area: "content",
-      });
-      tasksWritten++;
     }
 
-    // ─ Low-CTR gaps → meta rewrite tasks ─────────────
-    const lowCtr = gaps.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((g) => (g as { type?: string }).type === "low-ctr")
-      .sort((a, b) => ((b as { priority?: number }).priority ?? 0) - ((a as { priority?: number }).priority ?? 0))
-      .slice(0, 10);
-
-    for (const g of lowCtr) {
-      const gap = g as {
-        id: string;
-        keyword: string;
-        currentPosition?: number;
-        impressions?: number;
-        ctr?: number;
-        rankingPage?: string;
-      };
-      const taskId = `task_rewrite_meta_${slug(gap.keyword)}`;
-      const ctrPct = ((gap.ctr ?? 0) * 100).toFixed(1);
-      await upsertTask(taskId, {
-        kind: "rewrite-meta",
-        title: `Rewrite meta for low-CTR keyword "${gap.keyword}" (${ctrPct}% CTR)`,
-        description: [
-          `Page: ${gap.rankingPage ?? "unknown"}`,
-          `Position: #${Math.round(gap.currentPosition ?? 0)}, ${gap.impressions ?? 0} impressions, ${ctrPct}% CTR`,
-          `Action: Rewrite the meta title and description to be more compelling and click-worthy.`,
-          `Focus on: clear value proposition, action verbs, and addressing searcher intent for "${gap.keyword}".`,
-        ].join("\n"),
-        priority: Math.min(90, (gap.impressions ?? 0) > 500 ? 80 : 65),
-        status: "todo",
-        sources: { gaps: [gap.id] },
-        affectedPath: gap.rankingPage ?? null,
-        area: "meta",
-      });
-      tasksWritten++;
-    }
-  }
-
-  // ─ Citation gaps → tasks ────────────────────────
-  if (citations) {
-    const weak = citations.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((c) => ((c as { score?: number }).score ?? 100) < 70)
-      .sort((a, b) => ((a as { score?: number }).score ?? 0) - ((b as { score?: number }).score ?? 0))
-      .slice(0, 10);
-    for (const c of weak) {
-      const cit = c as { id: string; pathKey?: string; score?: number; recommendations?: string[] };
-      await upsertTask(`task_${c.id}`, {
-        kind: "improve-citation",
-        title: `Improve AI-citation readiness for ${cit.pathKey}`,
-        description: (cit.recommendations ?? []).map((r) => `• ${r}`).join("\n"),
-        priority: 100 - (cit.score ?? 50),
-        status: "todo",
-        sources: { citations: [c.id] },
-        affectedPath: cit.pathKey ?? null,
-        area: "citation",
-      });
-      tasksWritten++;
-    }
   }
 
   // ─ Backlink prospects → outreach drafts ─────────
@@ -313,21 +225,10 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
         { merge: true },
       );
       outreachWritten++;
-      await upsertTask(`task_${emailId}`, {
-        kind: "outreach",
-        title: `Send outreach: ${prosp.domain}`,
-        description: `Draft email queued. Review and send via /admin/seo/outreach.`,
-        priority: prosp.score ?? 50,
-        status: "todo",
-        sources: { outreach: [emailId], prospects: [prosp.id] },
-        affectedPath: null,
-        area: "backlinks",
-      });
-      tasksWritten++;
     }
   }
 
-  // ─ Rank-drop investigation tasks ────────────────
+  // ─ Rank drops → findings ────────────────────────
   if (ranks) {
     const byKeyword = new Map<string, Array<{ position: number; dayKey: string }>>();
     for (const d of ranks.docs) {
@@ -346,21 +247,28 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
       // Threshold scales with position tier — a drop from #3→6 is far more
       // impactful than a drop from #60→63. Flat threshold created noise.
       const threshold = oldAvg <= 10 ? 3 : oldAvg <= 20 ? 5 : 8;
-      if (drop >= threshold) {
-        const id = `task_rankdrop_${slug(kw)}`;
-        await upsertTask(id, {
-          kind: "investigate-rank-drop",
-          title: `Rank drop on "${kw}" (${oldAvg.toFixed(1)} → ${newAvg.toFixed(1)})`,
-          description: `Position dropped by ${(newAvg - oldAvg).toFixed(1)} this week. Check on-page audit and recent content changes.`,
-          priority: Math.min(95, 60 + Math.round(newAvg - oldAvg) * 2),
-          status: "todo",
-          sources: { ranks: [kw] },
-          affectedPath: null,
-          area: "rankings",
-        });
-        tasksWritten++;
-      }
+      if (drop < threshold) continue;
+
+      rankDrops.push({
+        skill: "rank-drop",
+        scope: "keyword",
+        target: kw,
+        code: "rank-drop",
+        severity: newAvg <= 10 ? "high" : "medium",
+        message: `"${kw}" fell from #${oldAvg.toFixed(1)} to #${newAvg.toFixed(1)} this week`,
+        evidence: `${history.length} days of rank-history`,
+      });
     }
+  }
+
+  // Rank drops are the only finding this skill produces: everything else it
+  // emits (briefs, outreach drafts, the weekly report) is already a surface a
+  // human acts on directly.
+  let findingsWritten = 0;
+  try {
+    findingsWritten = (await syncFindings("rank-drop", rankDrops)).written;
+  } catch (err) {
+    console.warn("[synthesizer] rank-drop finding sync failed:", err);
   }
 
   // ─ Competitor content gaps → high-priority briefs ──
@@ -410,22 +318,6 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
         },
         { merge: true },
       );
-      briefsWritten++;
-      await upsertTask(`task_${briefId}`, {
-        kind: "improve-content",
-        title: `Close competitor content gap for "${gap.keyword}"`,
-        description: [
-          `Your page: ${gap.ourPage ?? "N/A"} (${gap.ourWordCount ?? 0} words, ${gap.ourHeadings ?? 0} headings)`,
-          `Top competitor: ${gap.competitorWordCount ?? 0} words, ${gap.competitorHeadings ?? 0} headings`,
-          wordGap > 0 ? `Need ~${wordGap} more words.` : "Word count is competitive.",
-        ].join("\n"),
-        priority: gap.priority ?? 75,
-        status: "todo",
-        sources: { competitorGaps: [doc.id] },
-        affectedPath: gap.ourPage ?? null,
-        area: "content",
-      });
-      tasksWritten++;
     }
   } catch (err) {
     console.warn("[synthesizer] competitor-content-gaps read failed:", err);
@@ -456,7 +348,8 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
     citations: citations?.size ?? 0,
     prospects: prospects?.size ?? 0,
     ranks: ranks?.size ?? 0,
-    tasksWritten,
+    schemaInjected,
+    findingsWritten,
     briefsWritten,
     outreachWritten,
     blogDrafts,
@@ -491,7 +384,7 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
   return {
     status: "ok",
     findings:
-      tasksWritten +
+      findingsWritten +
       briefsWritten +
       outreachWritten +
       blogDrafts.draftsWritten +
@@ -504,12 +397,6 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
 
 // ─── Helpers ─────────────────────────────────────────
 
-async function upsertTask(id: string, data: Record<string, unknown>) {
-  await db.collection("seo-tasks").doc(id).set(
-    { ...data, capturedAt: new Date().toISOString(), createdAt: new Date(), updatedAt: new Date() },
-    { merge: true },
-  );
-}
 
 function defaultOutline(keyword: string): string[] {
   return [

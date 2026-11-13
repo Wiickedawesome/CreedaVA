@@ -10,11 +10,19 @@
 
 import * as cheerio from "cheerio";
 import { db } from "../admin";
+import { syncFindings, type FindingInput } from "./findings";
 import { loadSitemap, urlToPathKey } from "./sitemap";
 import { searchWithQuota } from "./search";
 import type { SkillContext, SkillResult } from "./types";
 
 const FETCH_TIMEOUT_MS = 12_000;
+
+/** One coded citation weakness, in priority order of what to fix first. */
+interface CitationIssue {
+  code: string;
+  severity: "low" | "medium" | "high";
+  message: string;
+}
 
 export async function runCitationAudit(ctx: SkillContext): Promise<SkillResult> {
   const sitemap = await loadSitemap();
@@ -25,6 +33,7 @@ export async function runCitationAudit(ctx: SkillContext): Promise<SkillResult> 
   const startOffset = ctx.cursor?.offset ?? 0;
   let processed = 0;
   let written = 0;
+  const collected: FindingInput[] = [];
   let lastIndex = startOffset;
 
   for (let i = startOffset; i < sitemap.length; i++) {
@@ -79,35 +88,35 @@ export async function runCitationAudit(ctx: SkillContext): Promise<SkillResult> 
     }
 
     let score = 100;
-    const recommendations: string[] = [];
+    // Each criterion is a weighted, coded finding: the code is what makes a
+    // rerun an update instead of a new row.
+    const issues: CitationIssue[] = [];
+    const flag = (issue: CitationIssue, penalty: number) => {
+      score -= penalty;
+      issues.push(issue);
+    };
     if (!hasFaqSchema) {
-      score -= 15;
-      recommendations.push("Add FAQ schema (JSON-LD FAQPage) so answers can power AI Overviews.");
+      flag({ code: "faq-schema-missing", severity: "medium", message: "Add FAQ schema (JSON-LD FAQPage) so answers can power AI Overviews." }, 15);
     }
     if (!hasArticleSchema) {
-      score -= 8;
-      recommendations.push("Add Article/BlogPosting schema for clearer LLM extraction.");
+      flag({ code: "article-schema-missing", severity: "low", message: "Add Article/BlogPosting schema for clearer LLM extraction." }, 8);
     }
     if (quotableBullets < 5) {
-      score -= 10;
-      recommendations.push("Increase quotable bullet/list density — aim for ≥5 list items per page.");
+      flag({ code: "few-quotable-bullets", severity: "medium", message: `Increase quotable bullet/list density — ${quotableBullets} list items, aim for ≥5.` }, 10);
     }
     if (!hasCitations) {
-      score -= 8;
-      recommendations.push("Cite authoritative sources (.gov / .edu / industry reports) to boost trust.");
+      flag({ code: "no-source-citations", severity: "low", message: "Cite authoritative sources (.gov / .edu / industry reports) to boost trust." }, 8);
     }
     if (headingDepth < 3) {
-      score -= 6;
-      recommendations.push("Use more sub-headings (H2/H3) for richer LLM-friendly structure.");
+      flag({ code: "shallow-headings", severity: "low", message: `Use more sub-headings — ${headingDepth} H2/H3/H4 found, aim for ≥3.` }, 6);
     }
     if (paragraphCount < 6) {
-      score -= 4;
-      recommendations.push("Expand body content; LLMs need ≥6 paragraphs of context.");
+      flag({ code: "thin-paragraphs", severity: "low", message: `Expand body content — ${paragraphCount} paragraphs, LLMs need ≥6.` }, 4);
     }
     if (paaCoverage === 0) {
-      score -= 4;
-      recommendations.push("Add explicit Q&A blocks aligned with People Also Ask queries.");
+      flag({ code: "no-qa-blocks", severity: "low", message: "Add explicit Q&A blocks aligned with People Also Ask queries." }, 4);
     }
+    const recommendations = issues.map((issue) => issue.message);
 
     const id = `citation_${urlToPathKey(entry.url).replace(/[^a-z0-9]/gi, "_") || "root"}`;
     try {
@@ -131,9 +140,30 @@ export async function runCitationAudit(ctx: SkillContext): Promise<SkillResult> 
         { merge: true },
       );
       written++;
+      const pathKey = urlToPathKey(entry.url);
+      collected.push(
+        ...issues.map((issue) => ({
+          skill: "citation-audit",
+          scope: "page" as const,
+          target: pathKey,
+          code: issue.code,
+          severity: issue.severity,
+          message: issue.message,
+          evidence: `citation-audits/${id}`,
+        })),
+      );
     } catch (err) {
       console.warn("[citation] persist failed:", err);
     }
+  }
+
+  // One batch for the whole run: upserts this run's codes and resolves any the
+  // pages just audited no longer have.
+  let findingsResolved = 0;
+  try {
+    findingsResolved = (await syncFindings("citation-audit", collected)).resolved;
+  } catch (err) {
+    console.warn("[citation] finding sync failed:", err);
   }
 
   const reachedEnd = lastIndex >= sitemap.length;
@@ -142,7 +172,7 @@ export async function runCitationAudit(ctx: SkillContext): Promise<SkillResult> 
     findings: written,
     queriesUsed: ctx.queriesUsed(),
     cursor: reachedEnd ? null : { offset: lastIndex },
-    summary: { processed, written, total: sitemap.length, nextOffset: reachedEnd ? null : lastIndex },
+    summary: { processed, written, findingsResolved, total: sitemap.length, nextOffset: reachedEnd ? null : lastIndex },
   };
 }
 

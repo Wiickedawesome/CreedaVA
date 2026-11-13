@@ -423,7 +423,133 @@ Page Metadata table so it can be edited deliberately.
 
 ---
 
-## 7. Deliberately kept — do not "clean these up"
+## 7. Action items replaced by findings (2026-11)
+
+The agent had two parallel output surfaces: a task board it wrote to, and the
+audit lists. The board won the "looks like work" contest and lost the truth
+contest — `upsertTask()` used `status: "todo"` with `merge: true` on a
+deterministic id, so every Sunday run reset any triage a human had done, and 169
+`seo-tasks` docs were 80 auto-applied receipts, 55 mirrored outreach drafts and
+only 21 pieces of real work.
+
+### What exists now: one `findings` collection
+
+| Field | Purpose |
+|---|---|
+| `skill` | Which detector produced it (`onpage-audit`, `citation-audit`, `keyword-gaps`, `rank-drop`) |
+| `scope` | `page` / `keyword` / `domain` — decides which screen owns it |
+| `target` | The path, query, or host it is about |
+| `code` | Stable issue code; the document id is derived from scope+target+code |
+| `severity`, `message`, `evidence` | What is wrong, and which run found it |
+| `suggested` | The `page-seo` field write the Fix button would make, when we know how to make one |
+| `status` | `open` / `ignored` / `resolved` |
+
+`syncFindings()` (server, `functions/src/seo/findings.ts`) upserts what a run
+detected and **resolves** any doc for a target it inspected that is no longer
+detected. So status is evidence-driven: a finding disappears because the page
+passes, not because someone ticked a box. An `ignored` finding survives every
+later run — re-detection must not resurrect a human decision.
+
+Assessment is scoped to inspected targets only, because the on-page crawl is
+paginated. A page that was not crawled keeps its findings.
+
+### Where findings are shown
+
+| Scope | Screen |
+|---|---|
+| `page` (on-page audit, citation audit) | `/admin/metadata` — under a **Findings** section with a **Run audit** button |
+| `keyword` (gaps, low CTR, competitor-only, rank drops) | `/admin/keywords` → **Findings** tab |
+
+There is deliberately **no** cross-cutting findings page. An on-page issue is a
+fact about a path and a keyword issue is a fact about a query; listing both again
+in `/admin/seo` made the origin of a finding the hardest thing to answer.
+
+### Removed
+
+- `app/(admin)/admin/seo/_components/tasks-board.tsx` — the kanban board
+- `app/(admin)/admin/seo/_components/sections/findings-section.tsx` and
+  `onpage-audits.tsx` — superseded by the Findings section on Page Metadata
+- The **Findings** and **Action items** sub-tabs of `/admin/seo`
+- All 7 `upsertTask()` calls in the Sunday synthesizer, and `upsertTask()` itself
+
+Legacy links still work: `?section=agent&tab=audits`, `tab=findings`,
+`tab=tasks` and `tab=action-items` all redirect to `/admin/metadata`, and
+`ADMIN_ROUTE_ALIASES.seoAudits` / `.seoTasks` point there too.
+
+### Auto-apply removed from the crawl
+
+`tryAutoApplyMeta()` used to write `page-seo` directly during the Monday crawl
+whenever `autonomy.metaFixes === "execute"` — capturing before/after but shipping
+the change before anyone saw it. That is what produced the corrupted descriptions
+in §6.
+
+The crawl is now **suggestion-only**. It writes an `onpage-audits` doc and
+findings; it never touches `page-seo`. A metadata change happens only when
+someone presses **Fix** on a finding, which writes the suggested value and closes
+the finding as `resolved` — a later crawl then either confirms it or reopens it.
+
+`autonomy.metaFixes` is no longer read by any crawler path.
+
+### Data
+
+Existing `seo-tasks` documents are **not deleted** (data is irreversible). Nothing
+reads or writes them any more; they are abandoned, not migrated.
+
+---
+
+## 8. Creeda AI is one assistant, not a roster (2026-11)
+
+Six named personas — ARIA (Chief of Staff), ORACLE (Growth Strategist), NOVA
+(Content Creator), MAVERICK (Marketing Director), SCOUT (Sales Analyst), GUIDE
+(Configuration AI) — each carried a codename, tagline, colour, avatar, a
+persona system-prompt block, and a UI that offered to switch between them
+(including `[HANDOFF:CODENAME]` markers in model output).
+
+The distinction was never real: the same assistant answered every page, from the
+same data, with a different module set. What actually differed is a routing
+decision.
+
+### Now
+
+- One identity: `CREEDA_AI_NAME` in `lib/constants/ai-brand.ts`.
+- One resolver: `getAssistantContext(pagePath)` in
+  `lib/utils/ai-assistant-context.ts` returns the area's skill modules
+  (`search`, `content`, `marketing`, `sales`, `configuration`, `overview`).
+- No switcher, no codename chip, no persona block, no handoff markers.
+- `SPECIALIST_INTRO` is gone from `buildTrainedPrompt()`'s options.
+
+### Removed
+
+- `lib/utils/ai-specialists.ts` and its test
+- The **Switch specialist** dropdown (both instances in `ai-prompt.tsx`)
+- `.specialist-*` CSS renamed to `.assistant-*`; the switcher-only rules
+  (`.specialist-tag-btn*`, `.specialist-border-l`) deleted
+
+### Kept
+
+The six original skill sets are preserved as the five areas above, so no page
+lost a module (pinned by `__tests__/lib/utils/ai-assistant-context.test.ts`).
+
+---
+
+## 9. Crawler title extraction (2026-11)
+
+Every SVG logo renders `<title>CreedaVA</title>` for its accessible name — that
+is correct markup, not a bug. But a document-wide `$("title")` read returns two
+candidates per page, and on `/faq` the logo's title came **first**, so the audit
+scored the 8-character brand fallback as the page title.
+
+The crawl now reads `$("head title")` and, if `<head>` declares more than one,
+takes the longest non-empty candidate. The SVG title is untouched: removing it
+would strip the logo's accessible name. `meta[name='description']` gets the same
+treatment for empty declarations.
+
+Pinned by `functions/__tests__/onpage.test.ts` (title in either order, only the
+fallback present, no `<head>` at all, empty description before a real one).
+
+---
+
+## 10. Deliberately kept — do not "clean these up"
 
 | Kept | Why |
 |---|---|

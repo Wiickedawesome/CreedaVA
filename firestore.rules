@@ -151,6 +151,9 @@ service cloud.firestore {
     // ─── SEO Agent (autonomous "living AI") ────────────
     // All written by Cloud Functions; admin can read + correct via dashboard.
     match /agent-runs/{docId}        { allow read, write: if isAdmin(); }
+    // Findings: skills write them, the admin Fix/Ignore buttons update status.
+    match /findings/{docId}          { allow read, write: if isAdmin(); }
+    // Legacy task board — abandoned, kept only so old docs stay readable.
     match /seo-tasks/{docId}         { allow read, write: if isAdmin(); }
     match /rank-history/{docId}      { allow read, write: if isAdmin(); }
     match /onpage-audits/{docId}     { allow read, write: if isAdmin(); }

@@ -16,6 +16,7 @@ import { AIPromptButton, RichTextEditor } from "@/components/admin";
 import { parseAiJson } from "@/lib/utils/ai-json";
 import { buildLandingPagePrompt } from "@/lib/utils/ai-system-prompt";
 import type { LandingPage } from "@/lib/types/content";
+import { BUSINESS_ADDRESSES } from "@/lib/constants/business-emails";
 import { uploadImage, uploadFile } from "@/lib/firebase/storage";
 import { cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
 import Image from "next/image";
@@ -538,10 +539,11 @@ export default function LandingPagesPage() {
               className="w-full rounded-lg border border-gray-20 bg-gray-10/50 px-3 py-2 text-sm text-gray-90 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
               aria-label="Send inquiries to"
             >
-              <option value="contact@creedava.com">contact@creedava.com</option>
-              <option value="sales@creedava.com">sales@creedava.com</option>
-              <option value="info@creedava.com">info@creedava.com</option>
-              <option value="john@creedava.com">john@creedava.com</option>
+              {BUSINESS_ADDRESSES.map((entry) => (
+                <option key={entry.address} value={entry.address}>
+                  {entry.label} — {entry.address}
+                </option>
+              ))}
             </select>
             <p className="text-xs text-gray-50 mt-1">Form submissions from this page will be sent to this email</p>
           </div>

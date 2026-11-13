@@ -7,7 +7,7 @@ import { Button } from "@/components/ui";
 import { lazyGenerateText, lazySendMessage, lazyGetCurrentMessages, lazyLogActionToMemory, lazyGetConversationHistory, lazySwitchConversation, lazyNewConversation, lazyConfirmAction, lazyRejectAction } from "@/lib/firebase/ai-lazy";
 import { buildTrainedPrompt, getPageContext } from "@/lib/utils/ai-system-prompt";
 import { buildSectionPreview } from "@/lib/utils/ai-preview";
-import { getSpecialist, ALL_SPECIALISTS } from "@/lib/utils/ai-specialists";
+import { CREEDA_AI_NAME, describeAdminArea } from "@/lib/constants/ai-brand";
 import { fetchOne } from "@/lib/firebase/firestore";
 import { useAuth } from "@/lib/firebase/auth-context";
 import { Markdown } from "@/components/admin/markdown";
@@ -32,13 +32,13 @@ export interface AIPromptConfig {
    * Quick-action presets shown as chips above the textarea.
    * Clicking one pre-fills the textarea.
    */
-  presets?: { label: string; prompt: string; specialist?: string }[];
+  presets?: { label: string; prompt: string }[];
   /**
    * Grouped presets — renders two labeled rows of chips instead of a flat
-   * rotating list. Use when blending two specialists (e.g. NOVA + MAVERICK).
+   * rotating list. Use when two areas need to inform one prompt.
    * When present, overrides the rotation behavior for the grouped items.
    */
-  presetGroups?: { groupLabel: string; items: { label: string; prompt: string; specialist?: string }[] }[];
+  presetGroups?: { groupLabel: string; items: { label: string; prompt: string }[] }[];
   /**
    * Build the full prompt from user input + data context.
    * If not provided, uses a default that includes the section context.
@@ -59,7 +59,7 @@ export interface AIPromptConfig {
   previewLabel?: string;
   /**
    * Chat-mode only. When set and the conversation is empty on first open,
-   * auto-fires this prompt through specialist routing for a proactive opening
+   * auto-fires this prompt for a proactive opening
    * analysis. Fires only once per dialog open (tracked via ref).
    */
   proactiveQuery?: string;
@@ -84,17 +84,17 @@ export function AIPromptButton({
 }: AIPromptButtonProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const specialist = getSpecialist(pathname ?? "");
+  const areaLabel = describeAdminArea(pathname ?? "");
 
   return (
-    <span style={{ '--sc': specialist.color } as React.CSSProperties}>
+    <span>
       <button
         onClick={() => setOpen(true)}
         className={`group relative inline-flex items-center justify-center rounded-xl border transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer ai-prompt-btn ${
           size === "sm" ? "h-9 w-9" : "h-10 w-10"
         } ${className}`}
-        title={`${specialist.codename} — ${specialist.tagline}`}
-        aria-label={`Chat with ${specialist.codename}`}
+        title={`Ask ${CREEDA_AI_NAME}${areaLabel ? ` about ${areaLabel}` : ""}`}
+        aria-label={`Ask ${CREEDA_AI_NAME}`}
       >
         {children || (
           <svg
@@ -151,7 +151,7 @@ const TOUR_STEPS = [
   },
   {
     title: "Switch Specialists",
-    body: "Click the chevron next to my codename to manually switch to any specialist for cross-domain help.",
+    body: "I carry the context of the page you are on, so ask in plain language — no mode switching needed.",
   },
 ];
 
@@ -182,9 +182,7 @@ function AIPromptDialog({
   const chatEndRef = useRef<HTMLDivElement>(null);
   const proactiveFired = useRef(false);
   const pathname = usePathname();
-  const autoSpecialist = getSpecialist(pathname ?? "");
-  const [activeSpecialist, setActiveSpecialist] = useState(autoSpecialist);
-  const [showSwitcher, setShowSwitcher] = useState(false);
+  const areaLabel = describeAdminArea(pathname ?? "");
 
   // Action mode = one-shot structured generation; Chat mode = persistent memory
   const isActionMode = !!(onResult || buildPrompt);
@@ -319,14 +317,6 @@ function AIPromptDialog({
     }
   }, [chatMessages.length, lastChatContent, isActionMode]);
 
-  // Close switcher when clicking outside
-  useEffect(() => {
-    if (!showSwitcher) return;
-    function handleClickOutside() { setShowSwitcher(false); }
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [showSwitcher]);
-
   // Show onboarding tour on first open (chat mode only)
   useEffect(() => {
     if (!open || isActionMode) return;
@@ -356,7 +346,7 @@ function AIPromptDialog({
     return () => window.removeEventListener("online", handleOnline);
   }, [toast]);
 
-  // Chat mode: Proactive specialist analysis on first open (empty conversation)
+  // Chat mode: proactive first look when the conversation is empty
   useEffect(() => {
     if (!open || isActionMode || !chatLoaded || chatMessages.length > 0 || !proactiveQuery || !user?.uid || proactiveFired.current) return;
     proactiveFired.current = true;
@@ -364,7 +354,7 @@ function AIPromptDialog({
     setActiveToolName("thinking");
     lazySendMessage(user.uid, proactiveQuery, {
       section,
-      pagePath: activeSpecialist.codename !== autoSpecialist.codename ? activeSpecialist.specialistPath : pathname ?? "/admin",
+      pagePath: pathname ?? "/admin",
     }).then((result) => {
       setChatMessages([{ role: "assistant", content: result.response, toolsUsed: result.toolsUsed }]);
       if (result.pendingActions?.length) setPendingActions(result.pendingActions);
@@ -374,7 +364,7 @@ function AIPromptDialog({
       setGenerating(false);
       setActiveToolName(null);
     });
-  }, [open, isActionMode, chatLoaded, chatMessages.length, proactiveQuery, user?.uid, pathname, section, activeSpecialist, autoSpecialist]);
+  }, [open, isActionMode, chatLoaded, chatMessages.length, proactiveQuery, user?.uid, pathname, section]);
 
   function handlePreset(presetPrompt: string) {
     setPrompt(presetPrompt);
@@ -439,7 +429,7 @@ function AIPromptDialog({
         // Use sendMessage (non-streaming) to support tool-call loop
         setActiveToolName("thinking");
         const msgResult = await lazySendMessage(user.uid, userMsg, {
-          pagePath: activeSpecialist.codename !== autoSpecialist.codename ? activeSpecialist.specialistPath : pathname ?? "/admin",
+          pagePath: pathname ?? "/admin",
           dataContext: enrichedDataContext || dataContext,
           section,
           includeCompetitors: true,
@@ -447,16 +437,9 @@ function AIPromptDialog({
         });
         setActiveToolName(null);
 
-        // Detect cross-specialist handoff markers: [HANDOFF:CODENAME]
-        const handoffMatch = msgResult.response.match(/\[HANDOFF:([A-Z]+)\]/);
+        // Older prompts could emit a [HANDOFF:CODENAME] marker to switch
+        // persona. There is one assistant now, so strip it if it still appears.
         const cleanResponse = msgResult.response.replace(/\[HANDOFF:[A-Z]+\]/g, "").trim();
-        if (handoffMatch) {
-          const target = ALL_SPECIALISTS.find(s => s.codename === handoffMatch[1]);
-          if (target) {
-            setActiveSpecialist(target);
-            toast(`${activeSpecialist.codename} → ${target.codename} (${target.title})`, "info");
-          }
-        }
 
         // Add assistant message with tools metadata
         setChatMessages((prev) => [
@@ -499,7 +482,7 @@ function AIPromptDialog({
   async function handleSaveNote(content: string) {
     try {
       const { saveSpecialistNote } = await import("@/lib/utils/ai-feedback");
-      await saveSpecialistNote(content, activeSpecialist.codename, activeSpecialist.title, section, pathname ?? "");
+      await saveSpecialistNote(content, CREEDA_AI_NAME, areaLabel || "Admin", section, pathname ?? "");
       toast("Note saved to AI Tasks", "success");
     } catch {
       toast("Failed to save note", "error");
@@ -704,7 +687,7 @@ function AIPromptDialog({
           </>
         }
       >
-        <div className="flex flex-col h-[60vh] relative" style={{ '--sc': activeSpecialist.color } as React.CSSProperties}>
+        <div className="flex flex-col h-[60vh] relative" style={{ '--sc': "var(--primary)" } as React.CSSProperties}>
           {/* ─── Onboarding Tour Overlay ─── */}
           {showOnboarding && (
             <div className="absolute inset-0 z-20 bg-card/96 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center p-8">
@@ -723,10 +706,10 @@ function AIPromptDialog({
               {/* Step content */}
               <div className="text-center max-w-xs">
                 <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center mb-4 mx-auto shadow-sm specialist-ring"
+                  className="w-14 h-14 rounded-full flex items-center justify-center mb-4 mx-auto shadow-sm assistant-ring"
                 >
-                  <svg className="w-7 h-7 specialist-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d={activeSpecialist.avatarPath} />
+                  <svg className="w-7 h-7 assistant-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4L12 3z" />
                   </svg>
                 </div>
                 <h3 className="text-base font-semibold text-gray-90 mb-2">
@@ -750,7 +733,7 @@ function AIPromptDialog({
                 {onboardingStep < TOUR_STEPS.length - 1 ? (
                   <button
                     onClick={() => setOnboardingStep((s) => s + 1)}
-                    className="px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-colors cursor-pointer specialist-bg"
+                    className="px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-colors cursor-pointer assistant-bg"
                   >
                     Next
                   </button>
@@ -760,7 +743,7 @@ function AIPromptDialog({
                       localStorage.setItem("ai-onboarding-v1", "done");
                       setShowOnboarding(false);
                     }}
-                    className="px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-colors cursor-pointer specialist-bg"
+                    className="px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-colors cursor-pointer assistant-bg"
                   >
                     Got it!
                   </button>
@@ -780,46 +763,10 @@ function AIPromptDialog({
           <div className="flex items-center justify-between gap-1 pb-2 border-b border-border mb-2 shrink-0">
             {/* Specialist badge + switcher */}
             <div className="relative flex items-center" onClick={e => e.stopPropagation()}>
-              <div
-                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium specialist-badge"
-              >
-                <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d={activeSpecialist.avatarPath} />
-                </svg>
-                <span className="font-bold tracking-wide">{activeSpecialist.codename}</span>
-                {activeSpecialist.codename !== autoSpecialist.codename && (
-                  <span className="text-[9px] opacity-60">override</span>
-                )}
+              <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium assistant-badge">
+                <span className="font-bold tracking-wide">{CREEDA_AI_NAME}</span>
+                {areaLabel && <span className="text-[9px] opacity-60">· {areaLabel}</span>}
               </div>
-              <button
-                onClick={() => setShowSwitcher(p => !p)}
-                className="ml-0.5 rounded-full p-0.5 hover:bg-gray-20/80 transition-colors cursor-pointer text-gray-50"
-                title="Switch specialist"
-                type="button"
-              >
-                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d={showSwitcher ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
-                </svg>
-              </button>
-              {showSwitcher && (
-                <div className="absolute z-50 top-full mt-1 left-0 rounded-xl border border-border bg-card shadow-xl p-2.5 w-64">
-                  <p className="text-[10px] text-gray-50 mb-1.5">Switch specialist</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {ALL_SPECIALISTS.map(s => (
-                      <button
-                        key={s.codename}
-                        type="button"
-                        onClick={() => { setActiveSpecialist(s); setShowSwitcher(false); }}
-                        style={{ '--sc': s.color } as React.CSSProperties}
-                        className={`rounded-full border px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${activeSpecialist.codename === s.codename ? 'specialist-tag-btn-active' : 'specialist-tag-btn'}`}
-                        title={`${s.codename} — ${s.title}`}
-                      >
-                        {s.codename}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
             {/* History + new conversation */}
             <div className="flex items-center gap-1">
@@ -879,13 +826,13 @@ function AIPromptDialog({
             {chatLoaded && chatMessages.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center mb-3 shadow-sm specialist-ring"
+                  className="w-14 h-14 rounded-full flex items-center justify-center mb-3 shadow-sm assistant-ring"
                 >
-                  <svg className="w-7 h-7 specialist-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d={activeSpecialist.avatarPath} />
+                  <svg className="w-7 h-7 assistant-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4L12 3z" />
                   </svg>
                 </div>
-                <p className="text-sm font-medium mb-1 specialist-tagline">{activeSpecialist.tagline}</p>
+                <p className="text-sm font-medium mb-1 assistant-name">{CREEDA_AI_NAME}</p>
                 <p className="text-sm text-gray-60 max-w-xs">{description}</p>
                 <p className="text-xs text-gray-50 mt-1">I remember our conversations across pages</p>
               </div>
@@ -1089,47 +1036,12 @@ function AIPromptDialog({
         </>
       }
     >
-      <div className="space-y-3" style={{ '--sc': activeSpecialist.color } as React.CSSProperties}>
+      <div className="space-y-3" style={{ '--sc': "var(--primary)" } as React.CSSProperties}>
         <div className="relative flex items-center mb-1" onClick={e => e.stopPropagation()}>
-          <div
-            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium specialist-badge"
-          >
-            <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d={activeSpecialist.avatarPath} />
-            </svg>
-            <span className="font-bold tracking-wide">{activeSpecialist.codename}</span>
-            <span style={{ color: `${activeSpecialist.color}70` }}>—</span>
-            <span>{activeSpecialist.title}</span>
+          <div className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium assistant-badge">
+            <span className="font-bold tracking-wide">{CREEDA_AI_NAME}</span>
+            {areaLabel && <span className="opacity-60">— {areaLabel}</span>}
           </div>
-          <button
-            onClick={() => setShowSwitcher(p => !p)}
-            className="ml-0.5 rounded-full p-0.5 hover:bg-gray-20/80 transition-colors cursor-pointer text-gray-50"
-            title="Switch specialist"
-            type="button"
-          >
-            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d={showSwitcher ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
-            </svg>
-          </button>
-          {showSwitcher && (
-            <div className="absolute z-50 top-full mt-1 left-0 rounded-xl border border-border bg-card shadow-xl p-2.5 w-64">
-              <p className="text-[10px] text-gray-50 mb-1.5">Switch specialist</p>
-              <div className="flex flex-wrap gap-1.5">
-                {ALL_SPECIALISTS.map(s => (
-                  <button
-                    key={s.codename}
-                    type="button"
-                    onClick={() => { setActiveSpecialist(s); setShowSwitcher(false); }}
-                    style={{ '--sc': s.color } as React.CSSProperties}
-                    className={`rounded-full border px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${activeSpecialist.codename === s.codename ? 'specialist-tag-btn-active' : 'specialist-tag-btn'}`}
-                    title={`${s.codename} — ${s.title}`}
-                  >
-                    {s.codename}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
         <p className="text-sm text-gray-60">{description}</p>
         <textarea

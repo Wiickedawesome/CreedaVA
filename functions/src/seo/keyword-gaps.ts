@@ -11,6 +11,7 @@
  */
 
 import { db, getIntegrationConfig } from "../admin";
+import { syncFindings, type FindingInput } from "./findings";
 import { searchWithQuota } from "./search";
 import type { SkillContext, SkillResult } from "./types";
 
@@ -100,8 +101,18 @@ export async function runKeywordGaps(ctx: SkillContext): Promise<SkillResult> {
   const striking = queries.filter(
     (q) => q.position >= 11 && q.position <= 30 && q.impressions >= 30,
   );
+  const collected: FindingInput[] = [];
   for (const q of striking) {
     const id = `striking_${slug(q.query)}`;
+    collected.push({
+      skill: "keyword-gaps",
+      scope: "keyword",
+      target: q.query,
+      code: "striking-distance",
+      severity: q.position <= 15 ? "medium" : "low",
+      message: `"${q.query}" ranks #${Math.round(q.position)} with ${q.impressions} impressions but is not tracked`,
+      evidence: q.page || undefined,
+    });
     findings.push({
       id,
       data: {
@@ -122,6 +133,15 @@ export async function runKeywordGaps(ctx: SkillContext): Promise<SkillResult> {
   const lowCtr = queries.filter((q) => q.impressions >= 200 && q.ctr < 0.02);
   for (const q of lowCtr) {
     const id = `lowctr_${slug(q.query)}`;
+    collected.push({
+      skill: "keyword-gaps",
+      scope: "keyword",
+      target: q.query,
+      code: "low-ctr",
+      severity: "medium",
+      message: `"${q.query}" earns ${q.impressions} impressions at ${(q.ctr * 100).toFixed(1)}% CTR — the title needs rewriting`,
+      evidence: q.page || undefined,
+    });
     findings.push({
       id,
       data: {
@@ -164,6 +184,15 @@ export async function runKeywordGaps(ctx: SkillContext): Promise<SkillResult> {
     });
     if (competitorHits.length > 0) {
       const id = `competitor_${slug(kw)}`;
+      collected.push({
+        skill: "keyword-gaps",
+        scope: "keyword",
+        target: kw,
+        code: "competitor-only",
+        severity: "low",
+        message: `${competitorHits.length} competitor page(s) outrank you for "${kw}"`,
+        evidence: competitorHits.map((h) => h.displayLink || safeDomain(h.link)).join(", "),
+      });
       findings.push({
         id,
         data: {
@@ -194,6 +223,13 @@ export async function runKeywordGaps(ctx: SkillContext): Promise<SkillResult> {
     }
   }
 
+  let findingsResolved = 0;
+  try {
+    findingsResolved = (await syncFindings("keyword-gaps", collected)).resolved;
+  } catch (err) {
+    console.warn("[keyword-gaps] finding sync failed:", err);
+  }
+
   const reachedEnd = probedFromOffset >= trackedList.length;
   return {
     status: reachedEnd ? "ok" : "partial",
@@ -204,6 +240,7 @@ export async function runKeywordGaps(ctx: SkillContext): Promise<SkillResult> {
       striking: striking.length,
       lowCtr: lowCtr.length,
       competitorProbed: probed,
+      findingsResolved,
       competitorRemaining: Math.max(0, trackedList.length - probedFromOffset),
     },
   };

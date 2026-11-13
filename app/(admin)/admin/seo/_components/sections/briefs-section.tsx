@@ -47,22 +47,8 @@ const STATUS_BADGE: Record<BriefStatus, { label: string; variant: "default" | "s
 const badgeFor = (status: string) =>
   STATUS_BADGE[status as BriefStatus] ?? { label: status, variant: "default" as const };
 
-interface SeoTaskInput {
-  kind: string;
-  title: string;
-  description?: string;
-  priority?: number;
-  status: "todo" | "in-progress" | "done";
-  area?: string;
-  affectedPath?: string | null;
-}
-
 export default function BriefsSection() {
   const { data: briefs, loading, edit } = useCollection<ContentBrief>("content-briefs", {
-    orderByField: "priority",
-    orderDirection: "desc",
-  });
-  const { add: addTask } = useCollection<SeoTaskInput>("seo-tasks", {
     orderByField: "priority",
     orderDirection: "desc",
   });
@@ -73,24 +59,14 @@ export default function BriefsSection() {
   const { toast } = useToast();
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  async function createTask(brief: ContentBrief) {
+  /** Start work on a brief. There is no task board to hand it to any more. */
+  async function startBrief(brief: ContentBrief) {
     setBusyId(brief.id);
     try {
-      await addTask({
-        kind: "content-brief",
-        title: `Write content for "${brief.keyword}"`,
-        description: brief.recommendedOutline?.length
-          ? `Outline:\n- ${brief.recommendedOutline.join("\n- ")}`
-          : `Brief id: ${brief.id}`,
-        priority: brief.priority ?? 50,
-        status: "todo",
-        area: "seo",
-        affectedPath: brief.rankingPage ?? null,
-      });
       await edit(brief.id, { status: "in-progress" });
-      toast("Action item created in pipeline");
+      toast(`"${brief.keyword}" marked in progress`, "success");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Failed to create task", "error");
+      toast(err instanceof Error ? err.message : "Failed to start brief", "error");
     } finally {
       setBusyId(null);
     }
@@ -189,8 +165,8 @@ export default function BriefsSection() {
                 )}
                 <div className="flex flex-wrap gap-2">
                   {b.status === "draft" && (
-                    <Button size="sm" onClick={() => createTask(b)} disabled={busyId === b.id}>
-                      Convert to task
+                    <Button size="sm" onClick={() => startBrief(b)} disabled={busyId === b.id}>
+                      Start writing
                     </Button>
                   )}
                   {b.status === "draft" && (

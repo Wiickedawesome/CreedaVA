@@ -91,17 +91,18 @@ describe("AIPromptButton", () => {
     expect(btn).toBeInTheDocument();
   });
 
-  it("has aria-label containing SCOUT codename for /admin/leads path", () => {
+  it("names the single assistant in its aria-label", () => {
     render(<AIPromptButton section="Leads" description="Lead AI assistant" />);
     const btn = screen.getByRole("button");
-    expect(btn.getAttribute("aria-label")).toMatch(/SCOUT/i);
+    expect(btn.getAttribute("aria-label")).toBe("Ask Creeda AI");
   });
 
-  it("has title attribute with specialist codename and tagline", () => {
+  it("names the area in the title without inventing a persona", () => {
     render(<AIPromptButton section="Leads" description="Lead AI assistant" />);
     const btn = screen.getByRole("button");
     const title = btn.getAttribute("title") ?? "";
-    expect(title).toContain("SCOUT");
+    expect(title).toBe("Ask Creeda AI about Leads");
+    expect(title).not.toMatch(/ARIA|ORACLE|NOVA|MAVERICK|SCOUT|GUIDE/);
   });
 
   it("has the ai-prompt-btn CSS class", () => {

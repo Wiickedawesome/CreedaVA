@@ -2,17 +2,22 @@
  * On-page audit skill (Monday).
  *
  * Crawls every URL in /sitemap.xml, parses HTML with cheerio, and writes one
- * onpage-audits doc per URL. When autonomy.metaFixes === "execute", auto-applies
- * trivially-safe fixes to /page-seo (capturing before/after for rollback).
+ * onpage-audits doc per URL plus a `findings` row per issue. It never writes
+ * `page-seo`: the crawl is suggestion-only, and a finding carries the fix a
+ * human can choose to apply.
  *
  * Uses zero Custom Search queries — only direct HTML fetches.
  */
 
 import * as cheerio from "cheerio";
 import { db } from "../admin";
-import { getAgentConfig } from "./config";
+import { syncFindings, type FindingInput, type FindingSuggestion } from "./findings";
 import { loadSitemap, urlToPathKey } from "./sitemap";
 import type { SkillContext, SkillResult } from "./types";
+
+const SKILL = "onpage-audit";
+const TITLE_RANGE = { min: 30, max: 60 } as const;
+const DESCRIPTION_RANGE = { min: 70, max: 170 } as const;
 
 const FETCH_TIMEOUT_MS = 15_000;
 const MAX_URLS_PER_RUN = 80;
@@ -65,13 +70,43 @@ async function fetchWithTimeout(url: string): Promise<{ status: number; html: st
   }
 }
 
+/**
+ * Read the document title.
+ *
+ * Scoped to <head> on purpose: every SVG logo carries its own <title> for its
+ * accessible name, so a document-wide `$("title")` picks up the brand label
+ * instead of the page title. Should several titles still appear in <head>, the
+ * longest non-empty one wins — short ones are fallbacks, not the page's title.
+ */
+function readTitle($: cheerio.CheerioAPI): string | null {
+  const candidates = $("head title")
+    .toArray()
+    .map((el) => $(el).text().replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+  if (candidates.length === 0) return null;
+  return candidates.reduce((longest, next) => (next.length > longest.length ? next : longest));
+}
+
+/**
+ * Read the meta description, skipping empty declarations.
+ *
+ * A page can emit more than one <meta name="description">; the first is
+ * conventionally authoritative, but an empty first tag is not a missing one.
+ */
+function readMetaDescription($: cheerio.CheerioAPI): string | null {
+  const values = $("head meta[name='description']")
+    .toArray()
+    .map((el) => $(el).attr("content")?.trim() ?? "")
+    .filter(Boolean);
+  return values[0] ?? null;
+}
+
 export function auditOne(url: string, status: number, html: string, ms: number): AuditOutput {
   const pathKey = urlToPathKey(url);
   const $ = cheerio.load(html);
 
-  const title = ($("head title").first().text() || "").trim() || null;
-  const metaDescription =
-    $("head meta[name='description']").attr("content")?.trim() || null;
+  const title = readTitle($);
+  const metaDescription = readMetaDescription($);
   const h1s = $("h1");
   const canonical = $("head link[rel='canonical']").attr("href")?.trim() || null;
 
@@ -156,20 +191,20 @@ export function auditOne(url: string, status: number, html: string, ms: number):
   if (!title) {
     issues.push({ code: "title-missing", severity: "high", message: "Missing <title>", autoFixable: true });
     score -= 20;
-  } else if (title.length < 30) {
+  } else if (title.length < TITLE_RANGE.min) {
     issues.push({ code: "title-short", severity: "medium", message: `Title only ${title.length} chars`, fix: "Aim for 30–60 chars.", autoFixable: true });
     score -= 6;
-  } else if (title.length > 70) {
+  } else if (title.length > TITLE_RANGE.max + 10) {
     issues.push({ code: "title-long", severity: "low", message: `Title is ${title.length} chars`, fix: "Aim for 30–60 chars." });
     score -= 3;
   }
   if (!metaDescription) {
     issues.push({ code: "meta-missing", severity: "high", message: "Missing meta description", autoFixable: true });
     score -= 15;
-  } else if (metaDescription.length < 70) {
+  } else if (metaDescription.length < DESCRIPTION_RANGE.min) {
     issues.push({ code: "meta-short", severity: "medium", message: `Meta description only ${metaDescription.length} chars`, autoFixable: true });
     score -= 5;
-  } else if (metaDescription.length > 170) {
+  } else if (metaDescription.length > DESCRIPTION_RANGE.max) {
     issues.push({ code: "meta-long", severity: "low", message: `Meta description is ${metaDescription.length} chars` });
     score -= 2;
   }
@@ -247,15 +282,14 @@ export async function runOnPageAudit(ctx: SkillContext): Promise<SkillResult> {
     return { status: "skipped", findings: 0, queriesUsed: ctx.queriesUsed(), summary: { reason: "empty-sitemap" } };
   }
 
-  const config = await getAgentConfig();
   const startOffset = ctx.cursor?.offset ?? 0;
   const slice = sitemap.slice(startOffset, startOffset + MAX_URLS_PER_RUN);
 
   let scoreTotal = 0;
   let issueTotal = 0;
   let highSeverityCount = 0;
-  let metaFixesApplied = 0;
   const failed: string[] = [];
+  const collected: FindingInput[] = [];
 
   for (let i = 0; i < slice.length; i++) {
     const entry = slice[i];
@@ -288,11 +322,21 @@ export async function runOnPageAudit(ctx: SkillContext): Promise<SkillResult> {
     issueTotal += audit.issues.length;
     highSeverityCount += audit.issues.filter((x) => x.severity === "high").length;
 
-    // Auto-fix safe meta issues if configured.
-    if (config.autonomy.metaFixes === "execute") {
-      const applied = await tryAutoApplyMeta(audit);
-      if (applied) metaFixesApplied++;
-    }
+    // The crawl never writes page-seo: every issue becomes a finding a human
+    // can act on, so a bad rewrite is impossible and every change is decided.
+    collected.push(...buildFindings(audit, auditId));
+  }
+
+  // One batched write for the whole slice: upserts what was just detected and
+  // resolves codes that this run no longer sees on the pages it inspected.
+  let findingsWritten = 0;
+  let findingsResolved = 0;
+  try {
+    const synced = await syncFindings(SKILL, collected);
+    findingsWritten = synced.written;
+    findingsResolved = synced.resolved;
+  } catch (err) {
+    console.warn("[onpage-audit] finding sync failed:", err);
   }
 
   const processed = slice.length;
@@ -313,148 +357,68 @@ export async function runOnPageAudit(ctx: SkillContext): Promise<SkillResult> {
       averageScore: processed > 0 ? Math.round(scoreTotal / processed) : 0,
       issueTotal,
       highSeverityCount,
-      metaFixesApplied,
+      findingsWritten,
+      findingsResolved,
       failedCount: failed.length,
     },
   };
 }
 
 /**
- * Apply trivially-safe fixes to page-seo.
+ * Build one finding per audit issue.
  *
- * Handles:
- *   - title-missing / title-short → fallback to <h1> text or capitalized path
- *   - meta-missing / meta-short   → extract first substantial sentence from body
- *   - og-missing                   → write ogTitle + ogDescription from title/desc
- *
- * Records before/after on the audit and a seo-tasks doc for rollback visibility.
+ * `evidence` points at the audit doc that produced the finding, so "where did
+ * this come from" is answerable from the UI without guessing.
  */
-async function tryAutoApplyMeta(audit: AuditOutput): Promise<boolean> {
-  const fixableCodes = new Set(
-    audit.issues
-      .filter((i) => i.autoFixable)
-      .map((i) => i.code),
-  );
+function buildFindings(audit: AuditOutput, auditId: string): FindingInput[] {
+  const titleSuggestion = desiredTitle(audit);
+  const descriptionSuggestion = extractFirstSentence(audit.bodyText);
 
-  const needsTitle = fixableCodes.has("title-missing") || fixableCodes.has("title-short");
-  const needsMeta = fixableCodes.has("meta-missing") || fixableCodes.has("meta-short");
-  const needsOg = fixableCodes.has("og-missing");
+  return audit.issues.map((issue) => {
+    const suggestion = suggestionFor(issue.code, titleSuggestion, descriptionSuggestion);
+    return {
+      skill: SKILL,
+      scope: "page" as const,
+      target: audit.pathKey,
+      code: issue.code,
+      severity: issue.severity === "info" ? "low" : issue.severity,
+      message: issue.fix ? `${issue.message} — ${issue.fix}` : issue.message,
+      evidence: `onpage-audits/${auditId}`,
+      ...(suggestion ? { suggested: suggestion } : {}),
+    };
+  });
+}
 
-  if (!needsTitle && !needsMeta && !needsOg) return false;
+/**
+ * The title this page should have, or null when the current one is already
+ * long enough. Only a missing or short title has an obvious rewrite; a long one
+ * needs a human to decide what to cut.
+ */
+function desiredTitle(audit: AuditOutput): string | null {
+  const current = audit.title;
+  const needsRewrite = !current || current.length < TITLE_RANGE.min;
+  if (!needsRewrite) return null;
+  const label = audit.pathKey === "/" ? "Virtual Assistant Services" : prettyPath(audit.pathKey);
+  return `CreedaVA — ${label}`;
+}
 
-  // Look up existing page-seo doc by path.
-  let existingId: string | null = null;
-  let existing: Record<string, unknown> | null = null;
-  try {
-    const snap = await db
-      .collection("page-seo")
-      .where("path", "==", audit.pathKey)
-      .limit(1)
-      .get();
-    if (!snap.empty) {
-      existingId = snap.docs[0].id;
-      existing = snap.docs[0].data();
-    }
-  } catch (err) {
-    console.warn("[onpage-audit] page-seo lookup failed:", err);
-    return false;
-  }
+/** Which `page-seo` field the Fix button would write, per issue code. */
+const SUGGESTION_FIELD: Record<string, "title" | "description"> = {
+  "title-missing": "title",
+  "title-short": "title",
+  "meta-missing": "description",
+  "meta-short": "description",
+};
 
-  // ─── Build candidate title ────────────────────────
-  let suggestedTitle: string | null = null;
-  if (needsTitle) {
-    suggestedTitle =
-      audit.title && audit.title.length >= 30 && audit.title.length <= 60
-        ? audit.title
-        : `CreedaVA — ${audit.pathKey === "/" ? "Virtual Assistant Services" : prettyPath(audit.pathKey)}`;
-    // Skip if already matches.
-    if (existing?.title === suggestedTitle) suggestedTitle = null;
-  }
-
-  // ─── Build candidate meta description ─────────────
-  let suggestedDesc: string | null = null;
-  if (needsMeta) {
-    suggestedDesc = extractFirstSentence(audit.bodyText);
-    // Skip if already matches or extraction failed.
-    if (!suggestedDesc || existing?.description === suggestedDesc) suggestedDesc = null;
-  }
-
-  // Nothing actionable after de-dup?
-  if (!suggestedTitle && !suggestedDesc && !needsOg) return false;
-
-  const before = existing
-    ? { title: existing.title, description: existing.description, ogTitle: existing.ogTitle, ogDescription: existing.ogDescription }
-    : null;
-
-  // Build the update payload.
-  const update: Record<string, unknown> = { updatedAt: new Date() };
-  if (suggestedTitle) update.title = suggestedTitle;
-  if (suggestedDesc) update.description = suggestedDesc;
-
-  // ─── OG fields: derive from best available title + description ───
-  if (needsOg) {
-    const bestTitle = suggestedTitle ?? (existing?.title as string | undefined) ?? null;
-    const bestDesc = suggestedDesc ?? (existing?.description as string | undefined) ?? null;
-    if (bestTitle) update.ogTitle = bestTitle;
-    if (bestDesc) update.ogDescription = bestDesc;
-  }
-
-  const after = {
-    title: suggestedTitle ?? existing?.title,
-    description: suggestedDesc ?? existing?.description,
-    ogTitle: update.ogTitle ?? existing?.ogTitle,
-    ogDescription: update.ogDescription ?? existing?.ogDescription,
-  };
-
-  const fixedCodes: string[] = [];
-  if (suggestedTitle) fixedCodes.push(needsTitle ? "title-missing/short" : "");
-  if (suggestedDesc) fixedCodes.push("meta-description");
-  if (needsOg && (update.ogTitle || update.ogDescription)) fixedCodes.push("og-tags");
-
-  try {
-    if (existingId) {
-      await db.collection("page-seo").doc(existingId).set(update, { merge: true });
-    } else {
-      await db.collection("page-seo").add({
-        path: audit.pathKey,
-        ...update,
-        createdAt: new Date(),
-      });
-    }
-
-    await db.collection("seo-tasks").add({
-      kind: "fix-meta",
-      title: `Auto-applied meta fixes for ${audit.pathKey}`,
-      description: `Fixed: ${fixedCodes.filter(Boolean).join(", ")}.`,
-      priority: 60,
-      status: "done",
-      sources: { audits: [audit.pathKey] },
-      area: "meta",
-      affectedPath: audit.pathKey,
-      capturedAt: new Date().toISOString(),
-      appliedAt: new Date().toISOString(),
-      autoApplied: true,
-      before,
-      after,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    await db.collection("ai-activity-log").add({
-      toolName: "auto_apply_meta_fix",
-      domain: "seo",
-      risk: "auto",
-      decision: "auto-execute",
-      args: { path: audit.pathKey, codes: fixedCodes, before, after },
-      result: { success: true },
-      executedAt: new Date(),
-    });
-
-    return true;
-  } catch (err) {
-    console.warn("[onpage-audit] auto-apply failed:", err);
-    return false;
-  }
+function suggestionFor(
+  code: string,
+  title: string | null,
+  description: string | null,
+): FindingSuggestion | undefined {
+  const field = SUGGESTION_FIELD[code];
+  if (field === "title" && title) return { field: "title", value: title };
+  if (field === "description" && description) return { field: "description", value: description };
+  return undefined;
 }
 
 /**

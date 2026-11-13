@@ -13,6 +13,8 @@ import {
 } from "@/components/admin";
 import type { Column } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
+import { FindingsList } from "@/components/admin/findings-list";
+import { cloudSeoAgentRun } from "@/lib/firebase/cloud-functions";
 import type { PageSEO } from "@/lib/types/content";
 // Pure predicate, no Firebase import — keeps the Admin SDK out of this bundle.
 import { isUsableMetaValue } from "@/lib/utils/meta-guard";
@@ -96,6 +98,30 @@ export default function PageMetadataSection() {
   const [editForm, setEditForm] = useState<EditForm>(EMPTY_FORM);
   const [seeding, setSeeding] = useState(false);
   const [repairing, setRepairing] = useState(false);
+  const [auditing, setAuditing] = useState(false);
+
+  /**
+   * Crawl the live site and refresh this page's findings.
+   *
+   * The crawl is suggestion-only: it writes findings, never `page-seo`. A
+   * change reaches the site only when someone presses Fix on a finding.
+   */
+  async function handleRunAudit() {
+    setAuditing(true);
+    try {
+      const result = await cloudSeoAgentRun("onpage-audit");
+      const processed = (result.result?.summary as { processedThisRun?: number } | undefined)?.processedThisRun ?? 0;
+      if (result.status === "ok" || result.status === "partial") {
+        toast(`Audited ${processed} page${processed === 1 ? "" : "s"} — findings updated`, "success");
+      } else {
+        toast(result.error ?? `Audit ${result.status}`, "error");
+      }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Audit failed to start", "error");
+    } finally {
+      setAuditing(false);
+    }
+  }
 
   // Merge Firestore entries with defaults for pages not yet saved.
   //
@@ -377,6 +403,27 @@ export default function PageMetadataSection() {
           </div>
         </div>
       )}
+
+      <DashboardSection
+        title="Findings"
+        action={
+          <Button size="sm" variant="outline" onClick={handleRunAudit} isLoading={auditing}>
+            Run audit
+          </Button>
+        }
+      >
+        <p className="mb-3 text-xs text-gray-50">
+          Crawled from the live site. Every issue names the page it was found on and the audit
+          run that found it, so nothing here is unattributed. The crawl never edits metadata —
+          Fix writes the suggested value, Ignore dismisses it, and a later run clears it once
+          the page passes.
+        </p>
+        <FindingsList
+          scope="page"
+          skills={["onpage-audit", "citation-audit"]}
+          emptyMessage="No page findings yet — run an audit to crawl the live site."
+        />
+      </DashboardSection>
 
       <DataTable
         columns={columns}

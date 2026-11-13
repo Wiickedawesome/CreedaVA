@@ -38,7 +38,7 @@ export const DEFAULT_AGENT_CONFIG: SeoAgentConfigDoc = {
     internalLinks: "execute",
   },
   maxQueriesPerSkill: 80,
-  summaryRecipients: ["john@creedava.com", "hello@creedava.com", "contact@creedava.com"],
+  summaryRecipients: ["admins@creedava.com", "contact@creedava.com"],
 };
 
 /** Result returned by every skill. */

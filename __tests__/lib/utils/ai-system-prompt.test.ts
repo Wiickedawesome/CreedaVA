@@ -19,7 +19,7 @@ import {
   HTML_CONTENT_RULES_2026,
   LANDING_PAGE_RULES_2026,
 } from "@/lib/utils/ai-design-2026";
-import { ALL_SPECIALISTS } from "@/lib/utils/ai-specialists";
+import { getAssistantContext } from "@/lib/utils/ai-assistant-context";
 import {
   MAX_SYSTEM_INSTRUCTION_LENGTH,
   MAX_USER_CONTENT_LENGTH,
@@ -336,19 +336,31 @@ describe("AI System Prompt", () => {
       expect(prompt.userContent.length).toBeLessThanOrEqual(MAX_USER_CONTENT_LENGTH);
     });
 
-    it.each(ALL_SPECIALISTS.map((s) => [s.codename, s] as const))(
-      "%s chat prompt fits the system instruction limit",
-      (_codename, specialist) => {
-        const prompt = buildTrainedPrompt("Chat", "prompt", "context", {
-          ...specialist.promptOptions,
-          specialistIntro: specialist.intro,
-          includeToolGuidelines: true,
-          pageContext: "page context",
-        });
-        expect(prompt.systemInstruction.length).toBeLessThanOrEqual(
-          MAX_SYSTEM_INSTRUCTION_LENGTH,
-        );
-      },
-    );
+    // Every admin area must fit, because one assistant now serves all of them
+    // from the same identity block.
+    it.each([
+      "/admin",
+      "/admin/bookings",
+      "/admin/seo/keywords",
+      "/admin/analytics",
+      "/admin/blog",
+      "/admin/forum",
+      "/admin/marketing/landing-pages",
+      "/admin/marketing/campaigns",
+      "/admin/emails",
+      "/admin/leads",
+      "/admin/contacts",
+      "/admin/customers",
+      "/admin/settings",
+    ])("%s chat prompt fits the system instruction limit", (pagePath) => {
+      const prompt = buildTrainedPrompt("Chat", "prompt", "context", {
+        ...getAssistantContext(pagePath).promptOptions,
+        includeToolGuidelines: true,
+        pageContext: "page context",
+      });
+      expect(prompt.systemInstruction.length).toBeLessThanOrEqual(
+        MAX_SYSTEM_INSTRUCTION_LENGTH,
+      );
+    });
   });
 });
