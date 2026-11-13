@@ -7,13 +7,17 @@
  *
  * The client twin of the types below is `lib/types/findings.ts`. They are
  * duplicated because functions deploy from `functions/` alone and cannot import
- * app code; `__tests__/lib/utils/findings.test.ts` pins the id format so the two
+ * app code; `__tests__/lib/types/findings.test.ts` pins the id format so the two
  * sides cannot drift.
  */
 
 import { db } from "../admin";
+import { findingId, type FindingScope } from "./finding-id";
 
-export type FindingScope = "page" | "keyword" | "domain";
+// Re-exported so callers only need this module. The implementation lives in
+// `finding-id.ts`, which has no imports and can be pulled into the app build.
+export { findingId };
+export type { FindingScope };
 export type FindingSeverity = "low" | "medium" | "high";
 
 /**
@@ -40,20 +44,6 @@ export interface FindingInput {
   /** The measurement behind the finding, e.g. "Title is 0 chars (target 30–60)". */
   evidence?: string;
   suggested?: FindingSuggestion;
-}
-
-function slug(value: string): string {
-  return (
-    value
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_+|_+$/g, "") || "root"
-  );
-}
-
-/** Stable id so a re-run upserts the same doc instead of appending a copy. */
-export function findingId(scope: FindingScope, target: string, code: string): string {
-  return `${scope}__${slug(target)}__${slug(code)}`.slice(0, 380);
 }
 
 /**

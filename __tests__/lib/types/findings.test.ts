@@ -1,12 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { findingId } from "../../../functions/src/seo/findings";
+import { findingId } from "../../../functions/src/seo/finding-id";
 import { isActionable, openCountByTarget, byUrgency, type Finding } from "@/lib/types/findings";
 
 /**
- * The server writes finding ids via `functions/src/seo/findings.ts` and the app
- * reads them back. The two modules cannot share code (functions deploy from
+ * The server writes finding ids via `functions/src/seo/finding-id.ts` and the
+ * app reads them back. The two modules cannot share code (functions deploy from
  * `functions/` alone), so the id contract is pinned here: if the slugging rules
  * diverge, a reseeded finding would appear twice instead of updating.
+ *
+ * The import is deliberately against `finding-id` (no imports) rather than
+ * `findings` — the latter reaches `../admin`, which needs `functions/node_modules`
+ * and is absent in the App Hosting build, so importing it fails `next build`.
  */
 describe("findingId", () => {
   it("is stable across reruns", () => {
