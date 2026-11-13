@@ -82,7 +82,10 @@ const ALLOW = {
   "app/opengraph-image.tsx": ["R1", "doc comment records the old gradient"],
   "app/globals.css": ["R1", "token definitions live here"],
   // Google's own SERP colours on a deliberately pinned-white preview panel.
-  "app/(admin)/admin/metadata/page.tsx": [ALL, "Google SERP colours, pinned white surface"],
+  "app/(admin)/admin/metadata/_components/metadata-section.tsx": [
+    ALL,
+    "Google SERP colours, pinned white surface",
+  ],
   // Platform chips keep their real brand hue, each with an explicit dark variant.
   "app/(admin)/admin/marketing/campaigns/page.tsx": ["R5", "platform brand chips carry dark: variants"],
   // Projected/webhook e-mail HTML, rendered by mail clients, not by app CSS.

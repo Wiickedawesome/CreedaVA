@@ -455,14 +455,28 @@ paginated. A page that was not crawled keeps its findings.
 
 ### Where findings are shown
 
-| Scope | Screen |
-|---|---|
-| `page` (on-page audit, citation audit) | `/admin/metadata` — under a **Findings** section with a **Run audit** button |
-| `keyword` (gaps, low CTR, competitor-only, rank drops) | `/admin/keywords` → **Findings** tab |
+Findings annotate the surface that already owns their subject. They are never a
+second, parallel list of the same rows.
 
-There is deliberately **no** cross-cutting findings page. An on-page issue is a
-fact about a path and a keyword issue is a fact about a query; listing both again
-in `/admin/seo` made the origin of a finding the hardest thing to answer.
+| Scope | Screen | Shape |
+|---|---|---|
+| `page` (on-page audit, citation audit) | `/admin/metadata` | **Pages** | **Findings** tabs. Pages = what the site serves; Findings = what the crawler says is wrong, with **Run audit**, a Fix/Ignore decision, and the audit doc it came from. |
+| `keyword` (gaps, low CTR, competitor-only) | `/admin/keywords` → **Gaps** | Each existing gap card carries the agent's verdict inline: state badge + **Ignore**/**Reopen**. "Track this keyword" closes the finding as `resolved` with `resolvedBy: "tracked"` — tracking *is* the fix. |
+| `keyword` (rank drops) | `/admin/keywords` → **Rankings** | An **Agent** column on the existing snapshot table. Rank drops had no surface at all before this. |
+
+There is deliberately **no** cross-cutting findings page and no separate Findings
+tab on Keywords. An on-page issue is a fact about a path and a keyword issue is a
+fact about a query; both already have a home, and a third list of them made the
+origin of a finding the hardest thing to answer.
+
+The inline annotation deliberately does **not** repeat the finding's message — the
+card already says what the problem is. It shows only the state and the one
+decision left.
+
+`syncFindings()` takes `{ resolve: false }` for partial runs. `keyword-gaps`
+probes tracked keywords with a cursor and a query cap, so a partial run has not
+looked at the whole list; resolving then would close findings for keywords it
+never visited, and they would look fixed because they were skipped.
 
 ### Removed
 
@@ -473,8 +487,9 @@ in `/admin/seo` made the origin of a finding the hardest thing to answer.
 - All 7 `upsertTask()` calls in the Sunday synthesizer, and `upsertTask()` itself
 
 Legacy links still work: `?section=agent&tab=audits`, `tab=findings`,
-`tab=tasks` and `tab=action-items` all redirect to `/admin/metadata`, and
-`ADMIN_ROUTE_ALIASES.seoAudits` / `.seoTasks` point there too.
+`tab=tasks` and `tab=action-items` all redirect to
+`/admin/metadata?section=findings`, and `ADMIN_ROUTE_ALIASES.seoAudits` /
+`.seoTasks` point there too.
 
 ### Auto-apply removed from the crawl
 

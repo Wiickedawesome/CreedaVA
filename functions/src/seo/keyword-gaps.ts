@@ -223,14 +223,18 @@ export async function runKeywordGaps(ctx: SkillContext): Promise<SkillResult> {
     }
   }
 
+  // Competitor probing is paginated, so a partial run has only looked at part of
+  // the tracked list. Resolving then would close findings for keywords this run
+  // never visited — they would look fixed because they were skipped.
+  const reachedEnd = probedFromOffset >= trackedList.length;
   let findingsResolved = 0;
   try {
-    findingsResolved = (await syncFindings("keyword-gaps", collected)).resolved;
+    findingsResolved = (await syncFindings("keyword-gaps", collected, { resolve: reachedEnd }))
+      .resolved;
   } catch (err) {
     console.warn("[keyword-gaps] finding sync failed:", err);
   }
 
-  const reachedEnd = probedFromOffset >= trackedList.length;
   return {
     status: reachedEnd ? "ok" : "partial",
     findings: written,

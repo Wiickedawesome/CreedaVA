@@ -14,7 +14,7 @@ export const ADMIN_ROUTE_ALIASES = {
   seoHub: "/admin/seo",
   pageMetadata: "/admin/metadata",
   seoPages: "/admin/metadata",
-  seoAudits: "/admin/metadata",
+  seoAudits: "/admin/metadata?section=findings",
   seoKeywords: "/admin/keywords",
   seoOpportunities: "/admin/keywords?tab=gaps",
   seoBriefs: "/admin/seo?section=agent&tab=briefs",
@@ -22,6 +22,6 @@ export const ADMIN_ROUTE_ALIASES = {
   seoCitations: "/admin/keywords?tab=gaps",
   seoDigest: "/admin/seo?section=agent&tab=digest",
   seoAgent: "/admin/seo?section=agent",
-  seoTasks: "/admin/metadata",
+  seoTasks: "/admin/metadata?section=findings",
   seoRankings: "/admin/keywords?tab=rankings",
 } as const;

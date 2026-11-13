@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { useCollection } from "@/hooks/useCollection";
-import { createWithId, getCollection, limit, update, where } from "@/lib/firebase/firestore";
-import type { FindingScope, FindingStatus, FirestoreFindingFields } from "@/lib/types/findings";
-import { byUrgency, skillLabel } from "@/lib/types/findings";
+import React, { useState } from "react";
 import { StatusBadge } from "@/components/admin";
+import { applySuggestion, setFindingStatus } from "@/lib/firebase/findings";
+import type { Finding, FindingStatus } from "@/lib/types/findings";
+import { skillLabel } from "@/lib/types/findings";
 
 /** Severity maps onto the shared status variants so it themes with everything else. */
-const SEVERITY_VARIANT: Record<FirestoreFindingFields["severity"], "error" | "warning" | "default"> = {
+const SEVERITY_VARIANT: Record<Finding["severity"], "error" | "warning" | "default"> = {
   high: "error",
   medium: "warning",
   low: "default",
@@ -20,48 +19,11 @@ const STATUS_VARIANT: Record<FindingStatus, "info" | "default" | "success"> = {
   resolved: "success",
 };
 
-type FindingRow = FirestoreFindingFields & { id: string };
-
-/** Close a finding and record who decided, and why. */
-async function closeFinding(id: string, status: FindingStatus, resolvedBy: string): Promise<void> {
-  await update("findings", id, {
-    status,
-    ...(status === "open" ? {} : { resolvedAt: new Date().toISOString(), resolvedBy }),
-  } as Partial<FirestoreFindingFields>);
-}
-
-/**
- * Write the finding's suggested value into `page-seo`, then close it.
- *
- * Recorded as `resolved` rather than deleted: the next crawl either confirms it
- * by not re-detecting the code, or reopens it if the value still fails.
- */
-async function applySuggestion(finding: FindingRow): Promise<void> {
-  const suggestion = finding.suggested;
-  if (!suggestion) return;
-
-  const { getDocs, query } = await import("firebase/firestore");
-  const matches = await getDocs(
-    query(getCollection("page-seo"), where("path", "==", finding.target), limit(1)),
-  );
-
-  // Reuse the path's row when one exists, so the metadata editor and this fix
-  // cannot end up maintaining two documents for the same page.
-  const existingId = matches.empty ? null : matches.docs[0].id;
-  await createWithId(
-    "page-seo",
-    existingId ?? `page-seo_${finding.target.replace(/[^a-z0-9]/gi, "_")}`,
-    existingId ? { [suggestion.field]: suggestion.value } : { path: finding.target, [suggestion.field]: suggestion.value },
-  );
-
-  await closeFinding(finding.id, "resolved", "fix-applied");
-}
-
 interface FindingsListProps {
-  /** Restrict to one scope, e.g. "page" on Page metadata. */
-  scope: FindingScope;
-  /** Restrict to one or more skills. Omitted means every skill in scope. */
-  skills?: string[];
+  findings: Finding[];
+  loading: boolean;
+  /** Called after a decision so the caller refetches the collection. */
+  onChanged: () => void;
   emptyMessage: string;
 }
 
@@ -72,28 +34,20 @@ interface FindingsListProps {
  * A finding leaves this list when a later run stops detecting it, so the list
  * measures the current state rather than growing into a backlog nobody closes.
  */
-export function FindingsList({ scope, skills, emptyMessage }: FindingsListProps) {
-  const { data: rows, loading } = useCollection<FirestoreFindingFields>("findings");
+export function FindingsList({ findings, loading, onChanged, emptyMessage }: FindingsListProps) {
   const [showClosed, setShowClosed] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-
-  const findings = useMemo(() => {
-    const skillSet = skills ? new Set(skills) : null;
-    return rows
-      .filter((row) => row.scope === scope)
-      .filter((row) => !skillSet || skillSet.has(row.skill))
-      .sort(byUrgency);
-  }, [rows, scope, skills]);
 
   const open = findings.filter((finding) => finding.status === "open");
   const closed = findings.filter((finding) => finding.status !== "open");
   const visible = showClosed ? [...open, ...closed] : open;
 
-  const act = async (finding: FindingRow, action: "fix" | "ignore") => {
+  const act = async (finding: Finding, action: "fix" | "ignore") => {
     setBusyId(finding.id);
     try {
       if (action === "fix") await applySuggestion(finding);
-      else await closeFinding(finding.id, "ignored", "admin");
+      else await setFindingStatus(finding.id, "ignored");
+      onChanged();
     } catch (err) {
       console.error("[findings] action failed:", err);
     } finally {

@@ -2,8 +2,12 @@
 
 import React, { useMemo, useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
+import { useFindings } from "@/hooks/useFindings";
 import { PageHeader, DashboardSection, StatusBadge, useToast, StatCard } from "@/components/admin";
+import { InlineFinding } from "@/components/admin/inline-finding";
 import { Button } from "@/components/ui";
+import { setFindingStatus } from "@/lib/firebase/findings";
+import { mapFindingsByTarget, targetKey } from "@/lib/types/findings";
 import type { SEOKeyword } from "@/lib/types/content";
 
 type GapType = "striking-distance" | "low-ctr" | "competitor-only";
@@ -43,6 +47,13 @@ export default function KeywordGapsSection() {
     orderDirection: "desc",
   });
   const { data: existingKeywords, add: addKeyword } = useCollection<SEOKeyword>("keywords");
+  // The finding is the agent's verdict on a gap that already exists here; it is
+  // joined by keyword rather than rendered as a second, parallel list.
+  const { findings, refetch: refetchFindings } = useFindings({
+    scope: "keyword",
+    skills: ["keyword-gaps"],
+  });
+  const findingsByKeyword = useMemo(() => mapFindingsByTarget(findings, "keyword"), [findings]);
   const { toast } = useToast();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [filter, setFilter] = useState<GapType | "all">("all");
@@ -80,6 +91,20 @@ export default function KeywordGapsSection() {
         tracked: true,
       });
       toast(`Now tracking "${gap.keyword}"`);
+
+      // Tracking is the fix for this gap, so close the agent's finding too.
+      // If this fails the keyword is still tracked — say so rather than throwing.
+      const openFinding = (findingsByKeyword.get(targetKey(gap.keyword)) ?? []).find(
+        (finding) => finding.status === "open",
+      );
+      if (openFinding) {
+        try {
+          await setFindingStatus(openFinding.id, "resolved", "tracked");
+          refetchFindings();
+        } catch (err) {
+          console.warn("[keyword-gaps] could not close the finding:", err);
+        }
+      }
     } catch (err) {
       toast(err instanceof Error ? err.message : "Failed to track", "error");
     } finally {
@@ -179,7 +204,7 @@ export default function KeywordGapsSection() {
                     </ul>
                   )}
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Button
                       size="sm"
                       onClick={() => trackKeyword(g)}
@@ -187,6 +212,10 @@ export default function KeywordGapsSection() {
                     >
                       {alreadyTracked ? "Already tracked" : "Track this keyword"}
                     </Button>
+                    <InlineFinding
+                      findings={findingsByKeyword.get(targetKey(g.keyword)) ?? []}
+                      onChanged={refetchFindings}
+                    />
                   </div>
                 </div>
               );

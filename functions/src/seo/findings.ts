@@ -56,6 +56,7 @@ export interface FindingInput {
 export async function syncFindings(
   skill: string,
   inputs: FindingInput[],
+  options: { resolve?: boolean } = {},
 ): Promise<{ written: number; resolved: number }> {
   if (inputs.length === 0) return { written: 0, resolved: 0 };
 
@@ -99,7 +100,9 @@ export async function syncFindings(
     written++;
   }
 
-  for (const [id, prior] of existing) {
+  // A partial run inspected only part of the site, so absence of a finding is
+  // not evidence of absence of the problem.
+  for (const [id, prior] of options.resolve === false ? [] : existing) {
     if (liveIds.has(id)) continue;
     if (!inspectedTargets.has(prior.target as string)) continue;
     if (prior.status === "resolved") continue;

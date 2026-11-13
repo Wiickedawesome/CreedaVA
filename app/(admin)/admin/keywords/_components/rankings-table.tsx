@@ -2,7 +2,10 @@
 
 import React, { useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
+import { useFindings } from "@/hooks/useFindings";
 import { DashboardSection } from "@/components/admin";
+import { InlineFinding } from "@/components/admin/inline-finding";
+import { mapFindingsByTarget, targetKey } from "@/lib/types/findings";
 
 interface RankRow {
   id: string;
@@ -20,6 +23,13 @@ export function RankingsTable() {
     orderByField: "dayKey",
     orderDirection: "desc",
   });
+  // Rank drops used to be written to the task board and shown nowhere. They are
+  // the agent's verdict on the row below, so they ride along with it.
+  const { findings, refetch: refetchFindings } = useFindings({
+    scope: "keyword",
+    skills: ["rank-drop"],
+  });
+  const findingsByKeyword = useMemo(() => mapFindingsByTarget(findings, "keyword"), [findings]);
 
   const summary = useMemo(() => {
     const byKeyword = new Map<string, RankRow[]>();
@@ -61,6 +71,7 @@ export function RankingsTable() {
                 <th className="px-3 py-2">Clicks</th>
                 <th className="px-3 py-2">CTR</th>
                 <th className="px-3 py-2">Samples</th>
+                <th className="px-3 py-2">Agent</th>
               </tr>
             </thead>
             <tbody>
@@ -80,6 +91,12 @@ export function RankingsTable() {
                   <td className="px-3 py-2">{s.latest.clicks}</td>
                   <td className="px-3 py-2">{(s.latest.ctr * 100).toFixed(1)}%</td>
                   <td className="px-3 py-2 text-gray-60">{s.samples}</td>
+                  <td className="px-3 py-2">
+                    <InlineFinding
+                      findings={findingsByKeyword.get(targetKey(s.keyword)) ?? []}
+                      onChanged={refetchFindings}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -31,7 +31,6 @@ import {
   type RankHistoryRow,
 } from "@/lib/utils/rank-history";
 import { RankingsTable } from "./rankings-table";
-import { FindingsList } from "@/components/admin/findings-list";
 // The agent's `keyword-gaps` skill output. It renders as a sub-tab here because
 // gaps are keyword data — they were a separate hub tab, which split one subject
 // across two screens.
@@ -502,7 +501,6 @@ export default function KeywordsSection() {
           { label: "Keywords", value: "keywords", badge: keywords.length },
           { label: "Gaps", value: "gaps" },
           { label: "Rankings", value: "rankings" },
-          { label: "Findings", value: "findings" },
         ]}
         defaultValue={initialTab}
         onChange={setTab}
@@ -527,20 +525,6 @@ export default function KeywordsSection() {
 
       {tab === "gaps" && <KeywordGapsSection />}
       {tab === "rankings" && <RankingsTable />}
-      {tab === "findings" && (
-        <DashboardSection title="Keyword findings">
-          <p className="mb-3 text-xs text-gray-50">
-            What the agent found about individual queries — untracked striking-distance terms,
-            low click-through, competitor pages outranking you, and rank drops. Fix or Ignore
-            here; a later run clears anything that no longer reproduces.
-          </p>
-          <FindingsList
-            scope="keyword"
-            skills={["keyword-gaps", "rank-drop"]}
-            emptyMessage="No keyword findings yet — they appear after the next gaps or rank-history run."
-          />
-        </DashboardSection>
-      )}
 
       {tab === "keywords" && (
         <>

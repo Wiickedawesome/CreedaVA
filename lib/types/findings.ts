@@ -93,3 +93,40 @@ export function openCountByTarget(findings: Finding[]): Map<string, number> {
   }
   return counts;
 }
+
+/**
+ * Join key for a finding's target.
+ *
+ * A kwyword or path is the same thing regardless of case, and Search Console
+ * is inconsistent about it — joining on the raw string would silently miss.
+ */
+export function targetKey(target: string): string {
+  return target.trim().toLowerCase();
+}
+
+/** Open first, then dismissed, then resolved — the order an operator reads them. */
+const STATUS_RANK: Record<FindingStatus, number> = { open: 0, ignored: 1, resolved: 2 };
+
+/**
+ * Group findings by their target so a list view can annotate each row.
+ *
+ * Lets Gaps and Rankings own their own data while the finding carries only the
+ * decision, instead of duplicating the row into a second collection.
+ */
+export function mapFindingsByTarget(
+  findings: Finding[],
+  scope: FindingScope,
+): Map<string, Finding[]> {
+  const grouped = new Map<string, Finding[]>();
+  for (const finding of findings) {
+    if (finding.scope !== scope) continue;
+    const key = targetKey(finding.target);
+    const list = grouped.get(key);
+    if (list) list.push(finding);
+    else grouped.set(key, [finding]);
+  }
+  for (const list of grouped.values()) {
+    list.sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status]);
+  }
+  return grouped;
+}
