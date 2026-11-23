@@ -1,3 +1,5 @@
+import { BUSINESS_PHONE_DISPLAY } from "@/lib/constants/contact";
+
 const en = {
   // ─── Nav ───────────────────────────────────────
   nav: {
@@ -858,7 +860,7 @@ const en = {
     emailLabel: "Email",
     emailValue: "contact@creedava.com",
     phoneLabel: "Phone",
-    phoneValue: "+1 844-702-2202",
+    phoneValue: BUSINESS_PHONE_DISPLAY,
     hoursLabel: "Business Hours",
     hoursValue: "Monday - Friday, 9:00 AM - 6:00 PM EST",
     responseLabel: "Response Time",

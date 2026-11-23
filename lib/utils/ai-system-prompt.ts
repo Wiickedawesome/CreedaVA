@@ -22,6 +22,10 @@ import {
   HTML_CONTENT_RULES_2026,
   LANDING_PAGE_RULES_2026,
 } from "./ai-design-2026";
+import {
+  BUSINESS_PHONE_DISPLAY,
+  BUSINESS_PHONE_E164,
+} from "@/lib/constants/contact";
 
 // ─── Core Identity ───────────────────────────────────
 
@@ -64,7 +68,7 @@ assistant services industry. You accomplish this by:
 - Name: CreedaVA
 - Industry: Virtual Assistant Services (B2B & B2C)
 - Website: https://creedava.com
-- Contact: contact@creedava.com | +1 844-702-2202
+- Contact: contact@creedava.com | ${BUSINESS_PHONE_DISPLAY}
 - Deployment: Firebase Hosting (us-east4 region)
 
 CORE SERVICES:
@@ -962,7 +966,7 @@ export const TECHNICAL_SEO_EXPERTISE = `TECHNICAL SEO DEEP DIVE — Infrastructu
    ORGANIZATION (homepage):
    { "@type": "Organization", "name": "CreedaVA", "url": "https://creedava.com",
      "logo": "https://creedava.com/icon.svg", "contactPoint": { "@type": "ContactPoint",
-     "telephone": "+1-844-702-2202", "contactType": "customer service", "availableLanguage": ["English", "Spanish"] } }
+     "telephone": "${BUSINESS_PHONE_E164}", "contactType": "customer service", "availableLanguage": ["English", "Spanish"] } }
 
    SERVICE (service pages):
    { "@type": "Service", "name": "Virtual Assistant Services", "provider": { "@type": "Organization", "name": "CreedaVA" },

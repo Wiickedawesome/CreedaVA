@@ -1,4 +1,5 @@
 import type { Dictionary } from "./en";
+import { BUSINESS_PHONE_DISPLAY } from "@/lib/constants/contact";
 
 const es: Dictionary = {
   // ─── Nav ───────────────────────────────────────
@@ -850,7 +851,7 @@ const es: Dictionary = {
     emailLabel: "Correo",
     emailValue: "contact@creedava.com",
     phoneLabel: "Teléfono",
-    phoneValue: "+1 844-702-2202",
+    phoneValue: BUSINESS_PHONE_DISPLAY,
     hoursLabel: "Horario de Atenci\u00f3n",
     hoursValue: "Lunes - Viernes, 9:00 AM - 6:00 PM EST",
     responseLabel: "Tiempo de Respuesta",

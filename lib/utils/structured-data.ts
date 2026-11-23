@@ -8,6 +8,8 @@
  *   />
  */
 
+import { BUSINESS_PHONE_E164 } from "@/lib/constants/contact";
+
 const SITE = "https://creedava.com";
 /**
  * Full business name. Search engines identify the company by this, so the brand
@@ -24,7 +26,6 @@ const ORG_ALTERNATE_NAMES = ["CreedaVA", "Creeda"];
  * an absolute address a crawler can fetch.
  */
 const LOGO = `${SITE}/icon.svg`;
-const PHONE = "+1-844-702-2202";
 
 // ─── Shared fragments ────────────────────────────────
 
@@ -36,7 +37,7 @@ const ORGANIZATION = {
   logo: LOGO,
   contactPoint: {
     "@type": "ContactPoint",
-    telephone: PHONE,
+    telephone: BUSINESS_PHONE_E164,
     contactType: "customer service",
     availableLanguage: ["English", "Spanish"],
   },
@@ -210,11 +211,11 @@ export function contactPageJsonLd() {
       "@type": "Organization",
       name: ORG_NAME,
       url: SITE,
-      telephone: PHONE,
+      telephone: BUSINESS_PHONE_E164,
       email: "info@creedava.com",
       contactPoint: {
         "@type": "ContactPoint",
-        telephone: PHONE,
+        telephone: BUSINESS_PHONE_E164,
         contactType: "customer service",
         availableLanguage: ["English", "Spanish"],
       },

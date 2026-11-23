@@ -4,6 +4,9 @@ import { Container } from "@/components/ui";
 import { Bloom } from "@/components/marketing/primitives";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import type { Dictionary } from "@/lib/i18n";
+import {
+  BUSINESS_PHONE_E164,
+} from "@/lib/constants/contact";
 import { ContactForm } from "./contact-form";
 
 /**
@@ -138,7 +141,7 @@ function DetailsRail({ copy }: { copy: ContactCopy }): ReactNode {
           </dt>
           <dd className="mt-2">
             <a
-              href={`tel:${copy.phoneValue}`}
+              href={`tel:${BUSINESS_PHONE_E164}`}
               className="text-[0.95rem] font-medium text-mk-brand underline-offset-4 hover:text-mk-brand-bright hover:underline"
             >
               {copy.phoneValue}
