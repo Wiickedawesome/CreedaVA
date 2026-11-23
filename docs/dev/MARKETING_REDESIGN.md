@@ -2442,10 +2442,13 @@ then strip. Both now demand semantic HTML with no inline styles or hex colours.
 are already on current tokens; they are literals, not legacy. `/admin` chart palettes
 and `components/admin/ai-prompt.tsx` stay on their own token set by design.
 
-**Still referenced, do not delete:** `public/logo.webp` is used by the admin survey
-email templates (including a migration check in `emails/page.tsx` that greps for
-`https://creedava.com/logo.webp`) and `public/creedava-logo-B-axbjNY.webp` by the
-same. They are out of metadata but not out of code.
+**Deleted 2026-11-23 (was "still referenced, do not delete").** `public/logo.webp`
+and `public/creedava-logo-B-axbjNY.webp` fed the admin survey-email templates,
+which is why they survived the first cataloguing pass. Both files 404ed in
+production the whole time (`public/` is not fully deployed), so the emails were
+already shipping a broken image. The template now lives once in
+`lib/constants/satisfaction-email.ts` and points at `/logo.png`, served by
+`app/logo.png/route.ts` from bytes embedded in `lib/brand/email-logo.ts`.
 
 - Verified: `tsc` clean (app **and** `functions`) · eslint clean · **398/398** tests,
   36 files · `functions` 65/65 · `npm run build` success with `/opengraph-image`,
@@ -2882,7 +2885,6 @@ Measured on `a4a2650` *after* a successful rollout: `/creedava-logo.svg`,
 normally. The 404 body is byte-identical (15,468 B) to Next's own not-found page
 for a random path, and `next start` from the repo root serves every one of them
 correctly — so the files are absent from the deployment bundle, not cached badly.
-
 Two things were tried against that:
 
 | Attempt | Result |

@@ -138,3 +138,81 @@ confirm it end to end:
   deployed, by `ci.yml`.
 - Dismissed alerts re-open when a *new* value matches, so a genuinely leaked key
   added to `apphosting.yaml` tomorrow will still alert.
+
+---
+
+# 2026-11-23 — Next.js advisories cleared, dependency majors reviewed
+
+## Next.js: 7 advisories, all fixed by one version bump
+
+Measured with `gh api repos/Wiickedawesome/CreedaVA/dependabot/alerts?state=open`
+on 2026-11-23: **7 open alerts, all `next`, all medium, all patched in
+`16.4.5`**. The installed version was `16.4.3`.
+
+`next` 16.4.3 also ships a **build-time guard**: the first `next build` aborts
+with
+
+```
+Error [SecurityFatalError]: Your version of Next.js is affected by a known
+security vulnerability.
+```
+
+and the *retry* succeeds, so CI and local runs only fail intermittently. Do not
+treat that error as spurious — it is the SDK telling you to upgrade.
+
+Landed: `next@16.4.6` + `eslint-config-next@16.4.6` (`package.json` already
+allowed it via `^16.4.3`; only the lockfile was stale). Verification:
+
+| Gate | Result |
+|---|---|
+| `npm run lint` | clean (0 errors, 0 warnings) |
+| `npm test` | 560/560 |
+| `npm run build` | exit 0, no `SecurityFatalError` |
+| `npm audit --omit=dev` | 0 vulnerabilities |
+
+The GitHub alert counter updates only after the commit is pushed **and** GitHub
+re-sweeps the dependency graph (~25 min, no API to force it). Until then the 7
+alerts stay open even though the lockfile resolves `next@16.4.6`.
+
+## Transitive conflict: `@firebase/app`
+
+`firebase@13` needs `@firebase/app-check@0.13.2`, which imports
+`_setTrustedScriptSrc` from `@firebase/app`. `firebase-admin@13` pins
+`@firebase/app@0.16.2` (via `@firebase/database-compat`), and npm hoisted that
+copy, so the Turbopack build failed with:
+
+```
+Error: Export _setTrustedScriptSrc doesn't exist in target module
+```
+
+Fixed with an explicit override in `package.json`:
+
+```json
+"@firebase/app": "0.16.7"
+```
+
+This is the same override pattern already used for `node-forge` and
+`fast-xml-parser`. Both packages are in the same `0.16` line, and the app does
+not use Realtime Database, which is the only admin feature that touches it.
+
+## Current pins and the two majors deliberately not taken
+
+`npm outdated` now reports only these, each blocked by a verified upstream
+constraint — not by preference:
+
+| Package | Installed | Latest | Blocker (measured) |
+|---|---|---|---|
+| `firebase-admin` | 13.10.0 | 14.5.1 | v14 removes the namespace API: `admin.apps`, `admin.firestore()`, `admin.auth()`, `admin.appCheck()`. `functions/` uses it in ~10 files and `lib/firebase-admin.ts` uses `admin.apps`/`admin.credential`. Migrating means editing every call site and exercising triggers, which cannot be verified without a Functions deploy. |
+| `typescript` | 6.0.3 | 7.0.2 | `typescript-eslint` (via `eslint-config-next`) refuses TS 7.0 by design: *"typescript-eslint does not support TS 7.0."* Upstream tracking: typescript-eslint#10940, targeted at TS ≥ 7.1. TS **6.0.3** is the newest version that keeps `npm run lint` working, and everything else is green on it. |
+
+Everything else moved: `firebase` 12 → **13.4.0**, `eslint` 9 → **10.15.0**,
+`vitest` 4 → **5.1.1** (both manifests), `@vitejs/plugin-react` 5 → **6.3.0**,
+`jsdom` 28 → **31.0.1**, `@testing-library/jest-dom` 6 → **8.0.0**,
+`@types/node` 25 → **26.6.6**, `@playwright/test` → **1.65.1**,
+`googleapis` 171 → **190** (functions).
+
+`firebase@13`'s only breaking changes are in Firebase AI Logic
+(`firebase/ai`): the `VertexAIBackend`/template API removal. This app uses
+`@google/genai` and `@google/generative-ai` directly and never imports
+`firebase/ai` (verified by grep), so the upgrade was a no-op at the API level.
+`initializeAppCheck` always passes a provider, which v13 requires.

@@ -25,8 +25,9 @@ test.describe("Contact Form", () => {
     await page.getByRole("textbox", { name: /last name/i }).fill("User");
     await page.getByRole("textbox", { name: /email/i }).fill("test@example.com");
 
-    // Fill message / textarea
-    const messageField = page.locator("textarea");
+    // The reCAPTCHA widget injects its own hidden <textarea>, so target the
+    // labelled field rather than the first textarea on the page.
+    const messageField = page.getByRole("textbox", { name: /message/i });
     await messageField.fill("Hello, this is an E2E test message.");
 
     await page.getByRole("button", { name: /send|submit/i }).click();

@@ -128,6 +128,42 @@ firebase emulators:start --only functions,firestore
 
 ---
 
+## Static files: `public/` is NOT served
+
+Firebase App Hosting does not deploy the `public/` directory. Measured twice, a
+month apart (2026-11-11 on `a4a2650`, 2026-11-23 on the live site): every file
+in it returns Next's own prerendered 404 — `/logo.webp`,
+`/creedava-logo-B-axbjNY.webp`, and, until this pass, `/firebase-messaging-sw.js`.
+
+`outputFiles.serverApp.include: ["."]` in `apphosting.yaml` does **not** fix it.
+
+Anything a browser must fetch has to be an `app/` route:
+
+| Asset | Where it lives now |
+|---|---|
+| Brand logo | `components/brand/brand-logo.tsx` (inline SVG) |
+| Favicon / app icon | `app/icon.svg`, `app/apple-icon.tsx` |
+| Email logo | `app/logo.png/route.ts`, bytes embedded in `lib/brand/email-logo.ts` |
+| FCM service worker | `app/firebase-messaging-sw.js/route.ts`, source in `lib/firebase/messaging-sw-source.ts` |
+
+The worker must sit at the site root for its scope to cover every page, and a
+service worker cannot be a JSON import or a bundled module — hence the string
+constant rather than a `fs.readFile`. Keep its `firebasejs/<version>`
+`importScripts` in step with the installed `firebase` package.
+
+The email logo follows the same rule for a different reason: Gmail strips SVG and
+Outlook desktop does not render WebP, so email needs a raster image behind an
+absolute URL. The PNG is base64-embedded rather than read from disk, so no
+request depends on a file being traceable into the deployment.
+
+**Which public files DO serve.** Not all of `public/` is missing — the build
+traces the ones code reads. `/creedava-mark.svg` returns 200 only because
+`app/opengraph-image.tsx` reads it with `fs` at build time; the two `.webp` files
+and the old worker were never traced and 404ed. Treat "it is in `public/`" as
+"it is probably not deployed" until measured.
+
+---
+
 ## Deployment
 
 ### Full Deployment
