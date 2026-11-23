@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": resolve(__dirname, "."),
+      // `import.meta.dirname` rather than `__dirname`: Vite's native config
+      // loader does not provide `__dirname` and warns about it.
+      "@": resolve(import.meta.dirname, "."),
     },
   },
   test: {

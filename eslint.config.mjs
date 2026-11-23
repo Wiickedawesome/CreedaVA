@@ -25,8 +25,10 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     // Cloud Functions compiled output (CommonJS require())
-    "functions/lib/**",
-  ]),
+    "functions/lib/**",    // Generated test artefacts — not hand-written source.
+    "coverage/**",
+    "playwright-report/**",
+    "test-results/**",  ]),
 ]);
 
 export default eslintConfig;
