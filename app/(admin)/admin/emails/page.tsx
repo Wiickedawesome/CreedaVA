@@ -35,6 +35,10 @@ import {
   senderForReply,
   DEFAULT_SENDER_ADDRESS,
 } from "@/lib/constants/business-emails";
+import {
+  SURVEY_EMAIL_BODY,
+  STALE_SURVEY_LOGO_MARKERS,
+} from "@/lib/constants/satisfaction-email";
 
 /** Tabs that render the draft table — everything except Inbox and Outreach. */
 const DRAFT_TABS = ["drafts", "sent", "all"];
@@ -67,31 +71,6 @@ const emptyForm = {
   images: [] as string[],
   attachments: [] as { name: string; url: string; type: string }[],
 };
-
-const SURVEY_TEMPLATE_BODY = `<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#0B2135;">
-  <div style="text-align:center;padding:24px 0;">
-    <img src="/logo.webp" alt="CreedaVA" width="120" style="margin-bottom:12px;height: auto;" />
-  </div>
-  <div style="background:#F7F7F2;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
-    <h2 style="margin:0 0 8px;color:#005148;font-size:22px;">How are we doing?</h2>
-    <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.6;">
-      Hi {{CUSTOMER_NAME}},<br/><br/>
-      Your feedback helps us improve the services we provide. Please take a moment to rate your experience — it only takes 30 seconds.
-    </p>
-    <div style="text-align:center;margin:24px 0;">
-      <a href="{{SURVEY_LINK}}" style="display:inline-block;background:#005148;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:600;font-size:16px;">
-        Share Your Feedback →
-      </a>
-    </div>
-    <p style="margin:20px 0 0;color:#888;font-size:13px;text-align:center;">
-      This link is unique to you and will expire in 30 days.
-    </p>
-  </div>
-  <div style="text-align:center;padding:24px 0;color:#888;font-size:12px;">
-    <p>CreedaVA — Virtual Assistant Services</p>
-    <p><a href="https://creedava.com" style="color:#005148;">creedava.com</a></p>
-  </div>
-</div>`;
 
 export default function EmailsPage() {
   // ─── Collections ──────────────────
@@ -155,14 +134,14 @@ export default function EmailsPage() {
       add({
         purpose: "satisfaction-survey",
         subject: "We'd love your feedback — CreedaVA Satisfaction Survey",
-        body: SURVEY_TEMPLATE_BODY,
+        body: SURVEY_EMAIL_BODY,
         previewText: "Customer satisfaction survey template",
         status: "draft" as const,
       }).catch(() => { seededRef.current = false; });
-    } else if (existing.body.includes("https://creedava.com/logo.webp") || existing.body.includes('alt="CreedaVA" width="20"')) {
-      // Update stale template with correct logo
+    } else if (STALE_SURVEY_LOGO_MARKERS.some((marker) => existing.body.includes(marker))) {
+      // Re-seed a draft that still points at the unservable pre-2026 logo.
       seededRef.current = true;
-      edit(existing.id, { body: SURVEY_TEMPLATE_BODY } as Partial<EmailDraft>).catch(() => { seededRef.current = false; });
+      edit(existing.id, { body: SURVEY_EMAIL_BODY } as Partial<EmailDraft>).catch(() => { seededRef.current = false; });
     }
   }, [draftsLoading, emails, add, edit]);
 
@@ -742,6 +721,7 @@ export default function EmailsPage() {
             data={filteredInbox}
             keyExtractor={(m) => m.id}
             onRowClick={(m) => openInboxMessage(m)}
+            loading={inboxLoading}
             emptyMessage="No mail to a business address yet — nothing has been sent to these groups"
           />
         </>
@@ -754,6 +734,7 @@ export default function EmailsPage() {
           data={filteredDrafts}
           keyExtractor={(e) => e.id}
           onRowClick={(e) => openDraft(e)}
+          loading={draftsLoading}
           emptyMessage="No emails — compose one or let AI draft it"
         />
       )}

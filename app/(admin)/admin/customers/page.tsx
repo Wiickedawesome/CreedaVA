@@ -22,6 +22,7 @@ import type { Contact } from "@/lib/types/crm";
 import type { EmailDraft } from "@/lib/types/content";
 import { computeLTV } from "@/lib/utils/ltv";
 import { statusVariant, CUSTOMER_PLANS, BILLING_CYCLES, REFERRAL_SOURCES } from "@/lib/types/crm";
+import { SURVEY_EMAIL_BODY } from "@/lib/constants/satisfaction-email";
 import { lazyAnalyzeCustomerHealth } from "@/lib/firebase/ai-lazy";
 import type { CustomerHealthReport } from "@/lib/firebase/ai-engine";
 
@@ -39,32 +40,6 @@ const CUSTOMER_STATS_NOW_MS = Date.now();
 // as near-black on the dark card, and reusing --warning collapsed this into the
 // bucket above it, losing the four-step ladder.
 const AT_RISK_COLOR = "color-mix(in srgb, var(--warning) 55%, var(--error))";
-const DEFAULT_SURVEY_HTML = `
-<div style="max-width:600px;margin:0 auto;font-family:'Roboto',Arial,sans-serif;color:#0B2135;">
-  <div style="text-align:center;padding:24px 0;">
-    <img src="/logo.webp" alt="CreedaVA" width="120" style="margin-bottom:12px;height: auto;" />
-  </div>
-  <div style="background:#F7F7F2;border-radius:12px;padding:32px;border:1px solid #e8edf5;">
-    <h2 style="margin:0 0 8px;color:#005148;font-size:22px;">How are we doing?</h2>
-    <p style="margin:0 0 20px;color:#444;font-size:15px;line-height:1.6;">
-      Hi {{CUSTOMER_NAME}},<br/><br/>
-      Your feedback helps us improve the services we provide. Please take a moment to rate your experience — it only takes 30 seconds.
-    </p>
-    <div style="text-align:center;margin:24px 0;">
-      <a href="{{SURVEY_LINK}}" style="display:inline-block;background:#005148;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:600;font-size:16px;">
-        Share Your Feedback →
-      </a>
-    </div>
-    <p style="margin:20px 0 0;color:#888;font-size:13px;text-align:center;">
-      This link is unique to you and will expire in 30 days.
-    </p>
-  </div>
-  <div style="text-align:center;padding:24px 0;color:#888;font-size:12px;">
-    <p>CreedaVA — Virtual Assistant Services</p>
-    <p><a href="https://creedava.com" style="color:#005148;">creedava.com</a></p>
-  </div>
-</div>`;
-
 const CUSTOMER_STATUSES = ["active", "inactive", "churned"] as const;
 
 const emptyCustomer: CustomerFormData = {
@@ -437,7 +412,7 @@ export default function CustomersPage() {
     if (surveyTemplate) {
       setSurveyEmail({ subject: surveyTemplate.subject, html: surveyTemplate.body });
     } else {
-      setSurveyEmail({ subject: DEFAULT_SURVEY_SUBJECT, html: DEFAULT_SURVEY_HTML });
+      setSurveyEmail({ subject: DEFAULT_SURVEY_SUBJECT, html: SURVEY_EMAIL_BODY });
     }
     setSurveySender(BUSINESS_EMAILS[0].value);
     setSurveyModalOpen(true);

@@ -11,7 +11,9 @@
  *   1. Enable Cloud Messaging in Firebase Console
  *   2. Generate a VAPID key (Firebase Console → Cloud Messaging → Web Push certificates)
  *   3. Set NEXT_PUBLIC_FIREBASE_VAPID_KEY in env
- *   4. Deploy the service worker (public/firebase-messaging-sw.js)
+ *   4. Deploy the app — the worker is served by
+ *      `app/firebase-messaging-sw.js/route.ts`, from the source in
+ *      `lib/firebase/messaging-sw-source.ts`
  *
  * @see https://firebase.google.com/docs/cloud-messaging/js/client
  */

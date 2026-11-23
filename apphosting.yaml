@@ -57,7 +57,8 @@ env:
 # a successful rollout on `a4a2650`. The setting was removed rather than left as
 # dead configuration. Anything that must be served has to live somewhere that is
 # proven to serve: `app/` routes, or markup rendered inline. The brand logo is
-# now an inline component for exactly this reason (components/brand/brand-logo.tsx).
+# now an inline component and the FCM worker is an app route
+# (`app/firebase-messaging-sw.js/route.ts`) for exactly this reason.
 headers:
   - glob: "/_next/static/**"
     headers:
