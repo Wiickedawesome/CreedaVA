@@ -1,6 +1,18 @@
+import type { Metadata } from "next";
 import { ForceTheme } from "@/components/layout/force-theme";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * The page component is a client component (it needs the popup flow), so it
+ * cannot export metadata itself. Without this the tab and search result title
+ * fell back to the root default.
+ */
+export const metadata: Metadata = {
+  title: "Sign In",
+  description: "Sign in to the CreedaVA admin dashboard.",
+  robots: { index: false, follow: false },
+};
 
 export default function LoginLayout({
   children,

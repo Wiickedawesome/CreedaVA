@@ -70,7 +70,7 @@ describe("getPageSEO", () => {
       description: "Fallback description",
     });
 
-    expect(meta.title).toBe("About Us | CreedaVA");
+    expect(meta.title).toBe("About Us");
     expect(meta.description).toBe("Learn about our team.");
     expect(meta.alternates?.canonical).toBe("https://creedava.com/about");
     expect(meta.keywords).toEqual(["virtual assistant", "about"]);
@@ -84,6 +84,24 @@ describe("getPageSEO", () => {
     const twitter = meta.twitter as Record<string, unknown>;
     expect(twitter.card).toBe("summary_large_image");
     expect(twitter.title).toBe("About CreedaVA");
+  });
+
+  it("strips a brand the stored title already carries", async () => {
+    // Measured live: the /faq doc held "CreedaVA — Faq", so the layout's
+    // "%s | CreedaVA" template shipped "CreedaVA — Faq | CreedaVA".
+    mockGet.mockResolvedValue(mockSnapshot({
+      id: "2",
+      path: "/faq",
+      title: "CreedaVA — Faq",
+      description: "Questions and answers.",
+    }));
+
+    const meta = await getPageSEO("/faq", {
+      title: "FAQ",
+      description: "Fallback description",
+    });
+
+    expect(meta.title).toBe("Faq");
   });
 
   it("falls back to defaults when no Firestore doc exists", async () => {

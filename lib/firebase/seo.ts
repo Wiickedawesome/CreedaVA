@@ -17,6 +17,7 @@
 import { unstable_cache } from "next/cache";
 import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 import { isUsableMetaValue } from "@/lib/utils/meta-guard";
+import { stripBrandDuplication } from "@/lib/utils/page-title";
 import type { PageSEO } from "@/lib/types/content";
 import type { Metadata } from "next";
 
@@ -96,7 +97,7 @@ async function _getPageSEO(
     const seo = snapshot.empty ? null : (snapshot.docs[0].data() as PageSEO);
     if (!seo) return fallback(path, defaults);
 
-    const title = nonEmpty(seo.title, defaults.title);
+    const title = stripBrandDuplication(nonEmpty(seo.title, defaults.title));
     const description = nonEmpty(seo.description, defaults.description);
     const ogTitle = nonEmpty(seo.ogTitle, title);
     const ogDescription = nonEmpty(seo.ogDescription, description);
