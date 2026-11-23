@@ -431,6 +431,7 @@ export default function LandingPagesPage() {
         data={filtered}
         keyExtractor={(p) => p.id}
         onRowClick={(p) => openModal(p)}
+        loading={loading}
         emptyMessage="No landing pages yet — try the AI builder or create one manually"
       />
 

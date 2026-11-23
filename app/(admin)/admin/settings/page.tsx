@@ -11,6 +11,12 @@ import { PageHeader, useToast } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { useAdminTheme } from "@/hooks/useAdminTheme";
 import type { AdminTheme } from "@/hooks/useAdminTheme";
+import {
+  ADMIN_EMAIL_DOMAIN,
+  APP_CHECK_ENABLED,
+  SESSION_COOKIE_NAME,
+  SESSION_MAX_AGE_SECONDS,
+} from "@/lib/constants/security";
 
 // ─── Types ───────────────────────────────────────────
 
@@ -709,6 +715,12 @@ const { toast } = useToast();
       {/* ─── Divider ──────────────────────────────────── */}
       <hr className="border-border" />
 
+      {/* ─── Security ─────────────────────────────────── */}
+      <SecuritySection />
+
+      {/* ─── Divider ──────────────────────────────────── */}
+      <hr className="border-border" />
+
       {/* ─── Integrations ─────────────────────────────── */}
       <section>
         <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
@@ -904,5 +916,86 @@ const { toast } = useToast();
         </div>
       </section>
     </div>
+  );
+}
+
+/** GitHub security surfaces for this repository. */
+const SECURITY_SCANNERS = [
+  { label: "Dependabot alerts", href: "https://github.com/Wiickedawesome/CreedaVA/security/dependabot" },
+  { label: "Code scanning", href: "https://github.com/Wiickedawesome/CreedaVA/security/code-scanning" },
+  { label: "Secret scanning", href: "https://github.com/Wiickedawesome/CreedaVA/security/secret-scanning" },
+] as const;
+
+/**
+ * The admin gate as the server actually enforces it.
+ *
+ * Read-only on purpose — these are code and platform settings, not per-user
+ * preferences. Every value comes from `lib/constants/security.ts`, the same
+ * module `/api/session` and the admin-session helper read, so this panel cannot
+ * drift into describing a gate the server is not enforcing.
+ */
+function SecuritySection() {
+  const rows = [
+    {
+      label: "Admin sign-in",
+      value: `Google only · @${ADMIN_EMAIL_DOMAIN} accounts · verified email required`,
+      healthy: true,
+    },
+    {
+      label: "Session cookie",
+      value: `${SESSION_COOKIE_NAME} · HttpOnly · SameSite=Lax · ${SESSION_MAX_AGE_SECONDS / 86_400}-day lifetime`,
+      healthy: true,
+    },
+    {
+      label: "App Check",
+      value: APP_CHECK_ENABLED
+        ? "reCAPTCHA Enterprise · enforced on Cloud Functions"
+        : "Disabled by NEXT_PUBLIC_ENABLE_APP_CHECK",
+      healthy: APP_CHECK_ENABLED,
+    },
+  ];
+
+  return (
+    <section className="rounded-xl border border-border bg-card p-6">
+      <div className="flex items-center gap-3 mb-5">
+        <svg className="w-5 h-5 text-gray-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="M9 12l2 2 4-4" />
+        </svg>
+        <h2 className="text-sm font-semibold text-foreground tracking-wide uppercase">Security</h2>
+      </div>
+
+      <dl className="max-w-2xl space-y-3">
+        {rows.map((row) => (
+          <div key={row.label} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <dt className="w-32 shrink-0 text-xs font-medium text-gray-70">{row.label}</dt>
+            <dd className="flex items-center gap-2 text-xs text-gray-80">
+              <span
+                aria-hidden="true"
+                className={`h-1.5 w-1.5 rounded-full ${row.healthy ? "bg-success-text" : "bg-error-text"}`}
+              />
+              {row.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <p className="mt-4 text-[11px] text-gray-50">
+        Scanners run on every push to <code>main</code>:{" "}
+        {SECURITY_SCANNERS.map((scanner, index) => (
+          <span key={scanner.href}>
+            {index > 0 && " · "}
+            <a
+              href={scanner.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              {scanner.label}
+            </a>
+          </span>
+        ))}
+      </p>
+    </section>
   );
 }

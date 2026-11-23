@@ -420,6 +420,7 @@ export default function ForumPage() {
           setSelected(t);
           setDetailOpen(true);
         }}
+        loading={loading}
         emptyMessage="No forum threads yet — they&apos;ll appear here when users post"
       />
 

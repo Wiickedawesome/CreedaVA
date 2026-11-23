@@ -1,5 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { adminAuth } from "@/lib/firebase-admin";
+import {
+  ADMIN_EMAIL_DOMAIN,
+  SESSION_COOKIE_NAME,
+  SESSION_MAX_AGE_SECONDS,
+} from "@/lib/constants/security";
 
 /**
  * Session management API for admin auth.
@@ -20,17 +25,13 @@ import { adminAuth } from "@/lib/firebase-admin";
  * response is explicit and version-independent.
  */
 
-const SESSION_COOKIE = "__session";
-const ALLOWED_DOMAIN = "creedava.com";
-const SESSION_MAX_AGE = 60 * 60 * 24 * 5; // 5 days
-
 /** Attach the session cookie to `response` and hand it back. */
 function withSessionCookie(
   response: NextResponse,
   value: string,
   maxAge: number,
 ): NextResponse {
-  response.cookies.set(SESSION_COOKIE, value, {
+  response.cookies.set(SESSION_COOKIE_NAME, value, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
 
     // Enforce domain restriction server-side
     const email = decoded.email ?? "";
-    if (!email.endsWith(`@${ALLOWED_DOMAIN}`)) {
+    if (!email.endsWith(`@${ADMIN_EMAIL_DOMAIN}`)) {
       return NextResponse.json(
         { error: "Unauthorized domain" },
         { status: 403 },
@@ -87,7 +88,7 @@ export async function POST(request: Request) {
     let sessionCookie: string;
     try {
       sessionCookie = await adminAuth.createSessionCookie(token, {
-        expiresIn: SESSION_MAX_AGE * 1000, // milliseconds
+        expiresIn: SESSION_MAX_AGE_SECONDS * 1000, // milliseconds
       });
     } catch (err) {
       console.error("[/api/session] session cookie creation failed:", err);
@@ -100,7 +101,7 @@ export async function POST(request: Request) {
     return withSessionCookie(
       NextResponse.json({ status: "ok" }),
       sessionCookie,
-      SESSION_MAX_AGE,
+      SESSION_MAX_AGE_SECONDS,
     );
   } catch {
     return NextResponse.json(
@@ -137,7 +138,7 @@ export async function DELETE() {
  * went undiagnosed.
  */
 export async function GET(request: NextRequest) {
-  const sessionCookie = request.cookies.get(SESSION_COOKIE)?.value;
+  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
   if (!sessionCookie) {
     return NextResponse.json(

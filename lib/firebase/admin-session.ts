@@ -9,9 +9,10 @@
 
 import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebase-admin";
-
-/** Admin email domain. Mirrors the check in /api/session. */
-const ALLOWED_DOMAIN = "creedava.com";
+import {
+  ADMIN_EMAIL_DOMAIN,
+  SESSION_COOKIE_NAME,
+} from "@/lib/constants/security";
 
 /**
  * Resolve the caller's UID from the `__session` cookie.
@@ -23,11 +24,11 @@ const ALLOWED_DOMAIN = "creedava.com";
 export async function getAdminUidFromSession(): Promise<string | null> {
   try {
     const cookieStore = await cookies();
-    const session = cookieStore.get("__session")?.value;
+    const session = cookieStore.get(SESSION_COOKIE_NAME)?.value;
     if (!session) return null;
 
     const decoded = await adminAuth.verifySessionCookie(session, true);
-    if (!decoded.email?.endsWith(`@${ALLOWED_DOMAIN}`)) return null;
+    if (!decoded.email?.endsWith(`@${ADMIN_EMAIL_DOMAIN}`)) return null;
     if (decoded.email_verified !== true) return null;
 
     return decoded.uid;

@@ -15,9 +15,13 @@ interface DataTableProps<T> {
   onRowClick?: (item: T) => void;
   emptyMessage?: string;
   pageSize?: number;
+  /** True while the collection is still loading; renders placeholder rows. */
+  loading?: boolean;
 }
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
+/** Placeholder rows shown while a collection is loading. */
+const SKELETON_ROWS = 5;
 
 export function DataTable<T>({
   columns,
@@ -26,6 +30,7 @@ export function DataTable<T>({
   onRowClick,
   emptyMessage = "No data found",
   pageSize: initialPageSize = 10,
+  loading = false,
 }: DataTableProps<T>) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(initialPageSize);
@@ -58,6 +63,31 @@ export function DataTable<T>({
     safeCurrentPage * pageSize,
     safeCurrentPage * pageSize + pageSize,
   );
+
+  // Checked before the empty branch: without it every page opened on "No data
+  // found" for the first paint, before the collection had reported back.
+  if (loading) {
+    return (
+      <div
+        className="w-full overflow-hidden rounded-lg border border-border bg-card"
+        aria-busy="true"
+        aria-label="Loading data"
+      >
+        <div className="border-b border-border bg-gray-10 px-4 py-3">
+          <div className="h-4 w-32 animate-pulse rounded bg-gray-20" />
+        </div>
+        <div className="divide-y divide-border">
+          {Array.from({ length: SKELETON_ROWS }, (_, row) => (
+            <div key={row} className="flex items-center gap-4 px-4 py-3.5">
+              <div className="h-4 flex-1 animate-pulse rounded bg-gray-10" />
+              <div className="h-4 w-24 animate-pulse rounded bg-gray-10" />
+              <div className="h-4 w-16 animate-pulse rounded bg-gray-10" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (data.length === 0) {
     return (
