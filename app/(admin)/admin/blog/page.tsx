@@ -16,7 +16,7 @@ import { Button, Input } from "@/components/ui";
 import { AIPromptButton, RichTextEditor } from "@/components/admin";
 import { uploadImage, uploadFile } from "@/lib/firebase/storage";
 import { cloudListDriveFiles } from "@/lib/firebase/cloud-functions";
-import type { BlogPost, BlogPostFormData } from "@/lib/types/content";
+import type { BlogPost, BlogPostFormData, BlogReference } from "@/lib/types/content";
 import Image from "next/image";
 import { translateBlogInBackground } from "@/lib/firebase/translate";
 import { parseAiJson } from "@/lib/utils/ai-json";
@@ -63,16 +63,17 @@ export default function BlogPage() {
   // AI generation (state reserved for future inline AI prompt UI)
 
   /**
-   * Tell the author when a body is all prose.
+   * Tell the author when a body is all prose or has no sources.
    *
    * The generator asks for figures, tables and metric blocks, but a prompt is a
    * request — this is the check that actually notices. It never blocks a save:
    * a short post is sometimes the right answer, and the author decides.
    */
-  function warnOnThinContent(html: string) {
+  function warnOnThinContent(html: string, references: BlogReference[] = []) {
     const gaps = visualGaps(measureArticleVisuals(html));
+    if (references.length === 0) gaps.push("no sources cited");
     if (gaps.length > 0) {
-      toast(`Saved, but the body is thin: ${gaps.join(", ")}.`, "info");
+      toast(`Saved, but the post is thin: ${gaps.join(", ")}.`, "info");
     }
   }
 
@@ -98,6 +99,9 @@ export default function BlogPage() {
         featuredImage: post.featuredImage || "",
         images: post.images || [],
         attachments: post.attachments || [],
+        // Without this an edit dropped the post's sources on save: the form is
+        // written back whole, and the field was never populated from the post.
+        references: post.references || [],
       });
     } else {
       setSelected(null);
@@ -205,6 +209,42 @@ export default function BlogPage() {
     }
   }
 
+  // ── Reference list ──────────────────────────
+  function updateReference(index: number, patch: Partial<BlogReference>) {
+    setForm((current) => ({
+      ...current,
+      references: (current.references ?? []).map((reference, i) =>
+        i === index ? { ...reference, ...patch } : reference,
+      ),
+    }));
+  }
+
+  function addReference() {
+    setForm((current) => ({
+      ...current,
+      references: [...(current.references ?? []), { label: "" }],
+    }));
+  }
+
+  function removeReference(index: number) {
+    setForm((current) => ({
+      ...current,
+      references: (current.references ?? []).filter((_, i) => i !== index),
+    }));
+  }
+
+  /** Trim the rows and drop the ones an author added but never filled in. */
+  function cleanReferences(references: BlogReference[] | undefined): BlogReference[] {
+    return (references ?? [])
+      .map((reference) => ({
+        label: reference.label.trim(),
+        url: reference.url?.trim() || undefined,
+        source: reference.source?.trim() || undefined,
+        year: reference.year?.trim() || undefined,
+      }))
+      .filter((reference) => reference.label.length > 0);
+  }
+
   async function handleSave() {
     if (!form.title.trim()) {
       toast("Title is required", "error");
@@ -226,18 +266,19 @@ export default function BlogPage() {
       pickFeaturedImage(
         [form.title, ...(form.tags ?? []), form.excerpt].filter(Boolean).join(" "),
       );
+    const references = cleanReferences(form.references);
 
     setSaving(true);
     try {
       if (selected) {
-        await edit(selected.id, { ...form, slug, featuredImage });
+        await edit(selected.id, { ...form, slug, featuredImage, references });
         toast("Post updated");
       } else {
-        await add({ ...form, slug, featuredImage });
+        await add({ ...form, slug, featuredImage, references });
         toast("Post created");
       }
       setModalOpen(false);
-      warnOnThinContent(form.content ?? "");
+      warnOnThinContent(form.content ?? "", references);
     } catch {
       toast("Failed to save post", "error");
     } finally {
@@ -259,7 +300,7 @@ export default function BlogPage() {
       );
       toast("Post published!");
       setModalOpen(false);
-      warnOnThinContent(selected.content ?? "");
+      warnOnThinContent(selected.content ?? "", selected.references ?? []);
     } catch {
       toast("Failed to publish", "error");
     }
@@ -462,6 +503,7 @@ Return ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, in
         data={filtered}
         keyExtractor={(p) => p.id}
         onRowClick={(p) => openModal(p)}
+        loading={loading}
         emptyMessage="No posts yet — create one or let AI generate a draft"
       />
 
@@ -514,6 +556,68 @@ Return ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, in
             value={form.tags?.join(", ") || ""}
             onChange={(e) => setForm({ ...form, tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) })}
           />
+
+          {/* ── References ──────────────────────── */}
+          <div className="rounded-lg border border-border p-3">
+            <div className="mb-2 flex items-start justify-between gap-3">
+              <div>
+                <label className="text-sm font-medium text-gray-100">References</label>
+                <p className="text-xs text-gray-50">
+                  Sources cited in the body, in citation order. Row 1 is what
+                  <code className="mx-1">[1]</code> links to. An unsourced claim
+                  should be removed, not published.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={addReference}>
+                + Source
+              </Button>
+            </div>
+            {(form.references?.length ?? 0) === 0 ? (
+              <p className="text-xs text-gray-50">No sources yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {(form.references ?? []).map((reference, index) => (
+                  <div
+                    key={index}
+                    className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,2fr)_minmax(0,1fr)_5rem_auto]"
+                  >
+                    <Input
+                      label={`Label ${index + 1}`}
+                      value={reference.label}
+                      onChange={(e) => updateReference(index, { label: e.target.value })}
+                      placeholder="Title of the page or report"
+                    />
+                    <Input
+                      label="URL"
+                      value={reference.url ?? ""}
+                      onChange={(e) => updateReference(index, { url: e.target.value })}
+                      placeholder="https://…"
+                    />
+                    <Input
+                      label="Publisher"
+                      value={reference.source ?? ""}
+                      onChange={(e) => updateReference(index, { source: e.target.value })}
+                    />
+                    <Input
+                      label="Year"
+                      value={reference.year ?? ""}
+                      onChange={(e) => updateReference(index, { year: e.target.value })}
+                    />
+                    <div className="flex items-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeReference(index)}
+                        aria-label={`Remove reference ${index + 1}`}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* ── Images ──────────────────────────────── */}
           <div>
