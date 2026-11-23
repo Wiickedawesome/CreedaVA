@@ -124,8 +124,10 @@ export function BrandLogo({ tone = "brand", className, title = "CreedaVA" }: Bra
       focusable="false"
     >
       {/* The gradient ids are local to this element, so several logos can share
-          a page without colliding on a definition. */}
-      {title ? <title>{title}</title> : null}
+          a page without colliding on a definition.
+          No `<title>` child: `role="img"` + `aria-label` already supplies the
+          accessible name, and having both makes screen readers announce the
+          mark twice. */}
       {!mono ? (
         <defs>
           {gradientId("cv-mark-gradient", MARK_GRADIENT)}
