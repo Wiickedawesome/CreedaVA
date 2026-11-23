@@ -990,6 +990,7 @@ const en = {
     companyLinks: {
       about: "About Us",
       news: "News & Blog",
+      pricing: "Pricing",
       contact: "Contact",
     },
     supportLinks: {

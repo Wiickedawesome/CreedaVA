@@ -981,6 +981,7 @@ const es: Dictionary = {
     companyLinks: {
       about: "Nosotros",
       news: "Noticias y Blog",
+      pricing: "Precios",
       contact: "Contacto",
     },
     supportLinks: {

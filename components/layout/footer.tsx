@@ -10,6 +10,7 @@ import { BrandLogo } from "@/components/brand/brand-logo";
 const companyHrefs = [
   { href: "/about", key: "about" as const },
   { href: "/news", key: "news" as const },
+  { href: "/pricing", key: "pricing" as const },
   { href: "/contact", key: "contact" as const },
 ];
 
@@ -74,16 +75,6 @@ export function Footer() {
                     </Link>
                   </li>
                 ))}
-                {/* Packages are their own page now, so the column ends with a
-                    route rather than a thirteenth anchor. */}
-                <li>
-                  <Link
-                    href="/pricing"
-                    className="text-sm text-mk-paper hover:text-mk-accent transition-colors"
-                  >
-                    {t.nav.pricing}
-                  </Link>
-                </li>
               </ul>
             </div>
 
