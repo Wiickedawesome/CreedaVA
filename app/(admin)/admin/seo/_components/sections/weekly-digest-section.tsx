@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import { useScheduledReports } from "@/hooks/useScheduledReports";
-import { DashboardSection, PageHeader, StatusBadge } from "@/components/admin";
+import { DashboardSection, StatusBadge } from "@/components/admin";
 import type {
   AIReport,
   BlogPost,
@@ -97,11 +97,13 @@ export default function WeeklyDigestSection() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        as="h2"
-        title="Weekly Digest"
-        description="Latest weekly synthesizer + scheduled reports. Each captures findings the SEO agent collected during the prior 7 days."
-      />
+      {/* The tab already says "Digest" — repeating it as a heading only added
+          a third stacked title above the reports. The description stays because
+          it explains what a report actually contains. */}
+      <p className="text-sm text-gray-60">
+        Latest weekly synthesizer and scheduled reports. Each captures findings the SEO
+        agent collected during the prior 7 days.
+      </p>
 
       <DashboardSection title={`Latest ${weekly.length} reports`}>
         {loading ? (

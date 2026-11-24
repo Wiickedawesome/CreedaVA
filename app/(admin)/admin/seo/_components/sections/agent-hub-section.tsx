@@ -14,11 +14,14 @@ import BriefsSection from "./briefs-section";
  * a keyword issue is a fact about a query, so each is listed on the page that
  * owns that thing. Listing them again here only made it harder to tell where a
  * finding came from.
+ *
+ * Labels are one word each because the page title already says "Agent" — the
+ * tab strip is for switching, not for restating context.
  */
 const SUB_TABS = [
-  { label: "Agent runs", value: "runs" },
+  { label: "Runs", value: "runs" },
   { label: "Briefs", value: "briefs" },
-  { label: "Weekly digest", value: "digest" },
+  { label: "Digest", value: "digest" },
 ];
 
 const VALID_TABS = new Set(SUB_TABS.map((t) => t.value));

@@ -1,10 +1,9 @@
 "use client";
 
-import React, { Suspense, useCallback, useEffect, useMemo } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import React, { Suspense, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { AdminTabs, PageHeader } from "@/components/admin";
-import type { Tab } from "@/components/admin/tabs";
+import { useRouter, useSearchParams } from "next/navigation";
+import { PageHeader } from "@/components/admin";
 import { ADMIN_ROUTE_ALIASES } from "@/lib/utils/admin-route-aliases";
 
 const AgentDashboard = dynamic(() => import("./_components/sections/agent-hub-section"), {
@@ -12,17 +11,11 @@ const AgentDashboard = dynamic(() => import("./_components/sections/agent-hub-se
   loading: () => <SectionSkeleton label="Loading agent…" />,
 });
 
-type SectionId = "agent";
-
-/** Legacy `?section=` values — everything the agent produces lives under `agent`. */
-const SECTION_ALIASES: Record<string, SectionId> = {
-  digest: "agent",
-  briefs: "agent",
-  tasks: "agent",
-  "action-items": "agent",
-};
-
-/** Surfaces that moved to their own top-level page. Redirect, don't silently default. */
+/**
+ * Surfaces that moved to their own top-level page. Redirect, don't silently
+ * default to the run history — a stale bookmark should land where the thing
+ * actually lives now.
+ */
 const MOVED_SECTIONS: Record<string, string> = {
   keywords: ADMIN_ROUTE_ALIASES.seoKeywords,
   gaps: ADMIN_ROUTE_ALIASES.seoOpportunities,
@@ -33,10 +26,6 @@ const MOVED_SECTIONS: Record<string, string> = {
   outreach: ADMIN_ROUTE_ALIASES.seoOutreach,
 };
 
-const DEFAULT_SECTION: SectionId = "agent";
-
-const SECTIONS: { value: SectionId; label: string }[] = [{ value: "agent", label: "Runs" }];
-
 function SectionSkeleton({ label }: { label: string }) {
   return (
     <div className="rounded-lg border border-border bg-card p-8 text-center text-sm text-gray-50">
@@ -45,46 +34,39 @@ function SectionSkeleton({ label }: { label: string }) {
   );
 }
 
+/**
+ * Runs, briefs and the weekly digest.
+ *
+ * There is no section switcher: `agent` was its only entry, so the strip was a
+ * permanent single tab wedged between the page title and the real tabs. The
+ * retired `?section=` values are still handled — old links land in the right
+ * place instead of silently showing run history.
+ */
 export default function AgentPage() {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const rawSection = searchParams?.get("section") ?? DEFAULT_SECTION;
-  const moved = MOVED_SECTIONS[rawSection];
+  const section = searchParams?.get("section") ?? "";
+  const moved = useMemo(() => MOVED_SECTIONS[section], [section]);
 
   useEffect(() => {
-    if (moved) router.replace(moved);
-  }, [moved, router]);
-
-  const section: SectionId = useMemo(() => {
-    const aliased = SECTION_ALIASES[rawSection] ?? rawSection;
-    return (SECTIONS as { value: string }[]).some((s) => s.value === aliased)
-      ? (aliased as SectionId)
-      : DEFAULT_SECTION;
-  }, [rawSection]);
-
-  const handleChange = useCallback(
-    (value: string) => {
-      const params = new URLSearchParams(searchParams?.toString() ?? "");
-      params.set("section", value);
-      params.delete("tab");
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    },
-    [router, pathname, searchParams],
-  );
-
-  const tabs: Tab[] = SECTIONS.map((s) => ({ label: s.label, value: s.value }));
+    if (!section) return;
+    if (moved) {
+      router.replace(moved);
+      return;
+    }
+    // A live-but-obsolete parameter: drop it so the address bar matches the page.
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    params.delete("section");
+    const query = params.toString();
+    router.replace(`/admin/seo${query ? `?${query}` : ""}`, { scroll: false });
+  }, [section, moved, router, searchParams]);
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Agent"
-        description="The autonomous SEO agent: runs, crawler audits, the briefs and action items it writes, and the weekly digest."
-      />
-      <AdminTabs tabs={tabs} activeTab={section} onChange={handleChange} />
+      <PageHeader title="Agent" />
       <Suspense fallback={<SectionSkeleton label="Loading…" />}>
-        {section === "agent" && <AgentDashboard />}
+        <AgentDashboard />
       </Suspense>
     </div>
   );

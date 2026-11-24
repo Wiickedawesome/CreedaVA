@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
-import { PageHeader, DashboardSection, StatusBadge, useToast } from "@/components/admin";
+import { DashboardSection, StatusBadge, useToast } from "@/components/admin";
 import { Button } from "@/components/ui";
 import { slugify } from "@/lib/utils/slug";
 
@@ -111,11 +111,14 @@ export default function BriefsSection() {
 
   return (
     <div>
-      <PageHeader
-        as="h2"
-        title="Content Briefs"
-        description="Written by the synthesizer from crawler findings — thin pages and striking-distance keywords. The content writer then turns each draft into a blog post."
-      />
+      {/* The tab already says "Briefs" — repeating it as a heading only added a
+          third stacked title. The description stays because it explains where a
+          brief comes from and what happens to it next. */}
+      <p className="text-sm text-gray-60">
+        Written by the synthesizer from crawler findings — thin pages and striking-distance
+        keywords. The content writer then turns each draft into a blog post.
+      </p>
+
       <DashboardSection title="All briefs">
         {loading ? (
           <p className="text-sm text-gray-60">Loading…</p>

@@ -198,7 +198,13 @@ for (const file of METADATA_FILES) {
   if (lines.some((line) => /logo\.webp|creedava-logo-B/.test(line))) {
     record("R10 stale-logo", "error", file, 0, "metadata references a pre-redesign raster logo");
   }
-  if (file === "lib/firebase/seo.ts" && !lines.some((line) => /opengraph-image/.test(line))) {
+  if (
+    file === "lib/firebase/seo.ts" &&
+    !lines.some((line) => /opengraph-image|socialCardUrl/.test(line))
+  ) {
+    // The intent is "page metadata actually points at a generated share card".
+    // The card moved from the file-convention route to /share so that each page
+    // can have its own; either reference satisfies the intent.
     record("R11 og-image", "warning", file, 0, "no reference to the generated share card");
   }
 }

@@ -112,3 +112,45 @@ codebase forces a sitelink.
   time** (i.e. the deploy), which is honest but means every deploy reports all
   static pages as changed. Google tolerates this; a per-page content date would
   be more precise if recrawl budgeting ever becomes a problem.
+
+---
+
+## Social cards (`og:image`)
+
+Every marketing page shares a **1200×630** card, served from
+`app/share/[[...path]]/route.tsx`:
+
+| URL | Card |
+|---|---|
+| `/share` | default (also `/opengraph-image`, from the root layout) |
+| `/share/services`, `/share/pricing`, `/share/about`, `/share/news`, `/share/contact`, `/share/faq`, `/share/join` | that page's own headline |
+
+Copy lives in `lib/brand/social-cards.ts` (data only); the composition is drawn
+once in `lib/brand/social-card.tsx`. Adding a card is one entry in the registry —
+no new route file.
+
+### Why a route handler and not `opengraph-image` files
+
+Measured on this codebase, not assumed:
+
+1. **The file-convention URL is build-hashed.** `app/(marketing)/services/opengraph-image.tsx`
+   built to `/services/opengraph-image-jzy3lm`, so `getPageSEO()` cannot
+   reference it — `/services/opengraph-image` returned **404**.
+2. **An explicit `openGraph.images` wins over the file convention.** With that
+   file present, `/services` still emitted
+   `og:image = https://creedava.com/opengraph-image` (the root card), because
+   `getPageSEO()` sets `images` on every branch.
+
+So the card is served from a stable URL and `socialCardUrl(path)` chooses it per
+page. An admin-set `ogImage` in the `page-seo` document still overrides both.
+
+### Verifying
+
+```bash
+curl -s -o card.png -w '%{content_type} %{size_download}\n' https://creedava.com/share/services
+curl -s https://creedava.com/services | grep -o '<meta property="og:image[^>]*>'
+```
+
+`__tests__/lib/brand/social-cards.test.ts` guards the registry: every headline
+must stay under 75 characters (past that the 62px headline needs a third line and
+collides with the rule), and unregistered paths must resolve to `/share`.
