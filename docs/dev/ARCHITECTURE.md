@@ -181,6 +181,32 @@ Custom dictionary-based system (no external library):
 - **Type safety**: `Dictionary` type derived from English with `Widen<T>` utility for locale-safe string widening
 - **Content translation**: Separate from UI dictionaries — uses Gemini AI for user-generated content in forum/blog
 
+### Two locale sources, and which one wins
+
+| Consumer | Reads |
+|---|---|
+| Server components (`getDictionary()`) | the `creedava-lang` **cookie** |
+| Client components (`LanguageProvider`) | **localStorage**, which it then copies into the cookie |
+
+Both start from English: the provider initialises to `en` so the first client
+render matches the server, then swaps after the lazy `import("./es")` resolves.
+`<html lang>` is set by that provider, so `app/layout.tsx` hardcodes `lang="en"`
+for the pre-hydration document.
+
+Measured 2026-11-23 on `next start`, driving all four cookie/localStorage
+combinations on `/about` and comparing the server-rendered `<h1>` against the
+client-rendered footer heading: **all four reach a consistent state** —
+`es`/`es` and no-cookie/`es` end Spanish, `es`/none and `es`/`en` end English
+(the provider overwrites the cookie). No combination was observed leaving a
+Spanish body above an English footer.
+
+Still unverified: an owner-reported "About appears as ES in the sub links" could
+not be reproduced from a cold load on any marketing route — every English page
+renders zero Spanish labels, and the ES footer/nav is fully translated
+(`Empresa → Nosotros | Noticias y Blog | Precios | Contacto`). The only Spanish
+string in the English HTML is the language toggle's deliberate
+`aria-label="Cambiar a español"`.
+
 ---
 
 ## Design System
