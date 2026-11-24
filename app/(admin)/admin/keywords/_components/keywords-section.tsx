@@ -25,10 +25,8 @@ import type { SEOKeyword } from "@/lib/types/content";
 import type { KeywordGap } from "@/lib/types/seo-agent";
 import { parseAiJson } from "@/lib/utils/ai-json";
 import {
-  latestMetricsByKeyword,
   rankDayKey,
   rankHistoryId,
-  type RankHistoryRow,
 } from "@/lib/utils/rank-history";
 import { RankingsTable } from "./rankings-table";
 // The agent's `keyword-gaps` skill output. It renders as a sub-tab here because
@@ -92,13 +90,10 @@ export default function KeywordsSection() {
     orderByField: "priority",
     orderDirection: "desc",
   });
-  // Measurements. `rank-history` is the single source of truth for clicks,
-  // impressions, CTR and position — written by both the agent's `rank-history`
-  // skill and the Search Console button below, in the same shape.
-  const { data: rankRows, refetch: refetchRankRows } = useCollection<RankHistoryRow>("rank-history", {
-    orderByField: "dayKey",
-    orderDirection: "desc",
-  });
+  // Measurements live on the Rankings tab. This page used to subscribe to
+  // `rank-history` as well and render Clicks / Impr. / CTR / Pos. inline — the
+  // same four numbers, from the same collection, on two tabs. The Search Console
+  // button below still WRITES here; it just no longer reads back.
   const { toast } = useToast();
 
   const [search, setSearch] = useState("");
@@ -194,11 +189,9 @@ export default function KeywordsSection() {
         );
         synced++;
       }
-      if (synced > 0) refetchRankRows();
-
       toast(
         synced > 0
-          ? `Fetched ${measurements.length} rows · saved ${synced} measurements`
+          ? `Fetched ${measurements.length} rows · saved ${synced} measurements — see them on the Rankings tab`
           : `Fetched ${measurements.length} rows — none match a tracked keyword yet`,
         "success",
       );
@@ -373,8 +366,6 @@ export default function KeywordsSection() {
   }
 
   // Latest measured position/clicks per keyword, from the shared store.
-  const metrics = useMemo(() => latestMetricsByKeyword(rankRows), [rankRows]);
-
   const columns: Column<SEOKeyword>[] = [
     {
       key: "keyword",
@@ -400,52 +391,11 @@ export default function KeywordsSection() {
       header: "Suggested Title",
       render: (k) => <span className="text-sm text-gray-70 truncate max-w-xs block">{k.suggestedTitle}</span>,
     },
-    {
-      key: "clicks",
-      header: "Clicks",
-      sortable: true,
-      render: (k) => (
-        <span className="text-sm tabular-nums">
-          {metrics.get(k.keyword.toLowerCase())?.clicks ?? "—"}
-        </span>
-      ),
-    },
-    {
-      key: "impressions",
-      header: "Impr.",
-      sortable: true,
-      render: (k) => (
-        <span className="text-sm tabular-nums">
-          {metrics.get(k.keyword.toLowerCase())?.impressions ?? "—"}
-        </span>
-      ),
-    },
-    {
-      key: "ctr",
-      header: "CTR",
-      sortable: true,
-      render: (k) => {
-        const ctr = metrics.get(k.keyword.toLowerCase())?.ctr;
-        return (
-          <span className="text-sm tabular-nums">
-            {ctr != null ? `${(ctr * 100).toFixed(1)}%` : "—"}
-          </span>
-        );
-      },
-    },
-    {
-      key: "position",
-      header: "Pos.",
-      sortable: true,
-      render: (k) => {
-        const position = metrics.get(k.keyword.toLowerCase())?.position;
-        return (
-          <span className="text-sm tabular-nums">
-            {position != null ? position.toFixed(1) : "—"}
-          </span>
-        );
-      },
-    },
+    // No Clicks / Impr. / CTR / Pos. here on purpose. Those four are measured
+    // data from `rank-history`, and the Rankings tab already renders them with
+    // more context (7-day delta, landing page, sample count). Showing them in
+    // both places meant two tabs for one number, and this copy was usually
+    // empty anyway — it only fills for keywords that already have a snapshot.
   ];
 
   if (loading) {

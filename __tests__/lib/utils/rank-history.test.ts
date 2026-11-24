@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  latestMetricsByKeyword,
-  rankDayKey,
-  rankHistoryId,
-  type RankHistoryRow,
-} from "@/lib/utils/rank-history";
+import { rankDayKey, rankHistoryId } from "@/lib/utils/rank-history";
 
 /**
  * The id format is a contract with `functions/src/seo/rank-history.ts`. If these
@@ -44,43 +39,3 @@ describe("rankDayKey", () => {
   });
 });
 
-const row = (over: Partial<RankHistoryRow>): RankHistoryRow => ({
-  id: "r",
-  keyword: "keyword",
-  page: "/",
-  position: 10,
-  clicks: 0,
-  impressions: 0,
-  ctr: 0,
-  dayKey: "2026-11-01",
-  ...over,
-});
-
-describe("latestMetricsByKeyword", () => {
-  it("keeps the newest day per keyword", () => {
-    const metrics = latestMetricsByKeyword([
-      row({ keyword: "va", dayKey: "2026-11-01", position: 20, clicks: 1 }),
-      row({ keyword: "va", dayKey: "2026-11-10", position: 8, clicks: 9 }),
-    ]);
-
-    expect(metrics.get("va")).toMatchObject({ position: 8, clicks: 9, dayKey: "2026-11-10" });
-  });
-
-  it("prefers the better position when pages tie on day", () => {
-    const metrics = latestMetricsByKeyword([
-      row({ keyword: "va", page: "/blog", dayKey: "2026-11-10", position: 14 }),
-      row({ keyword: "va", page: "/services", dayKey: "2026-11-10", position: 3 }),
-    ]);
-
-    expect(metrics.get("va")?.position).toBe(3);
-  });
-
-  it("matches keywords case-insensitively", () => {
-    const metrics = latestMetricsByKeyword([row({ keyword: "Virtual Assistant" })]);
-    expect(metrics.get("virtual assistant")).toBeDefined();
-  });
-
-  it("returns an empty map for no rows", () => {
-    expect(latestMetricsByKeyword([]).size).toBe(0);
-  });
-});

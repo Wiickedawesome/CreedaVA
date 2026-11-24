@@ -64,7 +64,10 @@ export default function AgentPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Agent" />
+      <PageHeader
+        title="Agent"
+        description="Eight skills run on a weekly rotation. Runs is what fired, Briefs is what it drafted, Digest is the summary."
+      />
       <Suspense fallback={<SectionSkeleton label="Loading…" />}>
         <AgentDashboard />
       </Suspense>
