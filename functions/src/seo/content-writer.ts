@@ -117,7 +117,9 @@ export async function writeBlogDraftsFromBriefs(
         {
           ...blog,
           status: "draft",
-          author: "SEO Agent",
+          // Public byline. Mirrors BLOG_AUTHOR in lib/constants/blog.ts, which
+          // the app cannot import from here (separate tsconfig + build).
+          author: "CreedaVA Team",
           source: "seo-agent",
           briefId: brief.id,
           createdAt: new Date(),

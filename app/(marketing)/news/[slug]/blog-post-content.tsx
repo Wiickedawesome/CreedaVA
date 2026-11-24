@@ -15,6 +15,7 @@ import {
 import type { ReactNode } from "react";
 import { useState } from "react";
 import type { BlogReference, BlogPost } from "@/lib/types/content";
+import { blogAuthorName } from "@/lib/constants/blog";
 
 /**
  * Editorial article page.
@@ -404,6 +405,8 @@ export function BlogPostContent({
   const category = post.tags?.[0] ?? "General";
   const published = formatDate(post.publishedAt, locale);
   const minutes = readingMinutes(post);
+  // Always an attribution: a post with no stored author is still the team's.
+  const author = blogAuthorName(post.author);
   const canonicalUrl = `${SITE_ORIGIN}${NEWS_PATH}/${post.slug}`;
 
   return (
@@ -439,20 +442,18 @@ export function BlogPostContent({
               </p>
             ) : null}
 
-            {post.author ? (
-              <div className="mt-9 flex items-center gap-3 border-t border-mk-line pt-6">
-                <span
-                  aria-hidden="true"
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-mk-brand-deep font-display text-[0.8rem] font-extrabold tracking-[-0.02em] text-mk-accent"
-                >
-                  {initials(post.author)}
-                </span>
-                <p className="text-[0.85rem] text-mk-ink-mute">
-                  {t.news.byAuthor}{" "}
-                  <span className="font-semibold text-mk-ink">{post.author}</span>
-                </p>
-              </div>
-            ) : null}
+            <div className="mt-9 flex items-center gap-3 border-t border-mk-line pt-6">
+              <span
+                aria-hidden="true"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-mk-brand-deep font-display text-[0.8rem] font-extrabold tracking-[-0.02em] text-mk-accent"
+              >
+                {initials(author)}
+              </span>
+              <p className="text-[0.85rem] text-mk-ink-mute">
+                {t.news.byAuthor}{" "}
+                <span className="font-semibold text-mk-ink">{author}</span>
+              </p>
+            </div>
           </div>
 
           {post.featuredImage ? (
@@ -507,9 +508,7 @@ export function BlogPostContent({
               </ul>
             ) : null}
 
-            {post.author ? (
-              <AuthorCard name={post.author} published={published} />
-            ) : null}
+            <AuthorCard name={author} published={published} />
 
             <div className="mt-10 flex flex-col items-start justify-between gap-5 border-t border-mk-line pt-8 sm:flex-row sm:items-center">
               <BackLink label={t.news.backToNews} />
