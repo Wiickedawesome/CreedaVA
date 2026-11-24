@@ -8,7 +8,7 @@
  * stale kept surfacing the old logo.
  *
  * Run with:  node scripts/build-favicon.mjs
- * Output:    app/favicon.ico  (16 / 32 / 48 px, PNG-compressed entries)
+ * Output:    app/favicon.ico  (16 / 32 / 48 / 96 / 192 px, PNG-compressed entries)
  *            app/icon.svg     (the same tile, for engines that prefer SVG)
  *
  * The mark is drawn cream on a solid brand tile rather than green on
@@ -18,6 +18,15 @@
  * empty box in a tab. The tile also matches `app/apple-icon.tsx`, which has
  * always been brand green with a cream C, so the tab, the home screen and the
  * mark now agree.
+ *
+ * Why the 96/192 px entries exist: Google Search reads a site favicon from the
+ * `rel="icon"` link on the home page and **does not support SVG** — its
+ * documented formats are BMP, GIF, ICO, PNG, JPEG, PPM and TIFF — and it asks
+ * for something larger than 48x48. With a 48 px maximum, Next declared
+ * `sizes="48x48"` and Google had nothing it wanted to use, so search results
+ * kept the previous icon long after the site was updated. 192 px is the
+ * largest common browser/home-screen size; keep it first-class rather than
+ * relying on the SVG, which Google ignores.
  *
  * Uses the `sharp` already present for `next/image` — no new dependency. The
  * mark's gradient is flattened to one ink colour, because a gradient turns to
@@ -32,7 +41,7 @@ const SOURCE = path.join(ROOT, "public", "creedava-mark.svg");
 const ICO_OUT = path.join(ROOT, "app", "favicon.ico");
 const SVG_OUT = path.join(ROOT, "app", "icon.svg");
 
-const SIZES = [16, 32, 48];
+const SIZES = [16, 32, 48, 96, 192];
 /** Tile ground — `--mk-brand`. */
 const GROUND = "#005148";
 /** Mark ink — `--mk-paper`. */
@@ -45,7 +54,7 @@ const svg = await readFile(SOURCE, "utf8");
 // ramp. Swapping the reference for one hex is the whole flatten.
 const flatSvg = Buffer.from(svg.replace(/url\(#markGrad\)/g, INK));
 
-/** Two decimals is more than enough for a 48 px tile, and keeps the SVG readable. */
+/** Two decimals is more than enough for a 192 px tile, and keeps the SVG readable. */
 function round(value) {
   return Math.round(value * 100) / 100;
 }
