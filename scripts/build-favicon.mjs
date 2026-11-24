@@ -9,9 +9,18 @@
  *
  * Run with:  node scripts/build-favicon.mjs
  * Output:    app/favicon.ico  (16 / 32 / 48 px, PNG-compressed entries)
+ *            app/icon.svg     (the same tile, for engines that prefer SVG)
+ *
+ * The mark is drawn cream on a solid brand tile rather than green on
+ * transparency. A transparent icon is composited onto the browser's own
+ * background — white, black, or dark grey depending on theme — and a hairline
+ * green C disappears at 16 px; measured, the transparent version read as an
+ * empty box in a tab. The tile also matches `app/apple-icon.tsx`, which has
+ * always been brand green with a cream C, so the tab, the home screen and the
+ * mark now agree.
  *
  * Uses the `sharp` already present for `next/image` — no new dependency. The
- * mark's gradient is flattened to solid --mk-brand, because a gradient turns to
+ * mark's gradient is flattened to one ink colour, because a gradient turns to
  * mud at 16 px.
  */
 import { readFile, writeFile } from "node:fs/promises";
@@ -20,20 +29,69 @@ import sharp from "sharp";
 
 const ROOT = process.cwd();
 const SOURCE = path.join(ROOT, "public", "creedava-mark.svg");
-const OUT = path.join(ROOT, "app", "favicon.ico");
+const ICO_OUT = path.join(ROOT, "app", "favicon.ico");
+const SVG_OUT = path.join(ROOT, "app", "icon.svg");
 
 const SIZES = [16, 32, 48];
-/** Padding as a fraction of the icon, so the mark does not touch the edge. */
-const PADDING_RATIO = 0.08;
+/** Tile ground — `--mk-brand`. */
+const GROUND = "#005148";
+/** Mark ink — `--mk-paper`. */
+const INK = "#F7F7F2";
+/** Mark size as a fraction of the tile, so the C keeps a margin on every side. */
+const MARK_RATIO = 0.68;
 
 const svg = await readFile(SOURCE, "utf8");
 // `public/creedava-mark.svg` paints `fill="url(#markGrad)"` with a blue→teal
 // ramp. Swapping the reference for one hex is the whole flatten.
-const flatSvg = Buffer.from(svg.replace(/url\(#markGrad\)/g, "#005148"));
+const flatSvg = Buffer.from(svg.replace(/url\(#markGrad\)/g, INK));
 
-/** One square icon at `size` px, transparent beyond the mark. */
+/** Two decimals is more than enough for a 48 px tile, and keeps the SVG readable. */
+function round(value) {
+  return Math.round(value * 100) / 100;
+}
+
+/**
+ * The same tile as an SVG, so a browser that supports SVG icons shows the
+ * identical thing rather than falling back to the transparent source mark.
+ *
+ * The sources share a viewBox, so the square is the mark's taller side and the
+ * artwork is scaled about its own centre.
+ */
+function buildTileSvg() {
+  const [, x, y, width, height] = svg
+    .match(/viewBox="([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)"/)
+    .map(Number);
+  const side = Math.max(width, height);
+  const left = round(x - (side - width) / 2);
+  const top = round(y - (side - height) / 2);
+  const centreX = round(x + width / 2);
+  const centreY = round(y + height / 2);
+
+  // Everything from the artwork group down — the <defs> gradient is dropped
+  // because the fill is flattened above.
+  const artwork = svg
+    .slice(svg.indexOf("<g "), svg.lastIndexOf("</g>") + 4)
+    .replace(/fill="url\(#markGrad\)"/, `fill="${INK}"`)
+    .replace(
+      "<g ",
+      `<g transform="translate(${centreX} ${centreY}) scale(${MARK_RATIO}) ` +
+        `translate(${-centreX} ${-centreY})" `,
+    );
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${left} ${top} ${side} ${side}"
+     width="${side}" height="${side}" role="img" aria-labelledby="title desc">
+  <title id="title">CreedaVA</title>
+  <desc id="desc">The CreedaVA C mark, cream on the brand green tile.</desc>
+  <rect x="${left}" y="${top}" width="${side}" height="${side}" fill="${GROUND}"/>
+  ${artwork}
+</svg>
+`;
+}
+
+/** One square icon at `size` px: brand ground, cream mark, no transparency. */
 async function renderIcon(size) {
-  const inner = Math.round(size * (1 - PADDING_RATIO * 2));
+  const inner = Math.round(size * MARK_RATIO);
 
   const glyph = await sharp(flatSvg, { density: 600 })
     .resize(inner, inner, {
@@ -50,7 +108,7 @@ async function renderIcon(size) {
       width: size,
       height: size,
       channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
+      background: GROUND,
     },
   })
     .composite([{ input: glyph, left: offset, top: offset }])
@@ -88,7 +146,9 @@ for (const size of SIZES) {
   entries.push({ size, data: await renderIcon(size) });
 }
 
-await writeFile(OUT, buildIco(entries));
+await writeFile(ICO_OUT, buildIco(entries));
+await writeFile(SVG_OUT, buildTileSvg());
 
 const totalKb = entries.reduce((sum, e) => sum + e.data.length, 0) / 1024;
 console.log(`favicon.ico written — ${SIZES.join("/")} px, ${totalKb.toFixed(1)} kB`);
+console.log("icon.svg written — same tile, vector");
