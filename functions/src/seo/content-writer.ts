@@ -24,6 +24,8 @@ import { isApprovedThumbnail, pickFeaturedImage, thumbnailPromptList } from "./t
 interface BriefDoc {
   id: string;
   keyword?: string;
+  /** Written by the synthesizer: `expand-thin-content`, `competitor-gap`, … */
+  type?: string;
   status?: string;
   priority?: number;
   recommendedOutline?: string[];
@@ -31,7 +33,6 @@ interface BriefDoc {
   blogId?: string | null;
   draftAttempts?: number;
 }
-
 export interface ContentWriterResult {
   draftsWritten: number;
   skipped: number;
@@ -48,6 +49,48 @@ const MAX_BRIEFS_PER_RUN = 5;
  * consuming budget.
  */
 const MAX_DRAFT_ATTEMPTS = 3;
+
+/**
+ * Brief types whose work happens ON an existing page.
+ *
+ * Both are written by the synthesizer with `keyword` holding the page they
+ * describe — for thin content it is literally `pathKey`, i.e. "/contact".
+ * Passing one to `composeBlogDraft()` asks Gemini to write a new article about
+ * the topic "/contact", which is how five drafts duplicating existing pages
+ * were minted (measured 2026-11-24; one of them was published and was
+ * cannibalising /contact).
+ *
+ * These need a page edit, not a new article, so the writer skips them. The
+ * striking-distance briefs — which carry a real query — are unaffected.
+ */
+const PAGE_EXPANSION_BRIEF_TYPES = new Set(["expand-thin-content", "competitor-gap"]);
+
+/**
+ * True when a brief's `keyword` is really a route path.
+ *
+ * Belt and braces against the same class of bug: even if a future brief type
+ * is added without updating the set above, a path can never be a query, so it
+ * can never become an article topic.
+ */
+function looksLikeRoutePath(value: string): boolean {
+  return value.startsWith("/");
+}
+
+/**
+ * Can this brief become a blog draft?
+ *
+ * Pure, and exported, because the rule is the fix for a real defect: it decides
+ * whether the writer is allowed to create a document in `blog`. A brief fails
+ * when it already produced a draft, has no topic, has exhausted its retries, or
+ * describes work on an existing page rather than a new article.
+ */
+export function canComposeBlogDraft(brief: BriefDoc): boolean {
+  if (brief.blogId) return false;
+  if (!brief.keyword) return false;
+  if ((brief.draftAttempts ?? 0) >= MAX_DRAFT_ATTEMPTS) return false;
+  if (brief.type && PAGE_EXPANSION_BRIEF_TYPES.has(brief.type)) return false;
+  return !looksLikeRoutePath(brief.keyword);
+}
 
 export async function writeBlogDraftsFromBriefs(
   config: SeoAgentConfigDoc,
@@ -75,12 +118,7 @@ export async function writeBlogDraftsFromBriefs(
 
   const candidates: BriefDoc[] = snap.docs
     .map((d) => ({ id: d.id, ...(d.data() as Omit<BriefDoc, "id">) }))
-    .filter(
-      (b) =>
-        !b.blogId &&
-        b.keyword &&
-        (b.draftAttempts ?? 0) < MAX_DRAFT_ATTEMPTS,
-    )
+    .filter(canComposeBlogDraft)
     .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
     .slice(0, MAX_BRIEFS_PER_RUN);
 

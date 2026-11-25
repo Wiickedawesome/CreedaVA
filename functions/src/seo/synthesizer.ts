@@ -161,6 +161,11 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
       await db.collection("content-briefs").doc(briefId).set(
         {
           keyword: gap.keyword,
+          // Explicit, because the content writer decides what kind of work a
+          // brief needs from this field. An absent `type` used to mean "write a
+          // new article", which made the two page-expansion types look
+          // identical to it.
+          type: "striking-distance",
           status: "draft",
           priority: gap.priority ?? 50,
           currentPosition: gap.currentPosition,

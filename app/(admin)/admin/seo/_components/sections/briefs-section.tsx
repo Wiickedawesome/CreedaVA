@@ -9,6 +9,11 @@ import { slugify } from "@/lib/utils/slug";
 interface ContentBrief {
   id: string;
   keyword: string;
+  /**
+   * What kind of work the brief describes. Written by the synthesizer:
+   * `expand-thin-content`, `competitor-gap`, or `striking-distance`.
+   */
+  type?: string;
   status: BriefStatus;
   priority?: number;
   currentPosition?: number;
@@ -20,6 +25,21 @@ interface ContentBrief {
   blogId?: string | null;
   /** How many times `content-writer` failed to compose this brief. */
   draftAttempts?: number;
+}
+
+/**
+ * Briefs whose work happens on an existing page.
+ *
+ * For these, `keyword` holds the page (the synthesizer writes `pathKey`, so it
+ * is literally "/contact"), and the outline says "add ~N more words". A new
+ * blog post is the wrong output — the content writer used to produce one
+ * anyway, duplicating the page it was meant to improve. Keep in sync with
+ * `PAGE_EXPANSION_BRIEF_TYPES` in `functions/src/seo/content-writer.ts`.
+ */
+const PAGE_EXPANSION_TYPES = new Set(["expand-thin-content", "competitor-gap"]);
+
+function isPageExpansionBrief(brief: ContentBrief): boolean {
+  return Boolean(brief.type && PAGE_EXPANSION_TYPES.has(brief.type));
 }
 
 /**
@@ -115,8 +135,9 @@ export default function BriefsSection() {
           third stacked title. The description stays because it explains where a
           brief comes from and what happens to it next. */}
       <p className="text-sm text-gray-60">
-        Written by the synthesizer from crawler findings — thin pages and striking-distance
-        keywords. The content writer then turns each draft into a blog post.
+        Written by the synthesizer from crawler findings. Two kinds of work land here: pages that
+        need expanding, and striking-distance keywords worth a new article — only the second kind
+        becomes a blog draft.
       </p>
 
       <DashboardSection title="All briefs">
@@ -125,7 +146,9 @@ export default function BriefsSection() {
         ) : briefs.length === 0 ? (
           <p className="text-sm text-gray-60">
             No briefs yet. The synthesizer writes these every Sunday from thin-content audits and
-            striking-distance keywords, then the content writer drafts a blog post for each.
+            striking-distance keywords. Two kinds of work come out of it: briefs that expand an
+            existing page, and striking-distance keywords the content writer turns into a blog
+            draft.
           </p>
         ) : (
           <div className="space-y-3">
@@ -133,9 +156,26 @@ export default function BriefsSection() {
               <div key={b.id} className="bg-card rounded-lg border border-border p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h3 className="text-base font-semibold text-foreground">{b.keyword}</h3>
+                    {/* A page-expansion brief's `keyword` is a route path, so it
+                        is labelled as the page it is rather than dressed up as
+                        a search query it never was. */}
+                    <h3 className="text-base font-semibold text-foreground">
+                      {isPageExpansionBrief(b) ? (
+                        <>
+                          <span className="text-xs font-medium tracking-wide text-gray-50 mr-2 uppercase">
+                            Page
+                          </span>
+                          <code>{b.keyword}</code>
+                        </>
+                      ) : (
+                        b.keyword
+                      )}
+                    </h3>
                     <div className="text-xs text-gray-50">
-                      pos {b.currentPosition?.toFixed(1) ?? "—"} • {b.impressions ?? 0} impressions • priority {b.priority ?? 0}
+                      {isPageExpansionBrief(b)
+                        ? "expand this page"
+                        : `pos ${b.currentPosition?.toFixed(1) ?? "—"}`}{" "}
+                      • {b.impressions ?? 0} impressions • priority {b.priority ?? 0}
                     </div>
                   </div>
                   <StatusBadge
@@ -172,7 +212,7 @@ export default function BriefsSection() {
                       Start writing
                     </Button>
                   )}
-                  {b.status === "draft" && (
+                  {b.status === "draft" && !isPageExpansionBrief(b) && (
                     <Button
                       size="sm"
                       variant="outline"
