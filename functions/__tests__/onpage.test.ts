@@ -216,6 +216,43 @@ describe("parsedNothing", () => {
 });
 
 /**
+ * A leading UTF-8 BOM makes the HTML parser place `<head>`'s contents in the
+ * body, so every `head`-scoped selector returns nothing while the body parses
+ * fine. Measured 2026-11-25 against production: nine pages stored `title: null`,
+ * `metaDescriptionLength: 0`, `canonical: null` with correct word counts.
+ */
+describe("auditOne with a byte-order mark", () => {
+  // Built by hand, not with pageHtml(): that helper already supplies a title,
+  // and `readTitle` prefers the longest, which would mask the one under test.
+  const document = `<!doctype html><html><head>
+    <title>About | CreedaVA</title>
+    <meta name="description" content="Learn about CreedaVA, a Belize-based virtual assistant agency." />
+    <link rel="canonical" href="${URL_UNDER_TEST}" />
+    <meta property="og:title" content="CreedaVA — About" />
+  </head><body><main><h1>About</h1></main></body></html>`;
+
+  test("still reads the head tags", () => {
+    const audit = auditOne(URL_UNDER_TEST, 200, "\uFEFF" + document, 90);
+
+    expect(audit.title).toBe("About | CreedaVA");
+    expect(audit.metaDescription).toContain("Belize-based");
+    expect(audit.canonical).toBe(URL_UNDER_TEST);
+    expect(audit.ogTags.length).toBeGreaterThan(0);
+  });
+
+  test("reads head tags that the parser relocated into the body", () => {
+    // No BOM — the tags are simply outside <head>, which the fallback covers.
+    const relocated = document
+      .replace(/^<!doctype html><html><head>/, "<!doctype html><html><body>")
+      .replace("</head><body>", "");
+    const audit = auditOne(URL_UNDER_TEST, 200, relocated, 90);
+
+    expect(audit.title).toBe("About | CreedaVA");
+    expect(audit.canonical).toBe(URL_UNDER_TEST);
+  });
+});
+
+/**
  * The suggestion exists to clear `title-short`, so it must clear the same
  * 30-character floor. Measured before this fix: /faq offered "CreedaVA — FAQ"
  * (14 chars), so applying Fix wrote a title that immediately re-failed the

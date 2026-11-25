@@ -71,18 +71,53 @@ async function fetchWithTimeout(url: string): Promise<{ status: number; html: st
 }
 
 /**
+ * Strip a leading UTF-8 byte-order mark.
+ *
+ * A BOM before the doctype makes the HTML parser treat `<head>` as body
+ * content: measured, `$("head title")` returns 0 for a BOM-prefixed document
+ * while `$("title")` still finds it. Every head-scoped read therefore reported
+ * nothing — measured 2026-11-25, nine pages stored `title: null`,
+ * `metaDescriptionLength: 0` and `canonical: null` while the body text parsed
+ * correctly, because the deployed crawler received BOM-prefixed responses and
+ * a local fetch of the same URL did not.
+ */
+function stripBom(html: string): string {
+  return html.charCodeAt(0) === 0xfeff ? html.slice(1) : html;
+}
+
+/**
+ * Query `<head>` first, then the whole document.
+ *
+ * Head-scoped selectors keep SVG `<title>` elements and inline markup out of
+ * the results, which is why they are preferred. They also return nothing at all
+ * when the head did not survive parsing, so the fallback keeps a real value from
+ * reading as absent. `parsedNothing()` relies on this distinction: head-empty
+ * is a parser problem, document-empty is a fetch problem.
+ */
+function inHead($: cheerio.CheerioAPI, selector: string) {
+  const scoped = $(`head ${selector}`);
+  return scoped.length > 0 ? scoped : $(selector);
+}
+
+/**
  * Read the document title.
  *
- * Scoped to <head> on purpose: every SVG logo carries its own <title> for its
- * accessible name, so a document-wide `$("title")` picks up the brand label
- * instead of the page title. Should several titles still appear in <head>, the
+ * `<head>` first, then the whole document, because a head that did not survive
+ * parsing must not read as a missing title. Should several titles appear, the
  * longest non-empty one wins — short ones are fallbacks, not the page's title.
+ * Titles nested in an `<svg>` are dropped: every logo carries one for its
+ * accessible name, and they are never the page's title.
  */
 function readTitle($: cheerio.CheerioAPI): string | null {
-  const candidates = $("head title")
-    .toArray()
-    .map((el) => $(el).text().replace(/\s+/g, " ").trim())
-    .filter(Boolean);
+  const textOf = (selector: string) =>
+    $(selector)
+      .toArray()
+      .filter((el) => $(el).closest("svg").length === 0)
+      .map((el) => $(el).text().replace(/\s+/g, " ").trim())
+      .filter(Boolean);
+
+  const fromHead = textOf("head title");
+  const candidates = fromHead.length > 0 ? fromHead : textOf("title");
   if (candidates.length === 0) return null;
   return candidates.reduce((longest, next) => (next.length > longest.length ? next : longest));
 }
@@ -94,7 +129,7 @@ function readTitle($: cheerio.CheerioAPI): string | null {
  * conventionally authoritative, but an empty first tag is not a missing one.
  */
 function readMetaDescription($: cheerio.CheerioAPI): string | null {
-  const values = $("head meta[name='description']")
+  const values = inHead($, "meta[name='description']")
     .toArray()
     .map((el) => $(el).attr("content")?.trim() ?? "")
     .filter(Boolean);
@@ -120,21 +155,21 @@ function contentScope($: cheerio.CheerioAPI) {
 
 export function auditOne(url: string, status: number, html: string, ms: number): AuditOutput {
   const pathKey = urlToPathKey(url);
-  const $ = cheerio.load(html);
+  const $ = cheerio.load(stripBom(html));
   const title = readTitle($);
   const metaDescription = readMetaDescription($);
   const h1s = $("h1");
-  const canonical = $("head link[rel='canonical']").attr("href")?.trim() || null;
+  const canonical = inHead($, "link[rel='canonical']").attr("href")?.trim() || null;
 
   const ogTags: { property: string; content: string }[] = [];
-  $("head meta[property^='og:']").each((_, el) => {
+  inHead($, "meta[property^='og:']").each((_, el) => {
     const property = $(el).attr("property")?.trim();
     const content = $(el).attr("content")?.trim();
     if (property && content) ogTags.push({ property, content });
   });
 
   const hreflangTags: { hreflang: string; href: string }[] = [];
-  $("head link[rel='alternate'][hreflang]").each((_, el) => {
+  inHead($, "link[rel='alternate'][hreflang]").each((_, el) => {
     const hreflang = $(el).attr("hreflang")?.trim();
     const href = $(el).attr("href")?.trim();
     if (hreflang && href) hreflangTags.push({ hreflang, href });
