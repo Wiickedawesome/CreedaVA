@@ -34,6 +34,8 @@ export async function runCitationAudit(ctx: SkillContext): Promise<SkillResult> 
   let processed = 0;
   let written = 0;
   const collected: FindingInput[] = [];
+  /** Path keys that were audited. A page with no issues still belongs here. */
+  const inspected: string[] = [];
   let lastIndex = startOffset;
 
   for (let i = startOffset; i < sitemap.length; i++) {
@@ -141,6 +143,7 @@ export async function runCitationAudit(ctx: SkillContext): Promise<SkillResult> 
       );
       written++;
       const pathKey = urlToPathKey(entry.url);
+      inspected.push(pathKey);
       collected.push(
         ...issues.map((issue) => ({
           skill: "citation-audit",
@@ -161,7 +164,9 @@ export async function runCitationAudit(ctx: SkillContext): Promise<SkillResult> 
   // pages just audited no longer have.
   let findingsResolved = 0;
   try {
-    findingsResolved = (await syncFindings("citation-audit", collected)).resolved;
+    findingsResolved = (
+      await syncFindings("citation-audit", collected, { inspectedTargets: inspected })
+    ).resolved;
   } catch (err) {
     console.warn("[citation] finding sync failed:", err);
   }

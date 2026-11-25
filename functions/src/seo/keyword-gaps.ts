@@ -163,6 +163,8 @@ export async function runKeywordGaps(ctx: SkillContext): Promise<SkillResult> {
   const trackedList = [...tracked];
   let probedFromOffset = cursorOffset;
   let probed = 0;
+  /** Keywords actually probed. One with no competitor hit still counts. */
+  const probedKeywords: string[] = [];
 
   for (let i = cursorOffset; i < trackedList.length; i++) {
     if (!ctx.hasQuota()) break;
@@ -175,6 +177,7 @@ export async function runKeywordGaps(ctx: SkillContext): Promise<SkillResult> {
       break;
     }
     probed++;
+    probedKeywords.push(kw);
     const competitorHits = hits.filter((h) => {
       const domain = (h.displayLink || safeDomain(h.link)).toLowerCase();
       return (
@@ -229,8 +232,12 @@ export async function runKeywordGaps(ctx: SkillContext): Promise<SkillResult> {
   const reachedEnd = probedFromOffset >= trackedList.length;
   let findingsResolved = 0;
   try {
-    findingsResolved = (await syncFindings("keyword-gaps", collected, { resolve: reachedEnd }))
-      .resolved;
+    findingsResolved = (
+      await syncFindings("keyword-gaps", collected, {
+        resolve: reachedEnd,
+        inspectedTargets: [...striking.map((q) => q.query), ...probedKeywords],
+      })
+    ).resolved;
   } catch (err) {
     console.warn("[keyword-gaps] finding sync failed:", err);
   }

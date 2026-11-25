@@ -56,9 +56,23 @@ export interface FindingInput {
 export async function syncFindings(
   skill: string,
   inputs: FindingInput[],
-  options: { resolve?: boolean } = {},
+  options: {
+    resolve?: boolean;
+    /**
+     * Every target this run actually inspected.
+     *
+     * Must include targets that produced no findings. Deriving it from `inputs`
+     * alone left a fixed page's findings open forever: a page that has become
+     * completely clean contributes no input, so it never counts as inspected and
+     * its last finding is never resolved. Measured 2026-11-25 — `/` and
+     * `/news/creedava-right-choice` still reported `alt-missing` after the alt
+     * defect they described was fixed and no longer detected.
+     */
+    inspectedTargets?: string[];
+  } = {},
 ): Promise<{ written: number; resolved: number }> {
-  if (inputs.length === 0) return { written: 0, resolved: 0 };
+  const inspected = options.inspectedTargets ?? inputs.map((input) => input.target);
+  if (inputs.length === 0 && inspected.length === 0) return { written: 0, resolved: 0 };
 
   // Whole-skill read: a few hundred docs at most, and it avoids a composite
   // index on (skill, target) just to diff one run.
@@ -67,7 +81,7 @@ export async function syncFindings(
   existingSnap.forEach((doc) => existing.set(doc.id, doc.data()));
 
   const now = new Date().toISOString();
-  const inspectedTargets = new Set(inputs.map((input) => input.target));
+  const inspectedTargets = new Set(inspected);
   const liveIds = new Set(inputs.map((input) => findingId(input.scope, input.target, input.code)));
 
   const batch = db.batch();
@@ -119,6 +133,8 @@ export async function syncFindings(
     );
     resolved++;
   }
+
+  if (written === 0 && resolved === 0) return { written, resolved };
 
   await batch.commit();
   return { written, resolved };

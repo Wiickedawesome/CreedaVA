@@ -344,6 +344,8 @@ export async function runOnPageAudit(ctx: SkillContext): Promise<SkillResult> {
   let highSeverityCount = 0;
   const failed: string[] = [];
   const collected: FindingInput[] = [];
+  /** Path keys that produced a score. A clean page still belongs here. */
+  const inspected: string[] = [];
 
   for (let i = 0; i < slice.length; i++) {
     const entry = slice[i];
@@ -381,6 +383,7 @@ export async function runOnPageAudit(ctx: SkillContext): Promise<SkillResult> {
     scoreTotal += audit.score;
     issueTotal += audit.issues.length;
     highSeverityCount += audit.issues.filter((x) => x.severity === "high").length;
+    inspected.push(audit.pathKey);
 
     // The crawl never writes page-seo: every issue becomes a finding a human
     // can act on, so a bad rewrite is impossible and every change is decided.
@@ -389,10 +392,12 @@ export async function runOnPageAudit(ctx: SkillContext): Promise<SkillResult> {
 
   // One batched write for the whole slice: upserts what was just detected and
   // resolves codes that this run no longer sees on the pages it inspected.
+  // `inspected` is what makes that true for a page that is now clean — it
+  // contributes no findings, so it has to be named separately.
   let findingsWritten = 0;
   let findingsResolved = 0;
   try {
-    const synced = await syncFindings(SKILL, collected);
+    const synced = await syncFindings(SKILL, collected, { inspectedTargets: inspected });
     findingsWritten = synced.written;
     findingsResolved = synced.resolved;
   } catch (err) {
