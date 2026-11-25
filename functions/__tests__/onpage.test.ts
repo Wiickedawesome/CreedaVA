@@ -6,9 +6,12 @@
  */
 
 import { describe, expect, test } from "vitest";
-import { auditOne, parsedNothing } from "../src/seo/onpage";
+import { auditOne, desiredTitle, parsedNothing } from "../src/seo/onpage";
 
 const URL_UNDER_TEST = "https://creedava.com/services";
+
+/** Mirrors `TITLE_RANGE.min` in onpage.ts — a suggestion must clear it. */
+const TITLE_MIN = 30;
 
 function pageHtml(bodyHtml: string, headHtml = ""): string {
   return `<!doctype html><html><head>
@@ -209,5 +212,37 @@ describe("parsedNothing", () => {
   test("does not flag a page that only has a heading", () => {
     const audit = auditOne(URL_UNDER_TEST, 200, "<h1>Services</h1>", 80);
     expect(parsedNothing(audit)).toBe(false);
+  });
+});
+
+/**
+ * The suggestion exists to clear `title-short`, so it must clear the same
+ * 30-character floor. Measured before this fix: /faq offered "CreedaVA — FAQ"
+ * (14 chars), so applying Fix wrote a title that immediately re-failed the
+ * check and offered itself again.
+ */
+describe("desiredTitle", () => {
+  /** A parsed audit with only the fields `desiredTitle` reads. */
+  function auditWithTitle(title: string | null, pathKey = "/about") {
+    return { ...auditOne("https://creedava.com" + pathKey, 200, "<h1>x</h1>", 50), title, pathKey };
+  }
+
+  test("returns null when the current title already clears the minimum", () => {
+    expect(desiredTitle(auditWithTitle("About CreedaVA Virtual Assistants"))).toBeNull();
+  });
+
+  test("clears the minimum for a short path label", () => {
+    const suggestion = desiredTitle(auditWithTitle(null, "/faq"));
+    expect(suggestion).not.toBeNull();
+    expect(suggestion!.length).toBeGreaterThanOrEqual(TITLE_MIN);
+    expect(suggestion).toContain("FAQ");
+  });
+
+  test("keeps the homepage suggestion in range without the brand suffix", () => {
+    expect(desiredTitle(auditWithTitle(null, "/"))).toBe("CreedaVA — Virtual Assistant Services");
+  });
+
+  test("a missing title is suggested with the page name, not the raw path", () => {
+    expect(desiredTitle(auditWithTitle(null, "/privacy"))).toContain("Privacy Policy");
   });
 });

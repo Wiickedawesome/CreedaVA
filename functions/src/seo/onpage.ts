@@ -425,17 +425,27 @@ export function parsedNothing(audit: AuditOutput): boolean {
   return !audit.title && !audit.metaDescription && audit.h1Count === 0 && audit.bodyText.length === 0;
 }
 
+/** Brand line appended when the bare label is too short to rank. */
+const BRAND_SUFFIX = "Virtual Assistant Services";
+
 /**
  * The title this page should have, or null when the current one is already
  * long enough. Only a missing or short title has an obvious rewrite; a long one
  * needs a human to decide what to cut.
  */
-function desiredTitle(audit: AuditOutput): string | null {
+export function desiredTitle(audit: AuditOutput): string | null {
   const current = audit.title;
   const needsRewrite = !current || current.length < TITLE_RANGE.min;
   if (!needsRewrite) return null;
-  const label = audit.pathKey === "/" ? "Virtual Assistant Services" : prettyPath(audit.pathKey);
-  return `CreedaVA — ${label}`;
+
+  const label = audit.pathKey === "/" ? BRAND_SUFFIX : prettyPath(audit.pathKey);
+  const branded = `CreedaVA — ${label}`;
+
+  // The suggestion has to clear the minimum it exists to satisfy. A short path
+  // label yields a short title — "CreedaVA — FAQ" is 14 chars against a 30-char
+  // floor — so applying Fix wrote a title that immediately re-failed
+  // `title-short` and offered the same suggestion again.
+  return branded.length >= TITLE_RANGE.min ? branded : `${branded} | ${BRAND_SUFFIX}`;
 }
 
 /** Which `page-seo` field the Fix button would write, per issue code. */
