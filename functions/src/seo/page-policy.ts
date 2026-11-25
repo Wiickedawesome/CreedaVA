@@ -15,12 +15,16 @@
  *             discussion thread). Only defects apply: a missing title, a
  *             missing description, a broken canonical.
  *
+ * `article` is content that is specifically a published piece (a blog post),
+ * because some advice only makes sense there: Article schema on a pricing page
+ * describes the wrong thing, and the audit was asking for it.
+ *
  * Every page is still crawled, scored and inspected. Only the *advice* is
  * withheld, so a utility page that regresses into a true defect is still
  * reported.
  */
 
-export type PageKind = "content" | "utility";
+export type PageKind = "content" | "article" | "utility";
 
 /** Exact paths whose job is not to carry prose. */
 const UTILITY_PATHS = new Set([
@@ -36,9 +40,13 @@ const UTILITY_PATHS = new Set([
 /** Path prefixes that are user-generated or listing pages. */
 const UTILITY_PREFIXES = ["/forum/"];
 
+/** Path prefixes for published articles. */
+const ARTICLE_PREFIXES = ["/news/"];
+
 export function pageKind(pathKey: string): PageKind {
   if (UTILITY_PATHS.has(pathKey)) return "utility";
   if (UTILITY_PREFIXES.some((prefix) => pathKey.startsWith(prefix))) return "utility";
+  if (ARTICLE_PREFIXES.some((prefix) => pathKey.startsWith(prefix))) return "article";
   return "content";
 }
 
@@ -62,8 +70,13 @@ const ADVICE_CODES = new Set([
   "thin-paragraphs",
 ]);
 
+/** Advice that only applies to a published article. */
+const ARTICLE_ONLY_CODES = new Set(["article-schema-missing"]);
+
 /** Should `code` be reported for the page at `pathKey`? */
 export function appliesToPage(code: string, pathKey: string): boolean {
-  if (pageKind(pathKey) === "content") return true;
-  return !ADVICE_CODES.has(code);
+  const kind = pageKind(pathKey);
+  if (kind === "utility") return !ADVICE_CODES.has(code);
+  if (kind === "content") return !ARTICLE_ONLY_CODES.has(code);
+  return true;
 }

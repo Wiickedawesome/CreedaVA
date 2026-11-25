@@ -13,7 +13,11 @@ describe("pageKind", () => {
     expect(pageKind("/")).toBe("content");
     expect(pageKind("/about")).toBe("content");
     expect(pageKind("/services")).toBe("content");
-    expect(pageKind("/news/creedava-right-choice")).toBe("content");
+  });
+
+  test("treats a published post as an article", () => {
+    expect(pageKind("/news/creedava-right-choice")).toBe("article");
+    expect(pageKind("/news")).toBe("utility");
   });
 
   test("treats a form, index or legal page as utility", () => {
@@ -48,5 +52,12 @@ describe("appliesToPage", () => {
   test("reports everything on a content page", () => {
     expect(appliesToPage("thin-content", "/services")).toBe(true);
     expect(appliesToPage("no-qa-blocks", "/about")).toBe(true);
+  });
+
+  test("asks for Article schema only on an article", () => {
+    // A pricing page describing itself as an Article is wrong, so the check
+    // must not fire there — it did, on /, /about, /pricing and /services.
+    expect(appliesToPage("article-schema-missing", "/pricing")).toBe(false);
+    expect(appliesToPage("article-schema-missing", "/news/creedava-right-choice")).toBe(true);
   });
 });
