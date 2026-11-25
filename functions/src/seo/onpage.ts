@@ -137,20 +137,28 @@ function readMetaDescription($: cheerio.CheerioAPI): string | null {
 }
 
 /**
- * The element that actually holds the page's words.
+ * The elements that hold the page's words.
  *
  * Next.js streams suspended content AFTER the shell: `<main>` receives a loading
  * skeleton and the real markup is appended in `<div hidden id="S:n">` for the
  * client to swap in. A plain fetch never runs that swap, so scoping to `<main>`
- * read the skeleton — measured on /about, 0 paragraphs inside `<main>` and 38 in
- * the hidden div. Every page therefore reported `wordCount: 0`, which silently
- * disabled the `thin-content` check.
+ * alone read the skeleton — measured on /about, 0 paragraphs inside `<main>` and
+ * 38 in the hidden div. Every page therefore reported `wordCount: 0`, which
+ * silently disabled the `thin-content` check.
+ *
+ * Both sources are read, because a page can split its content between them:
+ * /forum keeps its guidance prose in `<main>` and only the thread list is
+ * streamed, so preferring just the streamed nodes reported 11 words for a page
+ * carrying several paragraphs. Skeleton placeholders contain no text, so
+ * combining the two cannot inflate the count.
  */
 function contentScope($: cheerio.CheerioAPI) {
-  const streamed = $("div[hidden][id^='S:']");
-  if (streamed.length > 0) return streamed;
-  const main = $("main");
-  return main.length > 0 ? main : $("body");
+  // Only the streamed nodes outside <main>, so nothing is counted twice.
+  const streamed = $("div[hidden][id^='S:']").filter(
+    (_, el) => $(el).closest("main").length === 0,
+  );
+  const scopes = $("main").add(streamed);
+  return scopes.length > 0 ? scopes : $("body");
 }
 
 export function auditOne(url: string, status: number, html: string, ms: number): AuditOutput {

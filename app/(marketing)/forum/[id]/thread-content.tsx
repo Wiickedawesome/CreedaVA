@@ -404,9 +404,13 @@ function ThreadContent({ id, initialThread }: { id: string; initialThread?: Thre
                   }}
                 />
               ) : (
-                <div className="text-sm text-mk-ink leading-relaxed whitespace-pre-wrap">
+                // A <p> rather than a <div>: this is prose, and a div is
+                // invisible to anything that reads paragraphs — measured
+                // 2026-11-25, the thread page reported 12 words while serving
+                // 500+ because the body sat in a bare div.
+                <p className="text-sm text-mk-ink leading-relaxed whitespace-pre-wrap">
                   {getTranslatedContent(thread, locale)}
-                </div>
+                </p>
               )}
               {thread.translations && thread.lang && thread.lang !== locale && thread.translations[locale] && (
                 <span className="inline-block mt-2 text-[10px] text-mk-ink-mute italic">
