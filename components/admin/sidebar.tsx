@@ -176,7 +176,7 @@ const analyticsItems: NavItem[] = [
     ),
   },
   {
-    label: "Page Metadata",
+    label: "Pages",
     href: "/admin/metadata",
     exact: true,
     icon: (

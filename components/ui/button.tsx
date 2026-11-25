@@ -23,10 +23,13 @@ const variantStyles: Record<ButtonVariant, string> = {
     "bg-error text-error-foreground hover:bg-error-hover active:bg-error-active disabled:bg-gray-40",
 };
 
+// Heights are fixed and the label is centred by flex, so vertical padding
+// would only compete with them: `py-2` (8px + 8px) plus a 20px line box is
+// 36px inside a 32px `h-8`, which squashed the text against the border.
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-4 py-2 text-sm h-8",
-  md: "px-6 py-2.5 text-base h-10",
-  lg: "px-8 py-3 text-lg h-12",
+  sm: "px-4 text-sm h-8",
+  md: "px-6 text-base h-10",
+  lg: "px-8 text-lg h-12",
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
