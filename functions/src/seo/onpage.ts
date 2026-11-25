@@ -207,8 +207,11 @@ export function auditOne(url: string, status: number, html: string, ms: number):
   const imgs = $("img");
   let imagesMissingAlt = 0;
   imgs.each((_, el) => {
-    const alt = $(el).attr("alt");
-    if (alt === undefined || alt.trim() === "") imagesMissingAlt++;
+    // `alt=""` is deliberate: it marks a decorative image so a screen reader
+    // skips it, which is the right call for a logo sitting beside the wordmark.
+    // Only an absent attribute is a defect. Counting empty values flagged the
+    // site logo on all 15 pages, every week, for markup that was already correct.
+    if ($(el).attr("alt") === undefined) imagesMissingAlt++;
   });
 
   // Strip non-visible nodes first: cheerio's .text() includes <script> contents,

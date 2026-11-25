@@ -24,6 +24,20 @@ import type { ForumThread, ForumReply } from "@/lib/types/content";
 import type { Timestamp } from "firebase/firestore";
 import { sanitizeHtml } from "@/lib/utils/sanitize-html";
 
+/**
+ * A thread as either side can supply it.
+ *
+ * The server has to hand one to the client so the page has a real `<h1>` and
+ * body text in its HTML — a client-only thread left the crawler looking at a
+ * loading skeleton (measured 2026-11-25: 0 words, `h1-missing`). Firestore
+ * `Timestamp` cannot cross the RSC boundary, so the server sends ISO strings and
+ * `toDate()` already accepts them.
+ */
+export type ThreadRow = Omit<ForumThread, "createdAt" | "updatedAt"> & {
+  createdAt?: Timestamp | string;
+  updatedAt?: Timestamp | string;
+};
+
 function toDate(val: unknown): Date {
   if (!val) return new Date();
   if (typeof val === "string") return new Date(val);
@@ -46,12 +60,14 @@ function timeAgo(
   return `${days}${labels.daysAgo}`;
 }
 
-function ThreadContent({ id }: { id: string }) {
+function ThreadContent({ id, initialThread }: { id: string; initialThread?: ThreadRow | null }) {
   const { t, locale } = useTranslation();
   const { user, profile } = useForumAuth();
-  const [thread, setThread] = useState<(ForumThread & { id: string }) | null>(null);
+  const [thread, setThread] = useState<ThreadRow | null>(initialThread ?? null);
   const [replies, setReplies] = useState<(ForumReply & { id: string })[]>([]);
-  const [loading, setLoading] = useState(true);
+  // A server-rendered thread is already paint-ready: showing the skeleton would
+  // replace real content with placeholders on first render.
+  const [loading, setLoading] = useState(!initialThread);
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [authModal, setAuthModal] = useState(false);
@@ -622,10 +638,16 @@ function ThreadContent({ id }: { id: string }) {
   );
 }
 
-export default function ForumThreadContent({ id }: { id: string }) {
+export default function ForumThreadContent({
+  id,
+  initialThread,
+}: {
+  id: string;
+  initialThread?: ThreadRow | null;
+}) {
   return (
     <ForumAuthProvider>
-      <ThreadContent id={id} />
+      <ThreadContent id={id} initialThread={initialThread} />
     </ForumAuthProvider>
   );
 }

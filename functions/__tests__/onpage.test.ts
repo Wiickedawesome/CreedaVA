@@ -253,6 +253,37 @@ describe("auditOne with a byte-order mark", () => {
 });
 
 /**
+ * `alt=""` marks a decorative image deliberately; only a missing attribute is a
+ * defect. Counting empty values flagged the site logo on all 15 pages every
+ * week, for markup that was already correct.
+ */
+describe("auditOne alt text", () => {
+  test("treats an explicitly empty alt as decorative, not missing", () => {
+    const audit = auditOne(
+      URL_UNDER_TEST,
+      200,
+      pageHtml(`<h1>Services</h1><img src="/creedava-mark.svg" alt="" />`),
+      100,
+    );
+
+    expect(audit.imagesMissingAlt).toBe(0);
+    expect(audit.issues.map((i) => i.code)).not.toContain("alt-missing");
+  });
+
+  test("counts an image with no alt attribute at all", () => {
+    const audit = auditOne(
+      URL_UNDER_TEST,
+      200,
+      pageHtml(`<h1>Services</h1><img src="/photo.jpg" />`),
+      100,
+    );
+
+    expect(audit.imagesMissingAlt).toBe(1);
+    expect(audit.issues.map((i) => i.code)).toContain("alt-missing");
+  });
+});
+
+/**
  * The suggestion exists to clear `title-short`, so it must clear the same
  * 30-character floor. Measured before this fix: /faq offered "CreedaVA — FAQ"
  * (14 chars), so applying Fix wrote a title that immediately re-failed the
