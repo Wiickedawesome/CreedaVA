@@ -38,7 +38,7 @@ describe("pageKind", () => {
 
 describe("appliesToPage", () => {
   test("withholds depth advice on a utility page", () => {
-    for (const code of ["thin-content", "no-qa-blocks", "faq-schema-missing"]) {
+    for (const code of ["thin-content", "thin-paragraphs", "title-long", "meta-long"]) {
       expect(appliesToPage(code, "/contact")).toBe(false);
     }
   });
@@ -51,7 +51,7 @@ describe("appliesToPage", () => {
 
   test("reports everything on a content page", () => {
     expect(appliesToPage("thin-content", "/services")).toBe(true);
-    expect(appliesToPage("no-qa-blocks", "/about")).toBe(true);
+    expect(appliesToPage("meta-short", "/about")).toBe(true);
   });
 
   test("asks for Article schema only on an article", () => {
@@ -59,5 +59,14 @@ describe("appliesToPage", () => {
     // must not fire there — it did, on /, /about, /pricing and /services.
     expect(appliesToPage("article-schema-missing", "/pricing")).toBe(false);
     expect(appliesToPage("article-schema-missing", "/news/creedava-right-choice")).toBe(true);
+  });
+
+  test("stays silent on a check the owner declined", () => {
+    // Reviewed and declined 2026-11-25: these are house-style choices, not
+    // defects, and they fired on nearly every page.
+    for (const code of ["faq-schema-missing", "no-qa-blocks", "no-source-citations"]) {
+      expect(appliesToPage(code, "/about")).toBe(false);
+      expect(appliesToPage(code, "/news/creedava-right-choice")).toBe(false);
+    }
   });
 });

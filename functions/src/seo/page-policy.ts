@@ -73,8 +73,26 @@ const ADVICE_CODES = new Set([
 /** Advice that only applies to a published article. */
 const ARTICLE_ONLY_CODES = new Set(["article-schema-missing"]);
 
+/**
+ * Checks the owner has reviewed and declined, site-wide.
+ *
+ * These are AI-citation readiness suggestions, not defects: they fire on nearly
+ * every site, and applying them is a content decision nobody has made. Reviewed
+ * and declined 2026-11-25 — the honest encoding of that is to stop reporting
+ * them, not to leave six "Ignore" clicks per run or silently score pages down
+ * for a house style nobody chose.
+ *
+ * Reversing a decision means deleting its line here.
+ */
+const DECLINED_CODES = new Set([
+  "faq-schema-missing",
+  "no-qa-blocks",
+  "no-source-citations",
+]);
+
 /** Should `code` be reported for the page at `pathKey`? */
 export function appliesToPage(code: string, pathKey: string): boolean {
+  if (DECLINED_CODES.has(code)) return false;
   const kind = pageKind(pathKey);
   if (kind === "utility") return !ADVICE_CODES.has(code);
   if (kind === "content") return !ARTICLE_ONLY_CODES.has(code);

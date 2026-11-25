@@ -107,19 +107,38 @@ async function getRelatedPosts(post: BlogPost & { id: string }): Promise<(BlogPo
   }
 }
 
+/**
+ * Cap a meta description at the length search results actually show.
+ *
+ * Google truncates around 160 characters, so anything longer is partly wasted —
+ * measured 2026-11-25, one post shipped 229. Cutting at a word boundary avoids
+ * the half-word Google would otherwise leave.
+ */
+const DESCRIPTION_MAX = 160;
+
+function clampDescription(text: string): string {
+  if (text.length <= DESCRIPTION_MAX) return text;
+  const cut = text.slice(0, DESCRIPTION_MAX);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut).replace(/[.,;:\s]+$/, "") + "…";
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
   const post = await getPost(slug);
   if (post) {
+    // No " — News" here: the root layout template already appends the brand, and
+    // two section suffixes pushed post titles past the 60-character point where
+    // results truncate one.
     const title = post.title;
-    const description = post.metaDescription || post.excerpt || "";
+    const description = clampDescription(post.metaDescription || post.excerpt || "");
     return {
-      title: `${title} — News`,
+      title,
       description,
       alternates: pageAlternates(`/news/${slug}`),
       openGraph: {
-        title: `${title} — News`,
+        title,
         description,
         type: "article",
         url: `https://creedava.com/news/${slug}`,
@@ -134,10 +153,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
   return {
-    title: `${title} — News`,
+    title,
     alternates: pageAlternates(`/news/${slug}`),
     openGraph: {
-      title: `${title} — News`,
+      title,
       type: "article",
       url: `https://creedava.com/news/${slug}`,
     },
