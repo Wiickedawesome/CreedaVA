@@ -529,12 +529,17 @@ export function ForumList({ initialThreads }: { initialThreads?: ForumThreadRow[
                     ))}
                   </div>
 
-                  <Link
-                    href={`/forum/${thread.id}`}
-                    className="text-base font-semibold text-mk-ink hover:text-mk-brand leading-snug line-clamp-2 transition-colors"
-                  >
-                    {getTranslatedTitle(thread, locale)}
-                  </Link>
+                  {/* A heading, not a bare link: a list of threads is a list of
+                      titled items, and the text needs to be findable by
+                      anything building an outline of the page. */}
+                  <h3 className="text-base font-semibold leading-snug">
+                    <Link
+                      href={`/forum/${thread.id}`}
+                      className="text-mk-ink hover:text-mk-brand line-clamp-2 transition-colors"
+                    >
+                      {getTranslatedTitle(thread, locale)}
+                    </Link>
+                  </h3>
 
                   <div className="flex items-center gap-2 mt-1.5 text-xs text-mk-ink-mute">
                     <span>
