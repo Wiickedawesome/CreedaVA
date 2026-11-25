@@ -101,10 +101,26 @@ function readMetaDescription($: cheerio.CheerioAPI): string | null {
   return values[0] ?? null;
 }
 
+/**
+ * The element that actually holds the page's words.
+ *
+ * Next.js streams suspended content AFTER the shell: `<main>` receives a loading
+ * skeleton and the real markup is appended in `<div hidden id="S:n">` for the
+ * client to swap in. A plain fetch never runs that swap, so scoping to `<main>`
+ * read the skeleton — measured on /about, 0 paragraphs inside `<main>` and 38 in
+ * the hidden div. Every page therefore reported `wordCount: 0`, which silently
+ * disabled the `thin-content` check.
+ */
+function contentScope($: cheerio.CheerioAPI) {
+  const streamed = $("div[hidden][id^='S:']");
+  if (streamed.length > 0) return streamed;
+  const main = $("main");
+  return main.length > 0 ? main : $("body");
+}
+
 export function auditOne(url: string, status: number, html: string, ms: number): AuditOutput {
   const pathKey = urlToPathKey(url);
   const $ = cheerio.load(html);
-
   const title = readTitle($);
   const metaDescription = readMetaDescription($);
   const h1s = $("h1");
@@ -168,7 +184,7 @@ export function auditOne(url: string, status: number, html: string, ms: number):
   // labels run together ("HomeServicesPricingAbout") and then get truncated into
   // a meta description that ships live. Joining block elements with ". " keeps a
   // sentence boundary between them.
-  const $scope = ($("main").length > 0 ? $("main") : $("body")).clone();
+  const $scope = contentScope($).clone();
   $scope.find("script, style, noscript, template, nav, footer, header, form, aside").remove();
 
   const blockText = $scope
@@ -303,6 +319,12 @@ export async function runOnPageAudit(ctx: SkillContext): Promise<SkillResult> {
       continue;
     }
 
+    if (parsedNothing(audit)) {
+      console.warn(`[onpage-audit] ${entry.url} parsed to an empty document — not scoring it`);
+      failed.push(entry.url);
+      continue;
+    }
+
     // Persist audit (one doc per URL, keyed for stable lookup).
     const auditId = `audit_${audit.pathKey.replace(/[^a-z0-9]/gi, "_") || "root"}`;
     try {
@@ -390,6 +412,20 @@ function buildFindings(audit: AuditOutput, auditId: string): FindingInput[] {
 }
 
 /**
+ * Did this fetch actually return a page?
+ *
+ * A 200 with an empty document is not a page that scored badly — it is a page
+ * that was never read. Scoring it manufactured six unactionable findings per
+ * URL (measured 2026-11-23: seven pages, all exactly 54, all "title-missing"
+ * and "meta-missing" while the live site served both). Skipping the page keeps
+ * its previous findings, because `syncFindings` only resolves findings whose
+ * target was inspected this run.
+ */
+export function parsedNothing(audit: AuditOutput): boolean {
+  return !audit.title && !audit.metaDescription && audit.h1Count === 0 && audit.bodyText.length === 0;
+}
+
+/**
  * The title this page should have, or null when the current one is already
  * long enough. Only a missing or short title has an obvious rewrite; a long one
  * needs a human to decide what to cut.
@@ -464,11 +500,26 @@ function isProse(fragment: string): boolean {
   return /[.!?]$/.test(trimmed);
 }
 
+/**
+ * Labels that are acronyms or multi-word names, so the generic title-case rule
+ * below does not mangle them. Without this the suggestion for /faq was
+ * "CreedaVA — Faq", which a human applied and the live site served.
+ */
+const PATH_LABELS: Record<string, string> = {
+  faq: "FAQ",
+  privacy: "Privacy Policy",
+  terms: "Terms of Service",
+};
+
 function prettyPath(p: string): string {
   return p
     .replace(/^\//, "")
     .split("/")
     .filter(Boolean)
-    .map((s) => s.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()))
+    .map(
+      (s) =>
+        PATH_LABELS[s.toLowerCase()] ??
+        s.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+    )
     .join(" — ");
 }

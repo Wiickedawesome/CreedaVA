@@ -6,7 +6,7 @@
  */
 
 import { describe, expect, test } from "vitest";
-import { auditOne } from "../src/seo/onpage";
+import { auditOne, parsedNothing } from "../src/seo/onpage";
 
 const URL_UNDER_TEST = "https://creedava.com/services";
 
@@ -131,5 +131,83 @@ describe("auditOne title extraction", () => {
     const audit = auditOne(URL_UNDER_TEST, 200, html, 100);
     expect(audit.metaDescription).toContain("A valid meta description");
     expect(audit.issues.map((i) => i.code)).not.toContain("meta-missing");
+  });
+});
+
+/**
+ * Regression: Next.js streams suspended content after the shell, so `<main>`
+ * holds a loading skeleton and the real markup arrives in `<div hidden id="S:n">`.
+ * A plain fetch never swaps it in, so scoping to `<main>` read the skeleton and
+ * every page reported `wordCount: 0`.
+ */
+describe("auditOne streamed content", () => {
+  const STREAMED_BODY = `<main><!--$?--><template id="B:0"></template>
+      <div role="status" aria-busy="true" aria-label="Loading page content">
+        <div class="animate-pulse"><div class="h-10 bg-mk-line"></div></div>
+      </div>
+    <!--/$--></main>
+    <div hidden id="S:0">
+      <h1>Services</h1>
+      <p>Dedicated bilingual assistants handle admin, support and reporting work.</p>
+    </div>`;
+
+  test("reads the suspended markup instead of the skeleton", () => {
+    const audit = auditOne(URL_UNDER_TEST, 200, pageHtml(STREAMED_BODY), 100);
+
+    expect(audit.bodyText).toContain("Dedicated bilingual assistants");
+    expect(audit.wordCount).toBeGreaterThan(0);
+    expect(audit.h1Count).toBe(1);
+  });
+
+  test("still reads <main> when nothing was suspended", () => {
+    const audit = auditOne(
+      URL_UNDER_TEST,
+      200,
+      pageHtml(`<main><h1>Services</h1><p>Plain server-rendered paragraph content.</p></main>`),
+      100,
+    );
+
+    expect(audit.bodyText).toContain("Plain server-rendered paragraph");
+  });
+
+  test("keeps a shell with no real content reportable as thin", () => {
+    const audit = auditOne(
+      URL_UNDER_TEST,
+      200,
+      pageHtml(`<main><div role="status" aria-busy="true"></div></main>`),
+      100,
+    );
+
+    expect(audit.wordCount).toBe(0);
+  });
+});
+
+/**
+ * A 200 with nothing in it means the page was never read. Scoring it invented
+ * six findings per URL — measured 2026-11-23, seven pages all landing on
+ * exactly 54 with "title-missing" and "meta-missing" while the live site served
+ * both.
+ */
+describe("parsedNothing", () => {
+  const EMPTY_HTML = "<!doctype html><html><head></head><body></body></html>";
+
+  test("flags a document that parsed to nothing", () => {
+    const audit = auditOne(URL_UNDER_TEST, 200, EMPTY_HTML, 80);
+    expect(parsedNothing(audit)).toBe(true);
+  });
+
+  test("does not flag a page that only has a title", () => {
+    const audit = auditOne(
+      URL_UNDER_TEST,
+      200,
+      `<!doctype html><html><head><title>Services | CreedaVA</title></head><body></body></html>`,
+      80,
+    );
+    expect(parsedNothing(audit)).toBe(false);
+  });
+
+  test("does not flag a page that only has a heading", () => {
+    const audit = auditOne(URL_UNDER_TEST, 200, "<h1>Services</h1>", 80);
+    expect(parsedNothing(audit)).toBe(false);
   });
 });
