@@ -11,6 +11,7 @@
 import * as cheerio from "cheerio";
 import { db } from "../admin";
 import { syncFindings, type FindingInput } from "./findings";
+import { appliesToPage } from "./page-policy";
 import { loadSitemap, urlToPathKey } from "./sitemap";
 import { searchWithQuota } from "./search";
 import type { SkillContext, SkillResult } from "./types";
@@ -143,17 +144,21 @@ export async function runCitationAudit(ctx: SkillContext): Promise<SkillResult> 
       );
       written++;
       const pathKey = urlToPathKey(entry.url);
+      // Counted as inspected even when it produces no findings, so a utility
+      // page's old advice findings get resolved rather than lingering open.
       inspected.push(pathKey);
       collected.push(
-        ...issues.map((issue) => ({
-          skill: "citation-audit",
-          scope: "page" as const,
-          target: pathKey,
-          code: issue.code,
-          severity: issue.severity,
-          message: issue.message,
-          evidence: `citation-audits/${id}`,
-        })),
+        ...issues
+          .filter((issue) => appliesToPage(issue.code, pathKey))
+          .map((issue) => ({
+            skill: "citation-audit",
+            scope: "page" as const,
+            target: pathKey,
+            code: issue.code,
+            severity: issue.severity,
+            message: issue.message,
+            evidence: `citation-audits/${id}`,
+          })),
       );
     } catch (err) {
       console.warn("[citation] persist failed:", err);

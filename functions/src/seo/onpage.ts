@@ -12,10 +12,12 @@
 import * as cheerio from "cheerio";
 import { db } from "../admin";
 import { syncFindings, type FindingInput, type FindingSuggestion } from "./findings";
+import { appliesToPage } from "./page-policy";
 import { loadSitemap, urlToPathKey } from "./sitemap";
 import type { SkillContext, SkillResult } from "./types";
 
 const SKILL = "onpage-audit";
+/** Target length for a *suggested* title. Not a rule applied to existing ones. */
 const TITLE_RANGE = { min: 30, max: 60 } as const;
 const DESCRIPTION_RANGE = { min: 70, max: 170 } as const;
 
@@ -246,70 +248,90 @@ export function auditOne(url: string, status: number, html: string, ms: number):
   const issues: AuditOutput["issues"] = [];
   let score = 100;
 
+  /**
+   * Record an issue and its penalty, unless the check does not apply here.
+   *
+   * Every push goes through this so the policy and the score cannot disagree:
+   * an issue that is withheld must not still cost the page points.
+   */
+  const flag = (issue: AuditOutput["issues"][number], penalty: number) => {
+    if (!appliesToPage(issue.code, pathKey)) return;
+    issues.push(issue);
+    score -= penalty;
+  };
+
   if (status >= 400) {
-    issues.push({ code: "http-error", severity: "high", message: `HTTP ${status}` });
-    score -= 40;
+    flag({ code: "http-error", severity: "high", message: `HTTP ${status}` }, 40);
   }
   if (!title) {
-    issues.push({ code: "title-missing", severity: "high", message: "Missing <title>", autoFixable: true });
-    score -= 20;
-  } else if (title.length < TITLE_RANGE.min) {
-    issues.push({ code: "title-short", severity: "medium", message: `Title only ${title.length} chars`, fix: "Aim for 30–60 chars.", autoFixable: true });
-    score -= 6;
+    flag({ code: "title-missing", severity: "high", message: "Missing <title>", autoFixable: true }, 20);
   } else if (title.length > TITLE_RANGE.max + 10) {
-    issues.push({ code: "title-long", severity: "low", message: `Title is ${title.length} chars`, fix: "Aim for 30–60 chars." });
-    score -= 3;
+    // No `title-short` check: there is no minimum title length, and a concise
+    // "About | CreedaVA" is a perfectly good title. Measured 2026-11-25, that
+    // rule fired on ten pages over wording the owner had already approved.
+    flag(
+      { code: "title-long", severity: "low", message: `Title is ${title.length} chars`, fix: "Aim for 30–60 chars." },
+      3,
+    );
   }
   if (!metaDescription) {
-    issues.push({ code: "meta-missing", severity: "high", message: "Missing meta description", autoFixable: true });
-    score -= 15;
+    flag({ code: "meta-missing", severity: "high", message: "Missing meta description", autoFixable: true }, 15);
   } else if (metaDescription.length < DESCRIPTION_RANGE.min) {
-    issues.push({ code: "meta-short", severity: "medium", message: `Meta description only ${metaDescription.length} chars`, autoFixable: true });
-    score -= 5;
+    flag(
+      { code: "meta-short", severity: "medium", message: `Meta description only ${metaDescription.length} chars`, autoFixable: true },
+      5,
+    );
   } else if (metaDescription.length > DESCRIPTION_RANGE.max) {
-    issues.push({ code: "meta-long", severity: "low", message: `Meta description is ${metaDescription.length} chars` });
-    score -= 2;
+    flag(
+      { code: "meta-long", severity: "low", message: `Meta description is ${metaDescription.length} chars` },
+      2,
+    );
   }
   if (h1s.length === 0) {
-    issues.push({ code: "h1-missing", severity: "high", message: "Missing <h1>" });
-    score -= 10;
+    flag({ code: "h1-missing", severity: "high", message: "Missing <h1>" }, 10);
   } else if (h1s.length > 1) {
-    issues.push({ code: "h1-multiple", severity: "low", message: `${h1s.length} <h1> tags found` });
-    score -= 3;
+    flag({ code: "h1-multiple", severity: "low", message: `${h1s.length} <h1> tags found` }, 3);
   }
   if (!canonical) {
-    issues.push({ code: "canonical-missing", severity: "low", message: "Missing canonical link" });
-    score -= 3;
+    flag({ code: "canonical-missing", severity: "low", message: "Missing canonical link" }, 3);
   }
   if (ogTags.length === 0) {
-    issues.push({ code: "og-missing", severity: "low", message: "Missing Open Graph tags", autoFixable: true });
-    score -= 4;
+    flag({ code: "og-missing", severity: "low", message: "Missing Open Graph tags", autoFixable: true }, 4);
   }
   if (jsonLdTypes.length === 0) {
-    issues.push({ code: "schema-missing", severity: "low", message: "No JSON-LD structured data", fix: "Add Article/FAQ/Breadcrumb schema." });
-    score -= 4;
+    flag(
+      { code: "schema-missing", severity: "low", message: "No JSON-LD structured data", fix: "Add Article/FAQ/Breadcrumb schema." },
+      4,
+    );
   }
   // Bilingual site serves ?lang=es — hreflang tags should be present
   if (hreflangTags.length === 0) {
-    issues.push({ code: "hreflang-missing", severity: "low", message: "No hreflang tags — risk of duplicate content for bilingual pages", fix: "Add hreflang alternate links for en + es." });
-    score -= 3;
+    flag(
+      {
+        code: "hreflang-missing",
+        severity: "low",
+        message: "No hreflang tags — risk of duplicate content for bilingual pages",
+        fix: "Add hreflang alternate links for en + es.",
+      },
+      3,
+    );
   }
   if (imgs.length > 0 && imagesMissingAlt > 0) {
-    issues.push({
-      code: "alt-missing",
-      severity: "medium",
-      message: `${imagesMissingAlt}/${imgs.length} images missing alt text`,
-      autoFixable: false,
-    });
-    score -= Math.min(8, imagesMissingAlt);
+    flag(
+      {
+        code: "alt-missing",
+        severity: "medium",
+        message: `${imagesMissingAlt}/${imgs.length} images missing alt text`,
+        autoFixable: false,
+      },
+      Math.min(8, imagesMissingAlt),
+    );
   }
   if (wordCount > 0 && wordCount < 250) {
-    issues.push({ code: "thin-content", severity: "medium", message: `Only ${wordCount} words` });
-    score -= 6;
+    flag({ code: "thin-content", severity: "medium", message: `Only ${wordCount} words` }, 6);
   }
   if (ms > 4000) {
-    issues.push({ code: "slow-response", severity: "low", message: `${ms}ms response time` });
-    score -= 3;
+    flag({ code: "slow-response", severity: "low", message: `${ms}ms response time` }, 3);
   }
 
   return {
@@ -480,29 +502,26 @@ export function parsedNothing(audit: AuditOutput): boolean {
 const BRAND_SUFFIX = "Virtual Assistant Services";
 
 /**
- * The title this page should have, or null when the current one is already
- * long enough. Only a missing or short title has an obvious rewrite; a long one
- * needs a human to decide what to cut.
+ * The title this page should have, or null when it has one.
+ *
+ * Only a *missing* title gets a suggestion. A short but real title is the
+ * owner's wording — /about ships "About | CreedaVA", which is concise rather
+ * than wrong — so the audit does not rewrite it.
  */
 export function desiredTitle(audit: AuditOutput): string | null {
-  const current = audit.title;
-  const needsRewrite = !current || current.length < TITLE_RANGE.min;
-  if (!needsRewrite) return null;
+  if (audit.title) return null;
 
   const label = audit.pathKey === "/" ? BRAND_SUFFIX : prettyPath(audit.pathKey);
   const branded = `CreedaVA — ${label}`;
 
-  // The suggestion has to clear the minimum it exists to satisfy. A short path
-  // label yields a short title — "CreedaVA — FAQ" is 14 chars against a 30-char
-  // floor — so applying Fix wrote a title that immediately re-failed
-  // `title-short` and offered the same suggestion again.
+  // Pad a short path label so the suggestion is usable as-is. "CreedaVA — FAQ"
+  // is 14 characters, which reads as a stub in a search result.
   return branded.length >= TITLE_RANGE.min ? branded : `${branded} | ${BRAND_SUFFIX}`;
 }
 
 /** Which `page-seo` field the Fix button would write, per issue code. */
 const SUGGESTION_FIELD: Record<string, "title" | "description"> = {
   "title-missing": "title",
-  "title-short": "title",
   "meta-missing": "description",
   "meta-short": "description",
 };

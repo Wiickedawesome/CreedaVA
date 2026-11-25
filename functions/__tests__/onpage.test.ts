@@ -253,6 +253,26 @@ describe("auditOne with a byte-order mark", () => {
 });
 
 /**
+ * A concise title is not a defect: there is no minimum title length, and
+ * "About | CreedaVA" is the owner's approved wording. The old rule fired on ten
+ * such pages and offered a replacement that was shorter than the original.
+ */
+describe("auditOne title length", () => {
+  test("does not report a concise title as short", () => {
+    const audit = auditOne(
+      URL_UNDER_TEST,
+      200,
+      `<html><head><title>About | CreedaVA</title>
+        <meta name="description" content="Learn about CreedaVA, a Belize-based virtual assistant agency serving businesses worldwide." />
+      </head><body><h1>About</h1></body></html>`,
+      90,
+    );
+
+    expect(audit.issues.map((i) => i.code)).not.toContain("title-short");
+  });
+});
+
+/**
  * `alt=""` marks a decorative image deliberately; only a missing attribute is a
  * defect. Counting empty values flagged the site logo on all 15 pages every
  * week, for markup that was already correct.

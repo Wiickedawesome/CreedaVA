@@ -12,6 +12,7 @@ import { Button } from "@/components/marketing/primitives";
 import { Modal } from "@/components/marketing/modal";
 import { translateThreadInBackground, getTranslatedTitle, ensureThreadTranslated } from "@/lib/firebase/translate";
 import type { ForumThread } from "@/lib/types/content";
+import type { ForumThreadRow } from "@/lib/types/forum";
 import type { Timestamp } from "firebase/firestore";
 
 type SortMode = "new" | "top" | "old";
@@ -39,11 +40,13 @@ function toDate(val: unknown): Date {
   return new Date();
 }
 
-export function ForumList() {
+export function ForumList({ initialThreads }: { initialThreads?: ForumThreadRow[] }) {
   const { t, locale } = useTranslation();
   const { user } = useForumAuth();
-  const [threads, setThreads] = useState<(ForumThread & { id: string })[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [threads, setThreads] = useState<ForumThreadRow[]>(initialThreads ?? []);
+  // Server-provided threads are already paint-ready; a skeleton would replace
+  // real content with placeholders on the first render.
+  const [loading, setLoading] = useState(!initialThreads || initialThreads.length === 0);
   const [sort, setSort] = useState<SortMode>("new");
   const [createOpen, setCreateOpen] = useState(false);
   const [authModal, setAuthModal] = useState(false);
@@ -104,7 +107,7 @@ export function ForumList() {
 
     translatingRef.current = true;
     (async () => {
-      const updated: (ForumThread & { id: string })[] = [];
+      const updated: ForumThreadRow[] = [];
       for (const th of untranslated) {
         const result = await ensureThreadTranslated(th, locale);
         updated.push(result);

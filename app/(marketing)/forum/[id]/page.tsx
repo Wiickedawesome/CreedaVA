@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import { cache } from "react";
 import { adminDb, canUseAdminDb } from "@/lib/firebase-admin";
 import { pageAlternates } from "@/lib/firebase/seo";
-import type { ForumThread } from "@/lib/types/content";
-import ForumThreadContent, { type ThreadRow } from "./thread-content";
+import { loadForumThread } from "@/lib/firebase/forum-server";
+import ForumThreadContent from "./thread-content";
+
+/**
+ * The page and its metadata need the same thread, and run in one request.
+ * Without this, every thread render costs two Firestore reads.
+ */
+const loadThread = cache(loadForumThread);
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -50,35 +56,3 @@ export default async function ForumThreadPage({ params }: Props) {
   const { id } = await params;
   return <ForumThreadContent id={id} initialThread={await loadThread(id)} />;
 }
-
-/**
- * Read the thread here, not only in the client component.
- *
- * The client fetched it after hydration, so the served HTML contained a loading
- * skeleton — no `<h1>` and no body text. Measured 2026-11-25: the crawler scored
- * the page 86 with `h1-missing` (high) and zero words. Rendering it on the
- * server puts the real title and content in the document; the client still
- * loads replies itself.
- *
- * Wrapped in `cache()` because the metadata function and the page render both
- * need it, and they run in the same request.
- */
-const loadThread = cache(async (id: string): Promise<ThreadRow | null> => {
-  if (!canUseAdminDb) return null;
-
-  try {
-    const doc = await adminDb.collection("forum").doc(id).get();
-    const data = doc.data();
-    if (!data) return null;
-
-    return {
-      ...(data as Omit<ForumThread, "createdAt" | "updatedAt">),
-      id: doc.id,
-      // Timestamps cannot cross the RSC boundary; `toDate()` reads ISO strings.
-      createdAt: data.createdAt?.toDate?.().toISOString(),
-      updatedAt: data.updatedAt?.toDate?.().toISOString(),
-    };
-  } catch {
-    return null;
-  }
-});

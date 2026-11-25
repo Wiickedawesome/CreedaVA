@@ -1,4 +1,5 @@
 import { getPageSEO } from "@/lib/firebase/seo";
+import { loadForumThreads } from "@/lib/firebase/forum-server";
 import { ForumContent } from "./forum-content";
 import { AICitationReadiness } from "@/components/seo/ai-citation-readiness";
 
@@ -54,14 +55,19 @@ export async function generateMetadata() {
   });
 }
 
-export default function ForumPage() {
+export default async function ForumPage() {
+  // Read here, not only in the client: a client-only list left the served HTML
+  // empty, so the page measured 11 words while it carried every thread plus the
+  // guidance below. The client still refetches on mount to stay current.
+  const initialThreads = await loadForumThreads();
+
   return (
     <>
       {/* The visible header bar renders "Forum" as an h2, so this sr-only h1 is
           the page's only level-1 heading. It carries the descriptive title that
           the compact bar text cannot. */}
       <h1 className="sr-only">CreedaVA Community Forum</h1>
-      <ForumContent />
+      <ForumContent initialThreads={initialThreads} />
       <AICitationReadiness
         path="/forum"
         title="CreedaVA Community Forum Guidance"

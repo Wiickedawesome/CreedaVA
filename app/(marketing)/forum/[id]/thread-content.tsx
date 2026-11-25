@@ -22,21 +22,8 @@ import {
 } from "@/lib/firebase/translate";
 import type { ForumThread, ForumReply } from "@/lib/types/content";
 import type { Timestamp } from "firebase/firestore";
+import type { ForumThreadRow } from "@/lib/types/forum";
 import { sanitizeHtml } from "@/lib/utils/sanitize-html";
-
-/**
- * A thread as either side can supply it.
- *
- * The server has to hand one to the client so the page has a real `<h1>` and
- * body text in its HTML — a client-only thread left the crawler looking at a
- * loading skeleton (measured 2026-11-25: 0 words, `h1-missing`). Firestore
- * `Timestamp` cannot cross the RSC boundary, so the server sends ISO strings and
- * `toDate()` already accepts them.
- */
-export type ThreadRow = Omit<ForumThread, "createdAt" | "updatedAt"> & {
-  createdAt?: Timestamp | string;
-  updatedAt?: Timestamp | string;
-};
 
 function toDate(val: unknown): Date {
   if (!val) return new Date();
@@ -60,10 +47,10 @@ function timeAgo(
   return `${days}${labels.daysAgo}`;
 }
 
-function ThreadContent({ id, initialThread }: { id: string; initialThread?: ThreadRow | null }) {
+function ThreadContent({ id, initialThread }: { id: string; initialThread?: ForumThreadRow | null }) {
   const { t, locale } = useTranslation();
   const { user, profile } = useForumAuth();
-  const [thread, setThread] = useState<ThreadRow | null>(initialThread ?? null);
+  const [thread, setThread] = useState<ForumThreadRow | null>(initialThread ?? null);
   const [replies, setReplies] = useState<(ForumReply & { id: string })[]>([]);
   // A server-rendered thread is already paint-ready: showing the skeleton would
   // replace real content with placeholders on first render.
@@ -647,7 +634,7 @@ export default function ForumThreadContent({
   initialThread,
 }: {
   id: string;
-  initialThread?: ThreadRow | null;
+  initialThread?: ForumThreadRow | null;
 }) {
   return (
     <ForumAuthProvider>

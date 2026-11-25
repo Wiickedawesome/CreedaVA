@@ -1,19 +1,11 @@
 "use client";
 
 import { ForumList } from "./forum-list";
+import { ForumClientProvider } from "./forum-client-provider";
 import { useForumAuth } from "./forum-auth-context";
 import { useTranslation } from "@/lib/i18n";
 import { useState } from "react";
-import dynamic from "next/dynamic";
-
-const ForumClientProvider = dynamic(
-  () =>
-    import("./forum-client-provider").then((mod) => mod.ForumClientProvider),
-  {
-    ssr: false,
-    loading: () => <div className="min-h-[60vh]" />,
-  }
-);
+import type { ForumThreadRow } from "@/lib/types/forum";
 
 function ForumHeader() {
   const { t } = useTranslation();
@@ -65,20 +57,25 @@ function ForumHeader() {
   );
 }
 
-function ForumBody() {
+function ForumBody({ initialThreads }: { initialThreads?: ForumThreadRow[] }) {
   return (
     <div className="px-6 lg:px-10 py-6">
-      <ForumList />
+      <ForumList initialThreads={initialThreads} />
     </div>
   );
 }
 
-export function ForumContent() {
+/**
+ * The thread list is read on the server and handed down, so the page ships real
+ * content instead of an empty shell. The client still refetches on mount, which
+ * keeps the list fresh and preserves the offline/failed-request fallback.
+ */
+export function ForumContent({ initialThreads }: { initialThreads?: ForumThreadRow[] }) {
   return (
     <ForumClientProvider>
       <div className="min-h-[60vh] bg-mk-paper">
         <ForumHeader />
-        <ForumBody />
+        <ForumBody initialThreads={initialThreads} />
       </div>
     </ForumClientProvider>
   );
