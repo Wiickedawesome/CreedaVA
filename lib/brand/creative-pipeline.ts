@@ -18,6 +18,7 @@ import {
   FORMATS,
   buildPhotoPrompt,
   buildPlanPrompt,
+  chooseStyle,
   creativeFilename,
   parsePlan,
   type CreativeFormat,
@@ -40,6 +41,14 @@ function isMissingModel(err: unknown): boolean {
   return /not found|unsupported model|does not exist|NOT_FOUND|404/i.test(text);
 }
 
+/**
+ * How much the planner is allowed to wander.
+ *
+ * The words benefit from a little heat — the same brief should not produce a
+ * byte-identical headline every time.
+ */
+const PLANNER_TEMPERATURE = 1.15;
+
 /** Write the design for a brief. */
 export async function planCreative(
   ai: GoogleGenAI,
@@ -49,9 +58,20 @@ export async function planCreative(
     const planned = await ai.models.generateContent({
       model: PLANNER_MODEL,
       contents: buildPlanPrompt(brief),
+      config: { temperature: PLANNER_TEMPERATURE },
     });
-    const plan = parsePlan(planned.text ?? "");
-    return plan ? { ok: true, plan } : { ok: false, reason: "malformed" };
+    const raw = planned.text ?? "";
+    if (process.env.CREATIVE_DEBUG) {
+      console.log("[creative] raw:", raw);
+    }
+    const plan = parsePlan(raw);
+    if (!plan) return { ok: false, reason: "malformed" };
+
+    // Frame and palette are assigned here, not by the model. See `chooseStyle`.
+    return {
+      ok: true,
+      plan: { ...plan, design: { ...plan.design, ...chooseStyle(brief) } },
+    };
   } catch (err) {
     console.error("[creative] planning failed:", err);
     return { ok: false, reason: "planning-failed" };

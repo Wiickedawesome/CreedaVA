@@ -213,8 +213,7 @@ export default function ImageStudioPage() {
               />
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs text-gray-50">
-                  {image.width}×{image.height} ·{" "}
-                  {LAYOUTS[plan.design.layout]}
+                  {image.width}×{image.height} · {LAYOUTS[plan.design.frame]}
                 </p>
                 <Button variant="outline" size="sm" onClick={download}>
                   Download PNG

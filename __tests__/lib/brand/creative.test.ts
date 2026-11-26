@@ -1,15 +1,21 @@
 import { describe, it, expect } from "vitest";
 import {
-  BRAND,
   FORMATS,
   FORMAT_IDS,
   LAYOUT_IDS,
+  LAYOUTS,
   LIMITS,
+  PALETTE_IDS,
+  PALETTES,
   buildPhotoPrompt,
   buildPlanPrompt,
+  chooseStyle,
   creativeFilename,
+  isAlign,
+  isAnchor,
   isFormat,
   isLayout,
+  isPalette,
   parsePlan,
   type Design,
 } from "@/lib/brand/creative";
@@ -19,11 +25,13 @@ const KNOWN_PHOTO = "photo-1556745753-b2904692b3cd";
 /** A complete design object, so each test overrides only what it cares about. */
 function design(overrides: Record<string, unknown> = {}) {
   return {
-    layout: "hero",
+    frame: "overlay",
+    palette: "noir",
+    anchor: "bottom",
+    align: "left",
     eyebrow: "Coverage",
     headline: "Never miss another call",
     subhead: "Support that answers.",
-    cta: "Book a call",
     photoSource: "library",
     photoId: KNOWN_PHOTO,
     photoBrief: "",
@@ -62,8 +70,33 @@ describe("guards", () => {
     expect(isLayout("carousel")).toBe(false);
   });
 
+  it("accepts only known palettes, anchors and alignments", () => {
+    for (const id of PALETTE_IDS) expect(isPalette(id)).toBe(true);
+    expect(isPalette("neon")).toBe(false);
+    expect(isAnchor("top")).toBe(true);
+    expect(isAnchor("sideways")).toBe(false);
+    expect(isAlign("center")).toBe(true);
+    expect(isAlign("right")).toBe(false);
+  });
+
   it("offers no layout without a photo", () => {
-    expect(LAYOUT_IDS).toEqual(["hero", "band", "split"]);
+    for (const id of LAYOUT_IDS) expect(LAYOUTS[id]).toMatch(/photo/);
+  });
+
+  it("gives every palette a field, a readable type colour and an accent", () => {
+    for (const id of PALETTE_IDS) {
+      const palette = PALETTES[id];
+      for (const value of [palette.field, palette.type, palette.accent]) {
+        expect(value).toMatch(/^#[0-9A-F]{6}$/i);
+      }
+      expect(palette.field).not.toBe(palette.type);
+    }
+  });
+
+  it("varies the ground colour rather than reusing one brand colour", () => {
+    const fields = new Set(PALETTE_IDS.map((id) => PALETTES[id].field));
+    expect(fields.size).toBe(PALETTE_IDS.length);
+    expect(PALETTE_IDS.length).toBeGreaterThanOrEqual(6);
   });
 });
 
@@ -95,10 +128,10 @@ describe("buildPlanPrompt", () => {
     expect(prompt).toContain("Bilingual receptionists for law firms");
   });
 
-  it("carries the palette so the model does not invent one", () => {
+  it("tells the model the frame and palette are not its call", () => {
     const prompt = buildPlanPrompt("A brief about coverage");
-    expect(prompt).toContain(BRAND.green);
-    expect(prompt).toContain(BRAND.ink);
+    expect(prompt).toMatch(/set by the art director, not by you/i);
+    for (const id of PALETTE_IDS) expect(prompt).not.toContain(`- ${id}:`);
   });
 
   it("forbids invented numbers and contact details", () => {
@@ -113,19 +146,67 @@ describe("buildPlanPrompt", () => {
     expect(prompt).toMatch(/no bullet lists/i);
   });
 
-  it("requires a photo and offers every curated id", () => {
-    const prompt = buildPlanPrompt("A brief about coverage");
-    expect(prompt).toMatch(/every design has a photo/i);
-    expect(prompt).toContain(KNOWN_PHOTO);
+  it("asks for no buttons, since a rendered control cannot be pressed", () => {
+    expect(buildPlanPrompt("A brief about coverage")).toMatch(/no buttons/i);
   });
 
-  it("offers every layout and every curated photo id", () => {
+  it("offers every curated photo id", () => {
+    expect(buildPlanPrompt("A brief about coverage")).toContain(KNOWN_PHOTO);
+  });
+
+  it("warns against forcing an office photo onto an unrelated subject", () => {
+    expect(buildPlanPrompt("A brief about coverage")).toMatch(
+      /do not force an office photo/i,
+    );
+  });
+
+  it("does not ask the model to pick a frame", () => {
     const prompt = buildPlanPrompt("A brief about coverage");
-    for (const id of LAYOUT_IDS) expect(prompt).toContain(`- ${id}:`);
+    for (const id of LAYOUT_IDS) expect(prompt).not.toContain(`\"frame\": \"${id}`);
   });
 
   it("asks for JSON rather than prose", () => {
     expect(buildPlanPrompt("A brief")).toMatch(/ONLY valid JSON/);
+  });
+});
+
+describe("chooseStyle", () => {
+  it("returns a known frame and a known palette", () => {
+    for (const brief of ["a", "hiring", "thanksgiving", "pricing page"]) {
+      const style = chooseStyle(brief);
+      expect(isLayout(style.frame)).toBe(true);
+      expect(isPalette(style.palette)).toBe(true);
+    }
+  });
+
+  it("spreads different briefs over more than one frame", () => {
+    const frames = new Set(
+      Array.from({ length: 40 }, (_, i) => chooseStyle(`brief number ${i}`).frame),
+    );
+    expect(frames.size).toBeGreaterThan(1);
+  });
+
+  it("spreads different briefs over more than one palette", () => {
+    const palettes = new Set(
+      Array.from({ length: 40 }, (_, i) => chooseStyle(`brief number ${i}`).palette),
+    );
+    expect(palettes.size).toBeGreaterThan(1);
+  });
+
+  it("avoids repeating the previous frame when re-rolling", () => {
+    const previous = { frame: "overlay" as const, palette: "brand" as const };
+    for (let i = 0; i < 25; i += 1) {
+      const style = chooseStyle("same brief every time", previous);
+      expect(style.frame).not.toBe(previous.frame);
+    }
+  });
+
+  it("avoids repeating the previous palette when re-rolling", () => {
+    const previous = { frame: "split" as const, palette: "noir" as const };
+    for (let i = 0; i < 25; i += 1) {
+      const style = chooseStyle("same brief every time", previous);
+      expect(style.palette).not.toBe(previous.palette);
+    }
   });
 });
 
@@ -134,7 +215,10 @@ describe("parsePlan", () => {
     const parsed = parsePlan(plan());
     expect(parsed).not.toBeNull();
     expect(parsed?.design.headline).toBe("Never miss another call");
-    expect(parsed?.design.layout).toBe("hero");
+    expect(parsed?.design.frame).toBe("overlay");
+    expect(parsed?.design.palette).toBe("noir");
+    expect(parsed?.design.anchor).toBe("bottom");
+    expect(parsed?.design.align).toBe("left");
     expect(parsed?.caption).toBe("A caption.");
   });
 
@@ -187,9 +271,18 @@ describe("parsePlan", () => {
     );
   });
 
-  it("falls back to a photo-led layout when none is named", () => {
-    const parsed = parsePlan(plan({ design: design({ layout: "carousel" }) }));
-    expect(parsed?.design.layout).toBe("hero");
+  it("falls back to a photo-led frame when none is named", () => {
+    const parsed = parsePlan(plan({ design: design({ frame: "carousel" }) }));
+    expect(parsed?.design.frame).toBe("overlay");
+  });
+
+  it("falls back on an unknown palette, anchor or alignment", () => {
+    const parsed = parsePlan(
+      plan({ design: design({ palette: "neon", anchor: "sideways", align: "right" }) }),
+    );
+    expect(parsed?.design.palette).toBe("brand");
+    expect(parsed?.design.anchor).toBe("bottom");
+    expect(parsed?.design.align).toBe("left");
   });
 });
 
@@ -237,11 +330,13 @@ describe("parsePlan photo resolution", () => {
 
 describe("buildPhotoPrompt", () => {
   const custom: Design = {
-    layout: "hero",
+    frame: "overlay",
+    palette: "noir",
+    anchor: "bottom",
+    align: "left",
     eyebrow: "",
     headline: "Never miss another call",
     subhead: "",
-    cta: "",
     photoSource: "custom",
     photoId: "",
     photoBrief: "A tidy reception desk at dawn.",

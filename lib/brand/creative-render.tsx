@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import {
-  BRAND,
   FORMATS,
+  PALETTES,
   type CreativeFormat,
   type Design,
 } from "./creative";
@@ -16,6 +16,10 @@ import { brandMarkDataUrl } from "./mark";
  * size, so a headline is always legible, and the model is still free to choose
  * the shape the post needs.
  *
+ * Five frames and seven palettes, rather than one house style. An earlier
+ * version drew every post in brand green with the same bottom-left block, which
+ * is why a set of them looked like one template with the words swapped.
+ *
  * Satori constraints, learned the hard way:
  * - every element with more than one child needs an explicit `display: flex`
  * - there is no cascade and no stylesheet, so every size is passed explicitly
@@ -29,8 +33,7 @@ const BASE = {
   headline: 116,
   subhead: 30,
   eyebrow: 19,
-  cta: 24,
-  mark: 44,
+  mark: 42,
 } as const;
 
 /**
@@ -118,39 +121,138 @@ function Eyebrow({
   );
 }
 
-function Cta({
-  text,
+/**
+ * The words, set the same way in every frame.
+ *
+ * `size` is a multiple of the base headline size, computed by whoever knows how
+ * much room the frame actually leaves. Alignment and colour come from the
+ * palette, so the same block looks right on a cream ground and on a photo.
+ */
+function Words({
+  design,
   scale,
-  background,
+  size,
   color,
+  accent,
+  maxWidth,
+  plate,
 }: {
-  text: string;
+  design: Design;
   scale: number;
-  background: string;
+  size: number;
   color: string;
+  accent: string;
+  maxWidth: number;
+  /** Solid field colour behind the words, for type over a photograph. */
+  plate?: string;
 }) {
-  if (!text) return null;
+  const center = design.align === "center";
+
   return (
     <div
       style={{
         display: "flex",
-        background,
-        color,
-        borderRadius: px(999),
-        paddingBlock: px(14 * scale),
-        paddingInline: px(30 * scale),
-        fontSize: px(BASE.cta * scale),
-        fontWeight: 700,
-        letterSpacing: px(-0.01 * BASE.cta * scale),
+        flexDirection: "column",
+        gap: px(20 * scale),
+        maxWidth,
+        alignItems: center ? "center" : "flex-start",
+        textAlign: center ? "center" : "left",
+        ...(plate
+          ? {
+              background: plate,
+              paddingBlock: px(34 * scale),
+              paddingInline: px(36 * scale),
+            }
+          : {}),
       }}
     >
-      {text}
+      {design.eyebrow ? (
+        <div style={{ display: "flex", alignItems: "center", gap: px(14 * scale) }}>
+          <div
+            style={{
+              display: "flex",
+              width: px(28 * scale),
+              height: px(3 * scale),
+              background: accent,
+            }}
+          />
+          <Eyebrow text={design.eyebrow} scale={scale} color={accent} />
+        </div>
+      ) : null}
+
+      <div
+        style={{
+          display: "flex",
+          fontSize: px(BASE.headline * scale * size),
+          fontWeight: 900,
+          lineHeight: 1,
+          letterSpacing: px(-0.035 * BASE.headline * scale * size),
+          color,
+        }}
+      >
+        {design.headline}
+      </div>
+
+      {design.subhead ? (
+        <div
+          style={{
+            display: "flex",
+            fontSize: px(BASE.subhead * scale),
+            fontWeight: 400,
+            lineHeight: 1.35,
+            color,
+            opacity: 0.82,
+          }}
+        >
+          {design.subhead}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-/** Full-bleed photo, headline across the bottom over a scrim. */
-function Hero({
+/**
+ * Scrim for type sitting over a photo.
+ *
+ * Deliberately omits a flat wash. An earlier version laid a 62% wash of the
+ * field colour over the whole frame, which guaranteed contrast but flattened the
+ * photograph — a Thanksgiving render came out with a luminance spread of 37/255,
+ * so it read as a coloured block rather than a photo.
+ *
+ * Instead the ramp alone carries the contrast, and `Words` gets a plate behind
+ * it when the ramp cannot do the job on its own.
+ */
+function Scrim({
+  field,
+  anchor,
+}: {
+  field: string;
+  anchor: Design["anchor"];
+}) {
+  const ramp =
+    anchor === "top"
+      ? `linear-gradient(0deg, ${field}00 0%, ${field}B4 58%, ${field}FC 100%)`
+      : anchor === "middle"
+        ? `linear-gradient(180deg, ${field}00 0%, ${field}B4 22%, ${field}B4 78%, ${field}00 100%)`
+        : `linear-gradient(180deg, ${field}00 0%, ${field}A8 46%, ${field}FC 100%)`;
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        display: "flex",
+        width: "100%",
+        height: "100%",
+        background: ramp,
+      }}
+    />
+  );
+}
+
+/** Photo fills the frame; type sits over a gradient scrim, anchored anywhere. */
+function Overlay({
   design,
   photo,
   width,
@@ -163,12 +265,13 @@ function Hero({
   height: number;
   scale: number;
 }) {
+  const { field, type, accent } = PALETTES[design.palette];
   const pad = px(76 * scale);
-  // The lower half is the type block; the photo keeps the top to itself.
+  const markAtTop = design.anchor !== "top";
   const size = headlineScale(
     design.headline,
     width - pad * 2,
-    height * 0.46,
+    height * 0.44,
     BASE.headline * scale,
     1,
   );
@@ -180,7 +283,97 @@ function Hero({
         display: "flex",
         width: "100%",
         height: "100%",
-        background: BRAND.ink,
+        background: field,
+      }}
+    >
+      {photo ? (
+        // eslint-disable-next-line @next/next/no-img-element -- next/image is unsupported in ImageResponse
+        <img
+          src={photo}
+          alt=""
+          width={width}
+          height={height}
+          style={{ position: "absolute", top: 0, left: 0, objectFit: "cover" }}
+        />
+      ) : null}
+
+      <Scrim field={field} anchor={design.anchor} />
+
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: markAtTop ? "space-between" : "flex-end",
+          alignItems: design.align === "center" ? "center" : "flex-start",
+          width: "100%",
+          height: "100%",
+          padding: pad,
+        }}
+      >
+        {markAtTop ? <Mark scale={scale} color={type} /> : null}
+
+        <Words
+          design={design}
+          scale={scale}
+          size={size}
+          color={type}
+          accent={accent}
+          maxWidth={width - pad * 2}
+          // The middle anchor has no canvas edge for the ramp to build against,
+          // so a gradient there leaves the type on raw photo. A plate is the
+          // only way to keep both the photo visible and the words readable.
+          plate={design.anchor === "middle" ? field : undefined}
+        />
+
+        {markAtTop ? null : (
+          <div style={{ display: "flex", marginTop: px(34 * scale) }}>
+            <Mark scale={scale} color={type} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Photo under a flat colour wash.
+ *
+ * A solid tint instead of a gradient, so the frame reads as one colour block —
+ * the look the reference set uses when it wants a poster rather than a photo.
+ */
+function Duotone({
+  design,
+  photo,
+  width,
+  height,
+  scale,
+}: {
+  design: Design;
+  photo: string | null;
+  width: number;
+  height: number;
+  scale: number;
+}) {
+  const { field, type, accent } = PALETTES[design.palette];
+  const pad = px(76 * scale);
+  const markAtTop = design.anchor !== "top";
+  const size = headlineScale(
+    design.headline,
+    width - pad * 2,
+    height * 0.44,
+    BASE.headline * scale,
+    1,
+  );
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        display: "flex",
+        width: "100%",
+        height: "100%",
+        background: field,
       }}
     >
       {photo ? (
@@ -202,8 +395,12 @@ function Hero({
           display: "flex",
           width: "100%",
           height: "100%",
-          background:
-            "linear-gradient(180deg, rgba(11,33,53,0.10) 0%, rgba(11,33,53,0.45) 45%, rgba(11,33,53,0.92) 100%)",
+          background: field,
+          // Heavy on purpose. At 0.78 the photo showed through enough to muddy
+          // the ground, and light palettes measured 3.1-3.4:1 against their own
+          // type. The point of this frame is a flat colour block anyway, so the
+          // photo is texture, not subject.
+          opacity: 0.9,
         }}
       />
 
@@ -212,67 +409,35 @@ function Hero({
           position: "relative",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
+          justifyContent: markAtTop ? "space-between" : "flex-end",
+          alignItems: design.align === "center" ? "center" : "flex-start",
           width: "100%",
           height: "100%",
           padding: pad,
         }}
       >
-        <Mark scale={scale} color={BRAND.paper} />
+        {markAtTop ? <Mark scale={scale} color={type} /> : null}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: px(20 * scale) }}>
-          <Eyebrow
-            text={design.eyebrow}
-            scale={scale}
-            color="rgba(247,247,242,0.72)"
-          />
+        <Words
+          design={design}
+          scale={scale}
+          size={size}
+          color={type}
+          accent={accent}
+          maxWidth={width - pad * 2}
+        />
 
-          <div
-            style={{
-              display: "flex",
-              fontSize: px(BASE.headline * scale * size),
-              fontWeight: 900,
-              lineHeight: 1,
-              letterSpacing: px(-0.035 * BASE.headline * scale * size),
-              color: BRAND.paper,
-              maxWidth: "92%",
-            }}
-          >
-            {design.headline}
+        {markAtTop ? null : (
+          <div style={{ display: "flex", marginTop: px(34 * scale) }}>
+            <Mark scale={scale} color={type} />
           </div>
-
-          {design.subhead ? (
-            <div
-              style={{
-                display: "flex",
-                fontSize: px(BASE.subhead * scale),
-                fontWeight: 400,
-                lineHeight: 1.35,
-                color: "rgba(247,247,242,0.86)",
-                maxWidth: "82%",
-              }}
-            >
-              {design.subhead}
-            </div>
-          ) : null}
-
-          {design.cta ? (
-            <div style={{ display: "flex", marginTop: px(10 * scale) }}>
-              <Cta
-                text={design.cta}
-                scale={scale}
-                background={BRAND.paper}
-                color={BRAND.ink}
-              />
-            </div>
-          ) : null}
-        </div>
+        )}
       </div>
     </div>
   );
 }
 
-/** Solid brand panel beside a photo; the panel carries the headline. */
+/** A hard fifty-fifty division: photo on one side, a solid colour field on the other. */
 function Split({
   design,
   photo,
@@ -286,65 +451,17 @@ function Split({
   height: number;
   scale: number;
 }) {
+  const { field, type, accent } = PALETTES[design.palette];
   const stacked = height > width;
-  const pad = px(60 * scale);
-  const panelShare = 0.44;
-  const panelWidth = stacked ? width : px(width * panelShare);
+  const pad = px(56 * scale);
+  const panelWidth = stacked ? width : px(width * 0.5);
   const panelHeight = stacked ? px(height * 0.5) : height;
   const size = headlineScale(
     design.headline,
     panelWidth - pad * 2,
-    panelHeight * 0.42,
+    panelHeight * 0.5,
     BASE.headline * scale * 0.86,
-    1.08,
-  );
-
-  const panel = (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        background: BRAND.green,
-        padding: pad,
-        width: stacked ? "100%" : panelWidth,
-        height: stacked ? panelHeight : "100%",
-      }}
-    >
-      <Mark scale={scale} color={BRAND.paper} />
-
-      <div style={{ display: "flex", flexDirection: "column", gap: px(18 * scale) }}>
-        <Eyebrow text={design.eyebrow} scale={scale} color={BRAND.paper} />
-        <div
-          style={{
-            display: "flex",
-            fontSize: px(BASE.headline * scale * 0.86 * size),
-            fontWeight: 900,
-            lineHeight: 1.08,
-            letterSpacing: px(-0.025 * BASE.headline * scale * 0.86 * size),
-            color: BRAND.paper,
-          }}
-        >
-          {design.headline}
-        </div>
-      </div>
-
-      {design.subhead ? (
-        <div
-          style={{
-            display: "flex",
-            fontSize: px(BASE.subhead * scale * 0.86),
-            fontWeight: 400,
-            lineHeight: 1.35,
-            color: "rgba(247,247,242,0.84)",
-          }}
-        >
-          {design.subhead}
-        </div>
-      ) : (
-        <div style={{ display: "flex" }} />
-      )}
-    </div>
+    1,
   );
 
   // The photo gets an explicit pixel box rather than `flex: 1`. Satori computes
@@ -353,13 +470,39 @@ function Split({
   const photoWidth = stacked ? width : width - panelWidth;
   const photoHeight = stacked ? height - panelHeight : height;
 
+  const panel = (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        alignItems: design.align === "center" ? "center" : "flex-start",
+        background: field,
+        padding: pad,
+        width: stacked ? "100%" : panelWidth,
+        height: stacked ? panelHeight : "100%",
+      }}
+    >
+      <Mark scale={scale} color={type} />
+
+      <Words
+        design={design}
+        scale={scale}
+        size={size}
+        color={type}
+        accent={accent}
+        maxWidth={panelWidth - pad * 2}
+      />
+    </div>
+  );
+
   const photoArea = (
     <div
       style={{
         display: "flex",
         width: photoWidth,
         height: photoHeight,
-        background: BRAND.rule,
+        background: field,
       }}
     >
       {photo ? (
@@ -386,7 +529,7 @@ function Split({
         flexDirection: stacked ? "column" : "row",
         width: "100%",
         height: "100%",
-        background: BRAND.paper,
+        background: field,
       }}
     >
       {panel}
@@ -396,12 +539,12 @@ function Split({
 }
 
 /**
- * Full-bleed photo with a solid brand band across the bottom.
+ * Photo filling the frame with a slim solid bar of type across one edge.
  *
- * The band gives the type a flat surface to sit on, so this still works over a
- * bright, busy photo where a scrim alone would leave the headline muddy.
+ * The bar gives the words a flat surface, so this still works over a bright or
+ * busy photo where a gradient scrim would leave the headline muddy.
  */
-function Band({
+function Stack({
   design,
   photo,
   width,
@@ -414,15 +557,63 @@ function Band({
   height: number;
   scale: number;
 }) {
-  const bandHeight = px(height * (height > width ? 0.42 : 0.46));
-  const photoHeight = height - bandHeight;
-  const pad = px(62 * scale);
+  const { field, type, accent } = PALETTES[design.palette];
+  const barAtTop = design.anchor === "top";
+  const barHeight = px(height * (height > width ? 0.34 : 0.4));
+  const photoHeight = height - barHeight;
+  const pad = px(60 * scale);
   const size = headlineScale(
     design.headline,
     width - pad * 2,
-    bandHeight * 0.6,
+    barHeight * 0.52,
     BASE.headline * scale,
     1,
+  );
+
+  const photoBox = (
+    <div
+      style={{
+        display: "flex",
+        width,
+        height: photoHeight,
+        background: field,
+      }}
+    >
+      {photo ? (
+        // eslint-disable-next-line @next/next/no-img-element -- next/image is unsupported in ImageResponse
+        <img
+          src={photo}
+          alt=""
+          width={width}
+          height={photoHeight}
+          style={{ width, height: photoHeight, objectFit: "cover" }}
+        />
+      ) : null}
+    </div>
+  );
+
+  const bar = (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: design.align === "center" ? "center" : "flex-start",
+        width: "100%",
+        height: barHeight,
+        background: field,
+        padding: pad,
+      }}
+    >
+      <Words
+        design={design}
+        scale={scale}
+        size={size}
+        color={type}
+        accent={accent}
+        maxWidth={width - pad * 2}
+      />
+    </div>
   );
 
   return (
@@ -432,71 +623,109 @@ function Band({
         flexDirection: "column",
         width: "100%",
         height: "100%",
-        background: BRAND.ink,
+        background: field,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          width,
-          height: photoHeight,
-          background: BRAND.ink,
-        }}
-      >
-        {photo ? (
-          // eslint-disable-next-line @next/next/no-img-element -- next/image is unsupported in ImageResponse
-          <img
-            src={photo}
-            alt=""
-            width={width}
-            height={photoHeight}
-            style={{ width, height: photoHeight, objectFit: "cover" }}
-          />
-        ) : null}
-      </div>
+      {barAtTop ? bar : photoBox}
+      {barAtTop ? photoBox : bar}
+    </div>
+  );
+}
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          gap: px(18 * scale),
-          width: "100%",
-          height: bandHeight,
-          background: BRAND.green,
-          padding: pad,
-        }}
-      >
-        <Eyebrow
-          text={design.eyebrow}
-          scale={scale}
-          color="rgba(247,247,242,0.72)"
+/**
+ * Solid colour field with the photo set inside it like a framed print.
+ *
+ * The only frame where the ground colour is the larger element, which is what
+ * makes a light palette read as a poster rather than a photo with a caption.
+ */
+function Inset({
+  design,
+  photo,
+  width,
+  height,
+  scale,
+}: {
+  design: Design;
+  photo: string | null;
+  width: number;
+  height: number;
+  scale: number;
+}) {
+  const { field, type, accent } = PALETTES[design.palette];
+  const margin = px(64 * scale);
+  const gap = px(48 * scale);
+  const typeHeight = px((height - margin * 2 - gap) * 0.42);
+  const photoHeight = height - margin * 2 - gap - typeHeight;
+  const photoWidth = width - margin * 2;
+  const typeFirst = design.anchor === "top";
+  const size = headlineScale(
+    design.headline,
+    photoWidth,
+    typeHeight,
+    BASE.headline * scale * 0.86,
+    1,
+  );
+
+  const print = (
+    <div
+      style={{
+        display: "flex",
+        width: photoWidth,
+        height: photoHeight,
+        background: accent,
+      }}
+    >
+      {photo ? (
+        // eslint-disable-next-line @next/next/no-img-element -- next/image is unsupported in ImageResponse
+        <img
+          src={photo}
+          alt=""
+          width={photoWidth}
+          height={photoHeight}
+          style={{ width: photoWidth, height: photoHeight, objectFit: "cover" }}
         />
+      ) : null}
+    </div>
+  );
 
-        <div
-          style={{
-            display: "flex",
-            fontSize: px(BASE.headline * scale * size),
-            fontWeight: 900,
-            lineHeight: 1,
-            letterSpacing: px(-0.035 * BASE.headline * scale * size),
-            color: BRAND.paper,
-          }}
-        >
-          {design.headline}
-        </div>
+  const words = (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: design.align === "center" ? "center" : "flex-start",
+        width: photoWidth,
+        height: typeHeight,
+      }}
+    >
+      <Words
+        design={design}
+        scale={scale}
+        size={size}
+        color={type}
+        accent={accent}
+        maxWidth={photoWidth}
+      />
+    </div>
+  );
 
-        {design.cta ? (
-          <div style={{ display: "flex", marginTop: px(6 * scale) }}>
-            <Cta
-              text={design.cta}
-              scale={scale}
-              background={BRAND.paper}
-              color={BRAND.green}
-            />
-          </div>
-        ) : null}
-      </div>
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap,
+        width: "100%",
+        height: "100%",
+        background: field,
+        padding: margin,
+      }}
+    >
+      {typeFirst ? words : print}
+      {typeFirst ? print : words}
     </div>
   );
 }
@@ -518,13 +747,17 @@ export async function creativeImage(
   const props = { design, photo, width, height, scale };
 
   const body = (() => {
-    switch (design.layout) {
-      case "band":
-        return <Band {...props} />;
+    switch (design.frame) {
+      case "duotone":
+        return <Duotone {...props} />;
       case "split":
         return <Split {...props} />;
+      case "stack":
+        return <Stack {...props} />;
+      case "inset":
+        return <Inset {...props} />;
       default:
-        return <Hero {...props} />;
+        return <Overlay {...props} />;
     }
   })();
 
@@ -535,7 +768,7 @@ export async function creativeImage(
           display: "flex",
           width: "100%",
           height: "100%",
-          background: BRAND.ink,
+          background: PALETTES[design.palette].field,
           fontFamily: RENDER_FONT_FAMILY,
         }}
       >
