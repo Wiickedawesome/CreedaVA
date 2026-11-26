@@ -2,7 +2,6 @@ import { ImageResponse } from "next/og";
 import {
   BRAND,
   FORMATS,
-  LIMITS,
   type CreativeFormat,
   type Design,
 } from "./creative";
@@ -47,16 +46,38 @@ function typeScale(width: number, height: number): number {
 }
 
 /**
- * Shrink a long headline instead of letting it overflow.
- *
- * The spec caps a headline at 42 characters, which is already short: these
- * steps keep a three-word line enormous while stopping a six-word line from
- * running off the canvas.
+ * Roboto 900 runs about this much per character at display sizes, which is
+ * close enough to predict how many lines a headline will wrap to.
  */
-function fit(value: string, max: number): number {
-  if (value.length > max * 0.72) return 0.68;
-  if (value.length > max * 0.52) return 0.84;
-  return 1;
+const AVG_ADVANCE = 0.58;
+
+/**
+ * Pick the largest size that fills the space without overflowing.
+ *
+ * An earlier version shrank any headline over about thirty characters to 68%,
+ * which is most headlines, so the type came out at 79px on a 1080 canvas
+ * instead of 116px. Shrinking is the wrong lever: a long line should wrap to
+ * two or three enormous lines, not become one small one. Only shrink when the
+ * wrapped block genuinely cannot fit.
+ */
+function headlineScale(
+  text: string,
+  availableWidth: number,
+  availableHeight: number,
+  base: number,
+  lineHeight: number,
+): number {
+  let size = base;
+  while (size > base * 0.55) {
+    const perLine = Math.max(
+      1,
+      Math.floor(availableWidth / (size * AVG_ADVANCE)),
+    );
+    const lines = Math.ceil(text.length / perLine);
+    if (lines * size * lineHeight <= availableHeight) break;
+    size *= 0.94;
+  }
+  return size / base;
 }
 
 const px = (value: number) => Math.round(value);
@@ -143,7 +164,14 @@ function Hero({
   scale: number;
 }) {
   const pad = px(76 * scale);
-  const size = fit(design.headline, LIMITS.headline);
+  // The lower half is the type block; the photo keeps the top to itself.
+  const size = headlineScale(
+    design.headline,
+    width - pad * 2,
+    height * 0.46,
+    BASE.headline * scale,
+    1,
+  );
 
   return (
     <div
@@ -260,8 +288,16 @@ function Split({
 }) {
   const stacked = height > width;
   const pad = px(60 * scale);
-  const size = fit(design.headline, LIMITS.headline);
   const panelShare = 0.44;
+  const panelWidth = stacked ? width : px(width * panelShare);
+  const panelHeight = stacked ? px(height * 0.5) : height;
+  const size = headlineScale(
+    design.headline,
+    panelWidth - pad * 2,
+    panelHeight * 0.42,
+    BASE.headline * scale * 0.86,
+    1.08,
+  );
 
   const panel = (
     <div
@@ -271,8 +307,8 @@ function Split({
         justifyContent: "space-between",
         background: BRAND.green,
         padding: pad,
-        width: stacked ? "100%" : px(width * panelShare),
-        height: stacked ? px(height * 0.5) : "100%",
+        width: stacked ? "100%" : panelWidth,
+        height: stacked ? panelHeight : "100%",
       }}
     >
       <Mark scale={scale} color={BRAND.paper} />
@@ -282,10 +318,10 @@ function Split({
         <div
           style={{
             display: "flex",
-            fontSize: px(BASE.headline * scale * size * 0.86),
+            fontSize: px(BASE.headline * scale * 0.86 * size),
             fontWeight: 900,
             lineHeight: 1.08,
-            letterSpacing: px(-0.025 * BASE.headline * scale),
+            letterSpacing: px(-0.025 * BASE.headline * scale * 0.86 * size),
             color: BRAND.paper,
           }}
         >
@@ -314,8 +350,8 @@ function Split({
   // The photo gets an explicit pixel box rather than `flex: 1`. Satori computes
   // a flex-sized image's dimensions lazily and crashes on the undefined width;
   // a fixed box sidesteps that entirely.
-  const photoWidth = stacked ? width : width - px(width * panelShare);
-  const photoHeight = stacked ? height - px(height * 0.5) : height;
+  const photoWidth = stacked ? width : width - panelWidth;
+  const photoHeight = stacked ? height - panelHeight : height;
 
   const photoArea = (
     <div
@@ -381,7 +417,13 @@ function Band({
   const bandHeight = px(height * (height > width ? 0.42 : 0.46));
   const photoHeight = height - bandHeight;
   const pad = px(62 * scale);
-  const size = fit(design.headline, LIMITS.headline);
+  const size = headlineScale(
+    design.headline,
+    width - pad * 2,
+    bandHeight * 0.6,
+    BASE.headline * scale,
+    1,
+  );
 
   return (
     <div
