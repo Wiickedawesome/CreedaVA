@@ -6,6 +6,7 @@ import {
   type CreativeFormat,
   type Design,
 } from "./creative";
+import { RENDER_FONT_FAMILY, renderFonts } from "./fonts";
 import { brandMarkDataUrl } from "./mark";
 
 /**
@@ -21,6 +22,7 @@ import { brandMarkDataUrl } from "./mark";
  * - there is no cascade and no stylesheet, so every size is passed explicitly
  * - `next/image` does not work here; images are plain `<img>` with data URLs
  * - `overflow: hidden` is avoided: the photo is cropped with `objectFit`
+ * - it cannot read `.woff2`, so the fonts are bundled as TTF (see `fonts.ts`)
  */
 
 /** Type sizes at a 1080px canvas. Everything else is this times `scale`. */
@@ -201,7 +203,7 @@ function Hero({
             style={{
               display: "flex",
               fontSize: px(BASE.headline * scale * size),
-              fontWeight: 800,
+              fontWeight: 900,
               lineHeight: 1,
               letterSpacing: px(-0.035 * BASE.headline * scale * size),
               color: BRAND.paper,
@@ -216,7 +218,7 @@ function Hero({
               style={{
                 display: "flex",
                 fontSize: px(BASE.subhead * scale),
-                fontWeight: 500,
+                fontWeight: 400,
                 lineHeight: 1.35,
                 color: "rgba(247,247,242,0.86)",
                 maxWidth: "82%",
@@ -281,7 +283,7 @@ function Split({
           style={{
             display: "flex",
             fontSize: px(BASE.headline * scale * size * 0.86),
-            fontWeight: 800,
+            fontWeight: 900,
             lineHeight: 1.08,
             letterSpacing: px(-0.025 * BASE.headline * scale),
             color: BRAND.paper,
@@ -296,7 +298,7 @@ function Split({
           style={{
             display: "flex",
             fontSize: px(BASE.subhead * scale * 0.86),
-            fontWeight: 500,
+            fontWeight: 400,
             lineHeight: 1.35,
             color: "rgba(247,247,242,0.84)",
           }}
@@ -433,7 +435,7 @@ function Band({
           style={{
             display: "flex",
             fontSize: px(BASE.headline * scale * size),
-            fontWeight: 800,
+            fontWeight: 900,
             lineHeight: 1,
             letterSpacing: px(-0.035 * BASE.headline * scale * size),
             color: BRAND.paper,
@@ -464,11 +466,11 @@ function Band({
  * slot could not be filled — the composition then draws on ink, which still
  * looks deliberate rather than blank.
  */
-export function creativeImage(
+export async function creativeImage(
   design: Design,
   format: CreativeFormat,
   photo: string | null,
-): ImageResponse {
+): Promise<ImageResponse> {
   const { width, height } = FORMATS[format];
   const scale = typeScale(width, height);
   const props = { design, photo, width, height, scale };
@@ -492,12 +494,12 @@ export function creativeImage(
           width: "100%",
           height: "100%",
           background: BRAND.ink,
-          fontFamily: "sans-serif",
+          fontFamily: RENDER_FONT_FAMILY,
         }}
       >
         {body}
       </div>
     ),
-    { width, height },
+    { width, height, fonts: await renderFonts() },
   );
 }

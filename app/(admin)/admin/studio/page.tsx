@@ -240,65 +240,50 @@ export default function ImageStudioPage() {
           )}
 
           {plan && (
-            <>
-              <div className="rounded-xl border border-border bg-card p-4">
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-50">
-                  The idea
+                  Caption
                 </p>
-                <p className="mt-1 text-sm text-gray-100">{plan.concept}</p>
-                <p className="mt-2 text-xs text-gray-70">
-                  Composition: {LAYOUTS[plan.design.layout]}
-                  {plan.design.headline ? ` · “${plan.design.headline}”` : ""}
-                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copy("Caption", fullPost)}
+                >
+                  Copy post
+                </Button>
               </div>
 
-              {plan && (
-                <div className="rounded-xl border border-border bg-card p-4">
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs font-medium uppercase tracking-wide text-gray-50">
-                      Caption
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                rows={6}
+                aria-label="Post caption"
+                className="w-full rounded-md border border-gray-40 bg-card px-4 py-2.5 text-sm text-gray-100 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+
+              {plan.hashtags.length > 0 && (
+                <div className="mt-3">
+                  <div className="mb-1 flex items-center justify-between">
+                    <p className="text-xs font-medium text-gray-70">
+                      Hashtags
                     </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copy("Caption", fullPost)}
+                    <button
+                      type="button"
+                      onClick={() => copy("Hashtags", hashtagLine)}
+                      className="text-xs font-medium text-primary hover:underline"
                     >
-                      Copy post
-                    </Button>
+                      Copy
+                    </button>
                   </div>
-
-                  <textarea
-                    value={caption}
-                    onChange={(e) => setCaption(e.target.value)}
-                    rows={6}
-                    aria-label="Post caption"
-                    className="w-full rounded-md border border-gray-40 bg-card px-4 py-2.5 text-sm text-gray-100 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-
-                  {plan.hashtags.length > 0 && (
-                    <div className="mt-3">
-                      <div className="mb-1 flex items-center justify-between">
-                        <p className="text-xs font-medium text-gray-70">
-                          Hashtags
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => copy("Hashtags", hashtagLine)}
-                          className="text-xs font-medium text-primary hover:underline"
-                        >
-                          Copy
-                        </button>
-                      </div>
-                      <p className="text-xs text-gray-50">{hashtagLine}</p>
-                    </div>
-                  )}
-
-                  <p className="mt-3 text-xs text-gray-50">
-                    Edit before posting. Copy post includes the hashtags.
-                  </p>
+                  <p className="text-xs text-gray-50">{hashtagLine}</p>
                 </div>
               )}
-            </>
+
+              <p className="mt-3 text-xs text-gray-50">
+                Edit before posting. Copy post includes the hashtags.
+              </p>
+            </div>
           )}
         </div>
       </div>

@@ -146,7 +146,7 @@ export async function buildCreative(
   const photo = await resolvePhoto(ai, plan.design, format);
 
   try {
-    const rendered = creativeImage(plan.design, format, photo);
+    const rendered = await creativeImage(plan.design, format, photo);
     const bytes = Buffer.from(await rendered.arrayBuffer());
     return {
       ok: true,
