@@ -6,6 +6,7 @@ import { Button } from "@/components/ui";
 import {
   FORMATS,
   FORMAT_IDS,
+  LAYOUTS,
   LIMITS,
   PLATFORMS,
   TONES,
@@ -19,34 +20,29 @@ import {
 /**
  * Image studio — a brief in, a finished social post out.
  *
- * The model decides the visual form: photograph, diagram, mockup, collage or
- * something else the brief calls for. There is no layout picker, because a
- * fixed set of layouts could only ever produce the ideas built into it. Brand
- * consistency comes from the prompt's palette and rules plus the real logo
- * passed as a reference image, so it holds for any composition.
+ * The AI designs the post: the angle, the composition family, the exact
+ * wording, and where the photo comes from. A renderer draws it, so the headline
+ * is set in a real font rather than painted by an image model — which is what
+ * makes text legible without narrowing the range to a few fixed templates.
  *
  * Captions come back with the image, one per platform, each copyable on its
- * own. Nothing is uploaded until the admin saves an image.
+ * own. Nothing is uploaded.
  */
 
-interface GeneratedImage {
+interface RenderedImage {
   dataUrl: string;
-  mimeType: string;
+  width: number;
+  height: number;
+  filename: string;
 }
 
 interface CreativeResponse {
   plan?: CreativePlan;
-  images?: GeneratedImage[];
+  image?: RenderedImage;
+  photoDropped?: boolean;
   message?: string;
   error?: string;
 }
-
-/** Platform ids double as caption field names, so one loop renders them all. */
-const CAPTION_KEYS: Record<Platform, keyof CreativePlan["captions"]> = {
-  facebook: "facebook",
-  linkedin: "linkedin",
-  instagram: "instagram",
-};
 
 export default function ImageStudioPage() {
   const { toast } = useToast();
@@ -57,21 +53,18 @@ export default function ImageStudioPage() {
 
   const [busy, setBusy] = useState(false);
   const [plan, setPlan] = useState<CreativePlan | null>(null);
-  const [images, setImages] = useState<GeneratedImage[]>([]);
+  const [image, setImage] = useState<RenderedImage | null>(null);
   const [captions, setCaptions] = useState<CreativePlan["captions"] | null>(
     null,
   );
   const [captionTab, setCaptionTab] = useState<Platform>("facebook");
-  // The model picks the resolution for a given aspect ratio, so the size is
-  // reported from the image itself rather than assumed from the format.
-  const [sizes, setSizes] = useState<Record<number, string>>({});
+  const [photoDropped, setPhotoDropped] = useState(false);
 
   const tooLong = brief.length > LIMITS.brief;
   const canGenerate = brief.trim().length >= 10 && !tooLong && !busy;
 
   async function generate() {
     setBusy(true);
-    setSizes({});
     try {
       const res = await fetch("/api/brand/creative", {
         method: "POST",
@@ -81,12 +74,12 @@ export default function ImageStudioPage() {
       const data = (await res.json()) as CreativeResponse;
 
       if (!res.ok) {
-        // A failed draw can still carry the plan: the words are worth keeping
+        // A failed draw can still carry the design: the words are worth keeping
         // even when the picture did not come through.
         if (data.plan) {
           setPlan(data.plan);
           setCaptions(data.plan.captions);
-          setImages([]);
+          setImage(null);
         }
         toast(data.error ?? data.message ?? "Could not build the post", "error");
         return;
@@ -94,7 +87,8 @@ export default function ImageStudioPage() {
 
       setPlan(data.plan ?? null);
       setCaptions(data.plan?.captions ?? null);
-      setImages(data.images ?? []);
+      setImage(data.image ?? null);
+      setPhotoDropped(Boolean(data.photoDropped));
       toast("Post ready", "success");
     } catch {
       toast("Could not reach the server", "error");
@@ -113,25 +107,26 @@ export default function ImageStudioPage() {
     }
   }
 
-  function download(image: GeneratedImage, index: number) {
+  function download() {
+    if (!image) return;
     const link = document.createElement("a");
     link.href = image.dataUrl;
-    link.download = creativeFilename(format, index);
+    link.download = image.filename || creativeFilename(format);
     link.click();
   }
 
   const hashtagLine = plan ? plan.hashtags.map((tag) => `#${tag}`).join(" ") : "";
-  const activeCaption = captions ? captions[CAPTION_KEYS[captionTab]] : "";
+  const activeCaption = captions ? captions[captionTab] : "";
   const fullPost = [activeCaption, hashtagLine].filter(Boolean).join("\n\n");
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Image studio"
-        description="Describe the post you want. CreedaVA's AI writes the caption and composes the image in your brand."
+        description="Describe the post. CreedaVA's AI designs it, writes the caption, and sets the type in your brand."
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,25rem)_minmax(0,1fr)]">
         {/* ── Brief ───────────────────────────────────── */}
         <div className="space-y-5">
           <div>
@@ -186,15 +181,13 @@ export default function ImageStudioPage() {
                       {spec.label}
                     </span>
                     <span className="block text-[11px] text-gray-50">
-                      {spec.aspectRatio} · {spec.usage}
+                      {spec.width}×{spec.height}
                     </span>
                   </button>
                 );
               })}
             </div>
-            <p className="mt-1 text-xs text-gray-50">
-              {FORMATS[format].usage}. Resolution is chosen by the model.
-            </p>
+            <p className="mt-1 text-xs text-gray-50">{FORMATS[format].usage}</p>
           </div>
 
           <div>
@@ -222,11 +215,11 @@ export default function ImageStudioPage() {
           </div>
 
           <Button onClick={generate} disabled={!canGenerate} isLoading={busy}>
-            {plan ? "Generate another" : "Write post and draw image"}
+            {plan ? "Design another" : "Design the post"}
           </Button>
 
           <p className="text-xs text-gray-50">
-            Two images per run so you can pick. Nothing is uploaded.
+            The AI picks the composition from the brief. Nothing is uploaded.
           </p>
         </div>
 
@@ -235,64 +228,60 @@ export default function ImageStudioPage() {
           {!plan && (
             <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
               <p className="text-sm text-gray-70">
-                Your image and captions will appear here.
+                Your creative and captions will appear here.
               </p>
             </div>
           )}
 
+          {plan && image && (
+            <div className="space-y-2">
+              {/* Plain <img>: next/image would fetch through /_next/image
+                  without the admin cookie and get a 401. The source is a data
+                  URL, so there is nothing to optimize either. */}
+              {/* eslint-disable-next-line @next/next/no-img-element -- see above */}
+              <img
+                src={image.dataUrl}
+                alt="The designed post"
+                className="w-full rounded-lg border border-border bg-gray-20"
+              />
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-gray-50">
+                  {image.width}×{image.height} ·{" "}
+                  {LAYOUTS[plan.design.layout]}
+                </p>
+                <Button variant="outline" size="sm" onClick={download}>
+                  Download PNG
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {plan && !image && (
+            <div className="rounded-xl border border-border bg-card p-4">
+              <p className="text-sm text-gray-70">
+                The words are ready below, but the image did not come through.
+                Design another to try again.
+              </p>
+            </div>
+          )}
+
+          {photoDropped && (
+            <p className="text-xs text-gray-50">
+              The photo did not load, so this was drawn as type only.
+            </p>
+          )}
+
           {plan && (
             <>
-              {images.length > 0 && (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {images.map((image, index) => (
-                    <div key={index} className="space-y-2">
-                      {/* Plain <img>: next/image would fetch the preview through
-                          /_next/image without the admin cookie and get a 401. */}
-                      {/* eslint-disable-next-line @next/next/no-img-element -- see above */}
-                      <img
-                        src={image.dataUrl}
-                        alt={`Generated post image ${index + 1}`}
-                        onLoad={(e) => {
-                          const { naturalWidth, naturalHeight } =
-                            e.currentTarget;
-                          setSizes((previous) => ({
-                            ...previous,
-                            [index]: `${naturalWidth}×${naturalHeight}`,
-                          }));
-                        }}
-                        className="w-full rounded-lg border border-border bg-gray-20"
-                      />
-                      <p className="text-xs text-gray-50">
-                        {sizes[index] ?? "…"}
-                        {" · "}
-                        {FORMATS[format].usage}
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => download(image, index)}
-                      >
-                        Download PNG
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               <div className="rounded-xl border border-border bg-card p-4">
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-50">
                   The idea
                 </p>
                 <p className="mt-1 text-sm text-gray-100">{plan.concept}</p>
-                {plan.onImageText && (
-                  <p className="mt-2 text-xs text-gray-70">
-                    Words in the image:{" "}
-                    <span className="font-medium text-gray-100">
-                      {plan.onImageText}
-                    </span>
-                  </p>
-                )}
+                <p className="mt-2 text-xs text-gray-70">
+                  Composition: {LAYOUTS[plan.design.layout]}
+                  {plan.design.headline ? ` · “${plan.design.headline}”` : ""}
+                </p>
               </div>
 
               {captions && (
@@ -301,9 +290,7 @@ export default function ImageStudioPage() {
                     <div className="flex flex-wrap gap-1.5">
                       {PLATFORMS.map((platform) => {
                         const active = platform.id === captionTab;
-                        const hasText = Boolean(
-                          captions[CAPTION_KEYS[platform.id]],
-                        );
+                        const hasText = Boolean(captions[platform.id]);
                         return (
                           <button
                             key={platform.id}
@@ -338,10 +325,7 @@ export default function ImageStudioPage() {
                     onChange={(e) =>
                       setCaptions((previous) =>
                         previous
-                          ? {
-                              ...previous,
-                              [CAPTION_KEYS[captionTab]]: e.target.value,
-                            }
+                          ? { ...previous, [captionTab]: e.target.value }
                           : previous,
                       )
                     }
@@ -373,22 +357,6 @@ export default function ImageStudioPage() {
                   </p>
                 </div>
               )}
-
-              <div className="rounded-xl border border-border bg-card p-4">
-                <div className="mb-1 flex items-center justify-between">
-                  <p className="text-xs font-medium text-gray-70">
-                    Image direction
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => copy("Image direction", plan.imagePrompt)}
-                    className="text-xs font-medium text-primary hover:underline"
-                  >
-                    Copy
-                  </button>
-                </div>
-                <p className="text-xs text-gray-50">{plan.imagePrompt}</p>
-              </div>
             </>
           )}
         </div>

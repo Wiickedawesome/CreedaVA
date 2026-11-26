@@ -1,15 +1,21 @@
 /**
- * Social creative — the data behind the studio's one workflow.
+ * Social creative — the brief goes in, a design spec and captions come out.
  *
- * Pure: no React, no SDK. The route imports this to build prompts and to
- * validate a plan; the page imports it for the format and tone pickers.
+ * Pure: no React, no SDK, no renderer. The route imports this to build prompts
+ * and validate what the model returned; the studio imports it for its pickers.
  *
- * Why there are no layout templates here: a template set can only produce the
- * kinds of image someone thought of in advance. The model composes each piece
- * from the brief instead. Brand safety comes from two places that work on any
- * composition — the palette and rules in the prompt, and the real logo passed
- * as a reference image — not from constraining the layout.
+ * Why a design spec instead of one giant prompt: a diffusion model decides
+ * composition and lettering in the same pass, and lettering is the part it
+ * cannot do. Ask it for a headline and you get a moody photo with no words, or
+ * words spelled wrong. So the model decides the *design* — angle, wording,
+ * which composition family, where the photo sits — and a renderer draws it
+ * with real type, which keeps the text legible and the range open.
+ *
+ * Also why the admin does not pick a layout: the model chooses from the brief,
+ * so it is free to pick the one the post needs.
  */
+
+import { THUMBNAIL_PHOTOS } from "@/lib/constants/blog-images";
 
 /** Colours, matching the design system's marketing tokens. */
 export const BRAND = {
@@ -20,14 +26,18 @@ export const BRAND = {
   rule: "#E2E2DE",
 } as const;
 
-/** Sizes, using aspect ratios the image model documents as supported. */
+/**
+ * Canvas shapes. Aspect ratio is what determines the output shape; the model
+ * picks the resolution for a given ratio, so no pixel size is promised here.
+ */
 export type CreativeFormat = "feed" | "portrait" | "story" | "landscape";
 
 export interface FormatSpec {
   label: string;
   usage: string;
-  /** Colon form — the API rejects the CSS slash. */
+  /** Colon form — the image API rejects the CSS slash. */
   aspectRatio: string;
+  /** Canvas size, and the crop requested for a photo. */
   width: number;
   height: number;
 }
@@ -69,6 +79,48 @@ export function isFormat(value: string): value is CreativeFormat {
   return Object.hasOwn(FORMATS, value);
 }
 
+/** Composition families the renderer can draw. */
+export type LayoutId = "hero" | "split" | "stat" | "list" | "quote";
+
+export const LAYOUTS: Record<LayoutId, string> = {
+  hero: "full-bleed photo, headline across the bottom over a scrim",
+  split: "solid brand panel beside a photo, headline on the panel",
+  stat: "one large figure, made unmissable",
+  list: "headline plus three numbered points",
+  quote: "a single statement set large, no photo",
+};
+
+export const LAYOUT_IDS = Object.keys(LAYOUTS) as LayoutId[];
+
+export function isLayout(value: string): value is LayoutId {
+  return Object.hasOwn(LAYOUTS, value);
+}
+
+/** Where the photo in the composition comes from. */
+export type PhotoSource = "library" | "custom" | "none";
+
+export interface Design {
+  layout: LayoutId;
+  /** Small label above the headline. */
+  eyebrow: string;
+  headline: string;
+  subhead: string;
+  /** The figure, for the `stat` layout. */
+  stat: string;
+  /** Numbered points, for the `list` layout. */
+  items: string[];
+  cta: string;
+  /**
+   * `library` uses a curated Unsplash photo id (no API key, no rate limit),
+   * `custom` draws one with the image model, `none` is type alone.
+   */
+  photoSource: PhotoSource;
+  /** Curated photo id when `photoSource` is `library`. */
+  photoId: string;
+  /** What the image model should draw when `photoSource` is `custom`. */
+  photoBrief: string;
+}
+
 export type Platform = "facebook" | "linkedin" | "instagram";
 
 export const PLATFORMS: readonly { id: Platform; label: string }[] = [
@@ -100,14 +152,10 @@ export interface Captions {
   instagram: string;
 }
 
-/** What the text model returns, and what the studio shows. */
 export interface CreativePlan {
-  /** One line naming the idea, so a set of runs stays distinguishable. */
+  /** One sentence naming the idea, so a set of runs stays distinguishable. */
   concept: string;
-  /** The full instruction handed to the image model. */
-  imagePrompt: string;
-  /** Words to appear inside the image. Empty when the image needs none. */
-  onImageText: string;
+  design: Design;
   captions: Captions;
   hashtags: string[];
 }
@@ -115,30 +163,39 @@ export interface CreativePlan {
 export const LIMITS = {
   brief: 1200,
   concept: 160,
-  imagePrompt: 2000,
-  onImageText: 90,
+  eyebrow: 34,
+  headline: 90,
+  subhead: 150,
+  stat: 18,
+  item: 60,
+  items: 4,
+  cta: 30,
+  photoBrief: 300,
   caption: 2200,
   hashtags: 12,
   hashtag: 40,
 } as const;
 
+/** The photo ids the model may choose from, rendered into the prompt. */
+const PHOTO_MENU = THUMBNAIL_PHOTOS.map(
+  (photo) => `  ${photo.id} — ${photo.label}`,
+).join("\n");
+
 /**
  * Brand rules that hold for every composition.
  *
- * Deliberately style-agnostic: it fixes colours, honesty and logo handling, and
- * says nothing about whether the image is a photo, a diagram, a mockup or a
- * collage. That is the model's decision, per brief.
+ * Deliberately style-agnostic: it fixes colours, wording and honesty, and says
+ * nothing about the composition. That is the model's decision, per brief.
  */
 const BRAND_RULES = `BRAND
-- Palette, and nothing outside it: brand green ${BRAND.green}, ink ${BRAND.ink}, paper ${BRAND.paper}, muted slate ${BRAND.mute}, hairline ${BRAND.rule}. Neutrals and skin tones may appear inside photographs.
-- CreedaVA is a managed virtual-assistant company in Belize working with small businesses in the United States. Real people, not software. Bilingual English and Spanish.
-- Never invent statistics, percentages, review scores, client names, awards, prices or testimonials. If the brief contains no number, the image contains no number.
-- Never render a phone number, email address, URL or QR code. Contact details change and a stale one in an image cannot be corrected.
-- Do not depict a specific real person or a recognisable individual's likeness.`;
+- Palette: brand green ${BRAND.green}, ink ${BRAND.ink}, paper ${BRAND.paper}, muted slate ${BRAND.mute}, hairline ${BRAND.rule}. The renderer applies these; do not describe them.
+- CreedaVA is a managed virtual-assistant company in Belize serving small businesses in the United States. Real people, not software. Bilingual English and Spanish.
+- Never invent statistics, percentages, review scores, client names, awards, prices or testimonials. If the brief contains no number, the design contains no number.
+- Never put a phone number, email address, URL or QR code in the design. Contact details change and an image cannot be corrected afterwards.`;
 
-/** Purpose-built around producing JSON the route can trust. */
+/** Purpose-built so the reply is JSON the route can trust. */
 export function buildPlanPrompt(brief: string, tone: Tone): string {
-  return `You are the social content director for CreedaVA.
+  return `You are the social content director for CreedaVA. You design one social post.
 
 BRIEF
 ${brief}
@@ -148,33 +205,50 @@ ${tone}
 
 ${BRAND_RULES}
 
-Produce one post. Choose the visual form the brief actually needs — an editorial photograph, a diagram or infographic, a product-style mockup of a screen or workspace, a typographic statement, a collage, or something else. Do not default to a diagram.
+CHOOSING THE COMPOSITION
+Pick the layout the brief actually needs. Do not default to one.
+- hero: ${LAYOUTS.hero}
+- split: ${LAYOUTS.split}
+- stat: ${LAYOUTS.stat}
+- list: ${LAYOUTS.list}
+- quote: ${LAYOUTS.quote}
+
+CHOOSING THE PHOTO
+- "library" — a curated photo fits. Choose one id from the list below.
+- "custom" — nothing in the library matches; describe the scene to draw. Use this for mockups, diagrams or a very specific scene.
+- "none" — type alone is stronger. Preferred for stat, list and most quote posts.
+
+LIBRARY PHOTO IDS
+${PHOTO_MENU}
 
 Return ONLY valid JSON, no markdown fence, matching exactly:
 {
   "concept": "one sentence naming the idea",
-  "imagePrompt": "a complete, self-contained instruction for an image model",
-  "onImageText": "the only words that may appear inside the image, or an empty string",
+  "design": {
+    "layout": "hero | split | stat | list | quote",
+    "eyebrow": "2-4 words, uppercase label, or empty",
+    "headline": "the main line, at most 8 words",
+    "subhead": "one supporting sentence, or empty",
+    "stat": "a figure that appears in the brief, or empty",
+    "items": ["first point", "second point", "third point"],
+    "cta": "2-4 words, or empty",
+    "photoSource": "library | custom | none",
+    "photoId": "photo id from the list, or empty",
+    "photoBrief": "scene for the image model when photoSource is custom, else empty"
+  },
   "captions": {
     "facebook": "2-4 sentences, conversational, no hashtags",
     "linkedin": "2-4 sentences, professional but human, no hashtags",
     "instagram": "1-3 sentences, light, no hashtags"
   },
-  "hashtags": ["lowercase", "#-free", "up to 8", "relevant to the brief"]
+  "hashtags": ["lowercase", "no leading #", "up to 8"]
 }
 
-RULES FOR "imagePrompt"
-- Describe subject, setting, composition, lighting, camera or rendering style, and mood. Be concrete.
-- State that the image is landscape or portrait as needed by the layout you are describing, but do not choose a pixel size.
-- Name the exact text to render, copied from "onImageText". If "onImageText" is empty, say the image contains no text.
-- Keep any in-image text to a few large words. Small type is where renders fail.
-- Leave clear, uncluttered space in the lower-left corner for the brand mark, and say so in the prompt.
-
-RULES FOR "onImageText"
-- At most 8 words. Empty string is correct when the visual speaks alone.
-
-RULES FOR "hashtags"
-- Bare words, no leading #, no spaces. Return fewer rather than padding the list.`;
+RULES
+- "items" only matters for list, and must then have exactly three entries.
+- "stat" only matters for stat, and must be a figure written in the brief. Never invent one; if the brief has no number, choose a different layout.
+- Fill the fields the chosen layout uses and leave the rest empty.
+- The headline is a statement, not a description of the design.`;
 }
 
 /** Strip a markdown fence and any prose around the object. */
@@ -206,11 +280,72 @@ function clampHashtags(value: unknown): string[] {
     .slice(0, LIMITS.hashtags);
 }
 
+const PHOTO_IDS = new Set(THUMBNAIL_PHOTOS.map((photo) => photo.id));
+
+function parsePhotoSource(value: unknown): PhotoSource {
+  return value === "custom" || value === "none" ? value : "library";
+}
+
+/**
+ * Turn a design object into one the renderer can draw.
+ *
+ * Layouts are downgraded rather than trusted: a `stat` with no figure would
+ * draw an empty centre, and a `list` with fewer than two points would leave
+ * gaps, so both become a `quote`. A photo source that cannot produce a photo
+ * becomes `none`, which is type alone rather than a blank slot.
+ */
+function parseDesign(value: unknown): Design {
+  const source =
+    typeof value === "object" && value !== null
+      ? (value as Record<string, unknown>)
+      : {};
+
+  const items = Array.isArray(source.items)
+    ? source.items
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim().slice(0, LIMITS.item))
+        .filter(Boolean)
+        .slice(0, LIMITS.items)
+    : [];
+
+  let layout: LayoutId = isLayout(String(source.layout))
+    ? (source.layout as LayoutId)
+    : "quote";
+  const stat = text(source.stat, LIMITS.stat);
+
+  if (layout === "stat" && !stat) layout = "quote";
+  if (layout === "list" && items.length < 2) layout = "quote";
+
+  const photoId = text(source.photoId, 80);
+  const photoBrief = text(source.photoBrief, LIMITS.photoBrief);
+  let photoSource = parsePhotoSource(source.photoSource);
+
+  if (photoSource === "library" && !PHOTO_IDS.has(photoId)) {
+    photoSource = photoBrief ? "custom" : "none";
+  }
+  if (photoSource === "custom" && !photoBrief) photoSource = "none";
+  // `quote` is defined as type alone.
+  if (layout === "quote") photoSource = "none";
+
+  return {
+    layout,
+    eyebrow: text(source.eyebrow, LIMITS.eyebrow),
+    headline: text(source.headline, LIMITS.headline),
+    subhead: text(source.subhead, LIMITS.subhead),
+    stat,
+    items,
+    cta: text(source.cta, LIMITS.cta),
+    photoSource,
+    photoId: photoSource === "library" ? photoId : "",
+    photoBrief: photoSource === "custom" ? photoBrief : "",
+  };
+}
+
 /**
  * Turn the model's reply into a plan, or null.
  *
  * Everything is clamped and checked: the reply is model output, so an
- * unexpected shape must fail here rather than inside a render.
+ * unexpected shape must fail here rather than inside the renderer.
  */
 export function parsePlan(raw: string): CreativePlan | null {
   const json = extractJson(raw);
@@ -225,6 +360,7 @@ export function parsePlan(raw: string): CreativePlan | null {
   if (typeof parsed !== "object" || parsed === null) return null;
 
   const source = parsed as Record<string, unknown>;
+  const design = parseDesign(source.design);
   const rawCaptions =
     typeof source.captions === "object" && source.captions !== null
       ? (source.captions as Record<string, unknown>)
@@ -232,8 +368,7 @@ export function parsePlan(raw: string): CreativePlan | null {
 
   const plan: CreativePlan = {
     concept: text(source.concept, LIMITS.concept),
-    imagePrompt: text(source.imagePrompt, LIMITS.imagePrompt),
-    onImageText: text(source.onImageText, LIMITS.onImageText),
+    design,
     captions: {
       facebook: text(rawCaptions.facebook, LIMITS.caption),
       linkedin: text(rawCaptions.linkedin, LIMITS.caption),
@@ -242,61 +377,48 @@ export function parsePlan(raw: string): CreativePlan | null {
     hashtags: clampHashtags(source.hashtags),
   };
 
-  // Without an image prompt there is nothing to draw, and without any caption
-  // there is nothing to post. Either way the plan is unusable.
-  const hasCaption = Object.values(plan.captions).some(Boolean);
-  return plan.imagePrompt && hasCaption ? plan : null;
+  // Without a headline there is nothing to draw, and without any caption there
+  // is nothing to post. Either way the plan is unusable.
+  if (!plan.design.headline) return null;
+  if (!Object.values(plan.captions).some(Boolean)) return null;
+  return plan;
 }
 
 /**
- * The instruction the image model receives.
+ * Instruction for the image model, used only when `photoSource` is `custom`.
  *
- * The plan's own prompt comes first — that is where the creative direction
- * lives. Everything after it is non-negotiable brand and honesty framing, so a
- * model that writes a beautiful prompt cannot talk itself out of the palette or
- * into inventing a statistic.
+ * The photo is a *slot* inside the composition, so this asks for a plain plate
+ * with no lettering — the renderer adds every word.
  */
-export function buildImagePrompt(
-  plan: Pick<CreativePlan, "imagePrompt" | "onImageText">,
+export function buildPhotoPrompt(
+  design: Design,
   format: CreativeFormat,
 ): string {
   const spec = FORMATS[format];
-  const logoSpot =
-    format === "story"
-      ? "the lower third, well inside the edges so the app's interface never covers it"
-      : "the lower-left corner, with clear space around it";
+  return `A photograph for the background of a social media post, ${spec.width} by ${spec.height} pixels, aspect ratio ${spec.aspectRatio}.
 
-  const words = plan.onImageText
-    ? `The only words allowed in the image are exactly: "${plan.onImageText}". Set them large, in a heavy geometric sans, with generous spacing. Every other piece of text must be omitted.`
-    : "The image contains no words, letters, numbers or captions of any kind.";
+SUBJECT
+${design.photoBrief}
 
-  return `${plan.imagePrompt}
+TREATMENT
+- Editorial and calm. Real, believable lighting. Shallow depth of field where it helps.
+- Leave the middle and lower area relatively uncluttered so overlaid type stays readable.
+- Restrained palette leaning toward deep green, ink navy and warm off-white.
 
-COMPOSITION
-- Portrait-orientation ${spec.width} by ${spec.height} pixels, aspect ratio ${spec.aspectRatio}.
-
-COLOUR
-- Brand green ${BRAND.green}, ink ${BRAND.ink}, paper ${BRAND.paper}, muted slate ${BRAND.mute}, hairline ${BRAND.rule}. Nothing outside that palette except neutrals and skin tones inside a photograph.
-
-TEXT
-- ${words}
-- No phone numbers, email addresses, URLs, QR codes, watermarks or invented brand names.
-
-LOGO
-- A reference image of the CreedaVA mark is attached. Reproduce that mark exactly as supplied — identical shapes, proportions and colours. Do not redraw it, restyle it, translate it or approximate it.
-- Place it small, roughly 7% of the image width, at ${logoSpot}.
-- The attached artwork is the mark alone. Do not typeset the brand name beside it; a rendered wordmark is where lettering goes wrong.
-
-HONESTY
-- Do not add statistics, percentages, review scores, prices, awards, client names or testimonials that are not present in the instruction above.`;
+EXCLUDE
+- No text, letters, numbers, logos, watermarks, interface chrome or captions of any kind.
+- No recognisable real person, no celebrity likeness.
+- No phone numbers, URLs or QR codes.`;
 }
 
 /**
  * Filename for a download, so a folder of exports stays readable.
  *
- * No pixel size in the name: the model picks the resolution for a given aspect
- * ratio, so a name claiming 1080x1920 would be wrong for a 768x1376 file.
+ * The size is truthful here: the renderer owns the canvas, so a portrait export
+ * really is 1080×1350. (A model-drawn image is not, which is why this is only
+ * used for rendered creatives.)
  */
-export function creativeFilename(format: CreativeFormat, index: number): string {
-  return `creedava-${format}-${index + 1}.png`;
+export function creativeFilename(format: CreativeFormat, index = 0): string {
+  const spec = FORMATS[format];
+  return `creedava-${format}-${spec.width}x${spec.height}-${index + 1}.png`;
 }
