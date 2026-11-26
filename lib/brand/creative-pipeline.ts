@@ -6,9 +6,8 @@
  * testing it should not require a session cookie.
  *
  * Three steps:
- *   1. the planner model designs the post (idea, composition, wording, captions)
- *   2. the photo slot is filled — curated Unsplash photo, model-drawn scene, or
- *      nothing
+ *   1. the planner model designs the post (idea, composition, wording, caption)
+ *   2. the photo slot is filled — a curated Unsplash photo or a model-drawn scene
  *   3. the design is rendered to a PNG at the requested canvas size
  */
 
@@ -24,7 +23,6 @@ import {
   type CreativeFormat,
   type CreativePlan,
   type Design,
-  type Tone,
 } from "./creative";
 
 /** Writes the design. Text only, so cost is noise next to an image. */
@@ -46,12 +44,11 @@ function isMissingModel(err: unknown): boolean {
 export async function planCreative(
   ai: GoogleGenAI,
   brief: string,
-  tone: Tone,
 ): Promise<PlanResult> {
   try {
     const planned = await ai.models.generateContent({
       model: PLANNER_MODEL,
-      contents: buildPlanPrompt(brief, tone),
+      contents: buildPlanPrompt(brief),
     });
     const plan = parsePlan(planned.text ?? "");
     return plan ? { ok: true, plan } : { ok: false, reason: "malformed" };
@@ -101,7 +98,7 @@ async function drawCustomPhoto(
   return null;
 }
 
-/** Fill the photo slot, or return null so the composition draws as type only. */
+/** Fill the photo slot, or return null when it cannot be filled. */
 export async function resolvePhoto(
   ai: GoogleGenAI,
   design: Design,
@@ -110,10 +107,9 @@ export async function resolvePhoto(
   if (design.photoSource === "library") {
     return fetchPhotoDataUrl(libraryPhotoUrl(design.photoId, format));
   }
-  if (design.photoSource === "custom") {
-    return drawCustomPhoto(ai, buildPhotoPrompt(design, format), format);
-  }
-  return null;
+  // A drawn scene needs a subject; without one there is nothing to ask for.
+  if (!design.photoBrief) return null;
+  return drawCustomPhoto(ai, buildPhotoPrompt(design, format), format);
 }
 
 export interface RenderedCreative {
@@ -141,10 +137,9 @@ export type CreativeResult =
 export async function buildCreative(
   ai: GoogleGenAI,
   brief: string,
-  tone: Tone,
   format: CreativeFormat,
 ): Promise<CreativeResult> {
-  const planned = await planCreative(ai, brief, tone);
+  const planned = await planCreative(ai, brief);
   if (!planned.ok) return planned;
 
   const { plan } = planned;
@@ -163,7 +158,7 @@ export async function buildCreative(
           height: FORMATS[format].height,
           filename: creativeFilename(format),
         },
-        photoDropped: plan.design.photoSource !== "none" && photo === null,
+        photoDropped: photo === null,
       },
     };
   } catch (err) {

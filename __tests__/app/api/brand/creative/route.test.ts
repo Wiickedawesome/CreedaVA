@@ -33,7 +33,7 @@ const BRIEF =
 const RENDERED = {
   ok: true as const,
   creative: {
-    plan: { concept: "Idea", design: {}, captions: {}, hashtags: [] },
+    plan: { concept: "Idea", design: {}, caption: "A caption.", hashtags: [] },
     image: {
       dataUrl: "data:image/png;base64,abc",
       width: 1080,
@@ -98,32 +98,20 @@ describe("POST /api/brand/creative", () => {
     expect(mockBuildCreative).not.toHaveBeenCalled();
   });
 
-  it("defaults the tone to warm", async () => {
-    await POST(post({ brief: BRIEF, format: "feed" }));
+  it("passes the brief and size to the pipeline", async () => {
+    await POST(post({ brief: BRIEF, format: "story" }));
     expect(mockBuildCreative).toHaveBeenCalledWith(
       expect.anything(),
       BRIEF,
-      "warm",
-      "feed",
-    );
-  });
-
-  it("passes a recognised tone through", async () => {
-    await POST(post({ brief: BRIEF, format: "story", tone: "playful" }));
-    expect(mockBuildCreative).toHaveBeenCalledWith(
-      expect.anything(),
-      BRIEF,
-      "playful",
       "story",
     );
   });
 
-  it("falls back to warm for an unknown tone", async () => {
-    await POST(post({ brief: BRIEF, format: "feed", tone: "sarcastic" }));
+  it("ignores a tone the client still sends", async () => {
+    await POST(post({ brief: BRIEF, format: "feed", tone: "playful" }));
     expect(mockBuildCreative).toHaveBeenCalledWith(
       expect.anything(),
       BRIEF,
-      "warm",
       "feed",
     );
   });
@@ -133,7 +121,6 @@ describe("POST /api/brand/creative", () => {
     expect(mockBuildCreative).toHaveBeenCalledWith(
       expect.anything(),
       BRIEF,
-      "warm",
       "feed",
     );
   });
@@ -164,7 +151,7 @@ describe("POST /api/brand/creative", () => {
     mockBuildCreative.mockResolvedValue({
       ok: false,
       reason: "render-failed",
-      plan: { concept: "Idea", design: {}, captions: {}, hashtags: [] },
+      plan: { concept: "Idea", design: {}, caption: "A caption.", hashtags: [] },
     });
     const res = await POST(post({ brief: BRIEF, format: "feed" }));
     expect(res.status).toBe(502);

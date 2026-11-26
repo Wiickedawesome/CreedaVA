@@ -5,18 +5,16 @@ import {
   FORMAT_IDS,
   LAYOUT_IDS,
   LIMITS,
-  PLATFORMS,
-  TONES,
   buildPhotoPrompt,
   buildPlanPrompt,
   creativeFilename,
   isFormat,
   isLayout,
-  isPlatform,
-  isTone,
   parsePlan,
   type Design,
 } from "@/lib/brand/creative";
+
+const KNOWN_PHOTO = "photo-1556745753-b2904692b3cd";
 
 /** A complete design object, so each test overrides only what it cares about. */
 function design(overrides: Record<string, unknown> = {}) {
@@ -25,11 +23,9 @@ function design(overrides: Record<string, unknown> = {}) {
     eyebrow: "Coverage",
     headline: "Never miss another call",
     subhead: "Support that answers.",
-    stat: "11 hrs",
-    items: ["One", "Two", "Three"],
     cta: "Book a call",
     photoSource: "library",
-    photoId: "photo-1556745753-b2904692b3cd",
+    photoId: KNOWN_PHOTO,
     photoBrief: "",
     ...overrides,
   };
@@ -40,7 +36,7 @@ function plan(overrides: Record<string, unknown> = {}) {
   return JSON.stringify({
     concept: "Missed calls cost law firms clients.",
     design: design(),
-    captions: { facebook: "A caption.", linkedin: "", instagram: "" },
+    caption: "A caption.",
     hashtags: ["lawfirm", "#bilingual"],
     ...overrides,
   });
@@ -66,11 +62,8 @@ describe("guards", () => {
     expect(isLayout("carousel")).toBe(false);
   });
 
-  it("accepts only known tones and platforms", () => {
-    for (const tone of TONES) expect(isTone(tone.id)).toBe(true);
-    for (const platform of PLATFORMS) expect(isPlatform(platform.id)).toBe(true);
-    expect(isTone("sarcastic")).toBe(false);
-    expect(isPlatform("tiktok")).toBe(false);
+  it("offers no layout without a photo", () => {
+    expect(LAYOUT_IDS).toEqual(["hero", "band", "split"]);
   });
 });
 
@@ -97,32 +90,42 @@ describe("formats", () => {
 });
 
 describe("buildPlanPrompt", () => {
-  it("embeds the brief and the tone", () => {
-    const prompt = buildPlanPrompt("Bilingual receptionists for law firms", "direct");
+  it("embeds the brief", () => {
+    const prompt = buildPlanPrompt("Bilingual receptionists for law firms");
     expect(prompt).toContain("Bilingual receptionists for law firms");
-    expect(prompt).toContain("direct");
   });
 
   it("carries the palette so the model does not invent one", () => {
-    const prompt = buildPlanPrompt("A brief about coverage", "warm");
+    const prompt = buildPlanPrompt("A brief about coverage");
     expect(prompt).toContain(BRAND.green);
     expect(prompt).toContain(BRAND.ink);
   });
 
   it("forbids invented numbers and contact details", () => {
-    const prompt = buildPlanPrompt("A brief about coverage", "warm");
+    const prompt = buildPlanPrompt("A brief about coverage");
     expect(prompt).toMatch(/never invent statistics/i);
     expect(prompt).toMatch(/phone number/i);
   });
 
+  it("asks for a short headline and no bullet lists", () => {
+    const prompt = buildPlanPrompt("A brief about coverage");
+    expect(prompt).toContain(String(LIMITS.headline));
+    expect(prompt).toMatch(/no bullet lists/i);
+  });
+
+  it("requires a photo and offers every curated id", () => {
+    const prompt = buildPlanPrompt("A brief about coverage");
+    expect(prompt).toMatch(/every design has a photo/i);
+    expect(prompt).toContain(KNOWN_PHOTO);
+  });
+
   it("offers every layout and every curated photo id", () => {
-    const prompt = buildPlanPrompt("A brief about coverage", "warm");
+    const prompt = buildPlanPrompt("A brief about coverage");
     for (const id of LAYOUT_IDS) expect(prompt).toContain(`- ${id}:`);
-    expect(prompt).toContain("photo-1556745753-b2904692b3cd");
   });
 
   it("asks for JSON rather than prose", () => {
-    expect(buildPlanPrompt("A brief", "warm")).toMatch(/ONLY valid JSON/);
+    expect(buildPlanPrompt("A brief")).toMatch(/ONLY valid JSON/);
   });
 });
 
@@ -132,6 +135,7 @@ describe("parsePlan", () => {
     expect(parsed).not.toBeNull();
     expect(parsed?.design.headline).toBe("Never miss another call");
     expect(parsed?.design.layout).toBe("hero");
+    expect(parsed?.caption).toBe("A caption.");
   });
 
   it("reads a fenced JSON block", () => {
@@ -152,26 +156,20 @@ describe("parsePlan", () => {
     expect(parsePlan(plan({ design: design({ headline: "   " }) }))).toBeNull();
   });
 
-  it("rejects a plan with no captions at all", () => {
-    expect(
-      parsePlan(plan({ captions: { facebook: "", linkedin: "", instagram: "" } })),
-    ).toBeNull();
-  });
-
-  it("keeps a plan that has only one caption", () => {
-    const parsed = parsePlan(plan({ captions: { instagram: "Just this one." } }));
-    expect(parsed?.captions.instagram).toBe("Just this one.");
-    expect(parsed?.captions.facebook).toBe("");
+  it("rejects a plan with no caption", () => {
+    expect(parsePlan(plan({ caption: "   " }))).toBeNull();
   });
 
   it("clamps overlong text to the renderer's limits", () => {
     const parsed = parsePlan(
       plan({
         concept: "x".repeat(LIMITS.concept + 200),
+        caption: "c".repeat(LIMITS.caption + 200),
         design: design({ headline: "y".repeat(LIMITS.headline + 200) }),
       }),
     );
     expect(parsed?.concept).toHaveLength(LIMITS.concept);
+    expect(parsed?.caption).toHaveLength(LIMITS.caption);
     expect(parsed?.design.headline).toHaveLength(LIMITS.headline);
   });
 
@@ -189,51 +187,9 @@ describe("parsePlan", () => {
     );
   });
 
-  it("falls back to a quote when no layout is named", () => {
+  it("falls back to a photo-led layout when none is named", () => {
     const parsed = parsePlan(plan({ design: design({ layout: "carousel" }) }));
-    expect(parsed?.design.layout).toBe("quote");
-  });
-});
-
-describe("parsePlan layout downgrades", () => {
-  it("turns a stat with no figure into a quote", () => {
-    const parsed = parsePlan(plan({ design: design({ layout: "stat", stat: "" }) }));
-    expect(parsed?.design.layout).toBe("quote");
-  });
-
-  it("keeps a stat that has a figure", () => {
-    const parsed = parsePlan(plan({ design: design({ layout: "stat", stat: "11 hrs" }) }));
-    expect(parsed?.design.layout).toBe("stat");
-    expect(parsed?.design.stat).toBe("11 hrs");
-  });
-
-  it("turns a list with fewer than two points into a quote", () => {
-    const parsed = parsePlan(
-      plan({ design: design({ layout: "list", items: ["Only one"] }) }),
-    );
-    expect(parsed?.design.layout).toBe("quote");
-  });
-
-  it("keeps a list with two points", () => {
-    const parsed = parsePlan(
-      plan({ design: design({ layout: "list", items: ["One", "Two"] }) }),
-    );
-    expect(parsed?.design.layout).toBe("list");
-  });
-
-  it("drops non-string list entries", () => {
-    const parsed = parsePlan(
-      plan({ design: design({ layout: "list", items: ["One", 2, null, "Two"] }) }),
-    );
-    expect(parsed?.design.items).toEqual(["One", "Two"]);
-  });
-
-  it("forces a quote to type alone", () => {
-    const parsed = parsePlan(
-      plan({ design: design({ layout: "quote", photoSource: "library" }) }),
-    );
-    expect(parsed?.design.photoSource).toBe("none");
-    expect(parsed?.design.photoId).toBe("");
+    expect(parsed?.design.layout).toBe("hero");
   });
 });
 
@@ -241,7 +197,7 @@ describe("parsePlan photo resolution", () => {
   it("keeps a known library photo", () => {
     const parsed = parsePlan(plan());
     expect(parsed?.design.photoSource).toBe("library");
-    expect(parsed?.design.photoId).toBe("photo-1556745753-b2904692b3cd");
+    expect(parsed?.design.photoId).toBe(KNOWN_PHOTO);
   });
 
   it("draws the scene when the id is unknown but a brief exists", () => {
@@ -258,18 +214,12 @@ describe("parsePlan photo resolution", () => {
     expect(parsed?.design.photoId).toBe("");
   });
 
-  it("drops the photo when the id is unknown and no brief exists", () => {
+  it("stays on a drawn scene when the id is unknown and no brief exists", () => {
     const parsed = parsePlan(
       plan({ design: design({ photoId: "photo-does-not-exist" }) }),
     );
-    expect(parsed?.design.photoSource).toBe("none");
-  });
-
-  it("drops a custom source that has nothing to draw", () => {
-    const parsed = parsePlan(
-      plan({ design: design({ photoSource: "custom", photoBrief: "" }) }),
-    );
-    expect(parsed?.design.photoSource).toBe("none");
+    expect(parsed?.design.photoSource).toBe("custom");
+    expect(parsed?.design.photoBrief).toBe("");
   });
 
   it("treats an unknown photo source as a library request", () => {
@@ -291,8 +241,6 @@ describe("buildPhotoPrompt", () => {
     eyebrow: "",
     headline: "Never miss another call",
     subhead: "",
-    stat: "",
-    items: [],
     cta: "",
     photoSource: "custom",
     photoId: "",

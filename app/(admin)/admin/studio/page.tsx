@@ -8,13 +8,9 @@ import {
   FORMAT_IDS,
   LAYOUTS,
   LIMITS,
-  PLATFORMS,
-  TONES,
   creativeFilename,
   type CreativeFormat,
   type CreativePlan,
-  type Platform,
-  type Tone,
 } from "@/lib/brand/creative";
 
 /**
@@ -25,8 +21,8 @@ import {
  * is set in a real font rather than painted by an image model — which is what
  * makes text legible without narrowing the range to a few fixed templates.
  *
- * Captions come back with the image, one per platform, each copyable on its
- * own. Nothing is uploaded.
+ * One caption comes back with the image, editable before it is copied. Nothing
+ * is uploaded.
  */
 
 interface RenderedImage {
@@ -49,15 +45,11 @@ export default function ImageStudioPage() {
 
   const [brief, setBrief] = useState("");
   const [format, setFormat] = useState<CreativeFormat>("feed");
-  const [tone, setTone] = useState<Tone>("warm");
 
   const [busy, setBusy] = useState(false);
   const [plan, setPlan] = useState<CreativePlan | null>(null);
   const [image, setImage] = useState<RenderedImage | null>(null);
-  const [captions, setCaptions] = useState<CreativePlan["captions"] | null>(
-    null,
-  );
-  const [captionTab, setCaptionTab] = useState<Platform>("facebook");
+  const [caption, setCaption] = useState("");
   const [photoDropped, setPhotoDropped] = useState(false);
 
   const tooLong = brief.length > LIMITS.brief;
@@ -69,7 +61,7 @@ export default function ImageStudioPage() {
       const res = await fetch("/api/brand/creative", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brief, format, tone }),
+        body: JSON.stringify({ brief, format }),
       });
       const data = (await res.json()) as CreativeResponse;
 
@@ -78,7 +70,7 @@ export default function ImageStudioPage() {
         // even when the picture did not come through.
         if (data.plan) {
           setPlan(data.plan);
-          setCaptions(data.plan.captions);
+          setCaption(data.plan.caption);
           setImage(null);
         }
         toast(data.error ?? data.message ?? "Could not build the post", "error");
@@ -86,7 +78,7 @@ export default function ImageStudioPage() {
       }
 
       setPlan(data.plan ?? null);
-      setCaptions(data.plan?.captions ?? null);
+      setCaption(data.plan?.caption ?? "");
       setImage(data.image ?? null);
       setPhotoDropped(Boolean(data.photoDropped));
       toast("Post ready", "success");
@@ -116,8 +108,7 @@ export default function ImageStudioPage() {
   }
 
   const hashtagLine = plan ? plan.hashtags.map((tag) => `#${tag}`).join(" ") : "";
-  const activeCaption = captions ? captions[captionTab] : "";
-  const fullPost = [activeCaption, hashtagLine].filter(Boolean).join("\n\n");
+  const fullPost = [caption, hashtagLine].filter(Boolean).join("\n\n");
 
   return (
     <div className="space-y-6">
@@ -190,30 +181,6 @@ export default function ImageStudioPage() {
             <p className="mt-1 text-xs text-gray-50">{FORMATS[format].usage}</p>
           </div>
 
-          <div>
-            <p className="mb-2 text-sm font-medium text-gray-100">Tone</p>
-            <div className="flex flex-wrap gap-1.5">
-              {TONES.map((item) => {
-                const active = item.id === tone;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setTone(item.id)}
-                    aria-pressed={active}
-                    className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                      active
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-card text-gray-70 hover:bg-gray-20"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           <Button onClick={generate} disabled={!canGenerate} isLoading={busy}>
             {plan ? "Design another" : "Design the post"}
           </Button>
@@ -267,7 +234,8 @@ export default function ImageStudioPage() {
 
           {photoDropped && (
             <p className="text-xs text-gray-50">
-              The photo did not load, so this was drawn as type only.
+              The photo did not load, so this was drawn on a flat background.
+              Design another to try again.
             </p>
           )}
 
@@ -284,53 +252,26 @@ export default function ImageStudioPage() {
                 </p>
               </div>
 
-              {captions && (
+              {plan && (
                 <div className="rounded-xl border border-border bg-card p-4">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex flex-wrap gap-1.5">
-                      {PLATFORMS.map((platform) => {
-                        const active = platform.id === captionTab;
-                        const hasText = Boolean(captions[platform.id]);
-                        return (
-                          <button
-                            key={platform.id}
-                            type="button"
-                            onClick={() => setCaptionTab(platform.id)}
-                            aria-pressed={active}
-                            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                              active
-                                ? "border-primary bg-primary/10 text-primary"
-                                : "border-border bg-card text-gray-70 hover:bg-gray-20"
-                            }`}
-                          >
-                            {platform.label}
-                            {!hasText && (
-                              <span className="ml-1 text-gray-50">—</span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-50">
+                      Caption
+                    </p>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => copy(captionTab, fullPost)}
+                      onClick={() => copy("Caption", fullPost)}
                     >
                       Copy post
                     </Button>
                   </div>
 
                   <textarea
-                    value={activeCaption}
-                    onChange={(e) =>
-                      setCaptions((previous) =>
-                        previous
-                          ? { ...previous, [captionTab]: e.target.value }
-                          : previous,
-                      )
-                    }
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
                     rows={6}
-                    aria-label={`${captionTab} caption`}
+                    aria-label="Post caption"
                     className="w-full rounded-md border border-gray-40 bg-card px-4 py-2.5 text-sm text-gray-100 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
                   />
 

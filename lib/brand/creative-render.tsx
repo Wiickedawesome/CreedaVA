@@ -1,5 +1,11 @@
 import { ImageResponse } from "next/og";
-import { BRAND, FORMATS, type CreativeFormat, type Design } from "./creative";
+import {
+  BRAND,
+  FORMATS,
+  LIMITS,
+  type CreativeFormat,
+  type Design,
+} from "./creative";
 import { brandMarkDataUrl } from "./mark";
 
 /**
@@ -19,15 +25,11 @@ import { brandMarkDataUrl } from "./mark";
 
 /** Type sizes at a 1080px canvas. Everything else is this times `scale`. */
 const BASE = {
-  headline: 86,
-  subhead: 31,
-  eyebrow: 20,
-  cta: 25,
-  footnote: 21,
-  mark: 68,
-  stat: 168,
-  item: 32,
-  index: 24,
+  headline: 116,
+  subhead: 30,
+  eyebrow: 19,
+  cta: 24,
+  mark: 44,
 } as const;
 
 /**
@@ -43,15 +45,15 @@ function typeScale(width: number, height: number): number {
 }
 
 /**
- * Shrink long copy instead of letting it overflow.
+ * Shrink a long headline instead of letting it overflow.
  *
- * The spec caps a headline at 90 characters, which at full size would run off
- * a 630px-tall canvas. Two steps are enough; a third would make the type too
- * small to read at feed size.
+ * The spec caps a headline at 42 characters, which is already short: these
+ * steps keep a three-word line enormous while stopping a six-word line from
+ * running off the canvas.
  */
 function fit(value: string, max: number): number {
-  if (value.length > max * 0.85) return 0.68;
-  if (value.length > max * 0.55) return 0.82;
+  if (value.length > max * 0.72) return 0.68;
+  if (value.length > max * 0.52) return 0.84;
   return 1;
 }
 
@@ -124,31 +126,6 @@ function Cta({
   );
 }
 
-function Lockup({
-  design,
-  scale,
-  markColor,
-  textColor,
-}: {
-  design: Design;
-  scale: number;
-  markColor: string;
-  textColor: string;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: px(20 * scale),
-      }}
-    >
-      <Mark scale={scale} color={markColor} />
-      <Eyebrow text={design.eyebrow} scale={scale} color={textColor} />
-    </div>
-  );
-}
-
 /** Full-bleed photo, headline across the bottom over a scrim. */
 function Hero({
   design,
@@ -163,8 +140,8 @@ function Hero({
   height: number;
   scale: number;
 }) {
-  const pad = px(72 * scale);
-  const size = fit(design.headline, 34);
+  const pad = px(76 * scale);
+  const size = fit(design.headline, LIMITS.headline);
 
   return (
     <div
@@ -196,7 +173,7 @@ function Hero({
           width: "100%",
           height: "100%",
           background:
-            "linear-gradient(180deg, rgba(11,33,53,0.18) 0%, rgba(11,33,53,0.58) 52%, rgba(11,33,53,0.95) 100%)",
+            "linear-gradient(180deg, rgba(11,33,53,0.10) 0%, rgba(11,33,53,0.45) 45%, rgba(11,33,53,0.92) 100%)",
         }}
       />
 
@@ -211,23 +188,24 @@ function Hero({
           padding: pad,
         }}
       >
-        <Lockup
-          design={design}
-          scale={scale}
-          markColor={BRAND.paper}
-          textColor={BRAND.paper}
-        />
+        <Mark scale={scale} color={BRAND.paper} />
 
-        <div style={{ display: "flex", flexDirection: "column", gap: px(22 * scale) }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: px(20 * scale) }}>
+          <Eyebrow
+            text={design.eyebrow}
+            scale={scale}
+            color="rgba(247,247,242,0.72)"
+          />
+
           <div
             style={{
               display: "flex",
               fontSize: px(BASE.headline * scale * size),
               fontWeight: 800,
-              lineHeight: 1.06,
-              letterSpacing: px(-0.03 * BASE.headline * scale * size),
+              lineHeight: 1,
+              letterSpacing: px(-0.035 * BASE.headline * scale * size),
               color: BRAND.paper,
-              maxWidth: "94%",
+              maxWidth: "92%",
             }}
           >
             {design.headline}
@@ -279,8 +257,9 @@ function Split({
   scale: number;
 }) {
   const stacked = height > width;
-  const pad = px(64 * scale);
-  const size = fit(design.headline, 34);
+  const pad = px(60 * scale);
+  const size = fit(design.headline, LIMITS.headline);
+  const panelShare = 0.44;
 
   const panel = (
     <div
@@ -290,7 +269,7 @@ function Split({
         justifyContent: "space-between",
         background: BRAND.green,
         padding: pad,
-        width: stacked ? "100%" : px(width * 0.46),
+        width: stacked ? "100%" : px(width * panelShare),
         height: stacked ? px(height * 0.5) : "100%",
       }}
     >
@@ -333,7 +312,7 @@ function Split({
   // The photo gets an explicit pixel box rather than `flex: 1`. Satori computes
   // a flex-sized image's dimensions lazily and crashes on the undefined width;
   // a fixed box sidesteps that entirely.
-  const photoWidth = stacked ? width : width - px(width * 0.46);
+  const photoWidth = stacked ? width : width - px(width * panelShare);
   const photoHeight = stacked ? height - px(height * 0.5) : height;
 
   const photoArea = (
@@ -378,294 +357,101 @@ function Split({
   );
 }
 
-/** One large figure, made unmissable. */
-function Stat({
+/**
+ * Full-bleed photo with a solid brand band across the bottom.
+ *
+ * The band gives the type a flat surface to sit on, so this still works over a
+ * bright, busy photo where a scrim alone would leave the headline muddy.
+ */
+function Band({
   design,
+  photo,
+  width,
+  height,
   scale,
 }: {
   design: Design;
+  photo: string | null;
+  width: number;
+  height: number;
   scale: number;
 }) {
-  const pad = px(78 * scale);
-  const size = fit(design.stat, 12);
+  const bandHeight = px(height * (height > width ? 0.42 : 0.46));
+  const photoHeight = height - bandHeight;
+  const pad = px(62 * scale);
+  const size = fit(design.headline, LIMITS.headline);
 
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
         width: "100%",
         height: "100%",
-        background: BRAND.paper,
-        padding: pad,
+        background: BRAND.ink,
       }}
     >
-      <Lockup
-        design={design}
-        scale={scale}
-        markColor={BRAND.green}
-        textColor={BRAND.mute}
-      />
-
-      <div style={{ display: "flex", flexDirection: "column", gap: px(18 * scale) }}>
-        <div
-          style={{
-            display: "flex",
-            fontSize: px(BASE.stat * scale * size),
-            fontWeight: 800,
-            lineHeight: 0.95,
-            letterSpacing: px(-0.045 * BASE.stat * scale * size),
-            color: BRAND.green,
-          }}
-        >
-          {design.stat}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            fontSize: px(BASE.headline * scale * 0.46),
-            fontWeight: 700,
-            lineHeight: 1.2,
-            letterSpacing: px(-0.02 * BASE.headline * scale),
-            color: BRAND.ink,
-            maxWidth: "88%",
-          }}
-        >
-          {design.headline}
-        </div>
-        {design.subhead ? (
-          <div
-            style={{
-              display: "flex",
-              fontSize: px(BASE.subhead * scale),
-              fontWeight: 500,
-              lineHeight: 1.35,
-              color: BRAND.mute,
-              maxWidth: "80%",
-            }}
-          >
-            {design.subhead}
-          </div>
-        ) : null}
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Cta text={design.cta} scale={scale} background={BRAND.green} color={BRAND.paper} />
-        <div
-          style={{
-            display: "flex",
-            fontSize: px(BASE.footnote * scale),
-            fontWeight: 500,
-            color: BRAND.mute,
-          }}
-        >
-          creedava.com
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Headline plus numbered points. */
-function List({
-  design,
-  scale,
-}: {
-  design: Design;
-  scale: number;
-}) {
-  const pad = px(78 * scale);
-  const size = fit(design.headline, 34);
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        width: "100%",
-        height: "100%",
-        background: BRAND.paper,
-        padding: pad,
-      }}
-    >
-      <Lockup
-        design={design}
-        scale={scale}
-        markColor={BRAND.green}
-        textColor={BRAND.mute}
-      />
-
-      <div style={{ display: "flex", flexDirection: "column", gap: px(34 * scale) }}>
-        <div
-          style={{
-            display: "flex",
-            fontSize: px(BASE.headline * scale * size * 0.8),
-            fontWeight: 800,
-            lineHeight: 1.08,
-            letterSpacing: px(-0.03 * BASE.headline * scale),
-            color: BRAND.ink,
-            maxWidth: "94%",
-          }}
-        >
-          {design.headline}
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: px(20 * scale) }}>
-          {design.items.map((item, index) => (
-            <div
-              key={`${index}-${item}`}
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: px(18 * scale),
-                borderTop: `${Math.max(1, px(scale))}px solid ${BRAND.rule}`,
-                paddingTop: px(16 * scale),
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: px(BASE.index * scale),
-                  fontWeight: 800,
-                  color: BRAND.green,
-                  lineHeight: 1.3,
-                  minWidth: px(34 * scale),
-                }}
-              >
-                {String(index + 1).padStart(2, "0")}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: px(BASE.item * scale),
-                  fontWeight: 600,
-                  lineHeight: 1.3,
-                  color: BRAND.ink,
-                }}
-              >
-                {item}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Cta text={design.cta} scale={scale} background={BRAND.green} color={BRAND.paper} />
-        <div
-          style={{
-            display: "flex",
-            fontSize: px(BASE.footnote * scale),
-            fontWeight: 500,
-            color: BRAND.mute,
-          }}
-        >
-          creedava.com
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** A single statement, set large. No photo by definition. */
-function Quote({
-  design,
-  scale,
-}: {
-  design: Design;
-  scale: number;
-}) {
-  const pad = px(82 * scale);
-  const size = fit(design.headline, 30);
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        width: "100%",
-        height: "100%",
-        background: BRAND.paper,
-        padding: pad,
-      }}
-    >
-      <Lockup
-        design={design}
-        scale={scale}
-        markColor={BRAND.green}
-        textColor={BRAND.mute}
-      />
-
-      <div style={{ display: "flex", flexDirection: "column", gap: px(26 * scale) }}>
-        <div
-          style={{
-            display: "flex",
-            width: px(96 * scale),
-            height: px(5 * scale),
-            background: BRAND.green,
-          }}
-        />
-        <div
-          style={{
-            display: "flex",
-            fontSize: px(BASE.headline * scale * size),
-            fontWeight: 800,
-            lineHeight: 1.08,
-            letterSpacing: px(-0.032 * BASE.headline * scale * size),
-            color: BRAND.ink,
-            maxWidth: "95%",
-          }}
-        >
-          {design.headline}
-        </div>
-        {design.subhead ? (
-          <div
-            style={{
-              display: "flex",
-              fontSize: px(BASE.subhead * scale),
-              fontWeight: 500,
-              lineHeight: 1.4,
-              color: BRAND.mute,
-              maxWidth: "80%",
-            }}
-          >
-            {design.subhead}
-          </div>
+      <div
+        style={{
+          display: "flex",
+          width,
+          height: photoHeight,
+          background: BRAND.ink,
+        }}
+      >
+        {photo ? (
+          // eslint-disable-next-line @next/next/no-img-element -- next/image is unsupported in ImageResponse
+          <img
+            src={photo}
+            alt=""
+            width={width}
+            height={photoHeight}
+            style={{ width, height: photoHeight, objectFit: "cover" }}
+          />
         ) : null}
       </div>
 
       <div
         style={{
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderTop: `${Math.max(1, px(scale))}px solid ${BRAND.rule}`,
-          paddingTop: px(22 * scale),
+          flexDirection: "column",
+          justifyContent: "center",
+          gap: px(18 * scale),
+          width: "100%",
+          height: bandHeight,
+          background: BRAND.green,
+          padding: pad,
         }}
       >
+        <Eyebrow
+          text={design.eyebrow}
+          scale={scale}
+          color="rgba(247,247,242,0.72)"
+        />
+
         <div
           style={{
             display: "flex",
-            fontSize: px(BASE.cta * scale),
-            fontWeight: 700,
-            color: BRAND.green,
+            fontSize: px(BASE.headline * scale * size),
+            fontWeight: 800,
+            lineHeight: 1,
+            letterSpacing: px(-0.035 * BASE.headline * scale * size),
+            color: BRAND.paper,
           }}
         >
-          {design.cta}
+          {design.headline}
         </div>
-        <div
-          style={{
-            display: "flex",
-            fontSize: px(BASE.footnote * scale),
-            fontWeight: 500,
-            color: BRAND.mute,
-          }}
-        >
-          creedava.com
-        </div>
+
+        {design.cta ? (
+          <div style={{ display: "flex", marginTop: px(6 * scale) }}>
+            <Cta
+              text={design.cta}
+              scale={scale}
+              background={BRAND.paper}
+              color={BRAND.green}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -674,8 +460,9 @@ function Quote({
 /**
  * Draw one creative.
  *
- * `photo` is a data URL, already fetched and cropped by the route, or null for
- * a type-only composition.
+ * `photo` is a data URL, already fetched and cropped, or null when the photo
+ * slot could not be filled — the composition then draws on ink, which still
+ * looks deliberate rather than blank.
  */
 export function creativeImage(
   design: Design,
@@ -684,35 +471,16 @@ export function creativeImage(
 ): ImageResponse {
   const { width, height } = FORMATS[format];
   const scale = typeScale(width, height);
+  const props = { design, photo, width, height, scale };
 
   const body = (() => {
     switch (design.layout) {
-      case "hero":
-        return (
-          <Hero
-            design={design}
-            photo={photo}
-            width={width}
-            height={height}
-            scale={scale}
-          />
-        );
+      case "band":
+        return <Band {...props} />;
       case "split":
-        return (
-          <Split
-            design={design}
-            photo={photo}
-            width={width}
-            height={height}
-            scale={scale}
-          />
-        );
-      case "stat":
-        return <Stat design={design} scale={scale} />;
-      case "list":
-        return <List design={design} scale={scale} />;
+        return <Split {...props} />;
       default:
-        return <Quote design={design} scale={scale} />;
+        return <Hero {...props} />;
     }
   })();
 
@@ -723,7 +491,7 @@ export function creativeImage(
           display: "flex",
           width: "100%",
           height: "100%",
-          background: BRAND.paper,
+          background: BRAND.ink,
           fontFamily: "sans-serif",
         }}
       >

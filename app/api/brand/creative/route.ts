@@ -13,13 +13,7 @@ import { GoogleGenAI } from "@google/genai";
 import { getAdminUidFromSession } from "@/lib/firebase/admin-session";
 import { checkImageGenerationLimit } from "../../ai/rate-limit";
 import { buildCreative } from "@/lib/brand/creative-pipeline";
-import {
-  LIMITS,
-  isFormat,
-  isTone,
-  type CreativeFormat,
-  type Tone,
-} from "@/lib/brand/creative";
+import { LIMITS, isFormat, type CreativeFormat } from "@/lib/brand/creative";
 
 const MESSAGES = {
   "planning-failed": "Could not design the post. Try again.",
@@ -68,9 +62,6 @@ export async function POST(request: NextRequest) {
   }
   const format: CreativeFormat = formatValue;
 
-  const toneValue = typeof body.tone === "string" ? body.tone : "warm";
-  const tone: Tone = isTone(toneValue) ? toneValue : "warm";
-
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     console.error("[/api/brand/creative] GEMINI_API_KEY is not set");
@@ -83,7 +74,6 @@ export async function POST(request: NextRequest) {
   const result = await buildCreative(
     new GoogleGenAI({ apiKey }),
     brief,
-    tone,
     format,
   );
 
