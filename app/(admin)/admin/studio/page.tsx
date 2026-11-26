@@ -114,7 +114,7 @@ export default function ImageStudioPage() {
     <div className="space-y-6">
       <PageHeader
         title="Image studio"
-        description="Describe the post. CreedaVA's AI designs it, writes the caption, and sets the type in your brand."
+        description="Describe the post. CreedaVA's AI picks the composition and palette, sets the type, and writes the caption."
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,25rem)_minmax(0,1fr)]">

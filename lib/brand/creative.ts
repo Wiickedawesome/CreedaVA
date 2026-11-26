@@ -87,7 +87,7 @@ export const LAYOUTS: Record<LayoutId, string> = {
   overlay: "photo fills the frame, type sits over a soft gradient scrim",
   duotone: "photo fills the frame under a strong colour wash, type large on top",
   split: "hard 50/50 division, photo one side and a solid colour field the other",
-  stack: "photo fills the frame, a slim solid colour bar across the bottom holds the type",
+  stack: "photo across the top, a solid colour bar along the bottom holds the type",
   inset: "solid colour field with the photo inset as a framed print, type beside or below",
 };
 
