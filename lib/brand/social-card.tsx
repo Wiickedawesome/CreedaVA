@@ -1,6 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
 import { ImageResponse } from "next/og";
+import { BRAND_CREAM, BRAND_GREEN, brandMarkDataUrl } from "./mark";
 import type { SocialCardCopy } from "./social-cards";
 
 /**
@@ -18,38 +17,15 @@ import type { SocialCardCopy } from "./social-cards";
 export const SOCIAL_CARD_SIZE = { width: 1200, height: 630 };
 export const SOCIAL_CARD_TYPE = "image/png";
 
-const PAPER = "#F7F7F2";
+const PAPER = BRAND_CREAM;
 const INK = "#0B2135";
-const BRAND = "#005148";
+const BRAND = BRAND_GREEN;
 const MUTE = "#566B85";
 const RULE = "#E2E2DE";
 const DEFAULT_EYEBROW = "Virtual Assistants";
 
-function readMark(): string | null {
-  try {
-    const file = fs.readFileSync(
-      path.join(process.cwd(), "public", "creedava-mark.svg"),
-      "utf8",
-    );
-    /*
-     * Flatten the mark's own gradient to solid brand green.
-     *
-     * The SVG paints `fill="url(#markGrad)"` with a `#054d71 → #046c68` ramp.
-     * On the cream card that ramp renders pale blue-green — measurably the
-     * weakest thing on the image, and a hue the design system does not use. A
-     * flat #005148 fill keeps the mark crisp at this size and on-brand. The
-     * source file is untouched; only this copy is flattened.
-     */
-    const flattened = file.replace(/url\(#markGrad\)/g, BRAND);
-    return `data:image/svg+xml;base64,${Buffer.from(flattened).toString("base64")}`;
-  } catch {
-    // Never fail the route over a missing asset: the card still reads.
-    return null;
-  }
-}
-
 export function socialCard({ headline, footnote, eyebrow }: SocialCardCopy): ImageResponse {
-  const mark = readMark();
+  const mark = brandMarkDataUrl(BRAND);
 
   return new ImageResponse(
     (
