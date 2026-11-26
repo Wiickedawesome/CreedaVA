@@ -186,13 +186,15 @@ export default function ImageStudioPage() {
                       {spec.label}
                     </span>
                     <span className="block text-[11px] text-gray-50">
-                      {spec.width}×{spec.height}
+                      {spec.aspectRatio} · {spec.usage}
                     </span>
                   </button>
                 );
               })}
             </div>
-            <p className="mt-1 text-xs text-gray-50">{FORMATS[format].usage}</p>
+            <p className="mt-1 text-xs text-gray-50">
+              {FORMATS[format].usage}. Resolution is chosen by the model.
+            </p>
           </div>
 
           <div>
