@@ -581,6 +581,91 @@ changing. The other four tests pass.
 
 ---
 
+## C5. Round three — responsive, dark mode, and deployment (2026-11-27)
+
+### Responsive — PASS, measured at three widths
+
+Measured `documentElement.scrollWidth - clientWidth` on `/admin`, `/admin/leads`,
+`/admin/customers`, `/admin/settings` at 375 × 812, 768 × 1024 and 1440 × 900:
+
+| Viewport | Pages with horizontal page overflow |
+|---|---|
+| 375 × 812 (phone) | **0 of 4** |
+| 768 × 1024 (tablet) | **0 of 4** |
+| 1440 × 900 (desktop) | **0 of 4** |
+
+Three tab buttons on phone-width `/admin/leads` extend past the viewport edge, but their
+parent has `overflow-x: auto` — that is the intended horizontally scrollable tab strip, not
+a layout break. The admin shell collapses to a single "Open menu" button at phone width.
+
+### Dark mode — PASS
+
+Toggling the theme produced `data-theme="dark"`, `body` background `rgb(32, 33, 36)` and
+text `rgb(229, 231, 235)`. A contrast sweep over leaf text nodes found **one** candidate,
+the "+ Add Lead" button; measured directly it is `rgb(11, 18, 32)` on `rgb(45, 212, 191)`
+— **6.20:1**, which passes WCAG AA. The sweep flagged it only because it compared the text
+against the nearest `div` rather than the button's own background. No real dark-mode defect.
+
+Theme cycling verified `auto → light → dark → auto`, with `localStorage` and `data-theme`
+staying in agreement. **Note for future testing:** at desktop width there are **two**
+theme buttons in the DOM (one sidebar, one top bar) and only one is visible. Selecting
+`'button[aria-label*="Admin theme"]'` without filtering by visibility clicks the hidden
+one and silently does nothing — this looks exactly like a broken toggle. Filter by
+visibility first.
+
+### Deployment — all three channels live
+
+| Channel | Command | Result |
+|---|---|---|
+| Firestore rules | `firebase deploy --only firestore:rules` | compiled + released to `cloud.firestore` |
+| Cloud Functions | `firebase deploy --only functions --force` | 30 functions, all `Successful update operation` |
+| App (App Hosting) | `git push origin main` | `155a02e`, then `d850423` |
+
+**The project id is `creeda-va`, not `creedava-va`.** Passing the latter returns
+`Project 'projects/creedava-va' not found or deleted`, which reads like a destroyed project
+but is only a lookup miss. `.firebaserc` and `apphosting.yaml` both say `creeda-va`.
+
+Deploying functions with `--force` after deleting `functions/src/scheduled.ts` removed no
+functions and reported no orphans — the deleted file exported the same six names
+(`dailyDigest`, `weeklyReport`, `monthlyReport`, `dailyGoogleSync`, `weeklyAISEOReview`,
+`cleanupAnalytics`) as the files that replaced it. That also confirms the eight duplicate
+onpage runs could not have come from duplicate function registrations.
+
+### Post-deploy verification, live
+
+- `/admin/leads` now renders **"Could not load this list · The records are not gone — the
+  request to read them failed."** with a Retry button. Before deploy the same page rendered
+  **"No leads found · Total Leads 0"**.
+- Public `/forum`, `/news` and `/` all return **200** with no permission errors after the
+  rules release — the new forum rules did not break public reads.
+
+### Residual defect found by that verification
+
+The error panel appeared correctly, but the KPI cards beside it **still printed `0`** and
+the panels printed "No leads yet" / "No source data". The page was contradicting itself:
+"the records are not gone" sat directly above "Total Leads 0". Fixed in `d850423`:
+
+| Surface | Figures now suppressed when the read fails |
+|---|---|
+| `/admin/leads` | 4 KPI cards, conversion panel, sources panel |
+| `/admin/customers` | 8 KPI cards |
+| `/admin/seo` agent dashboard | 4 run-stat cards |
+
+They read `—` with an `unavailable` badge. A figure derived from a failed read is unknown,
+not zero — that distinction is the whole point of this fix.
+
+### Still not verified, and why
+
+- **Live click-through** of the four page groups. Proven impossible in the automated browser
+  by two independent measurements, both in that browser only: `/admin/blog` is guarded by
+  `allow read: if true` and is still denied (a rule cannot deny a public read, so the refusal
+  is App Check), and `accounts:lookup` returns **401** so the Auth session cannot refresh.
+  Real Chrome is unaffected. This is a tool limit, not a product defect.
+- **Full accessibility audit.** Contrast and overflow were measured; keyboard traps, focus
+  order, and screen-reader labelling were not.
+
+---
+
 ## D. Recommended order
 
 1. ~~**A1**~~ — done (C3): the layout verifies the session; the proxy keeps the fast path.
