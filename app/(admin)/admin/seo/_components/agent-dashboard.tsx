@@ -125,10 +125,10 @@ export function SeoAgentDashboard() {
       )}
       <DashboardSection title="Last 7 days">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard label="Runs" value={stats.total} />
-          <StatCard label="Completed" value={stats.completed} />
-          <StatCard label="Findings" value={stats.findings} />
-          <StatCard label="Search queries used" value={stats.queriesUsed} />
+          <StatCard label="Runs" value={error ? "—" : stats.total} />
+          <StatCard label="Completed" value={error ? "—" : stats.completed} />
+          <StatCard label="Findings" value={error ? "—" : stats.findings} />
+          <StatCard label="Search queries used" value={error ? "—" : stats.queriesUsed} />
         </div>
       </DashboardSection>
 

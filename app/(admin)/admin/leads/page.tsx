@@ -58,7 +58,8 @@ function isTestLead(lead: Pick<Lead, "email" | "name">): boolean {
 export default function LeadsPage() {
   const { data: leads, loading, error, refetch, add, edit, del } = useCollection<Lead>("leads", {
     orderByField: "createdAt",
-  });  const { data: contacts, add: addContact } = useCollection<Contact>("contacts", {
+  });
+  const { data: contacts, add: addContact } = useCollection<Contact>("contacts", {
     orderByField: "createdAt",
   });
   const { toast } = useToast();
@@ -72,6 +73,11 @@ export default function LeadsPage() {
   const [selected, setSelected] = useState<Lead | null>(null);
   const [form, setForm] = useState<LeadFormData>(emptyLead);
   const [showTest, setShowTest] = useState(false);
+
+  // A failed read leaves `leads` empty, which is indistinguishable from a real
+  // empty pipeline. Every figure below is derived from that empty array, so they
+  // must be suppressed rather than printed as zero.
+  const leadsUnavailable = Boolean(error);
 
   // Filtering
   // Smoke-test submissions from the contact form used to sit in the live list and
@@ -296,17 +302,22 @@ export default function LeadsPage() {
         }
       />
 
-      {/* Dashboard Metrics */}
+      {/* Dashboard Metrics
+          While the read is failing we must not print 0 — an admin reads that as
+          "no leads" and believes the pipeline is empty. Em dashes and a neutral
+          badge state that the figure is unknown, not zero. */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard label="Total Leads" value={totalLeads.toString()} badge={`${filtered.length} shown`} />
-        <StatCard label="Win Rate" value={`${winRate}%`} badge={`${wonLeads} won`} trend={wonLeads > 0 ? { value: Number(winRate), positive: true } : undefined} />
-        <StatCard label="Lost" value={lostLeads.toString()} badge={totalLeads > 0 ? `${((lostLeads / totalLeads) * 100).toFixed(0)}%` : "0%"} />
-        <StatCard label="Pipeline Value" value={`$${pipeline.toLocaleString()}`} badge="total" />
+        <StatCard label="Total Leads" value={leadsUnavailable ? "—" : totalLeads.toString()} badge={leadsUnavailable ? "unavailable" : `${filtered.length} shown`} />
+        <StatCard label="Win Rate" value={leadsUnavailable ? "—" : `${winRate}%`} badge={leadsUnavailable ? "unavailable" : `${wonLeads} won`} trend={!leadsUnavailable && wonLeads > 0 ? { value: Number(winRate), positive: true } : undefined} />
+        <StatCard label="Lost" value={leadsUnavailable ? "—" : lostLeads.toString()} badge={leadsUnavailable ? "unavailable" : totalLeads > 0 ? `${((lostLeads / totalLeads) * 100).toFixed(0)}%` : "0%"} />
+        <StatCard label="Pipeline Value" value={leadsUnavailable ? "—" : `$${pipeline.toLocaleString()}`} badge={leadsUnavailable ? "unavailable" : "total"} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <DashboardSection title="Lead Conversion">
-          {totalLeads > 0 ? (
+          {leadsUnavailable ? (
+            <p className="text-sm text-gray-50 text-center py-8">Conversion cannot be calculated while leads are unavailable</p>
+          ) : totalLeads > 0 ? (
             <div className="space-y-3">
               {conversionData.map((d, i) => (
                 <div key={d.stage}>
@@ -352,7 +363,9 @@ export default function LeadsPage() {
         </DashboardSection>
 
         <DashboardSection title="Lead Sources">
-          {sourceData.length > 0 ? (
+          {leadsUnavailable ? (
+            <p className="text-sm text-gray-50 text-center py-8">Sources cannot be calculated while leads are unavailable</p>
+          ) : sourceData.length > 0 ? (
             <div className="space-y-3">
               {sourceData.map((d) => (
                 <div key={d.label}>

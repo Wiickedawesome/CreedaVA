@@ -93,6 +93,11 @@ export default function CustomersPage() {
   const [healthOpen, setHealthOpen] = useState(false);
   const [healthLoading, setHealthLoading] = useState(false);
 
+  // A failed read leaves `customers` empty, which is indistinguishable from a real
+  // empty book of business. Every figure below derives from that empty array, so
+  // they must read as unknown rather than as zero.
+  const customersUnavailable = Boolean(error);
+
   // Load satisfaction email template from emails collection
   const { data: emailDrafts, add: addEmail, edit: editEmail } = useCollection<EmailDraft>("emails", {
     orderByField: "createdAt",
@@ -583,16 +588,16 @@ export default function CustomersPage() {
 
       {/* Revenue & Customer Metrics */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard label="Active" value={active.length.toString()} badge="customers" />
-        <StatCard label="MRR" value={`$${mrr.toLocaleString()}`} badge={`$${(mrr * 12).toLocaleString()} ARR`} />
-        <StatCard label="Churn Rate" value={`${churnRate}%`} badge={`${churned.length} churned`} trend={churned.length > 0 ? { value: Number(churnRate), positive: false } : undefined} />
-        <StatCard label="Avg Value" value={active.length > 0 ? `$${Math.round(mrr / active.length).toLocaleString()}` : "$0"} badge="per customer" />
+        <StatCard label="Active" value={customersUnavailable ? "—" : active.length.toString()} badge={customersUnavailable ? "unavailable" : "customers"} />
+        <StatCard label="MRR" value={customersUnavailable ? "—" : `$${mrr.toLocaleString()}`} badge={customersUnavailable ? "unavailable" : `$${(mrr * 12).toLocaleString()} ARR`} />
+        <StatCard label="Churn Rate" value={customersUnavailable ? "—" : `${churnRate}%`} badge={customersUnavailable ? "unavailable" : `${churned.length} churned`} trend={!customersUnavailable && churned.length > 0 ? { value: Number(churnRate), positive: false } : undefined} />
+        <StatCard label="Avg Value" value={customersUnavailable ? "—" : active.length > 0 ? `$${Math.round(mrr / active.length).toLocaleString()}` : "$0"} badge={customersUnavailable ? "unavailable" : "per customer"} />
       </div>
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard label="Lifetime Value" value={`$${avgLtv.toLocaleString()}`} badge={`$${totalLtv.toLocaleString()} total`} />
-        <StatCard label="Revenue / Hour" value={totalHours > 0 ? `$${revenuePerHour}` : "—"} badge={`${totalHours} hrs/mo`} />
-        <StatCard label="Satisfaction" value={String(avgSatisfaction)} badge="out of 5" />
-        <StatCard label="Renewals" value={renewingSoon.toString()} badge={`within 30 days · ${avgTenure}mo avg tenure`} trend={renewingSoon > 0 ? { value: renewingSoon, positive: false } : undefined} />
+        <StatCard label="Lifetime Value" value={customersUnavailable ? "—" : `$${avgLtv.toLocaleString()}`} badge={customersUnavailable ? "unavailable" : `$${totalLtv.toLocaleString()} total`} />
+        <StatCard label="Revenue / Hour" value={customersUnavailable ? "—" : totalHours > 0 ? `$${revenuePerHour}` : "—"} badge={customersUnavailable ? "unavailable" : `${totalHours} hrs/mo`} />
+        <StatCard label="Satisfaction" value={customersUnavailable ? "—" : String(avgSatisfaction)} badge={customersUnavailable ? "unavailable" : "out of 5"} />
+        <StatCard label="Renewals" value={customersUnavailable ? "—" : renewingSoon.toString()} badge={customersUnavailable ? "unavailable" : `within 30 days · ${avgTenure}mo avg tenure`} trend={!customersUnavailable && renewingSoon > 0 ? { value: renewingSoon, positive: false } : undefined} />
       </div>
 
       {/* Contact Health & Customer Source */}
