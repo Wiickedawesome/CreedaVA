@@ -138,6 +138,20 @@ export async function DELETE() {
  * went undiagnosed.
  */
 export async function GET(request: NextRequest) {
+  // A3 mitigation. This is the only endpoint that resolves an httpOnly session
+  // cookie into a bearer credential held by JavaScript, so refuse anything a
+  // browser marks as cross-site. Without this, any page that can reach the
+  // endpoint could redeem the cookie. `sec-fetch-site` is absent in older
+  // clients and for server-to-server calls, so only an explicit cross-origin
+  // value is rejected — legitimate same-origin fetches are unaffected.
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if (fetchSite === "cross-site" || fetchSite === "same-site") {
+    return NextResponse.json(
+      { error: "Cross-site session restore refused", code: "cross_site" },
+      { status: 403 },
+    );
+  }
+
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
   if (!sessionCookie) {

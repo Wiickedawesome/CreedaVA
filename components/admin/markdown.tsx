@@ -130,9 +130,16 @@ function markdownToHtml(md: string): string {
   html = html.replace(/(?<!_)_([^_\n]+)_(?!_)/g, "<em>$1</em>");
 
   // Links [text](url)
+  // The href is scheme-checked. The whole document is rendered with
+  // dangerouslySetInnerHTML, and this text comes from an AI response, so a
+  // `javascript:` target would otherwise execute in the app's own origin.
   html = html.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" class="ai-link">$1</a>',
+    (_match, text: string, rawUrl: string) => {
+      const url = rawUrl.trim();
+      const safeUrl = /^(https?:\/\/|\/)/i.test(url) ? url : "#";
+      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="ai-link">${text}</a>`;
+    },
   );
 
   // Horizontal rule (---, ***, ___)

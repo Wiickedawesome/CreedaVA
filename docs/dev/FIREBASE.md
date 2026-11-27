@@ -96,7 +96,10 @@ firebase deploy --only functions
 | `google-drive.ts`     | Drive file operations              |
 | `google-sheets.ts`    | Sheets data sync                   |
 | `search-console.ts`   | Search Console performance data    |
-| `scheduled.ts`        | Cron-based background jobs         |
+| `scheduled-reports.ts` | Digest/report emails             |
+| `scheduled-sync.ts`   | Daily Google service sync          |
+| `scheduled-seo.ts`    | Weekly AI SEO review               |
+| `scheduled-cleanup.ts` | Analytics/SEO retention jobs      |
 | `triggers.ts`         | Firestore document triggers        |
 | `webhooks.ts`         | External webhook handlers          |
 

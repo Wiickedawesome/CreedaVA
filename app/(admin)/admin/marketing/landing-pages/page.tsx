@@ -35,7 +35,7 @@ const emptyForm = {
 };
 
 export default function LandingPagesPage() {
-  const { data: pages, loading, add, edit, del } = useCollection<LandingPage>("landing-pages", {
+  const { data: pages, loading, error, refetch, add, edit, del } = useCollection<LandingPage>("landing-pages", {
     orderByField: "createdAt",
   });
   const { toast } = useToast();
@@ -432,6 +432,8 @@ export default function LandingPagesPage() {
         keyExtractor={(p) => p.id}
         onRowClick={(p) => openModal(p)}
         loading={loading}
+        error={error}
+        onRetry={refetch}
         emptyMessage="No landing pages yet — try the AI builder or create one manually"
       />
 

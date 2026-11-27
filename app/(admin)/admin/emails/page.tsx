@@ -74,10 +74,23 @@ const emptyForm = {
 
 export default function EmailsPage() {
   // ─── Collections ──────────────────
-  const { data: emails, loading: draftsLoading, add, edit, del } = useCollection<EmailDraft>("emails", {
+  const {
+    data: emails,
+    loading: draftsLoading,
+    error: draftsError,
+    refetch: refetchDrafts,
+    add,
+    edit,
+    del,
+  } = useCollection<EmailDraft>("emails", {
     orderByField: "createdAt",
   });
-  const { data: inboxMessages, loading: inboxLoading, refetch: refetchInbox } = useCollection<InboxMessage>("inbox", {
+  const {
+    data: inboxMessages,
+    loading: inboxLoading,
+    error: inboxError,
+    refetch: refetchInbox,
+  } = useCollection<InboxMessage>("inbox", {
     orderByField: "date",
   });
   const { data: integrations } = useCollection("integrations");
@@ -722,6 +735,8 @@ export default function EmailsPage() {
             keyExtractor={(m) => m.id}
             onRowClick={(m) => openInboxMessage(m)}
             loading={inboxLoading}
+            error={inboxError}
+            onRetry={refetchInbox}
             emptyMessage="No mail to a business address yet — nothing has been sent to these groups"
           />
         </>
@@ -735,6 +750,8 @@ export default function EmailsPage() {
           keyExtractor={(e) => e.id}
           onRowClick={(e) => openDraft(e)}
           loading={draftsLoading}
+          error={draftsError}
+          onRetry={refetchDrafts}
           emptyMessage="No emails — compose one or let AI draft it"
         />
       )}

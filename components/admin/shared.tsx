@@ -67,3 +67,38 @@ export function EmptyState({ title, description, action, icon }: EmptyStateProps
     </div>
   );
 }
+
+interface LoadErrorProps {
+  message: string;
+  /** Optional retry hook — omit for surfaces that cannot re-run the read. */
+  onRetry?: () => void;
+  className?: string;
+}
+
+/**
+ * Shown when a collection read FAILED, as opposed to returning nothing.
+ *
+ * A denied or errored Firestore read leaves the list empty, which used to render
+ * as "No … yet" — telling the admin their data does not exist when in fact it
+ * could not be fetched. Every list must use this instead of the empty state.
+ */
+export function LoadError({ message, onRetry, className = "" }: LoadErrorProps) {
+  return (
+    <div role="alert" className={`rounded-lg border border-error/20 bg-error/10 p-6 text-center ${className}`}>
+      <p className="text-sm font-semibold text-error">Could not load this list</p>
+      <p className="mx-auto mt-1 max-w-md text-xs text-gray-60 break-words">{message}</p>
+      <p className="mx-auto mt-2 max-w-md text-xs text-gray-50">
+        The records are not gone — the request to read them failed.
+      </p>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-4 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-gray-90 hover:bg-gray-10"
+        >
+          Retry
+        </button>
+      )}
+    </div>
+  );
+}

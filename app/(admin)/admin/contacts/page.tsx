@@ -27,7 +27,7 @@ const emptyContact: ContactFormData = {
 };
 
 export default function ContactsPage() {
-  const { data: contacts, loading, add, edit, del } = useCollection<Contact>("contacts", {
+  const { data: contacts, loading, error, refetch, add, edit, del } = useCollection<Contact>("contacts", {
     orderByField: "createdAt",
   });
   const { data: leads, add: addLead } = useCollection<Lead>("leads", {
@@ -309,6 +309,9 @@ export default function ContactsPage() {
         data={sorted}
         keyExtractor={(c) => c.id}
         onRowClick={(c) => openModal(c)}
+        loading={loading}
+        error={error}
+        onRetry={refetch}
         emptyMessage="No contacts found"
       />
 

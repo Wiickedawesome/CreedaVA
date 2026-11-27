@@ -63,7 +63,7 @@ const emptyCustomer: CustomerFormData = {
 };
 
 export default function CustomersPage() {
-  const { data: customers, loading, add, edit, del } = useCollection<Customer>("customers", {
+  const { data: customers, loading, error, refetch, add, edit, del } = useCollection<Customer>("customers", {
     orderByField: "createdAt",
   });
   const { data: contacts, add: addContact } = useCollection<Contact>("contacts", {
@@ -688,6 +688,9 @@ export default function CustomersPage() {
         data={filtered}
         keyExtractor={(c) => c.id}
         onRowClick={(c) => openModal(c)}
+        loading={loading}
+        error={error}
+        onRetry={refetch}
         emptyMessage="No customers found"
       />
 

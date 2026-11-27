@@ -7,7 +7,7 @@ import { useCollection } from "@/hooks/useCollection";
 import { createWithId, subscribe } from "@/lib/firebase/firestore";
 import { cloudTestIntegration, cloudVerifyAllIntegrations } from "@/lib/firebase/cloud-functions";
 import type { IntegrationTestResult, VerifyAllResult } from "@/lib/firebase/cloud-functions";
-import { PageHeader, useToast } from "@/components/admin";
+import { PageHeader, useToast, LoadError } from "@/components/admin";
 import { Button, Input } from "@/components/ui";
 import { useAdminTheme } from "@/hooks/useAdminTheme";
 import type { AdminTheme } from "@/hooks/useAdminTheme";
@@ -267,7 +267,14 @@ const PROVIDERS: ProviderConfig[] = [
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const { data: settings, loading: settingsLoading, add, edit } = useCollection<Setting>("settings");
+  const {
+    data: settings,
+    loading: settingsLoading,
+    error: settingsError,
+    refetch: refetchSettings,
+    add,
+    edit,
+  } = useCollection<Setting>("settings");
 const { toast } = useToast();
 
   // ─── General settings state ─────────
@@ -519,6 +526,15 @@ const { toast } = useToast();
   return (
     <div className="space-y-8">
       <PageHeader title="Settings" description="Profile, preferences, and integrations" />
+      {/* A failed settings read leaves every field at its default. Showing the
+          form in that state risks writing blanks over real configuration, so the
+          failure is stated and saving is blocked until it is retried. */}
+      {settingsError && (
+        <LoadError
+          message={`${settingsError} — saving is disabled until the current values can be read.`}
+          onRetry={refetchSettings}
+        />
+      )}
       {/* ─── Profile ──────────────────────────────────── */}
       <section className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-3 mb-5">
@@ -709,7 +725,9 @@ const { toast } = useToast();
 
       {/* ─── Save General ─────────────────────────────── */}
       <div className="flex justify-end">
-        <Button onClick={handleSaveGeneral} isLoading={saving}>Save Settings</Button>
+        <Button onClick={handleSaveGeneral} isLoading={saving} disabled={Boolean(settingsError)}>
+          Save Settings
+        </Button>
       </div>
 
       {/* ─── Divider ──────────────────────────────────── */}

@@ -1,5 +1,20 @@
 # CreedaVA — Comprehensive Site Audit Report
 
+> **HISTORICAL — not the current state.** This report was written 2025-07-19 against Next.js 16 /
+> Firebase 12 and several of its Critical findings have since been fixed. The authoritative
+> current audit is [`admin-audit-2026-11-26.md`](./admin-audit-2026-11-26.md); where the two
+> disagree, that document wins. Verified since this report was written:
+>
+> - **F1 stored XSS in the booking email** — fixed. `app/api/booking/route.ts:7` defines
+>   `escapeHtml()`, applied to `name`, `email`, `phone`, `service`, `time` and `notes` at
+>   lines 105–110.
+> - **No admin route protection** — fixed. `app/(admin)/layout.tsx` verifies the session cookie
+>   server-side and redirects; `proxy.ts` is only a presence fast path.
+> - **Forum content XSS** — not open. `app/(marketing)/forum/[id]/thread-content.tsx` passes
+>   content through `sanitizeHtml()` before rendering.
+>
+> Treat everything below as a point-in-time record.
+
 **Date:** 2025-07-19  
 **Auditor:** GitHub Copilot (Claude Opus 4.6)  
 **Scope:** All 35 audit sections — every page, button, navigation, form, data flow, integration, component, and UX element  

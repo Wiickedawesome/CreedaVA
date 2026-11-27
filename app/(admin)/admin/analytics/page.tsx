@@ -15,6 +15,7 @@ import { TrafficChart } from "@/components/admin/traffic-chart";
 import { useAuth } from "@/lib/firebase/auth-context";
 import {
   fetchAnalyticsEvents,
+  MAX_EVENTS_PER_READ,
   type AnalyticsEvent,
 } from "@/lib/firebase/analytics";
 import {
@@ -333,6 +334,8 @@ function ConversionFunnel({
 export default function AnalyticsPage() {
   const { user } = useAuth();
   const [events, setEvents] = useState<AnalyticsEvent[]>([]);
+  /** True when the read hit its document cap, so the window is partial. */
+  const [truncated, setTruncated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<"7d" | "30d" | "90d">("30d");
@@ -427,6 +430,7 @@ export default function AnalyticsPage() {
     try {
       const data = await fetchAnalyticsEvents(daysFilter);
       setEvents(data.events);
+      setTruncated(data.truncated);
     } catch (err) {
       console.error("Analytics fetch failed", err);
       setError("Failed to load analytics data.");
@@ -688,6 +692,13 @@ export default function AnalyticsPage() {
       {error && (
         <div className="rounded-lg border border-warning-soft-line bg-warning-soft p-4 text-sm text-warning-text">
           {error}
+        </div>
+      )}
+
+      {truncated && !error && (
+        <div className="rounded-lg border border-warning-soft-line bg-warning-soft p-4 text-sm text-warning-text">
+          Showing the {MAX_EVENTS_PER_READ.toLocaleString()} most recent events. The summary below counts
+          these events only — older events in this window are not included.
         </div>
       )}
 

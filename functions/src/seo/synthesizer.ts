@@ -372,8 +372,8 @@ export async function runSynthesizer(ctx: SkillContext): Promise<SkillResult> {
     { merge: true },
   );
 
-  // Trigger email delivery (handled by existing scheduled.ts machinery if available;
-  // here we just write a /report-deliveries doc the existing transporter can pick up).
+  // Trigger email delivery: write a /report-deliveries doc that the
+  // onReportDeliveryCreated trigger (report-delivery.ts) picks up and sends.
   try {
     await db.collection("report-deliveries").add({
       reportId,

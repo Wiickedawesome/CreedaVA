@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import { useFindings } from "@/hooks/useFindings";
-import { PageHeader, DashboardSection, StatusBadge, useToast, StatCard } from "@/components/admin";
+import { PageHeader, DashboardSection, StatusBadge, useToast, StatCard, LoadError } from "@/components/admin";
 import { InlineFinding } from "@/components/admin/inline-finding";
 import { Button } from "@/components/ui";
 import { setFindingStatus } from "@/lib/firebase/findings";
@@ -42,7 +42,7 @@ const TYPE_DESCRIPTION: Record<GapType, string> = {
 };
 
 export default function KeywordGapsSection() {
-  const { data: gaps, loading } = useCollection<KeywordGap>("keyword-gaps", {
+  const { data: gaps, loading, error, refetch } = useCollection<KeywordGap>("keyword-gaps", {
     orderByField: "priority",
     orderDirection: "desc",
   });
@@ -142,6 +142,8 @@ export default function KeywordGapsSection() {
       <DashboardSection title="Findings">
         {loading ? (
           <p className="text-sm text-gray-60">Loading…</p>
+        ) : error ? (
+          <LoadError message={error} onRetry={refetch} />
         ) : filtered.length === 0 ? (
           <p className="text-sm text-gray-60">
             No gaps yet. The <strong>keyword-gaps</strong> skill runs Tuesdays and needs tracked

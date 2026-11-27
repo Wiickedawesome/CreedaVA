@@ -81,7 +81,7 @@ No markdown fences.`,
 }
 
 export default function KeywordsSection() {
-  const { data: keywords, loading, add, edit, del } = useCollection<SEOKeyword>("keywords", {
+  const { data: keywords, loading, error, refetch, add, edit, del } = useCollection<SEOKeyword>("keywords", {
     orderByField: "createdAt",
   });
   // The agent's gap findings. They become the AI's starting points so suggestions
@@ -570,6 +570,9 @@ export default function KeywordsSection() {
         data={filtered}
         keyExtractor={(k) => k.id}
         onRowClick={(k) => openEdit(k)}
+        loading={loading}
+        error={error}
+        onRetry={refetch}
         emptyMessage="No keywords tracked — use AI to suggest some"
       />
         </>

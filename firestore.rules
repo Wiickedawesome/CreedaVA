@@ -24,6 +24,22 @@ service cloud.firestore {
         && request.auth.token.email.matches('.*@creedava[.]com$');
     }
 
+    // ─── Forum helpers ────────────────────────────────
+    // Two narrow update paths belong to readers, not authors:
+    //   - reacting, which writes only `likes` / `likedBy`;
+    //   - on-demand translation, which writes only `lang` / `translations`
+    //     (see `ensureThreadTranslated`, invoked from the public list page).
+    function reactionOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'likedBy']);
+    }
+    function translationOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lang', 'translations']);
+    }
+    /** An author edit must not hand the document to a different account. */
+    function keepsAuthor() {
+      return request.resource.data.authorId == resource.data.authorId;
+    }
+
     // Blog posts — public read, admin write
     match /blog/{postId} {
       allow read: if true;
@@ -177,42 +193,83 @@ service cloud.firestore {
 
     // Analytics — validated public create, admin read
     // App Check (reCAPTCHA Enterprise) is the primary abuse-prevention layer.
+    //
+    // The shape check names the fields the app actually writes. It previously
+    // tested `hasAny(['event','page','type'])` and then read `event`, but
+    // `trackEvent` writes `eventType` — so the only thing the rule really
+    // verified was that `page` existed. Every write path goes through
+    // `trackEvent`, so `eventType` + `page` is exact rather than approximate.
     match /analytics/{docId} {
-      allow create: if request.resource.data.keys().hasAny(['event', 'page', 'type'])
-                    && (request.resource.data.get('event', '') is string)
-                    && (request.resource.data.get('page', '') is string)
+      allow create: if request.resource.data.keys().hasAll(['eventType', 'page'])
+                    && request.resource.data.eventType is string
+                    && request.resource.data.eventType.size() > 0
+                    && request.resource.data.eventType.size() <= 64
+                    && request.resource.data.page is string
+                    && request.resource.data.page.size() <= 512
                     && request.resource.data.size() <= 15;
       allow read, update, delete: if isAdmin();
     }
 
-    // Forum threads — public read, authenticated create, author/admin update
+    // Forum threads — public read, authenticated create, author/admin update.
+    //
+    // The authorship field is `authorId`. These rules previously compared
+    // `resource.data.uid`, which does not exist on a forum document, so two
+    // things were true in production: an author could never edit their own post
+    // (the comparison silently denied), and `create` did not bind the author to
+    // the caller at all, so any signed-in user could post under another user's
+    // id. Helpers live with the other functions at the top of this file.
     match /forum/{threadId} {
       allow read: if true;
-      allow create: if isAuth();
-      allow update: if (isAuth() && resource.data.uid == request.auth.uid) || isAdmin();
+      allow create: if isAuth()
+                    && request.resource.data.authorId == request.auth.uid
+                    && request.resource.data.title is string
+                    && request.resource.data.title.size() > 0
+                    && request.resource.data.title.size() <= 200
+                    && request.resource.data.content is string
+                    && request.resource.data.content.size() <= 20000;
+      allow update: if isAdmin()
+                    || (isAuth() && resource.data.authorId == request.auth.uid && keepsAuthor())
+                    || (isAuth() && (reactionOnly() || translationOnly()));
       allow delete: if isAdmin();
     }
 
-    // Forum replies — public read, authenticated create, author/admin update
+    // Forum replies — same shape as threads.
     match /forumReplies/{replyId} {
       allow read: if true;
-      allow create: if isAuth();
-      allow update: if (isAuth() && resource.data.uid == request.auth.uid) || isAdmin();
+      allow create: if isAuth()
+                    && request.resource.data.authorId == request.auth.uid
+                    && request.resource.data.content is string
+                    && request.resource.data.content.size() > 0
+                    && request.resource.data.content.size() <= 20000;
+      allow update: if isAdmin()
+                    || (isAuth() && resource.data.authorId == request.auth.uid && keepsAuthor())
+                    || (isAuth() && (reactionOnly() || translationOnly()));
       allow delete: if isAdmin();
     }
 
-    // Forum user profiles — public read (display names), authenticated create/update own
+    // Forum user profiles — public read (display names), owner-only writes.
+    // `uid` is the ownership field here (unlike threads/replies, which use
+    // `authorId`). Create must bind it to the caller and update must not allow it
+    // to be reassigned, otherwise a profile could be handed to another account.
     match /forumProfiles/{profileId} {
       allow read: if true;
-      allow create: if isAuth();
-      allow update: if isAuth() && resource.data.uid == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAdmin()
+                    || (isAuth()
+                        && resource.data.uid == request.auth.uid
+                        && request.resource.data.uid == resource.data.uid);
       allow delete: if isAdmin();
     }
 
-    // Satisfaction survey tokens — public read (token UUID is the auth),
-    // admin create, submissions handled by Cloud Function
+    // Satisfaction survey tokens.
+    //
+    // `get` is public because the UUID in the link is the bearer credential.
+    // `list` is admin-only: allowing it let anyone enumerate every outstanding
+    // token and submit surveys that were never issued to them. The previous
+    // single `read` rule granted both.
     match /satisfaction-tokens/{tokenId} {
-      allow read: if true;
+      allow get: if true;
+      allow list: if isAdmin();
       allow create, update: if isAdmin();
       allow delete: if isAdmin();
     }

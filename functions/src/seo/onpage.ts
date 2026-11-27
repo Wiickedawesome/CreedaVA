@@ -442,7 +442,10 @@ export async function runOnPageAudit(ctx: SkillContext): Promise<SkillResult> {
 
   return {
     status: failed.length === slice.length && slice.length > 0 ? "error" : reachedEnd ? "ok" : "partial",
-    findings: processed,
+    // `findings` is a FINDINGS count, not a page count. It used to be `processed`,
+    // so every run reported the sitemap size (a constant 15) and the dashboard
+    // summed those page counts into a "Findings" stat card.
+    findings: collected.length,
     queriesUsed: ctx.queriesUsed(),
     cursor,
     summary: {

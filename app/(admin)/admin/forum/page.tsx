@@ -23,7 +23,7 @@ import { translateThreadInBackground } from "@/lib/firebase/translate";
 import Image from "next/image";
 
 export default function ForumPage() {
-  const { data: threads, loading, add, edit, del } = useCollection<ForumThread>("forum", {
+  const { data: threads, loading, error, refetch, add, edit, del } = useCollection<ForumThread>("forum", {
     orderByField: "createdAt",
   });
   const { toast } = useToast();
@@ -421,6 +421,8 @@ export default function ForumPage() {
           setDetailOpen(true);
         }}
         loading={loading}
+        error={error}
+        onRetry={refetch}
         emptyMessage="No forum threads yet — they&apos;ll appear here when users post"
       />
 

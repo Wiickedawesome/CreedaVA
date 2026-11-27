@@ -37,6 +37,9 @@ yarn-error.log*
 !.env.local.example
 !functions/.env.example
 
+# agent terminal command log
+/.agent-terminal-log
+
 # vercel
 .vercel
 

@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import { useCollection } from "@/hooks/useCollection";
 import { useFindings } from "@/hooks/useFindings";
-import { DashboardSection } from "@/components/admin";
+import { DashboardSection, LoadError } from "@/components/admin";
 import { InlineFinding } from "@/components/admin/inline-finding";
 import { mapFindingsByTarget, targetKey } from "@/lib/types/findings";
 
@@ -19,7 +19,7 @@ interface RankRow {
 }
 
 export function RankingsTable() {
-  const { data: rows, loading } = useCollection<RankRow>("rank-history", {
+  const { data: rows, loading, error, refetch } = useCollection<RankRow>("rank-history", {
     orderByField: "dayKey",
     orderDirection: "desc",
   });
@@ -54,6 +54,8 @@ export function RankingsTable() {
     <DashboardSection title="Position snapshots (auto, every Monday)">
       {loading ? (
         <p className="text-sm text-gray-60">Loading…</p>
+      ) : error ? (
+        <LoadError message={error} onRetry={refetch} />
       ) : summary.length === 0 ? (
         <p className="text-sm text-gray-60">
           No snapshots yet. The agent captures rank history every Monday at 03:30. Lower position is better.

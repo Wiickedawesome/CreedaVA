@@ -16,6 +16,7 @@ import {
   query,
   where,
   orderBy,
+  limit,
   Timestamp,
   serverTimestamp,
 } from "firebase/firestore";
@@ -137,9 +138,27 @@ export async function trackEvent(
 
 // ─── Fetch Events (read — admin only) ────────────────
 
+/**
+ * Hard cap on documents returned by a single analytics read.
+ *
+ * `analytics` is the highest-volume collection in the project — one document
+ * per tracked event — and Firestore bills per document read. This query had no
+ * `limit()`, so the dashboard and the analytics page pulled an entire 30-day
+ * window on every visit: the cost and the in-memory size grew with traffic,
+ * without bound, and the read got slower the more successful the site was.
+ *
+ * 5,000 documents keeps the charts representative (a month of traffic at a few
+ * hundred events a day) and makes the worst case predictable. The newest events
+ * are kept because the query orders by `timestamp` descending. Anything that
+ * needs exact totals over larger volumes should use a rollup document written
+ * by a scheduled function rather than scanning raw events.
+ */
+export const MAX_EVENTS_PER_READ = 5_000;
+
 export async function fetchAnalyticsEvents(
   days: number = 30,
-): Promise<{ events: AnalyticsEvent[]; summary: AnalyticsSummary }> {
+  maxEvents: number = MAX_EVENTS_PER_READ,
+): Promise<{ events: AnalyticsEvent[]; summary: AnalyticsSummary; truncated: boolean }> {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
   const cutoffTs = Timestamp.fromDate(cutoff);
@@ -148,6 +167,7 @@ export async function fetchAnalyticsEvents(
     collection(db, "analytics"),
     where("timestamp", ">=", cutoffTs),
     orderBy("timestamp", "desc"),
+    limit(maxEvents),
   );
 
   const snapshot = await getDocs(q);
@@ -189,5 +209,8 @@ export async function fetchAnalyticsEvents(
       uniquePages: pages.size,
       eventTypes,
     },
+    // True when the cap was reached, so the UI can say the window is partial
+    // instead of implying these are all the events that exist.
+    truncated: snapshot.docs.length >= maxEvents,
   };
 }

@@ -18,7 +18,7 @@ import type { Booking } from "@/lib/types/crm";
 import { statusVariant, BOOKING_STATUSES } from "@/lib/types/crm";
 
 export default function BookingsPage() {
-  const { data: bookings, loading, add, edit, del } = useCollection<Booking>("bookings", {
+  const { data: bookings, loading, error, refetch, add, edit, del } = useCollection<Booking>("bookings", {
     orderByField: "createdAt",
   });
   const { toast } = useToast();
@@ -391,6 +391,9 @@ export default function BookingsPage() {
           data={filtered}
           keyExtractor={(b) => b.id}
           onRowClick={(b) => openDetail(b)}
+          loading={loading}
+          error={error}
+          onRetry={refetch}
           emptyMessage="No bookings found"
         />
       ) : (

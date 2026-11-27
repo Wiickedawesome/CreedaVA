@@ -17,6 +17,18 @@ interface DataTableProps<T> {
   pageSize?: number;
   /** True while the collection is still loading; renders placeholder rows. */
   loading?: boolean;
+  /**
+   * Set when the underlying read failed.
+   *
+   * Kept separate from `emptyMessage` on purpose: a denied or failed Firestore
+   * read leaves `data` empty, so before this prop existed a broken read was
+   * rendered as "No data found" — indistinguishable from a genuinely empty
+   * collection. An admin whose browser blocks App Check/reCAPTCHA therefore saw
+   * "No posts yet" and could believe their content had been deleted.
+   */
+  error?: string | null;
+  /** Offered alongside `error` so the reader can retry without a reload. */
+  onRetry?: () => void;
 }
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
@@ -31,6 +43,8 @@ export function DataTable<T>({
   emptyMessage = "No data found",
   pageSize: initialPageSize = 10,
   loading = false,
+  error = null,
+  onRetry,
 }: DataTableProps<T>) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(initialPageSize);
@@ -85,6 +99,30 @@ export function DataTable<T>({
             </div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        role="alert"
+        className="rounded-lg border border-error/20 bg-error/10 p-8 text-center"
+      >
+        <p className="text-sm font-semibold text-error">Could not load this list</p>
+        <p className="mx-auto mt-1 max-w-md text-xs text-gray-60 break-words">{error}</p>
+        <p className="mx-auto mt-2 max-w-md text-xs text-gray-50">
+          The records are not gone — the request to read them failed. Retrying is safe.
+        </p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-4 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-gray-90 hover:bg-gray-10"
+          >
+            Retry
+          </button>
+        )}
       </div>
     );
   }

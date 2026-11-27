@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
-import { DashboardSection, StatCard, StatusBadge, useToast } from "@/components/admin";
+import { DashboardSection, StatCard, StatusBadge, useToast, LoadError } from "@/components/admin";
 import { Button } from "@/components/ui";
 import { cloudSeoAgentRun, type SeoAgentSkill } from "@/lib/firebase/cloud-functions";
 
@@ -49,7 +49,7 @@ function fmtDate(v: AgentRun["startedAt"]): string {
 }
 
 export function SeoAgentDashboard() {
-  const { data: runs, loading, refetch } = useCollection<AgentRun>("agent-runs", {
+  const { data: runs, loading, error, refetch } = useCollection<AgentRun>("agent-runs", {
     orderByField: "startedAt",
     orderDirection: "desc",
   });
@@ -115,6 +115,14 @@ export function SeoAgentDashboard() {
 
   return (
     <div>
+      {error && (
+        <div className="mb-4">
+          <LoadError
+            message={`${error} — run history is unavailable, so the figures below do not reflect the agent.`}
+            onRetry={refetch}
+          />
+        </div>
+      )}
       <DashboardSection title="Last 7 days">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard label="Runs" value={stats.total} />

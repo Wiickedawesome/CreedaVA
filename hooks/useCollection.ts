@@ -21,6 +21,14 @@ interface UseCollectionOptions {
 interface UseCollectionReturn<T> {
   data: (T & { id: string })[];
   loading: boolean;
+  /**
+   * Set ONLY when reading the collection failed.
+   *
+   * Mutation failures are thrown to the caller instead of stored here, because
+   * consumers render this as "could not load this list" and replace the table.
+   * A rejected save (validation, permission) must not hide the rows the reader
+   * was working with — callers already surface those failures with a toast.
+   */
   error: string | null;
   refetch: () => void;
   add: (item: Omit<T, "id" | "createdAt" | "updatedAt">) => Promise<string>;
@@ -124,43 +132,25 @@ export function useCollection<T extends DocumentData>(
 
   const add = useCallback(
     async (item: Omit<T, "id" | "createdAt" | "updatedAt">) => {
-      try {
-        const id = await create(collectionName, item as DocumentData);
-        refetch(); // Refresh data since we no longer use real-time listeners
-        return id;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to create";
-        setError(msg);
-        throw err;
-      }
+      const id = await create(collectionName, item as DocumentData);
+      refetch(); // Refresh data since we no longer use real-time listeners
+      return id;
     },
     [collectionName, refetch],
   );
 
   const edit = useCallback(
     async (id: string, updates: Partial<T>) => {
-      try {
-        await update(collectionName, id, updates as DocumentData);
-        refetch();
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to update";
-        setError(msg);
-        throw err;
-      }
+      await update(collectionName, id, updates as DocumentData);
+      refetch();
     },
     [collectionName, refetch],
   );
 
   const del = useCallback(
     async (id: string) => {
-      try {
-        await remove(collectionName, id);
-        refetch();
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to delete";
-        setError(msg);
-        throw err;
-      }
+      await remove(collectionName, id);
+      refetch();
     },
     [collectionName, refetch],
   );

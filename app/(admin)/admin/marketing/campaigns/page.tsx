@@ -38,10 +38,18 @@ const BUSINESS_EMAILS = [
 ];
 
 export default function CampaignsPage() {
-  const { data: campaigns, loading, add, edit, del } = useCollection<Campaign>("campaigns", {
+  const { data: campaigns, loading, error, refetch, add, edit, del } = useCollection<Campaign>("campaigns", {
     orderByField: "createdAt",
   });
-  const { data: emailCampaigns, loading: ecLoading, add: addEC, edit: editEC, del: delEC } = useCollection<EmailCampaign>("email-campaigns", {
+  const {
+    data: emailCampaigns,
+    loading: ecLoading,
+    error: ecError,
+    refetch: refetchEC,
+    add: addEC,
+    edit: editEC,
+    del: delEC,
+  } = useCollection<EmailCampaign>("email-campaigns", {
     orderByField: "createdAt",
   });
   const { toast } = useToast();
@@ -525,6 +533,9 @@ export default function CampaignsPage() {
         data={filtered}
         keyExtractor={(c) => c.id}
         onRowClick={(c) => openModal(c)}
+        loading={loading}
+        error={error}
+        onRetry={refetch}
         emptyMessage="No campaigns yet — create one to get started"
       />
 
@@ -688,6 +699,9 @@ export default function CampaignsPage() {
             data={filteredEC}
             keyExtractor={(ec) => ec.id}
             onRowClick={(ec) => openECModal(ec)}
+            loading={ecLoading}
+            error={ecError}
+            onRetry={refetchEC}
             emptyMessage="No email campaigns yet — create one to reach your audience"
           />
 

@@ -35,11 +35,30 @@ const emptyLead: LeadFormData = {
   notes: "",
 };
 
+/**
+ * Is this lead a smoke-test submission rather than a real enquiry?
+ *
+ * `example.com`/`example.org` are reserved by RFC 2606 and can never belong to a
+ * real customer, so they are the reliable signal. The name check catches seeds
+ * that use a normal-looking domain.
+ *
+ * Detection only — these records are never deleted by the UI. Existing smoke
+ * tests hit the live contact endpoint, so this keeps them out of the KPIs
+ * without destroying evidence.
+ */
+const TEST_NAME_PATTERN = /^test(\s|$)/i;
+
+function isTestLead(lead: Pick<Lead, "email" | "name">): boolean {
+  const email = (lead.email ?? "").trim().toLowerCase();
+  if (email.endsWith("@example.com") || email.endsWith("@example.org")) return true;
+  if (email === "test@test.com" || email === "user@example.net") return true;
+  return TEST_NAME_PATTERN.test((lead.name ?? "").trim());
+}
+
 export default function LeadsPage() {
-  const { data: leads, loading, add, edit, del } = useCollection<Lead>("leads", {
+  const { data: leads, loading, error, refetch, add, edit, del } = useCollection<Lead>("leads", {
     orderByField: "createdAt",
-  });
-  const { data: contacts, add: addContact } = useCollection<Contact>("contacts", {
+  });  const { data: contacts, add: addContact } = useCollection<Contact>("contacts", {
     orderByField: "createdAt",
   });
   const { toast } = useToast();
@@ -52,9 +71,17 @@ export default function LeadsPage() {
   const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<Lead | null>(null);
   const [form, setForm] = useState<LeadFormData>(emptyLead);
+  const [showTest, setShowTest] = useState(false);
 
   // Filtering
+  // Smoke-test submissions from the contact form used to sit in the live list and
+  // in every KPI. They are hidden by default and counted, never deleted, so the
+  // records stay available for inspection.
+  const testLeadCount = useMemo(() => leads.filter(isTestLead).length, [leads]);
+  const realLeads = useMemo(() => leads.filter((l) => !isTestLead(l)), [leads]);
+
   const filtered = useMemo(() => leads
+    .filter((l) => showTest || !isTestLead(l))
     .filter((l) => tab === "all" || l.status === tab)
     .filter((l) => {
       if (!search) return true;
@@ -64,14 +91,14 @@ export default function LeadsPage() {
         l.email.toLowerCase().includes(q) ||
         (l.company?.toLowerCase().includes(q) ?? false)
       );
-    }), [leads, tab, search]);
+    }), [leads, showTest, tab, search]);
 
   // ─── Metrics ────────────────────────────────────────
-  const totalLeads = leads.length;
-  const wonLeads = leads.filter((l) => l.status === "won").length;
-  const lostLeads = leads.filter((l) => l.status === "lost").length;
+  const totalLeads = realLeads.length;
+  const wonLeads = realLeads.filter((l) => l.status === "won").length;
+  const lostLeads = realLeads.filter((l) => l.status === "lost").length;
   const winRate = totalLeads > 0 ? ((wonLeads / totalLeads) * 100).toFixed(1) : "0";
-  const pipeline = leads.reduce((s, l) => s + (l.value || 0), 0);
+  const pipeline = realLeads.reduce((s, l) => s + (l.value || 0), 0);
 
   // Conversion funnel data
   const conversionData = useMemo(() => {
@@ -92,8 +119,8 @@ export default function LeadsPage() {
         stage,
         label: labels[stage],
         color: colors[stage],
-        count: leads.filter((l) => l.status !== "lost" && stageIndex(l.status) >= idx).length,
-        current: leads.filter((l) => l.status === stage).length,
+        count: realLeads.filter((l) => l.status !== "lost" && stageIndex(l.status) >= idx).length,
+        current: realLeads.filter((l) => l.status === stage).length,
       };
     });
     // Calculate conversion rates between stages
@@ -101,12 +128,12 @@ export default function LeadsPage() {
       ...r,
       rate: i === 0 ? 100 : (reached[i - 1].count > 0 ? Math.round((r.count / reached[i - 1].count) * 100) : 0),
     }));
-  }, [leads]);
+  }, [realLeads]);
 
   // Source breakdown for horizontal bars
   const sourceData = useMemo(() => {
     const acc: Record<string, number> = {};
-    leads.forEach((l) => { acc[l.source || "other"] = (acc[l.source || "other"] || 0) + 1; });
+    realLeads.forEach((l) => { acc[l.source || "other"] = (acc[l.source || "other"] || 0) + 1; });
     const srcColors: Record<string, string> = {
       website: "var(--chart-1)", referral: "var(--chart-7)", social: "var(--chart-2)",
       ad: "var(--chart-6)", email: "var(--chart-8)", "cold-call": "var(--gray-60)", other: "var(--gray-50)",
@@ -117,14 +144,14 @@ export default function LeadsPage() {
       pct: totalLeads > 0 ? Math.round((count / totalLeads) * 100) : 0,
       color: srcColors[src] || "var(--gray-50)",
     }));
-  }, [leads, totalLeads]);
+  }, [realLeads, totalLeads]);
 
   const tabs = [
-    { label: "All", value: "all", badge: leads.length },
+    { label: "All", value: "all", badge: realLeads.length },
     ...CRM_STATUSES.map((s) => ({
       label: s.charAt(0).toUpperCase() + s.slice(1),
       value: s,
-      badge: leads.filter((l) => l.status === s).length,
+      badge: realLeads.filter((l) => l.status === s).length,
     })),
   ];
 
@@ -354,11 +381,31 @@ export default function LeadsPage() {
 
       <AdminTabs tabs={tabs} defaultValue="all" onChange={setTab} />
 
+      {testLeadCount > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
+          <p className="text-xs text-gray-60">
+            {showTest
+              ? `Showing ${testLeadCount} test submission${testLeadCount === 1 ? "" : "s"} (excluded from the figures above).`
+              : `${testLeadCount} test submission${testLeadCount === 1 ? "" : "s"} hidden and excluded from the figures above.`}
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowTest((v) => !v)}
+            className="rounded-md border border-border px-2 py-1 text-xs font-medium text-gray-90 hover:bg-gray-10"
+          >
+            {showTest ? "Hide test records" : "Show test records"}
+          </button>
+        </div>
+      )}
+
       <DataTable
         columns={columns}
         data={filtered}
         keyExtractor={(l) => l.id}
         onRowClick={(l) => openModal(l)}
+        loading={loading}
+        error={error}
+        onRetry={refetch}
         emptyMessage="No leads found"
       />
 

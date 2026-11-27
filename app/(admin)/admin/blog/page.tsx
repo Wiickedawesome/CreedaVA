@@ -39,7 +39,7 @@ const emptyPost: BlogPostFormData = {
 };
 
 export default function BlogPage() {
-  const { data: posts, loading, add, edit, del } = useCollection<BlogPost>("blog", {
+  const { data: posts, loading, error, refetch, add, edit, del } = useCollection<BlogPost>("blog", {
     orderByField: "createdAt",
   });
   const { toast } = useToast();
@@ -504,6 +504,8 @@ Return ONLY valid JSON, no markdown fences.`, "", { includeCompetitors: true, in
         keyExtractor={(p) => p.id}
         onRowClick={(p) => openModal(p)}
         loading={loading}
+        error={error}
+        onRetry={refetch}
         emptyMessage="No posts yet — create one or let AI generate a draft"
       />
 

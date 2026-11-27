@@ -27,6 +27,33 @@ import type { AgentSkill, SkillContext, SkillResult, SeoAgentConfigDoc } from ".
 
 const SKILL_LOCK_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
+/**
+ * Read a Firestore timestamp defensively.
+ * Stored values are `Timestamp`s, but legacy/mocked rows may be ISO strings.
+ */
+function startedAtMs(value: unknown): number {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "toMillis" in value &&
+    typeof (value as { toMillis: unknown }).toMillis === "function"
+  ) {
+    return (value as { toMillis: () => number }).toMillis();
+  }
+  const parsed = new Date(value as string).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+/** Newest document by `startedAt`, or null for an empty result set. */
+function newestByStartedAt<T extends { data: () => { startedAt?: unknown } }>(
+  docs: T[],
+): T | null {
+  if (docs.length === 0) return null;
+  return docs.reduce((a, b) =>
+    startedAtMs(a.data().startedAt) >= startedAtMs(b.data().startedAt) ? a : b,
+  );
+}
+
 export type RunSource = "scheduled" | "manual";
 
 export interface RunOptions {
@@ -52,25 +79,31 @@ export async function runSeoAgent(opts: RunOptions): Promise<RunOutcome> {
     return { runId: "skip", status: "killswitch" };
   }
 
-  // Concurrency lock — skip if same skill is already in-progress recently.
+  // Concurrency lock — skip if the same skill is already in-progress recently.
+  //
+  // Deliberately NO orderBy: pairing two equality filters with an orderBy on a
+  // third field requires a composite index, and when that index is absent the
+  // query throws. The throw used to be swallowed, which silently disabled this
+  // lock entirely — measured 2026-11-25: eight duplicate onpage-audit runs that
+  // nothing deduplicated. Two equalities use single-field indexes only, so this
+  // query cannot fail for a missing index. The newest row is picked in memory.
   if (!opts.force) {
-    const recent = await db
+    const active = await db
       .collection("agent-runs")
       .where("skill", "==", opts.skill)
       .where("status", "==", "in-progress")
-      .orderBy("startedAt", "desc")
-      .limit(1)
+      .limit(25)
       .get()
-      .catch(() => null);
-    if (recent && !recent.empty) {
-      const data = recent.docs[0].data() as { startedAt?: { toMillis?: () => number } | string };
-      const startedAtMs =
-        typeof data.startedAt === "object" && data.startedAt && typeof data.startedAt.toMillis === "function"
-          ? data.startedAt.toMillis()
-          : new Date(data.startedAt as string).getTime();
-      if (Date.now() - startedAtMs < SKILL_LOCK_WINDOW_MS) {
-        return { runId: recent.docs[0].id, status: "locked" };
-      }
+      .catch((err) => {
+        // Never silently unlock: an invisible lock failure is what let duplicate
+        // runs through unnoticed. Automation still proceeds, but it is logged.
+        console.error(`[seo-agent] lock check failed for ${opts.skill}:`, err);
+        return null;
+      });
+
+    const holder = active ? newestByStartedAt(active.docs) : null;
+    if (holder && Date.now() - startedAtMs(holder.data().startedAt) < SKILL_LOCK_WINDOW_MS) {
+      return { runId: holder.id, status: "locked" };
     }
   }
 
@@ -136,20 +169,27 @@ async function fetchLatestCursor(
   skill: AgentSkill,
 ): Promise<{ offset: number; nextItem?: string } | null> {
   try {
+    // Same index constraint as the lock above: no orderBy, newest chosen in
+    // memory. This catch used to swallow the throw, so the cursor was ALWAYS
+    // null and a chunked skill like backlinks-resources restarted at offset 0
+    // on every run — burning its full query budget and never advancing.
     const snap = await db
       .collection("agent-runs")
       .where("skill", "==", skill)
       .where("status", "==", "partial")
-      .orderBy("startedAt", "desc")
-      .limit(1)
+      .limit(25)
       .get();
-    if (snap.empty) return null;
-    const c = snap.docs[0].data().cursor;
+
+    const latest = newestByStartedAt(snap.docs);
+    if (!latest) return null;
+
+    const c = latest.data().cursor;
     if (c && typeof c === "object" && typeof (c as { offset?: number }).offset === "number") {
       return c as { offset: number; nextItem?: string };
     }
     return null;
-  } catch {
+  } catch (err) {
+    console.warn(`[seo-agent] cursor lookup failed for ${skill}:`, err);
     return null;
   }
 }

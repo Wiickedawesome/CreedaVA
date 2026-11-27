@@ -9,7 +9,7 @@ export { PageHeader } from "./page-header";
 export { AdminTabs } from "./tabs";
 export { DataTable } from "./data-table";
 export type { Column } from "./data-table";
-export { StatusBadge, EmptyState, DashboardSection } from "./shared";
+export { StatusBadge, EmptyState, LoadError, DashboardSection } from "./shared";
 export { Modal } from "./modal";
 export { Select } from "./select";
 export { ToastProvider, useToast } from "./toast";

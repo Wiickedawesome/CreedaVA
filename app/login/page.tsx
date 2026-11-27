@@ -23,8 +23,14 @@ const SIGN_IN_ERROR_MESSAGES: Record<string, string> = {
     "This domain is not authorised for sign-in. Contact the site owner.",
   "auth/firebase-app-check-token-is-invalid":
     "The security check (reCAPTCHA) could not complete. Turn off ad-blockers for creedava.com, or try another network.",
+  // `auth/internal-error` is Firebase's catch-all, so it must NOT reuse the
+  // message above. Measured 2026-11-27: it fires when App Check is disabled for
+  // the build while the project enforces it (a localhost build, for example) —
+  // the old wording blamed reCAPTCHA and pointed at ad-blockers, which was the
+  // wrong fix. State only what is knowable and include the code so a report is
+  // actionable.
   "auth/internal-error":
-    "The security check (reCAPTCHA) could not complete. Turn off ad-blockers for creedava.com, or try another network.",
+    "Sign-in could not complete. Try creedava.com directly — this also happens on domains that are not authorised for sign-in. If it persists, report: auth/internal-error.",
 };
 
 function getSafeRedirectPath(value: string | null) {

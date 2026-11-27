@@ -105,7 +105,11 @@ CreedaVA is a virtual assistant services platform built with **Next.js 16** (App
 │       ├── google-drive.ts     # Google Drive integration
 │       ├── google-sheets.ts    # Google Sheets integration
 │       ├── search-console.ts   # Search Console data
-│       ├── scheduled.ts        # Scheduled/cron functions
+│       ├── scheduled-reports.ts # Daily/weekly/monthly digest emails
+│       ├── scheduled-sync.ts   # Daily Google service sync
+│       ├── scheduled-seo.ts    # Weekly AI SEO review
+│       ├── scheduled-cleanup.ts # Retention jobs for analytics/SEO collections
+│       ├── seo-schedules.ts    # SEO agent daily skill rotation + manual trigger
 │       ├── triggers.ts         # Firestore triggers
 │       └── webhooks.ts         # Webhook handlers
 │

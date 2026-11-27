@@ -107,7 +107,7 @@ const isSectionId = (value: string): value is SectionId =>
   SECTIONS.some((section) => section.value === value);
 
 export default function PageMetadataSection() {
-  const { data: seoEntries, loading, add: addSeo, edit: editSeo } = useCollection<PageSEO>(
+  const { data: seoEntries, loading, error, refetch, add: addSeo, edit: editSeo } = useCollection<PageSEO>(
     "page-seo",
     { orderByField: "path" },
   );
@@ -494,6 +494,9 @@ export default function PageMetadataSection() {
         data={mergedPages}
         keyExtractor={(p) => p.path}
         onRowClick={(p) => openEdit(p)}
+        loading={loading}
+        error={error}
+        onRetry={refetch}
         emptyMessage="No pages found"
       />
 
